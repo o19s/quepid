@@ -1,3 +1,4 @@
+<%# locals: (embedder_case_counts:, embedders:, team:) %>
 <div class="card">
   <div class="card-body">
     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -7,12 +8,12 @@
           <%= link_to 'See all embedders', embedders_path, class: 'text-decoration-none' %>
         </small>
       </h5>
-      <%= link_to new_embedder_path(team_id: @team.id), class: 'btn btn-primary btn-sm' do %>
+      <%= link_to new_embedder_path(team_id: team.id), class: 'btn btn-primary btn-sm' do %>
         <i class="bi bi-plus-lg" aria-hidden="true"></i> Create Embedder
       <% end %>
     </div>
 
-    <% if @embedders.any? %>
+    <% if embedders.any? %>
       <div class="table-responsive">
         <table class="table table-sm table-hover">
           <thead>
@@ -27,7 +28,7 @@
             </tr>
           </thead>
           <tbody>
-            <% @embedders.each do |embedder| %>
+            <% embedders.each do |embedder| %>
               <tr>
                 <td>
                   <%= link_to embedder.name, edit_embedder_path(embedder) %>
@@ -46,20 +47,17 @@
                 </td>
                 <td><%= embedder.owner&.fullname || '—' %></td>
                 <td>
-                  <span class="badge rounded-pill bg-secondary"><%= pluralize(@embedder_case_counts.fetch(embedder.id, 0), 'Case') %></span>
+                  <span class="badge rounded-pill bg-secondary"><%= pluralize(embedder_case_counts.fetch(embedder.id, 0), 'Case') %></span>
                 </td>
                 <td class="text-end">
-                  <button type="button"
-                          class="btn btn-link text-danger p-0"
-                          title="Stop sharing with this team"
-                          aria-label="Stop sharing with this team"
-                          data-controller="confirm-delete"
-                          data-action="click->confirm-delete#open"
-                          data-confirm-delete-url-value="<%= embedder_team_path(@team, embedder_id: embedder.id) %>"
-                          data-confirm-delete-method-value="delete"
-                          data-confirm-delete-message-value="<%= h("Stop sharing #{embedder.name} with #{@team.name}? Cases already using it keep it.") %>">
+                  <%= button_to embedder_team_path(team, embedder_id: embedder.id),
+                                method: :delete,
+                                class: "btn btn-link text-danger p-0",
+                                title: "Stop sharing with this team",
+                                aria: { label: "Stop sharing with this team" },
+                                form: { class: "d-inline", data: { turbo_confirm: "Stop sharing #{embedder.name} with #{team.name}? Cases already using it keep it." } } do %>
                     <i class="bi bi-x-circle" aria-hidden="true"></i>
-                  </button>
+                  <% end %>
                 </td>
               </tr>
             <% end %>

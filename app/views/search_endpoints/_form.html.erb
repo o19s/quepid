@@ -1,4 +1,6 @@
+<%# locals: (search_endpoint:, cloned_from_id: nil) %>
 <%= form_with(model: search_endpoint) do |form| %>
+  <%= hidden_field_tag :clone_of, cloned_from_id if cloned_from_id %>
   <div class="card">
     <div class="card-body">
       <%= render "shared/error_messages", record: search_endpoint, subject: "Search Endpoint" %>
@@ -11,10 +13,7 @@
 
       <div class="mb-3">
         <%= form.label :search_engine, class: 'form-label' %>
-        <%
-        options = [['Solr', 'solr'], ['Elasticsearch', 'es'], ['OpenSearch', 'os'], ['Vectara', 'vectara'], ['Algolia', 'algolia'], ['Static File', 'static'], ['Search API', 'searchapi']]
-        %>
-        <%= form.collection_select :search_engine, options, :last, :first, required: true, prompt:true,  class: 'form-control' %>
+        <%= form.collection_select :search_engine, SearchEngine.select_options, :last, :first, required: true, prompt:true,  class: 'form-control' %>
 
       </div>
 
@@ -26,7 +25,7 @@
       <div class="mb-3">
         <%= form.label :custom_headers, "Custom Headers", class: 'form-label' %>
         <div class="form-text">Add custom HTTP headers as JSON (e.g., for API keys or authentication tokens).</div>
-        <%= form.text_area :custom_headers, value: format_json(search_endpoint.custom_headers), data: { codemirror_mode: "application/json", codemirror_line_numbers: true, codemirror_height: 100 } %>
+        <%= form.text_area :custom_headers, value: format_json(search_endpoint.custom_headers), data: codemirror_data(mode: "application/json", line_numbers: true, height: 100) %>
       </div>
 
       <div class="mb-3">
@@ -38,15 +37,16 @@
       <div class="mb-3">
         <% if require_proxy_for_all_search_endpoints? %>
           <%= form.hidden_field :proxy_requests, value: true %>
+          <div class="form-text">This Quepid instance requires all search requests to be proxied.</div>
         <% else %>
-          <div class="form-check form-switch">
-            <%= form.check_box :proxy_requests, class:'form-check-input' %>
-            <%= form.label :proxy_requests, class:'form-check-label' %>
-          </div>
-          <div class="form-text">
-            Proxied requests avoids CORS and other browser security issues, however Quepid must be able to reach your Search Endpoint.
-            Requests will come from Quepid in the form of <code><%= "#{proxy_fetch_url}?url=[ENDPOINT_URL]" %></code>.
-          </div>
+        <div class="form-check form-switch">
+          <%= form.check_box :proxy_requests, class:'form-check-input' %>
+          <%= form.label :proxy_requests, class:'form-check-label' %>
+        </div>
+        <div class="form-text">
+          Proxied requests avoids CORS and other browser security issues, however Quepid must be able to reach your Search Endpoint.
+          Requests will come from Quepid in the form of <code><%= proxy_fetch_url %>?url=[ENDPOINT_URL]</code>.
+        </div>
         <% end %>
       </div>
 
@@ -71,14 +71,14 @@
           When the case has an embedder, each query's vector is there too, as <code>#$qOption.query_vec##</code>
           (see <code>docs/vector_search.md</code>).
         </div>
-        <%= form.text_area :options, value: format_json(search_endpoint.options), data: { codemirror_mode: "application/json", codemirror_line_numbers: true, codemirror_height: 100 } %>
+        <%= form.text_area :options, value: format_json(search_endpoint.options), data: codemirror_data(mode: "application/json", line_numbers: true, height: 100) %>
       </div>
 
       <div class="mb-3">
         <%= form.label :test_query, class: 'form-label' %>
         <div class="form-text">
           <strong>Search API only.</strong> A sample query used by the Mapper Wizard for testing mappers.
-          For GET requests, use query params format (e.g., <code>q=test&rows=10</code>).
+          For GET requests, use query params format (e.g., <code>q=test&amp;rows=10</code>).
           For POST requests, use JSON format (e.g., <code>{"query": "test"}</code>).
         </div>
         <%= form.text_area :test_query, rows: 3, class: 'form-control' %>
@@ -92,10 +92,10 @@
             preset, so its mapper code is kept in sync automatically and can't be edited here.
           </div>
           <%= form.text_area :mapper_code, disabled: true,
-                data: { codemirror_mode: "javascript", codemirror_line_numbers: true, codemirror_height: 600, codemirror_readonly: true } %>
+                data: codemirror_data(mode: "javascript", line_numbers: true, height: 600, readonly: true) %>
         <% else %>
           <div class="form-text">This Javascript is run in the browser to map custom search api responses to what Quepid understands.</div>
-          <%= form.text_area :mapper_code, data: { codemirror_mode: "javascript", codemirror_line_numbers: true, codemirror_height: 600 } %>
+          <%= form.text_area :mapper_code, data: codemirror_data(mode: "javascript", line_numbers: true, height: 600) %>
         <% end %>
       </div>
 
@@ -108,8 +108,13 @@
       </div>
 
       <div class="mb-3">
-        <%= render 'shared/team_picker', form: form, label: 'Teams to Share this Endpoint With',
-              help_text: "Search endpoints are usable by anyone on a team they're shared with. Leave unchecked to keep this endpoint private to you." %>
+        <% if search_endpoint.team_shareable? %>
+          <%= render "shared/team_picker", form: form, label: "Teams to Share this Endpoint With",
+                selected_ids: params.dig(:search_endpoint, :team_ids),
+                help_text: "Leave unchecked to keep this endpoint private. Team members can use shared endpoints." %>
+        <% else %>
+          <p class="form-text"><%= SearchEndpoint::TEAM_SHARING_MESSAGE %></p>
+        <% end %>
       </div>
 
 

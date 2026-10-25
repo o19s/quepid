@@ -50,7 +50,7 @@ class EmbedderProvider
   attribute :supports_instructions,        :boolean, default: false
   # Upper bound on texts per request; the adapter splits larger inputs into batches.
   attribute :max_batch_size,               :integer, default: 64
-  # Provider guidance rendered into the form's help panel.
+  # Provider guidance rendered into the form's help panel (embedders/_form).
   attribute :help_html,                    :string
 
   DEFINITIONS = [
@@ -202,7 +202,6 @@ class EmbedderProvider
       label:                 label,
       service_url:           default_service_url,
       model:                 default_model,
-      help:                  help_html,
       supports_dimensions:   supports_dimensions?,
       allowed_dimensions:    allowed_dimensions,
       supports_instructions: supports_instructions?,

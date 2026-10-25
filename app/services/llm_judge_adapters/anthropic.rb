@@ -15,19 +15,23 @@ module LlmJudgeAdapters
       user_content = user_prompt.is_a?(Array) ? user_prompt.map { |part| content_block(part) } : user_prompt
 
       {
-        model:       options[:llm_model],
-        max_tokens:  MAX_TOKENS,
-        temperature: 0.7,
-        system:      system_prompt,
-        messages:    [
+        model:      options[:llm_model],
+        max_tokens: MAX_TOKENS,
+        system:     system_prompt,
+        messages:   [
           { role: 'user', content: user_content }
         ],
       }
     end
 
+    # The answer is in the text blocks. Models that think by default (Claude Opus 5.5,
+    # Sonnet 5.5) put a thinking block first, so the first block is not always text.
     def content_from response_body
+      blocks = Array(response_body['content']).select { |block| 'text' == block['type'] }
+      return nil if blocks.empty?
+
       # Anthropic doesn't support response_format, so the model may wrap JSON in markdown code blocks
-      strip_markdown_code_block(response_body.dig('content', 0, 'text'))
+      strip_markdown_code_block(blocks.pluck('text').join)
     end
 
     private

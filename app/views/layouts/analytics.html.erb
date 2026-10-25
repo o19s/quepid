@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+    <meta name="turbo-visit-control" content="reload">
     <meta charset="utf-8">
     <title>Quepid -- Relevant Search Solved</title>
     <%= favicon_link_tag asset_path "favicon.ico" %>
@@ -10,23 +11,17 @@
     <%= stylesheet_link_tag 'application', media: 'all' %>
     <%= csrf_meta_tags %>
     <%= javascript_importmap_tags 'vega_globals' %>
-    <%= javascript_include_tag 'analytics' %>
+    <%# Stimulus only: analytics keeps its full-page boundary, so no Turbo. %>
+    <%= javascript_import_module_tag 'controllers' %>
   </head>
-  <body class="d-flex flex-column h-100">
+  <body class="d-flex flex-column min-vh-100">
     <header>
-      <%= render 'layouts/header' %>
-      <% if @case.public? %>
-        <script>
-          document.addEventListener('DOMContentLoaded', function() {
-            new ClipboardJS('#public-url');
-          });
-        </script>
-      <% end %>
+      <%= render 'layouts/header', announcement: @announcement %>
       <% if @case.public? || @current_user %>
         <div class="container d-flex align-items-center gap-2 py-2">
           <% if @case.public? %>
             <h3 class="public-share mb-0">
-              <a id="public-url" href="#" data-clipboard-text="<%= analytics_tries_visualization_path(@case.public_id) %>">
+              <button type="button" id="public-url" class="btn btn-link p-0 border-0 align-baseline" data-controller="clipboard" data-action="clipboard#copy" data-clipboard-text-value="<%= analytics_tries_visualization_path(@case.public_id) %>">
                 <span class="badge bg-success">Public</span>
                 <i
                   class="clipboard-icon bi bi-clipboard"
@@ -34,11 +29,11 @@
                   title="Copy public url to your clipboard"
                   alt="Copy public url to your clipboard"
                 ></i>
-              </a>
+              </button>
             </h3>
           <% end %>
           <% if @current_user %>
-            <%= button_to (@case.public? ? 'Make Private' : 'Make public'), analytics_case_visibility_path(@case), method: :patch, class: 'btn btn-outline-warning btn-sm mb-0' %>
+            <%= button_to (@case.public? ? 'Make Private' : 'Make public'), analytics_case_visibility_path(@case), method: :patch, class: 'btn btn-outline-secondary btn-sm mb-0' %>
           <% end %>
         </div>
       <% end %>

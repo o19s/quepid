@@ -13,7 +13,7 @@ One interesting thing is that if OpenSearch is running on HTTPS, then Quepid nee
 
 ## Ping OpenSearch During Case Setup
 
-Quepid checks that that OpenSearch is available and responding during the Case Setup Wizard, and if not
+Quepid checks that OpenSearch is available and responding during the Case Setup Wizard, and if not
 then Quepid opens the **Advanced** section and suggests workarounds.  The quickest unblock is usually
 **Proxy Requests** (no OpenSearch configuration changes).  If your team prefers direct browser access,
 configure CORS on OpenSearch instead.  You can bypass this check as well, and then fix your connectivity
@@ -134,7 +134,7 @@ Response Format
 
 ## Queries
 
-Queries are sent off to OpenSearch using the standard POST request handler.
+Queries are sent to OpenSearch using the standard POST request with a JSON body.
 
 
 Request
@@ -956,10 +956,10 @@ Then you need to change the URL to `/tmdb/_search/template`, and then we send th
 This Modal UI in Quepid  has two query patterns for interacting with OpenSearch.   The first is the ability for you to craft basic Lucene queries to go find some documents that then can be rated.  The second query pattern is to return ALL the documents that have been rated for a query, and is in the style of a lookup via list of id's for the documents.
 
 ### Find Documents
-Not sure...  anything special here?  
+This uses the same `POST /_search` request as a regular query. The query body is editable in the modal, so you can use any OpenSearch query supported by your endpoint.
 
 ### List All Documents That Have Been Rated
-Not sure ...
+This uses a `terms` filter on the configured document ID field and the IDs of the documents already rated for the query. The request is otherwise the same as the one shown in **Show Only Rated Documents**.
 
 ## Show Only Rated Documents
 
@@ -1022,7 +1022,7 @@ Quepid builds the filter from the list of documents that have been rated.
 
 ## Snapshot Comparison
 
-Ummm?
+Snapshot results are stored by Quepid and compared locally, so no separate OpenSearch request is needed for snapshot comparison.
 
 ## View Document
 

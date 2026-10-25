@@ -16,7 +16,42 @@ module Api
           login_user user
         end
 
+        def with_import_error error
+          original = RatingsImporter.instance_method(:import)
+          RatingsImporter.define_method(:import) { raise error }
+          yield
+        ensure
+          RatingsImporter.define_method(:import, original)
+        end
+
         describe '#create' do
+          test 'reports unexpected import errors without exposing details' do
+            error = RuntimeError.new('secret database details')
+            reported = []
+            subscriber = Object.new
+            subscriber.define_singleton_method(:report) { |exception, **| reported << exception }
+            Rails.error.subscribe(subscriber)
+            with_import_error(error) do
+              post :create, params: { case_id: acase.id, ratings: [] }
+            end
+            assert_includes reported, error
+
+            assert_response :bad_request
+            assert_equal({ 'message' => 'Unable to import ratings. Please try again.' }, response.parsed_body)
+          ensure
+            Rails.error.unsubscribe(subscriber)
+          end
+
+          test 'does not swallow process-level exceptions' do
+            [ Interrupt, NoMemoryError, SystemExit ].each do |error_class|
+              with_import_error(error_class.new('stop')) do
+                assert_raises(error_class) do
+                  post :create, params: { case_id: acase.id, ratings: [] }
+                end
+              end
+            end
+          end
+
           test 'creates new queries when needed' do
             data = {
               case_id: acase.id,
@@ -127,6 +162,25 @@ module Api
           end
         end
         describe '#create from RRE' do
+          test 'preserves queries without relevant documents but omits empty document groups' do
+            rre = { queries: [
+              { placeholders: { '$query' => 'no documents' } },
+              { placeholders: { '$query' => 'empty groups' }, relevant_documents: {} }
+            ] }
+
+            post :create, params: { case_id: acase.id, file_format: 'rre', rre_json: rre.to_json }
+
+            assert_response :ok
+            assert_empty acase.queries.find_by!(query_text: 'no documents').ratings
+            assert_not acase.queries.exists?(query_text: 'empty groups')
+          end
+
+          test 'malformed RRE escapes the importer error response' do
+            assert_raises(JSON::ParserError) do
+              post :create, params: { case_id: acase.id, file_format: 'rre', rre_json: '{' }
+            end
+          end
+
           test 'creates new queries from rre format mapped to hash format' do
             mock_rre_json = File.read('./test/controllers/api/v1/import/mock_rre_json.json')
             data = {
@@ -144,6 +198,20 @@ module Api
         end
 
         describe '#create from LTR' do
+          test 'imports LTR lines through the action including zero ratings' do
+            post :create, params: {
+              case_id:     acase.id,
+              file_format: 'ltr',
+              ltr_text:    "0 qid:2 # 9755 star trek\n\n3 qid:2 # 9756 star trek",
+            }
+
+            assert_response :ok
+            imported_query = acase.queries.find_by!(query_text: 'star trek')
+            assert_equal 0, imported_query.ratings.find_by!(doc_id: '9755').rating
+            assert_equal 3, imported_query.ratings.find_by!(doc_id: '9756').rating
+            assert_equal({ 'message' => 'Success!' }, response.parsed_body)
+          end
+
           test 'convert a ltr line into a rating' do
             rating = @controller.rating_from_ltr_line('0    qid:2 #    9755 "star trek"')
             assert_equal '0', rating[:rating]

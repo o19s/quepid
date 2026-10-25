@@ -2,14 +2,13 @@
 
 class BooksController < ApplicationController
   include Pagy::Method
-  include BooksHelper
   include BookScorerAssignment
+  include BooksHelper
 
   before_action :set_book,
                 only: [ :show, :edit, :update, :destroy, :combine, :assign_anonymous, :delete_ratings_by_assignee,
                         :reset_unrateable, :reset_judge_later, :delete_query_doc_pairs_below_position,
-                        :eric_steered_us_wrong, :remap_judgement_ratings, :run_judge_judy, :cancel_judge_judy,
-                        :judgement_stats, :judge_overview, :judge_activity, :export, :archive, :unarchive ]
+                        :eric_steered_us_wrong, :remap_judgement_ratings, :run_judge_judy, :cancel_judge_judy, :judge_overview, :judge_activity, :judgement_stats, :export, :archive, :unarchive ]
 
   before_action :find_user, only: [ :reset_unrateable, :reset_judge_later, :delete_ratings_by_assignee ]
 
@@ -35,13 +34,12 @@ class BooksController < ApplicationController
     query = query.where(teams: { id: params[:team_id] }) if params[:team_id].present?
 
     if params[:q].present?
-      q = "%#{params[:q].to_s.downcase}%"
 
       # `includes([:teams])` alone won't JOIN teams for a raw SQL condition (only a
       # hash condition like `where(teams: {...})` makes Rails switch to eager_load),
       # so match on ids first - same pattern as ForUserScope and CasesController#index.
       matching_ids = Book.left_joins(:teams)
-        .where('LOWER(books.name) LIKE ? OR LOWER(teams.name) LIKE ?', q, q)
+        .search_by(params[:q], 'books.name', 'teams.name')
         .reselect(:id).distinct
       query = query.where(id: matching_ids)
     end
@@ -50,13 +48,16 @@ class BooksController < ApplicationController
   end
 
   def show
+    # Turbo promotes judging completion to a full-page visit; retain its notice for that request.
+    flash.keep if 'query_doc_pair_card' == turbo_frame_request_id
+
     @kraken_unleashed = flash[:kraken_unleashed]
 
     @count_of_anonymous_book_judgements = @book.judgements.where(user: nil).count
 
     @moar_judgements_needed = SelectionStrategy.moar_judgements_needed? @book
 
-    @cases = @book.cases
+    @cases = @book.cases.includes(:owner)
 
     # ── RE coverage metrics ───────────────────────────────────────────────────
     # Wrapped in a transaction so the three counts see one consistent snapshot
@@ -84,8 +85,10 @@ class BooksController < ApplicationController
 
   def judge_overview
     # Personal progress
-    @total_pairs           = @book.query_doc_pairs_within_rank_depth.count
-    @user_judgement_count  = @book.judgements.where(user: current_user).count
+    @total_pairs = @book.query_doc_pairs_within_rank_depth.count
+    @user_total_judgement_count = @book.judgements.where(user: current_user).count
+    @user_judgement_count  = @book.judgements.where(user:              current_user,
+                                                    query_doc_pair_id: @book.query_doc_pairs_within_rank_depth.select(:id)).count
     @user_progress_pct     = @total_pairs.positive? ? ((@user_judgement_count.to_f / @total_pairs) * 100).round : 0
 
     # Last judging timestamp for this user in this book
@@ -137,6 +140,15 @@ class BooksController < ApplicationController
       end
     end
 
+    current_ids = rows.to_set { |row| row[:judge].id }
+    (known_judge_ids - current_ids).each do |judge_id|
+      streams << turbo_stream.remove("judge-row-#{judge_id}")
+    end
+    streams << turbo_stream.remove('judge-activity-empty') if rows.any?
+    if rows.empty?
+      streams << turbo_stream.update('judge-activity-table', partial: 'books/judge_activity_table_body',
+                                                             locals:  { judge_activity: [], book: @book })
+    end
     render turbo_stream: streams
   end
 
@@ -150,25 +162,15 @@ class BooksController < ApplicationController
       .distinct.pluck(:user_id)
 
     assigned_ai_judges = @book.ai_judges.pluck(:user_id)
+    @refinable_ai_judge_ids = AiJudge.for_user(current_user).pluck(:id)
 
-    @refinable_ai_judge_ids = refinable_ai_judge_ids
+    # On-call judges are listed before they have judged anything, so the
+    # book shows who its judges will wake.
+    @on_call_judge_ids = @book.on_call_ai_judges.map(&:id)
+    stats_judges_ids = (unique_judge_ids + assigned_ai_judges + @on_call_judge_ids).uniq
+    @wakes = AiJudge.escalation_target_names(stats_judges_ids)
 
-    stats_judges_ids = (unique_judge_ids + assigned_ai_judges).uniq
-
-    stats_judges = []
-    stats_judges_ids.each do |judge_id|
-      begin
-        judge = User.find(judge_id) unless judge_id.nil?
-      rescue ActiveRecord::RecordNotFound
-        judge = nil
-      end
-      stats_judges << judge
-    end
-
-    stats_judges = compact_keep_one_nil(stats_judges)
-    stats_judges = stats_judges.sort_by { |judge| judge.nil? ? '' : judge.fullname }
-
-    stats_judges.each do |judge|
+    judges_sorted_by_name(stats_judges_ids).each do |judge|
       @leaderboard_data << { judge:      judge.nil? ? 'anonymous' : judge.fullname,
                              judgements: @book.judgements.where(user: judge).count }
       @stats_data << {
@@ -185,10 +187,12 @@ class BooksController < ApplicationController
   def new
     # we actually support passing in starting point configuration for a book
     @book = if params[:book]
-              Book.new(book_params)
+              Book.new(book_params.except(:team_ids, :ai_judge_ids, :auto_run_ai_judge_ids))
             else
               Book.new
             end
+
+    assign_book_memberships if params[:book]
 
     @origin_case = current_user.cases_involved_with.where(id: params[:origin_case_id]).first if params[:origin_case_id]
 
@@ -199,17 +203,12 @@ class BooksController < ApplicationController
       if scorer
         @book.scale = scorer.scale
         @book.scale_with_labels = scorer.scale_with_labels
-        # The dropdown (scorer_options_for_select) lists one representative
-        # scorer id per unique scale/labels combination, so the case's exact
-        # scorer_id may not appear as an <option> - resolve to whichever
-        # scorer id the dropdown actually offers for this scale, or the
-        # select silently falls back to blank.
         @book.scorer_id = matching_scorer_id_for_book(current_user, @book)
         @book.scoring_guidelines = @book.default_scoring_guidelines
       end
     end
 
-    @ai_judges = AiJudge.for_user(current_user)
+    @ai_judges = accessible_ai_judges
 
     if @origin_case
       @book.name = "Book for #{@origin_case.case_name}"
@@ -220,7 +219,7 @@ class BooksController < ApplicationController
   end
 
   def edit
-    @ai_judges = visible_ai_judges_for(current_user)
+    @ai_judges = accessible_ai_judges
 
     @book.scorer_id = matching_scorer_id_for_book(current_user, @book)
 
@@ -228,61 +227,53 @@ class BooksController < ApplicationController
     # In our use case just looks up the count of records per book.
     @other_books = current_user.books_involved_with.where.not(id: @book.id)
 
-    judgement_ratings = @book.judgements.where.not(rating: nil).distinct.pluck(:rating)
-    case_ratings = Rating.joins(query: :case).where(cases: { book_id: @book.id }).where.not(rating: nil).distinct.pluck(:rating)
-    @current_ratings = (judgement_ratings + case_ratings).uniq.sort
+    load_current_ratings
   end
 
   def create
-    @book = Book.new(book_params.except(:ai_judge_ids, :auto_run_ai_judge_ids))
+    @book = Book.new(book_params.except(:team_ids, :ai_judge_ids, :auto_run_ai_judge_ids))
     @book.owner = current_user
+    assign_book_memberships
+    @origin_case = current_user.cases_involved_with.find_by(id: params.dig(:book, :origin_case_id))
+    @link_the_case = deserialize_bool_param(params.dig(:book, :link_the_case))
+    @auto_populate_book_pairs = deserialize_bool_param(params.dig(:book, :auto_populate_book_pairs))
+    @auto_populate_case_judgements = deserialize_bool_param(params.dig(:book, :auto_populate_case_judgements))
 
     # Handle scorer selection
-    apply_scorer_to_book(@book, book_params[:scorer_id]) if book_params[:scorer_id].present?
+    if book_params[:scorer_id].blank?
+      @book.errors.add(:scorer_id, 'must be selected')
+      @ai_judges = accessible_ai_judges
+      render :new, status: :unprocessable_content
+      return
+    end
+
+    apply_scorer_to_book(@book, book_params[:scorer_id])
 
     if @book.save
-      sync_book_ai_judges @book, book_params[:ai_judge_ids], book_params[:auto_run_ai_judge_ids], current_user
+      @book.books_ai_judges.each(&:save!)
 
-      if deserialize_bool_param(params[:book][:link_the_case])
-        @origin_case = current_user.cases_involved_with.where(id: params[:book][:origin_case_id]).first
+      if @link_the_case
         @origin_case.book = @book
-        @origin_case.auto_populate_book_pairs = deserialize_bool_param(
-          params[:book][:auto_populate_book_pairs]
-        )
-        @origin_case.auto_populate_case_judgements = deserialize_bool_param(
-          params[:book][:auto_populate_case_judgements]
-        )
+        @origin_case.auto_populate_book_pairs = @auto_populate_book_pairs
+        @origin_case.auto_populate_case_judgements = @auto_populate_case_judgements
         @origin_case.save
       end
 
-      redirect_to @book, notice: 'Book was successfully created.'
+      redirect_to @book, notice: 'Book was successfully created.', status: :see_other
     else
-      @ai_judges = []
-      render :new
+      @ai_judges = accessible_ai_judges
+      render :new, status: :unprocessable_content
     end
   end
 
-  # rubocop:disable Metrics/AbcSize
   def update
-    # this logic is crazy, but basically we don't want to touch the teams that are associated with
-    # an book that the current_user CAN NOT see, so we clear out of the relationship all the ones
-    # they can see, and then repopulate it from the list of ids checked.  Checkboxes suck.
-    team_ids_belonging_to_user = current_user.teams.pluck(:id)
-    teams = @book.teams.reject { |t| team_ids_belonging_to_user.include?(t.id) }
-    @book.teams.clear
-    Array(book_params[:team_ids]).each do |team_id|
-      teams << Team.find(team_id)
-    end
-
-    @book.teams.replace(teams)
-
-    sync_book_ai_judges @book, book_params[:ai_judge_ids], book_params[:auto_run_ai_judge_ids], current_user
+    assign_book_memberships
 
     # Handle scorer selection
     apply_scorer_to_book(@book, book_params[:scorer_id]) if book_params[:scorer_id].present?
 
     @book.update(book_params.except(
-                   :team_ids, :ai_judges, :ai_judge_ids, :auto_run_ai_judge_ids, :link_the_case, :origin_case_id, :scorer_id,
+                   :team_ids, :ai_judge_ids, :auto_run_ai_judge_ids, :link_the_case, :origin_case_id, :scorer_id,
                    :delete_export_file, :delete_import_file,
                    :auto_populate_book_pairs,
                    :auto_populate_case_judgements
@@ -291,118 +282,87 @@ class BooksController < ApplicationController
     @book.export_file.purge if '1' == book_params[:delete_export_file]
     @book.import_file.purge if '1' == book_params[:delete_import_file]
 
-    @book.save
+    flash[:notice] = 'Book was successfully updated.' if @book.save
 
-    @ai_judges = visible_ai_judges_for(current_user)
+    @ai_judges = accessible_ai_judges
     @other_books = current_user.books_involved_with.where.not(id: @book.id)
+    load_current_ratings if @book.errors.any?
 
     respond_with(@book)
   end
 
-  # rubocop:enable Metrics/AbcSize
   def destroy
     @book.really_destroy
-    redirect_to books_path, notice: 'Book is deleted'
+    redirect_to books_path, notice: 'Book is deleted', status: :see_other
   end
 
   def archive
     @book.update(archived: true)
-    redirect_to books_path, notice: "Book '#{@book.name}' has been archived."
+    redirect_to books_path, notice: "Book '#{@book.name}' has been archived.", status: :see_other
   end
 
   def unarchive
     @book.update(archived: false)
-    redirect_to books_path(archived: true), notice: "Book '#{@book.name}' has been unarchived."
+    redirect_to books_path(archived: true), notice: "Book '#{@book.name}' has been unarchived.", status: :see_other
   end
 
-  # rubocop:disable Metrics/AbcSize
-  # rubocop:disable Metrics/MethodLength
-  # rubocop:disable Metrics/CyclomaticComplexity
-  # rubocop:disable Metrics/PerceivedComplexity
   def combine
     book_ids = params[:book_ids].select { |_key, value| '1' == value }.keys.map(&:to_i)
 
-    query_doc_pair_count = 0
+    books_by_id = current_user.books_involved_with.where(id: book_ids).index_by(&:id)
+    raise ActiveRecord::RecordNotFound unless books_by_id.size == book_ids.uniq.size
 
-    books = []
-    book_ids.each do |book_id|
-      book_to_merge = current_user.books_involved_with.where(id: book_id).first
-      books << book_to_merge
-    end
+    # The order matters when several source books contain ratings for the same user.
+    combiner = BookCombiner.new(@book, book_ids.map { |id| books_by_id.fetch(id) })
+    query_doc_pair_count = combiner.combine
 
-    if books.any? { |b| b.scale != @book.scale }
-      redirect_to book_path(@book),
-                  :alert => "One of the books chosen doesn't have a scale matching #{@book.scale}" and return
-    end
-
-    books.each do |book_to_merge|
-      book_to_merge.query_doc_pairs.each do |qdp|
-        query_doc_pair = @book.query_doc_pairs.find_or_create_by query_text: qdp.query_text,
-                                                                 doc_id:     qdp.doc_id
-
-        # copy over the document fields if our source is newer than our target.
-        # if qdp.updated_at > query_doc_pair.updated_at or query_doc_pair.document_fields.blank?
-        query_doc_pair.document_fields = qdp.document_fields
-        # end
-
-        # copy over the position if our source has a position and our target doesn't.
-        query_doc_pair.position = qdp.position if query_doc_pair.position.nil? && !qdp.position.nil?
-
-        qdp.judgements.includes([ :user ]).rateable.each do |j|
-          judgement = query_doc_pair.judgements.find_or_initialize_by(user: j.user)
-
-          judgement.rating = if judgement.rating
-                               (judgement.rating + j.rating) / 2
-                             else
-                               j.rating
-                             end
-
-          judgement.rating = judgement.rating.round unless @book.support_implicit_judgements
-
-          judgement.save
-        end
-        query_doc_pair_count += 1
-
-        # This .save seems required though I don't know why.'
-        query_doc_pair.save
-      end
-    end
-
-    if @book.save
-      UpdateCaseJob.perform_later @book
-      redirect_to book_path(@book), :notice => "Combined #{query_doc_pair_count} query/doc pairs."
-    else
-      redirect_to book_path(@book),
-                  :alert => "Could not merge due to errors: #{@book.errors.full_messages.to_sentence}. #{query_doc_pair_count} query/doc pairs."
-    end
+    UpdateCaseJob.perform_later @book
+    redirect_to book_path(@book), :notice => "Combined #{query_doc_pair_count} query/doc pairs.", status: :see_other
+  rescue BookCombiner::ScaleMismatch
+    redirect_to book_path(@book),
+                status: :see_other,
+                :alert => "One of the books chosen doesn't have a scale matching #{@book.scale}"
+  rescue ActiveRecord::RecordInvalid => e
+    redirect_to book_path(@book),
+                status: :see_other,
+                :alert => "Could not merge due to errors: #{e.record.errors.full_messages.to_sentence}. #{combiner.query_doc_pair_count} query/doc pairs."
   end
 
   def run_judge_judy
-    ai_judge = @book.ai_judges.where(id: params[:ai_judge_id]).first
+    ai_judge = @book.working_ai_judge(params[:ai_judge_id])
+
+    unless ai_judge
+      redirect_to book_path(@book), alert: 'AI Judge not found.', status: :see_other
+      return
+    end
+
+    # An on-call judge sleeps until another judge escalates to it; it is
+    # woken by the end of that judge's run, never started by hand.
+    if ai_judge.on_call?
+      waking = ai_judge.escalated_from_names
+      redirect_to book_path(@book), alert: "AI Judge #{ai_judge.name} is on call: it only judges pairs #{waking} escalates to it.", status: :see_other
+      return
+    end
 
     judge_all = deserialize_bool_param(params[:judge_all])
     number_of_pairs = params[:number_of_pairs].to_i
     number_of_pairs = nil if judge_all
 
     RunJudgeJudyJob.perform_later(@book, ai_judge, number_of_pairs)
-    redirect_to book_path(@book), flash: { kraken_unleashed: judge_all }, :notice => "AI Judge #{ai_judge.name} will start evaluating query/doc pairs."
+    redirect_to book_path(@book), flash: { kraken_unleashed: judge_all }, :notice => "AI Judge #{ai_judge.name} will start evaluating query/doc pairs.", status: :see_other
   end
 
   def cancel_judge_judy
-    ai_judge = @book.ai_judges.where(id: params[:ai_judge_id]).first
+    ai_judge = @book.working_ai_judge(params[:ai_judge_id])
     unless ai_judge
-      redirect_to book_path(@book), alert: 'AI Judge not found.'
+      redirect_to book_path(@book), alert: 'AI Judge not found.', status: :see_other
       return
     end
 
     RunJudgeJudyJob.cancel(@book, ai_judge)
 
-    redirect_to book_path(@book), notice: "AI Judge #{ai_judge.name} has been cancelled."
+    redirect_to book_path(@book), notice: "AI Judge #{ai_judge.name} has been cancelled.", status: :see_other
   end
-  # rubocop:enable Metrics/AbcSize
-  # rubocop:enable Metrics/MethodLength
-  # rubocop:enable Metrics/CyclomaticComplexity
-  # rubocop:enable Metrics/PerceivedComplexity
 
   def assign_anonymous
     # assignee = @book.team.members.find_by(id: params[:assignee_id])
@@ -419,14 +379,14 @@ class BooksController < ApplicationController
     end
 
     UpdateCaseJob.perform_later @book
-    redirect_to book_path(@book), :notice => "Assigned #{assignee.fullname} to ratings and judgements."
+    redirect_to book_path(@book), :notice => "Assigned #{assignee.fullname} to ratings and judgements.", status: :see_other
   end
 
   def delete_ratings_by_assignee
     deleted_count = @book.judgements.where(user: @user).delete_all
 
     UpdateCaseJob.perform_later @book
-    redirect_to book_path(@book), :notice => "Deleted #{deleted_count} judgements belonging to #{@user.fullname}."
+    redirect_to book_path(@book), :notice => "Deleted #{deleted_count} judgements belonging to #{@user.fullname}.", status: :see_other
   end
 
   def reset_unrateable
@@ -435,6 +395,7 @@ class BooksController < ApplicationController
     judgements_to_delete.destroy_all
 
     redirect_to book_path(@book),
+                status: :see_other,
                 :notice => "Reset unrateable status for #{judgements_count} judgements belonging to #{@user.fullname}."
   end
 
@@ -444,6 +405,7 @@ class BooksController < ApplicationController
     judgements_to_delete.destroy_all
 
     redirect_to book_path(@book),
+                status: :see_other,
                 :notice => "Reset judge later status for #{judgements_count} judgements belonging to #{@user.fullname}."
   end
 
@@ -455,6 +417,7 @@ class BooksController < ApplicationController
 
     UpdateCaseJob.perform_later @book
     redirect_to book_path(@book),
+                status: :see_other,
                 :notice => "Deleted #{query_doc_pairs_count} query/doc pairs below position #{position}."
   end
 
@@ -470,6 +433,7 @@ class BooksController < ApplicationController
 
     UpdateCaseJob.perform_later @book
     redirect_to book_path(@book),
+                status: :see_other,
                 :notice => "Mapped #{judgements_to_update_count} judgements to have rating #{rating}."
   end
 
@@ -481,7 +445,7 @@ class BooksController < ApplicationController
     end
 
     if changes.empty?
-      redirect_to book_path(@book), notice: 'No ratings changed.'
+      redirect_to book_path(@book), notice: 'No ratings changed.', status: :see_other
       return
     end
 
@@ -511,10 +475,17 @@ class BooksController < ApplicationController
 
     UpdateCaseJob.perform_later @book
     redirect_to book_path(@book),
+                status: :see_other,
                 :notice => "Remapped #{judgements_updated} judgements and #{case_ratings_updated} case ratings."
   end
 
   private
+
+  def load_current_ratings
+    judgement_ratings = @book.judgements.where.not(rating: nil).distinct.pluck(:rating)
+    case_ratings = Rating.joins(query: :case).where(cases: { book_id: @book.id }).where.not(rating: nil).distinct.pluck(:rating)
+    @current_ratings = (judgement_ratings + case_ratings).uniq.sort
+  end
 
   # A judge that judged this book historically may since have been
   # unassigned, or belong to a teammate whose team doesn't share the judge
@@ -534,45 +505,31 @@ class BooksController < ApplicationController
     rows.each { |row| row[:refinable] = ids.include?(row[:judge].id) }
   end
 
-  # AI judges the given user can access - owned directly, or shared via any
-  # of their teams. Called with @book.owner on #show (whose judges are
-  # already attached and don't need re-checking) and with current_user on
-  # #edit/#update (so a team member editing a book they don't own still sees
-  # - and can assign - judges visible to *them*, rather than depending on
-  # the book having an owner at all).
-  def visible_ai_judges_for owner
-    AiJudge.for_owner(owner)
+  def accessible_ai_judges
+    AiJudge.for_user(current_user).preload(:escalates_to, :escalated_from)
   end
 
-  # Checkboxes suck, but we diff (rather than clear-and-recreate) the book's
-  # judges, so an unrelated save doesn't reset every judge's auto_run flag
-  # back to false. Shared by #create (book.books_ai_judges starts empty, so
-  # the destroy_all is a no-op) and #update.
-  def sync_book_ai_judges book, ai_judge_ids, auto_run_ai_judge_ids, scope_owner
-    ai_judge_ids = Array(ai_judge_ids).compact_blank.map(&:to_i)
-    auto_run_ai_judge_ids = Array(auto_run_ai_judge_ids).compact_blank.map(&:to_i)
+  def assign_book_memberships
+    available_judges = AiJudge.for_user(current_user)
+    judges = available_judges.find(Array(book_params[:ai_judge_ids]).compact_blank.uniq)
+    hidden_judges = @book.ai_judges.where.not(id: available_judges.select(:id)).to_a
+    TeamSharing.new(current_user).assign_teams(@book, book_params[:team_ids])
+    selected = (hidden_judges + judges).uniq
+    @book.ai_judges = selected
+    return unless book_params.key?(:auto_run_ai_judge_ids)
 
-    book.books_ai_judges.where.not(user_id: ai_judge_ids).destroy_all
-    assign_ai_judges book, ai_judge_ids, scope_owner
-    book.books_ai_judges.where(user_id: ai_judge_ids).find_each do |books_ai_judge|
-      books_ai_judge.update(auto_run: auto_run_ai_judge_ids.include?(books_ai_judge.user_id))
+    auto_ids = Array(book_params[:auto_run_ai_judge_ids]).compact_blank.map(&:to_i)
+    @book.books_ai_judges.each do |assignment|
+      next unless judges.any? { |judge| judge.id == assignment.user_id }
+
+      assignment.auto_run = auto_ids.include?(assignment.user_id)
+      assignment.save! if assignment.persisted?
     end
-  end
-
-  # Checkboxes suck: only assign ids that are actually visible to scope_owner,
-  # so a submitted id for someone else's private judge is silently ignored.
-  # Only inserts ids not already assigned - a judge left checked across an
-  # unrelated save must not be re-inserted into books_ai_judges, which would
-  # violate its unique (book_id, user_id) index.
-  def assign_ai_judges book, ai_judge_ids, scope_owner
-    ids = Array(ai_judge_ids).compact_blank.map(&:to_i)
-    new_ids = ids - book.ai_judges.pluck(:id)
-    book.ai_judges << visible_ai_judges_for(scope_owner).where(id: new_ids) if new_ids.any?
   end
 
   # This set_book is different because we use :id, not :book_id.
   def set_book
-    @book = current_user.books_involved_with.where(id: params[:id]).first
+    @book = current_user.books_involved_with.find_by(id: params[:id])
 
     unless @book
       redirect_to books_path,
@@ -580,11 +537,29 @@ class BooksController < ApplicationController
       return
     end
 
-    TrackBookViewedJob.perform_later current_user, @book
+    # The open book page polls judge_activity every few seconds; opening the page already counted the view.
+    TrackBookViewedJob.perform_later current_user, @book unless 'judge_activity' == action_name
   end
 
   def find_user
     @user = User.find(params.expect(:user_id))
+  end
+
+  # The judges behind these ids, sorted by name; ids that no longer resolve
+  # to a user collapse into a single nil (anonymous) entry.
+  def judges_sorted_by_name judge_ids
+    judges = []
+    judge_ids.each do |judge_id|
+      begin
+        judge = User.find(judge_id) unless judge_id.nil?
+      rescue ActiveRecord::RecordNotFound
+        judge = nil
+      end
+      judges << judge
+    end
+
+    judges = compact_keep_one_nil(judges)
+    judges.sort_by { |judge| judge.nil? ? '' : judge.fullname }
   end
 
   def compact_keep_one_nil array
@@ -618,15 +593,12 @@ class BooksController < ApplicationController
                                           :show_rank, :scoring_guidelines, :rank_depth,
                                           { team_ids: [], ai_judge_ids: [], auto_run_ai_judge_ids: [] } ])
 
-    # Crafting a book[team_ids] parameter from the AngularJS side didn't work, so using top level parameter
+    # Use a top-level parameter because nested team_ids are not accepted here.
     params_to_use[:team_ids] = params[:team_ids] if params[:team_ids]
     params_to_use[:team_ids]&.compact_blank!
 
     params_to_use[:ai_judge_ids] = params[:ai_judge_ids] if params[:ai_judge_ids]
     params_to_use[:ai_judge_ids]&.compact_blank!
-
-    params_to_use[:auto_run_ai_judge_ids] = params[:auto_run_ai_judge_ids] if params[:auto_run_ai_judge_ids]
-    params_to_use[:auto_run_ai_judge_ids]&.compact_blank!
 
     params_to_use.except(:link_the_case, :origin_case_id,
                          :auto_populate_book_pairs,

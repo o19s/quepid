@@ -154,11 +154,11 @@ class SampleData < Thor
     print_user_info user_params
 
     ######################################
-    # OSC AI Judge (Ollama)
+    # Qwen on Ollama Judge
     ######################################
 
     user_specifics = {
-      name:          'OSC AI Judge',
+      name:          'Qwen on Ollama Judge',
       system_prompt: LlmProvider::CHAT_SYSTEM_PROMPT,
     }
     user_params = user_specifics # user_defaults.merge(user_specifics)
@@ -745,6 +745,10 @@ class SampleData < Thor
 
   private
 
+  def seed_judge hash
+    ::AiJudge.find_by(name: hash[:name]) || ::AiJudge.create(hash)
+  end
+
   def seed_user hash
     if hash[:email] && ::User.by_email(hash[:email]).exists?
       ::User.by_email(hash[:email]).first
@@ -753,10 +757,6 @@ class SampleData < Thor
     else
       ::User.create hash
     end
-  end
-
-  def seed_judge hash
-    ::AiJudge.find_by(name: hash[:name]) || ::AiJudge.create(hash)
   end
 
   def unzip_file_in_memory zip_file

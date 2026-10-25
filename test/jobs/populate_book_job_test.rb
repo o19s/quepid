@@ -13,17 +13,29 @@ class PopulateBookJobTest < ActiveJob::TestCase
       acase.queries.create!(query_text: 'vector query', options: {
         'boost' => 2, 'query_vec' => [ 0.1 ], 'query_vec_meta' => { 'embedder_id' => 1 }, 'query_vec_error' => { 'message' => 'x' }
       })
-      data = { query_doc_pairs: [ { query_text: 'vector query', doc_id: 'doc_1', position: 0, document_fields: { title: 'Doc' } } ] }
-      blob = ActiveStorage::Blob.create_and_upload!(
-        io:           StringIO.new(Zlib::Deflate.deflate(Marshal.dump(data))),
-        filename:     "test_populate_vectors_#{book.id}.bin.zip",
-        content_type: 'application/zip'
-      )
+      blob = DeferredPayload.stash!({ query_doc_pairs: [
+                                      { query_text: 'vector query', doc_id: 'doc_1', position: 0, document_fields: { title: 'Doc' } }
+                                    ] }, filename: 'populate_vectors.bin.zip')
 
       PopulateBookJob.perform_now(book, acase, blob)
 
       pair = book.query_doc_pairs.find_by(query_text: 'vector query')
       assert_equal({ 'boost' => 2 }, pair.options)
+    end
+
+    test 'incremental sync at original result positions retains earlier document ranks' do
+      acase.queries.create!(query_text: 'incremental query')
+      book.query_doc_pairs.create!(query_text: 'incremental query', doc_id: 'doc_a', position: 1,
+                                   document_fields: { title: 'A' })
+      blob = DeferredPayload.stash!({ query_doc_pairs: [
+                                      { query_text: 'incremental query', doc_id: 'doc_b', position: 2, document_fields: { title: 'B' } },
+                                      { query_text: 'incremental query', doc_id: 'doc_c', position: 3, document_fields: { title: 'C' } }
+                                    ] }, filename: 'incremental_positions.bin.zip')
+
+      PopulateBookJob.perform_now(book, acase, blob)
+
+      assert_equal [ [ 'doc_a', 1 ], [ 'doc_b', 2 ], [ 'doc_c', 3 ] ],
+                   book.query_doc_pairs.where(query_text: 'incremental query').order(:doc_id).pluck(:doc_id, :position)
     end
 
     test 'ensure that position value is unique per query' do

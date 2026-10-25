@@ -1,12 +1,12 @@
 <% title = capture do %>
-  <%= image_tag @user.avatar_url(:big), size:'96x96', class:'rounded', title: 'Avatar image' unless @user.ai_judge? %>
+  <%= image_tag @user.avatar_url(:big), size:'96x96', class:'rounded', alt: '' unless @user.ai_judge? %>
   <%= @user.display_name %>
 <% end %>
 <%= page_header title do %>
   <div class="btn-toolbar mb-2 mb-md-0">
     <div class="btn-group me-2">
       <%= link_to 'Edit', edit_admin_user_path(@user), class: "btn btn-sm btn-outline-primary " %>
-      <%= link_to "Back", admin_users_path, class: "btn btn-sm btn-outline-secondary"  %>
+      <%= link_to "Back", admin_users_path, class: "btn btn-sm btn-outline-secondary" %>
       <%= button_to (@user.locked? ? 'Unlock' : 'Lock'), admin_user_lock_path(@user), method: :patch, class: 'btn btn-outline-warning btn-sm' %>
 
     </div>
@@ -15,34 +15,33 @@
 
 <div class="card">
   <div class="card-body">
-    <p id="notice"><%= notice %></p>
 
 
     <div class="row mb-3">
       <label class="col-sm-2 col-form-label">Email</label>
       <div class="col-sm-10">
-        <p class="form-control-static"><%= @user.email %></p>
+        <p><%= @user.email %></p>
       </div>
     </div>
 
     <div class="row mb-3">
       <label class="col-sm-2 col-form-label">Name</label>
       <div class="col-sm-10">
-        <p class="form-control-static"><%= @user.name || 'N/A' %></p>
+        <p><%= @user.name || 'N/A' %></p>
       </div>
     </div>
 
     <div class="row mb-3">
       <label class="col-sm-2 col-form-label">Company</label>
       <div class="col-sm-10">
-        <p class="form-control-static"><%= @user.company %></p>
+        <p><%= @user.company %></p>
       </div>
     </div>
 
     <div class="row mb-3">
       <label class="col-sm-2 col-form-label">Signed Up</label>
       <div class="col-sm-10">
-        <p class="form-control-static">
+        <p>
           <%= @user.agreed_time %>
           <% if @user.agreed_time %>
             (<%= time_ago_in_words @user.agreed_time %> ago)
@@ -53,42 +52,35 @@
     <div class="row mb-3">
       <label class="col-sm-2 col-form-label">Created by Invite?</label>
       <div class="col-sm-10">
-        <p class="form-control-static"><%= @user.created_by_invite? %></p>
+        <p><%= @user.created_by_invite? %></p>
       </div>
     </div>
 
     <div class="row mb-3">
       <label class="col-sm-2 col-form-label">Email Marketing</label>
       <div class="col-sm-10">
-        <p class="form-control-static"><%= @user.email_marketing %></p>
+        <p><%= @user.email_marketing %></p>
       </div>
     </div>
 
     <div class="row mb-3">
       <label class="col-sm-2 col-form-label">Number of Logins</label>
       <div class="col-sm-10">
-        <p class="form-control-static"><%= @user.num_logins %></p>
+        <p><%= @user.num_logins %></p>
       </div>
     </div>
 
     <div class="row mb-3">
       <label class="col-sm-2 col-form-label">Is Administrator?</label>
       <div class="col-sm-10">
-        <p class="form-control-static"><%= @user.administrator %></p>
+        <p><%= @user.administrator %></p>
       </div>
     </div>
 
     <div class="row mb-3">
       <label class="col-sm-2 col-form-label">Locked?</label>
       <div class="col-sm-10">
-        <p class="form-control-static"><%= @user.locked? %></p>
-      </div>
-    </div>
-
-    <div class="row mb-3">
-      <label class="col-sm-2 col-form-label">Encrypted Password</label>
-      <div class="col-sm-10">
-        <p class="form-control-static"><%= @user.password %></p>
+        <p><%= @user.locked? %></p>
       </div>
     </div>
   </div>
@@ -108,65 +100,23 @@
     <% else %>
 
 
-      <h3>Cases viewed</h3>
-      <div
-        id="cases-viewed"
-        data-controller="user-activity"
-        data-user-activity-url-value="<%= url_for admin_user_pulse_path @user, params: {data: 'metadata'} %>"
-        data-user-activity-label-value="cases viewed"
-        style="margin-bottom: 40px;"
-      >
-      </div>
+      <%= render "admin/users/activity_chart", heading: "Cases viewed", id: "cases-viewed",
+                 url: (url_for admin_user_pulse_path @user, params: {data: 'metadata'}), label: "cases viewed" %>
 
-      <h3>Cases scored</h3>
-      <div
-        id="cases-scored"
-        data-controller="user-activity"
-        data-user-activity-url-value="<%= url_for admin_user_pulse_path @user, params: {data: 'scores'} %>"
-        data-user-activity-label-value="cases scored"
-        style="margin-bottom: 40px;"
-      >
-      </div>
+      <%= render "admin/users/activity_chart", heading: "Cases scored", id: "cases-scored",
+                 url: (url_for admin_user_pulse_path @user, params: {data: 'scores'}), label: "cases scored" %>
 
-      <h3>Cases created</h3>
-      <div
-        id="cases-created"
-        data-controller="user-activity"
-        data-user-activity-url-value="<%= url_for admin_user_pulse_path @user, params: {data: 'cases-created'} %>"
-        data-user-activity-label-value="cases created"
-        style="margin-bottom: 40px;"
-      >
-      </div>
+      <%= render "admin/users/activity_chart", heading: "Cases created", id: "cases-created",
+                 url: (url_for admin_user_pulse_path @user, params: {data: 'cases-created'}), label: "cases created" %>
 
-      <h3>Queries created</h3>
-      <div
-        id="queries-created"
-        data-controller="user-activity"
-        data-user-activity-url-value="<%= url_for admin_user_pulse_path @user, params: {data: 'queries-created'} %>"
-        data-user-activity-label-value="queries created"
-        style="margin-bottom: 40px;"
-      >
-      </div>
+      <%= render "admin/users/activity_chart", heading: "Queries created", id: "queries-created",
+                 url: (url_for admin_user_pulse_path @user, params: {data: 'queries-created'}), label: "queries created" %>
 
-      <h3>Books created</h3>
-      <div
-        id="books-created"
-        data-controller="user-activity"
-        data-user-activity-url-value="<%= url_for admin_user_pulse_path @user, params: {data: 'books-created'} %>"
-        data-user-activity-label-value="books created"
-        style="margin-bottom: 40px;"
-      >
-      </div>
+      <%= render "admin/users/activity_chart", heading: "Books created", id: "books-created",
+                 url: (url_for admin_user_pulse_path @user, params: {data: 'books-created'}), label: "books created" %>
 
-      <h3>Judgements created</h3>
-      <div
-        id="judgements-created"
-        data-controller="user-activity"
-        data-user-activity-url-value="<%= url_for admin_user_pulse_path @user, params: {data: 'judgements-created'} %>"
-        data-user-activity-label-value="judgements created"
-        style="margin-bottom: 40px;"
-      >
-      </div>
-    </div>
-  <% end %>
+      <%= render "admin/users/activity_chart", heading: "Judgements created", id: "judgements-created",
+                 url: (url_for admin_user_pulse_path @user, params: {data: 'judgements-created'}), label: "judgements created" %>
+    <% end %>
+  </div>
 </div>

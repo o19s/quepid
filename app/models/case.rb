@@ -76,6 +76,13 @@ class Case < ApplicationRecord
              dependent:  :destroy,
              inverse_of: :case
 
+  # List endpoints use LatestCaseScores to restrict preloads to one row per case.
+  # The scores association owns deletion; this association only reads the latest row.
+  # rubocop:disable-next Rails/HasManyOrHasOneDependent
+  has_one :latest_score, -> {
+    order(updated_at: :desc, created_at: :desc, id: :desc)
+  }, class_name: 'Score', inverse_of: :case
+
   has_many   :snapshots,
              dependent: :destroy
 
@@ -123,6 +130,12 @@ class Case < ApplicationRecord
                           ) AS queries_count
                         SQL
                       }
+
+  # Ratings per case for list pages, in one grouped query. Cases without
+  # ratings are absent from the returned hash.
+  def self.ratings_count_by_case_id case_ids
+    Rating.joins(:query).where(queries: { case_id: case_ids }).group('queries.case_id').count
+  end
 
   # Not proud of this method, but it's the only way I can get the dependent
   # objects of a Case to actually delete!
@@ -194,6 +207,8 @@ class Case < ApplicationRecord
   end
 
   def last_score
+    return latest_score if association(:latest_score).loaded?
+
     scores.last_one
     # scores.last
     # scores.first

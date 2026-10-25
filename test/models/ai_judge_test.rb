@@ -36,12 +36,14 @@ require 'test_helper'
 #  created_at                  :datetime         not null
 #  updated_at                  :datetime         not null
 #  default_scorer_id           :integer
+#  escalates_to_id             :integer
 #  invited_by_id               :integer
 #  owner_id                    :integer
 #
 # Indexes
 #
 #  index_users_on_default_scorer_id     (default_scorer_id)
+#  index_users_on_escalates_to_id       (escalates_to_id)
 #  index_users_on_invitation_token      (invitation_token) UNIQUE
 #  index_users_on_invited_by_id         (invited_by_id)
 #  index_users_on_name                  (name)
@@ -53,23 +55,24 @@ require 'test_helper'
 # Foreign Keys
 #
 #  fk_rails_...  (default_scorer_id => scorers.id)
+#  fk_rails_...  (escalates_to_id => users.id) ON DELETE => nullify
 #  fk_rails_...  (invited_by_id => users.id)
 #
 class AiJudgeTest < ActiveSupport::TestCase
   describe 'STI classification' do
     it 'is a User' do
-      assert_kind_of User, AiJudge.new(llm_key: '1234', name: 'Judge Judy')
+      assert_kind_of User, AiJudge.new(llm_key: '1234', name: 'Judge Judy', system_prompt: 'Judge it.')
     end
 
     it 'reports ai_judge? true, unlike a plain User' do
-      judge = AiJudge.new(llm_key: '1234', name: 'Judge Judy')
+      judge = AiJudge.new(llm_key: '1234', name: 'Judge Judy', system_prompt: 'Judge it.')
       assert_predicate judge, :ai_judge?
       assert_not_predicate User.new, :ai_judge?
     end
 
     it 'AiJudge.all only returns AI judges, even mixed in with humans' do
       human = User.create!(email: 'human-for-ai-judge-test@example.com', password: 'password')
-      judge = AiJudge.create!(llm_key: '1234', name: 'Judge Judy')
+      judge = AiJudge.create!(llm_key: '1234', name: 'Judge Judy', system_prompt: 'Judge it.')
 
       assert_includes AiJudge.all, judge
       assert_not_includes AiJudge.all, human
@@ -78,37 +81,37 @@ class AiJudgeTest < ActiveSupport::TestCase
 
   describe 'validations' do
     it 'does not require an email or password address to be valid' do
-      judge = AiJudge.new(llm_key: '1234', name: 'Judge Judy')
+      judge = AiJudge.new(llm_key: '1234', name: 'Judge Judy', system_prompt: 'Judge it.')
       assert_predicate judge, :valid?
     end
 
     it 'requires a name' do
-      judge = AiJudge.new(llm_key: '1234')
+      judge = AiJudge.new(llm_key: '1234', system_prompt: 'Judge it.')
       assert_not judge.valid?
       judge.name = 'Judge Judy'
       assert_predicate judge, :valid?
     end
 
     it 'does not require an llm_key, since a local LLM provider may not check one' do
-      judge = AiJudge.new(name: 'Judge Judy')
+      judge = AiJudge.new(name: 'Judge Judy', system_prompt: 'Judge it.')
       assert_predicate judge, :valid?
     end
 
     it 'still enforces the llm_key length limit when one is provided' do
-      judge = AiJudge.new(name: 'Judge Judy', llm_key: 'x' * 256)
+      judge = AiJudge.new(name: 'Judge Judy', system_prompt: 'Judge it.', llm_key: 'x' * 256)
       assert_not judge.valid?
     end
   end
 
   describe 'options to configure the llm server' do
     it 'provides an empty hash' do
-      judge = AiJudge.new(llm_key: '1234', name: 'Judge Judy')
+      judge = AiJudge.new(llm_key: '1234', name: 'Judge Judy', system_prompt: 'Judge it.')
       opts_hash = judge.judge_options
       assert_empty(opts_hash)
     end
 
     it 'lets you update the options hash via passing in a hash with new values' do
-      judge = AiJudge.new(llm_key: '1234', name: 'Judge Judy')
+      judge = AiJudge.new(llm_key: '1234', name: 'Judge Judy', system_prompt: 'Judge it.')
       opts_hash = judge.judge_options
 
       opts_hash[:model] = 'gpt-3.5-turbo'
@@ -134,9 +137,8 @@ class AiJudgeTest < ActiveSupport::TestCase
       judge_options = judge_judy.judge_options
       assert_equal('gpt-3.5-turbo', judge_options[:model])
     end
-
     it 'stores everything under one string key, whatever keys you hand it' do
-      judge = AiJudge.new(llm_key: '1234', name: 'Judge Judy')
+      judge = AiJudge.new(llm_key: '1234', name: 'Judge Judy', system_prompt: 'Judge it.')
 
       judge.judge_options = { 'llm_provider' => 'openai' }
       judge.judge_options = { llm_provider: 'ollama', llm_model: 'qwen3:0.6b' }
@@ -153,7 +155,7 @@ class AiJudgeTest < ActiveSupport::TestCase
     end
 
     it 'keeps other options entries when judge options are written' do
-      judge = AiJudge.new(llm_key: '1234', name: 'Judge Judy', options: { 'special_options' => { 'key1' => 'opt1' } })
+      judge = AiJudge.new(llm_key: '1234', name: 'Judge Judy', system_prompt: 'Judge it.', options: { 'special_options' => { 'key1' => 'opt1' } })
 
       judge.judge_options = { llm_provider: 'openai' }
       judge.save!
@@ -161,6 +163,55 @@ class AiJudgeTest < ActiveSupport::TestCase
 
       assert_equal 'opt1', judge.options.dig('special_options', 'key1')
       assert_equal 'openai', judge.judge_options[:llm_provider]
+    end
+  end
+
+  describe 'escalation' do
+    let(:cheap) { AiJudge.create!(name: 'Cheap Judge') }
+    let(:expensive) { AiJudge.create!(name: 'Expensive Judge') }
+
+    it 'wakes nobody by default, and is not on call' do
+      assert_nil cheap.escalates_to
+      assert_not_predicate cheap, :on_call?
+    end
+
+    it 'makes the judge it wakes on call, and only that one' do
+      cheap.update!(escalates_to: expensive)
+
+      assert_predicate expensive.reload, :on_call?
+      assert_equal [ cheap ], expensive.escalated_from.to_a
+      assert_not_predicate cheap.reload, :on_call?
+    end
+
+    it 'allows a chain longer than two' do
+      top = AiJudge.create!(name: 'Top Judge')
+      expensive.update!(escalates_to: top)
+
+      cheap.escalates_to = expensive
+      assert_predicate cheap, :valid?
+    end
+
+    it 'cannot wake itself' do
+      cheap.escalates_to = cheap
+      assert_not cheap.valid?
+      assert_includes cheap.errors[:escalates_to], 'cannot be this judge itself'
+    end
+
+    it 'cannot close a loop, which would leave every judge in it asleep' do
+      top = AiJudge.create!(name: 'Top Judge')
+      cheap.update!(escalates_to: expensive)
+      expensive.update!(escalates_to: top)
+
+      top.escalates_to = cheap
+      assert_not top.valid?
+      assert_includes top.errors[:escalates_to], 'would wake a judge that already escalates back to this one'
+    end
+
+    it 'forgets the link when the judge it wakes is deleted' do
+      cheap.update!(escalates_to: expensive)
+      expensive.destroy!
+
+      assert_nil cheap.reload.escalates_to_id
     end
   end
 end

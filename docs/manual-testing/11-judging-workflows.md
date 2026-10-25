@@ -27,7 +27,11 @@ This part covers the actual human judging experience: the one-at-a-time judging 
 
 ### 11.3 "I will Judge Later"
 
-- [ ] **Steps:** Click **I will Judge Later**.
+- [ ] **Steps:**
+  1. Hover **I will Judge Later**; confirm no request or judgement is created.
+  2. Click it; confirm one POST to the server-rendered form URL, followed by a 303.
+  3. Reload the audit list and confirm the Later flag persisted; Back/Forward must not submit it again.
+  4. Request the former action URL with GET; confirm 404 and no judgement change.
 - **Expected:** A judgement is created with `judge_later = true` and no rating; you advance to the next pair; it later shows under the "Judge Later" filter in the Judgements list (11.6) and is included in Part 10.6d's bulk-resolve tool.
 
 ### 11.4 "I Can't Tell" (mark unrateable)
@@ -43,10 +47,11 @@ This part covers the actual human judging experience: the one-at-a-time judging 
 
 - [ ] **Steps:**
   1. Judge roughly 50 pairs in one session (or as many as feasible).
-  2. On the 50th, confirm a "party time" screen: confetti, a progress bar, a leaderboard chart, and an **"I'm Ready for More!"** button that resumes judging.
+  2. On the 50th, confirm a "party time" screen: confetti, a progress bar labeled **"Judging progress"**, a leaderboard chart, and an **"I'm Ready for More!"** link that resumes judging.
   3. Use **Go Back to Previous Query/Doc Pair** to reopen and re-rate the immediately prior pair.
-  4. Click **Quit Judging** — confirm it returns to the Book Overview without losing already-saved judgements.
-  5. If feasible, exhaust all pairs available to the current user — confirm the friendly "You have judged all the documents you can!" message and redirect.
+  4. Use browser Back/Forward; confirm existing judgements remain and no write is replayed. Hover Judge/resume links must not advance the session counter.
+  5. Click **Quit Judging** — confirm it returns to your personal Judge Overview without losing already-saved judgements (new, edit and completed judgement screens).
+  6. If feasible, exhaust all pairs available to the current user — confirm the friendly "You have judged all the documents you can!" message and redirect.
 - **Expected:** All of the above behave as described, with no data loss on quit/navigate-away.
 - **Edge cases:**
   - [ ] Re-open a judgement originally made by a **different** user (e.g., via Go Back after someone else judged, or via the Judgements list edit link) — confirm the warning banner "This judgement was made by {fullname}!" appears before you accidentally overwrite someone else's rating.
@@ -72,9 +77,11 @@ This part covers the actual human judging experience: the one-at-a-time judging 
   4. Click **reset** next to a judge's "Marked Judge Later" count.
 - **Expected:** Each reset deletes just that judge's unrateable (or judge-later) judgements and the count drops to 0; the reset button itself disappears once the count is 0 (since it's only rendered when count > 0).
 - **Edge cases:**
-  - [ ] Confirm the **Prepare to Judge!** button (AI judge rows, Part 12) is disabled when there's nothing left to judge, or when the book has already reached 3 judgements per pair.
+  - [ ] Confirm Refine Prompt is shown only for accessible AI judges. Run controls live on Overview (Part 12.5), while reset controls remain on Judgement Stats.
 
 ### 11.8 Bulk Judge (grid mode)
+
+Confirm **Back to Judge Overview** returns to your personal Judge Overview.
 
 - [ ] **Steps:**
   1. From the Judgements tab, click **Bulk Judge**.
@@ -85,12 +92,15 @@ This part covers the actual human judging experience: the one-at-a-time judging 
   6. Toggle **Show Explanations** on, type into a document's explanation field — confirm it auto-saves (no explicit save button) and persists on reload.
   7. Toggle **Show Explanations** off with existing explanations present — confirm they render read-only rather than vanishing.
   8. Uncheck **Unrated** — confirm already-rated documents also appear, pre-selected.
-  9. Use the **Rank Depth** dropdown to limit to `position <= N`.
+  9. With a book Rank Depth set, confirm it is the initial cutoff. Use the dropdown to limit to `position <= N`, then choose **All** to include deeper and unranked pairs. Return without an explicit cutoff and confirm the book default still applies.
   10. Enter a **query text** filter that matches no queries — confirm the empty state lists active filters with working "clear this filter" quick links.
   11. Page through results (25 per page) if there are enough documents, and confirm grouping-by-query stays correct across the page boundary.
 - **Expected:** All of the above work as described; saving/clearing ratings never triggers a full page reload.
 - **Edge cases:**
   - [ ] Submit an invalid rating value (e.g., via browser dev tools tampering the request) — expect a `422` JSON error response and some visible failure indication in the UI, not a silent no-op.
+
+  - [ ] Edit explanations on two rows within one second; reload after saves and confirm both persisted. Clear an existing Judge Later explanation, wait for Saved, reload and confirm it stays empty.
+  - [ ] Navigate away before the one-second debounce fires, return and hard reload: pending explanation edits are cancelled, so only previously saved text persists. Force a save failure and confirm the visible error and prior persisted value.
 
 ### 11.9 Query/Doc Pairs management
 
@@ -104,4 +114,18 @@ This part covers the actual human judging experience: the one-at-a-time judging 
 - **Expected:** All CRUD and search operations behave as described.
 - **Edge cases:**
   - [ ] Submit invalid JSON in Document Fields or Options on the New/Edit form — confirm a clear validation error, not a broken save.
+  - [ ] Leave Query Text or Document ID blank, or enter a fractional Position: validation re-renders the form without replacing the stored pair. Correct and retry; verify Options, Document Fields, Notes and Information Need on the resulting detail page, including read-only JSON editors and Back/Edit links.
   - [ ] Cross-check the result of Part 10.6c ("Delete Query Doc Pairs Below Position") from this tab's list — confirm exactly the expected pairs were removed.
+
+### 11.10 Judging eligibility, rank depth and completion boundaries
+
+- [ ] **Steps:**
+  1. Prepare a disposable book with pairs at positions 1, 2 and 3 plus an unranked pair. Set **Rank Depth** to 2 and use separate test judges.
+  2. Judge both eligible pairs as judge A. Confirm A reaches personal completion even though other judges still have work; A must not receive either pair again through Start Judging.
+  3. As judges B and C, rate the same eligible pairs. Confirm Overview reports Fully Judged once each has three judgements and a fourth judge has no eligible work.
+  4. Clear Rank Depth. Confirm the deeper and unranked pairs become eligible and the coverage counts and completion message change after reload.
+- **Expected:** Single-pair selection excludes pairs already judged by that user and pairs with three total judgements. A configured depth excludes both deeper and unranked pairs; unlimited depth includes them. Personal completion differs from book completion. Selection favors pairs with fewer judgements before rank-weighted randomization; do not require a fixed order among equivalent candidates.
+- **Edge cases:**
+  - [ ] Use Judge Later / I Can't Tell instead of a numeric rating on separate pairs: those judgement rows still count toward selection's three-judgement limit, while numeric aggregation follows 10.12.
+  - [ ] Reset one judge's flagged judgement through Judgement Stats (11.7): the pair becomes eligible for that judge again if below the three-judgement limit.
+  - [ ] An empty book completes cleanly without a broken judging screen. Bulk mode has its own explicit cutoff override (11.8); do not assume it uses single-pair selection's three-judgement exclusion.

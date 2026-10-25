@@ -2,14 +2,14 @@
   <span id="notification">
 
     <% if counter > -1 %>
-      <div class="alert alert-warning" role="alert" >  
+      <div class="alert alert-warning" role="alert">
         <% unless query.nil? %>
         <div class="text-truncate">
-        Query: <code><%=query.query_text%></code>
+        Query: <code><%= query.query_text %></code>
         </div>
         <% end %>
-        <br/>    
-        Iterations Remaining: <code><%= query_count - counter %></code>.           
+        <br>
+        Iterations Remaining: <code><%= query_count - counter %></code>.
       </div>
     <% else %>
       <div class="alert alert-info" role="alert">

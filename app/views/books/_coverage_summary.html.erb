@@ -1,0 +1,53 @@
+<%# locals: (total_pairs:, coverage_pct:, complete_count:, zero_judgement_count:, partial_count:, cases:) %>
+<%# ── Coverage metric cards ────────────────────────────────────────────────── %>
+<% if total_pairs > 0 %>
+  <div class="row g-3 mb-4">
+
+    <div class="col-md-4">
+      <%= metric_card "#{coverage_pct}%", 'Fully Judged',
+                      "#{complete_count} of #{total_pairs} pairs have 3+ judgements — best practice met",
+                      icon: 'bi-trophy', color: 'success' do %>
+        <div class="progress mt-2" style="height:6px;">
+          <div class="progress-bar bg-success" style="width:<%= coverage_pct %>%"></div>
+        </div>
+      <% end %>
+    </div>
+
+    <div class="col-md-4">
+      <%= metric_card zero_judgement_count, 'Not Started', 'Pairs with no judgements — highest priority',
+                      icon: 'bi-exclamation-circle', color: 'danger' %>
+    </div>
+
+    <div class="col-md-4">
+      <%= metric_card partial_count, 'In Progress', 'Pairs with 1–2 judgements, need more',
+                      icon: 'bi-hourglass-split', color: 'warning' %>
+    </div>
+
+  </div>
+<% else %>
+  <div class="alert alert-warning" role="alert">
+    <h5><i class="bi bi-exclamation-triangle"></i> No Query/Doc Pairs Available</h5>
+    <p class="mb-2">You don't have any query/doc pairs created yet.</p>
+    <% if cases.empty? %>
+      <p>You can populate this Book with query/doc pairs for judging by <%= link_to 'picking a Case', cases_path, class: 'alert-link' %> and using the <strong><i class="bi bi-book-half"></i> Judgements</strong> tool to populate this book with query/doc pairs from your search engine.</p>
+    <% else %>
+      <% linked_cases_auto_populate = cases.all?(&:auto_populate_book_pairs) %>
+      <% cases_are_plural = cases.many? %>
+      <p>
+        <% if linked_cases_auto_populate %>
+          Load query/doc pairs for judging by returning to the linked Case<%= 's' if cases_are_plural %>
+          <% cases.each do |kase| %>
+            <%= link_to_core_case case_title(kase), kase, kase.last_try_number, class: 'alert-link' %>
+          <% end %>
+          and letting <%= cases_are_plural ? 'them' : 'it' %> run <%= cases_are_plural ? 'their' : 'its' %> queries - <%= cases_are_plural ? 'they are' : 'it is' %> set to auto-populate this Book.
+        <% else %>
+          Return to the linked Case<%= 's' if cases_are_plural %>
+          <% cases.each do |kase| %>
+            <%= link_to_core_case case_title(kase), kase, kase.last_try_number, class: 'alert-link' %>
+          <% end %>
+          and use the <strong><i class="bi bi-book-half"></i> Judgements</strong> tool to populate this Book with query/doc pairs for judging.
+        <% end %>
+      </p>
+    <% end %>
+  </div>
+<% end %>

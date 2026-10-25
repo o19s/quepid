@@ -1,7 +1,7 @@
 # Qdrant Endpoints Structure
 
 This document explains how to stand up a Qdrant collection that Quepid's **Qdrant** wizard
-tile can search, and how to run both lexical (BM25) and dense retrieval against it.
+preset can search, and how to run both lexical (BM25) and dense retrieval against it.
 
 Quepid talks to Qdrant through a single endpoint, the collection's query API:
 
@@ -15,7 +15,7 @@ validation step reports "we're not getting any search results from your Search A
 though the cluster is healthy.
 
 Qdrant authenticates with its own `api-key` header rather than HTTP Basic, which is why the
-preset ships `supports_basic_auth: false` and puts a placeholder in Custom Headers.
+preset ships `supports_basic_auth: false` and pre-fills a read-only demo key in Custom Headers.
 
 ## Prerequisites
 
@@ -218,7 +218,8 @@ when you switch a case between them.
 
 ## 5. Wiring it into Quepid
 
-Pick the **Qdrant** tile in the Create a Case wizard, then:
+On the Endpoint step of the Create a Case wizard, choose **Qdrant** from
+**Create a new endpoint**, then replace the demo settings for your collection:
 
 | Field | Value |
 |---|---|
@@ -261,12 +262,15 @@ straightforward way to measure lexical against semantic retrieval on your own ju
   into the query params rather than driven by the pagination params.
 - **The id field drives rated-document lookup.** With the case's id field left at `id`, the
   mapper filters already-rated documents with `has_id`; point it at a payload key instead and
-  it switches to a `match`/`any` filter on that key. Both paths are handled by
+  it matches string and canonical safe integer values with separate `match`/`any`
+  conditions on that key. Leading-zero keys such as `"007"` stay string-only. Both paths are handled by
   `ratedDocsQueryParamsMapper` in `db/mapper_based_search_engines/qdrant.js`.
 - **Requests are proxied.** The preset sets `proxy_requests: true`, so Quepid calls the
   cluster server-side. A self-hosted cluster on plain `http://` therefore works from an
-  `https://` Quepid, and the api-key never reaches the browser. It also means CORS is not
-  involved — a cluster that refuses browser preflight is fine.
+  `https://` Quepid, provided its address passes the proxy’s SSRF guard (private and
+  loopback addresses are blocked). CORS is not involved. Custom headers, including
+  the API key, remain visible in the wizard and browser requests; use a read-only key
+  scoped to the intended collection.
 
 ## 6. Give Quepid a read-only key
 

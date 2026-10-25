@@ -93,11 +93,11 @@ class LlmProvider
     <b>Key:</b> Your TypeSafe API key from
     <a href="https://console.typesafe.ai/keys" target="_blank" rel="noopener">console.typesafe.ai/keys</a><br>
     <b>API Version:</b> Not used<br>
-    The book's rating scale and labels become the question's criteria, so a Jev
-    judge must be run from a book, and the text below is sent as that
-    question's instructions &mdash; not as a system prompt. It writes no prose,
-    so the explanation Quepid stores is built from the score, confidence and
-    distribution. Text only &mdash; document images are ignored.
+    The rating scale and labels (from a book or a picked scorer) become the
+    question's criteria, so a Jev judge must be run against one, and the text
+    below is sent as that question's instructions &mdash; not as a system
+    prompt. It writes no prose, so the explanation Quepid stores is built from
+    the score, confidence and distribution.
   HTML
 
   # Filled into the Ollama entry by .all -- see runtime_settings.
@@ -224,11 +224,11 @@ class LlmProvider
       adapter:             'LlmJudgeAdapters::Anthropic',
       auth_style:          :x_api_key,
       default_service_url: 'https://api.anthropic.com',
-      default_model:       'claude-sonnet-4-5-20250514',
+      default_model:       'claude-sonnet-5-5',
       help_html:           <<~HTML.squish,
         <strong>Anthropic</strong> &mdash; Direct Anthropic API access.<br>
         <b>URL:</b> <code>https://api.anthropic.com</code><br>
-        <b>Model:</b> e.g. <code>claude-opus-4-6</code>, <code>claude-sonnet-4-5-20250514</code><br>
+        <b>Model:</b> e.g. <code>claude-opus-5-5</code>, <code>claude-sonnet-5-5</code><br>
         <b>Key:</b> Your Anthropic API key (sent as <code>x-api-key</code> header)<br>
         <b>API Version:</b> Leave blank
       HTML
@@ -280,9 +280,7 @@ class LlmProvider
           min:   0,
           max:   1,
           step:  0.1,
-          hint:  'Optional, 0 to 1. Jev reports how concentrated its answer is; below this ' \
-                 'the judgement is marked unrateable instead of rated, with the numbers kept ' \
-                 'in the explanation. Leave blank to accept every answer.',
+          hint:  'Optional, 0 to 1.',
         },
       },
     }
@@ -363,26 +361,13 @@ class LlmProvider
     scale_as_criteria?
   end
 
-  # Is this text one of the prompts Quepid ships for some *other* provider? That is a
-  # judge carrying instructions written for a different kind of model -- worth flagging,
-  # unlike text somebody wrote themselves, which is none of our business.
-  def stock_prompt_from_another_provider? text
-    return false if text.blank? || default_system_prompt.blank?
-
-    # A textarea posts CRLF, so stored text never matches a heredoc byte for byte.
-    text = normalize(text)
-    return false if text == normalize(default_system_prompt)
-
-    self.class.stock_system_prompts.any? { |prompt| normalize(prompt) == text }
-  end
-
   # The shape the AI Judge wizard (ai_judge_wizard_controller.js) expects for presets[key].
   def to_preset
     {
       llm_service_url:   default_service_url,
       llm_api_version:   default_api_version,
       llm_model:         default_model,
-      help:              help_html,
+      help:              full_help_html,
       read_only:         read_only_fields,
       system_prompt:     default_system_prompt,
       prompt_label:      prompt_label,
@@ -396,7 +381,29 @@ class LlmProvider
 
   private
 
-  def normalize text
-    text.to_s.gsub(/\r\n?/, "\n").strip
+  # help_html plus generated notes shared across providers (image support,
+  # and Jev's confidence threshold) - kept out of each DEFINITIONS entry so
+  # they don't have to be hand-copied into every provider's help text, and
+  # out of the form (app/views/ai_judges/_form.html.erb) so the "Judge with
+  # images" switch and Minimum confidence field can stay short captions.
+  def full_help_html
+    [ help_html, images_help_line, confidence_help_line ].compact.join('<br>')
+  end
+
+  def images_help_line
+    if supports_images?
+      '<b>Images:</b> Attached as an image URL unless <b>Judge with images</b> is turned off, for text-only models.'
+    else
+      "<b>Images:</b> #{ERB::Util.html_escape(label)} doesn't support images, so <b>Judge with images</b> is disabled and none are sent."
+    end
+  end
+
+  def confidence_help_line
+    return unless option_fields.key?('jev_min_confidence')
+
+    '<b>Minimum confidence:</b> Jev reports how concentrated its answer is; below this ' \
+      'the judgement is marked unrateable instead of rated, with the numbers kept in the ' \
+      'explanation -- and, if this judge wakes another when unsure, handed on to it. Leave ' \
+      'blank to accept every answer.'
   end
 end

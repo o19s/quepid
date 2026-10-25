@@ -38,6 +38,21 @@
 require 'scale_serializer'
 
 class Book < ApplicationRecord
+  def find_or_initialize_query_doc_pair query_text:, doc_id:
+    query_doc_pairs.find_or_initialize_by(query_text: query_text, doc_id: doc_id)
+  end
+
+  def find_or_create_query_doc_pair query_text:, doc_id:
+    pair = find_or_initialize_query_doc_pair(query_text: query_text, doc_id: doc_id)
+    pair.save if pair.new_record?
+    pair
+  end
+
+  def queue_job operation
+    update!("#{operation}_job" => "queued at #{Time.zone.now}")
+    yield
+  end
+
   # Default scoring guidelines templates
   FOUR_POINT_GUIDELINES = <<~MARKDOWN
     **0 - Poor:** *Terrible results!* Clearly not desired. These are negative examples.
@@ -113,13 +128,7 @@ class Book < ApplicationRecord
   scope :active, -> { where(archived: false) }
   scope :archived, -> { where(archived: true) }
 
-  def archive!
-    update(archived: true)
-  end
-
-  def unarchive!
-    update(archived: false)
-  end
+  validates :name, presence: true
 
   # Custom validation to prevent scale changes but allow label changes
   validate :scale_cannot_be_changed_if_judgements_exist
@@ -167,6 +176,18 @@ class Book < ApplicationRecord
     query_doc_pairs.select(:query_text).distinct.count
   end
 
+  # Judgements per book for list pages, in one grouped query. Books without
+  # judgements are absent from the returned hash.
+  def self.judgements_count_by_book_id book_ids
+    Judgement.joins(:query_doc_pair).where(query_doc_pairs: { book_id: book_ids })
+      .group('query_doc_pairs.book_id').count
+  end
+
+  # Cases per book for list pages, in one grouped query.
+  def self.cases_count_by_book_id book_ids
+    Case.where(book_id: book_ids).group(:book_id).count
+  end
+
   # Book-level cap on how deep (by QueryDocPair#position, 1-indexed, lower =
   # higher-ranked) judging and coverage metrics look. A nil depth means
   # unlimited - matches how position itself is nullable/unranked today.
@@ -212,20 +233,44 @@ class Book < ApplicationRecord
     "book_#{id}_judgements"
   end
 
+  # The judges this book's assigned AI judges wake when unsure, following
+  # each link to the end of its chain (A -> B -> C gives B and C). An on-call
+  # judge is never in `ai_judges`: the escalation link on the judge, not an
+  # assignment, is what puts it to work on this book
+  # (docs/todo/escalating_judges.md D3).
+  def on_call_ai_judges
+    found = {}
+    frontier = ai_judges.where.not(escalates_to_id: nil).pluck(:escalates_to_id)
+    while frontier.any?
+      judges = AiJudge.where(id: frontier - found.keys).to_a
+      judges.each { |judge| found[judge.id] = judge }
+      frontier = judges.filter_map(&:escalates_to_id) - found.keys
+    end
+    found.values
+  end
+
+  # An AI judge that works on this book, assigned or on call; nil otherwise.
+  def working_ai_judge id
+    ai_judges.find_by(id: id) || on_call_ai_judges.index_by(&:id)[id.to_i]
+  end
+
   # One row per judge for the book overview's Judge Activity table: every
-  # human judge who has judged anything, plus every assigned AI judge (shown
-  # even at zero judgements, since being assigned is itself worth showing).
+  # human judge who has judged anything, plus every assigned or on-call AI
+  # judge (shown even at zero judgements, since being assigned or on call is
+  # itself worth showing).
   # Shared by the initial page render and the live broadcast (which
   # re-renders the whole table on every change) so a judge's row is never
   # missing just because it didn't exist yet when a viewer's page loaded.
   def judge_activity_rows days: 30
-    judge_ids = (judgements.where.not(user_id: nil).distinct.pluck(:user_id) + ai_judges.pluck(:id)).uniq
+    on_call_ids = on_call_ai_judges.map(&:id)
+    judge_ids = (judgements.where.not(user_id: nil).distinct.pluck(:user_id) + ai_judges.pluck(:id) + on_call_ids).uniq
     return [] if judge_ids.empty?
 
     actively_judging_ids = RunJudgeJudyJob.actively_judging_user_ids(self).to_set
     judges_by_id = User.where(id: judge_ids).index_by(&:id)
     activity = judge_activity_for(judge_ids, days: days)
     auto_run_ids = books_ai_judges.auto_run.pluck(:user_id).to_set
+    wakes = AiJudge.escalation_target_names(judge_ids)
 
     rows = judge_ids.filter_map do |uid|
       judge = judges_by_id[uid]
@@ -234,7 +279,8 @@ class Book < ApplicationRecord
       stats = activity.fetch(uid, { sparkline: [], count: 0, last_judged_at: nil })
       { judge: judge, sparkline: stats[:sparkline], last_judged_at: stats[:last_judged_at],
         count: stats[:count], actively_judging: actively_judging_ids.include?(judge.id),
-        auto_run: auto_run_ids.include?(judge.id) }
+        auto_run: auto_run_ids.include?(judge.id), on_call: on_call_ids.include?(judge.id),
+        wakes: wakes[judge.id] }
     end
 
     rows.sort_by { |row| row[:judge].fullname }
@@ -248,14 +294,16 @@ class Book < ApplicationRecord
   # doesn't qualify for a row at all (see judge_activity_rows) - same
   # "shouldn't normally happen" case its caller already falls back on.
   def judge_activity_row_for judge, days: 30
-    return nil unless ai_judges.exists?(id: judge.id) || judgements.exists?(user_id: judge.id)
+    on_call = judge.ai_judge? && on_call_for?(judge)
+    return nil unless on_call || ai_judges.exists?(id: judge.id) || judgements.exists?(user_id: judge.id)
 
     activity = judge_activity_for([ judge.id ], days: days).fetch(judge.id)
     auto_run = books_ai_judges.where(user_id: judge.id).pick(:auto_run) || false
     actively_judging = RunJudgeJudyJob.actively_judging_user_ids(self).include?(judge.id)
 
     { judge: judge, sparkline: activity[:sparkline], last_judged_at: activity[:last_judged_at],
-      count: activity[:count], actively_judging: actively_judging, auto_run: auto_run }
+      count: activity[:count], actively_judging: actively_judging, auto_run: auto_run,
+      on_call: on_call, wakes: AiJudge.escalation_target_names([ judge.id ])[judge.id] }
   end
 
   # Not proud of this method, but it's the only way I can get the dependent
@@ -271,6 +319,25 @@ class Book < ApplicationRecord
   end
 
   private
+
+  # Same membership on_call_ai_judges answers (is `judge` reachable from an
+  # assigned judge by following escalates_to links), but walked backward from
+  # this one judge via escalated_from instead of forward from every assigned
+  # judge - judge_activity_row_for calls this once per judgement broadcast
+  # during a bulk AI judging run, so its cost should track this judge's own
+  # (typically shallow) escalation chain, not the whole book's.
+  def on_call_for? judge
+    assigned_ids = ai_judges.pluck(:id).to_set
+    seen = Set.new([ judge.id ])
+    frontier = judge.escalated_from.to_a
+    until frontier.empty?
+      return true if frontier.any? { |j| assigned_ids.include?(j.id) }
+
+      seen.merge(frontier.map(&:id))
+      frontier = frontier.flat_map(&:escalated_from).reject { |j| seen.include?(j.id) }
+    end
+    false
+  end
 
   # Validates that scale values cannot be changed if judgements exist
   # but allows changing scale_with_labels for the same scale

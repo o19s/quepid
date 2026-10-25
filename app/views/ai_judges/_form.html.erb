@@ -1,13 +1,22 @@
-<div class="card"
-     data-controller="ai-judge-wizard"
-     data-ai-judge-wizard-sample-url-value="<%= ai_judge_sample_query_doc_pair_path(ai_judge.persisted? ? ai_judge.id : 'new', book_id: @book_id) %>"
-     data-ai-judge-wizard-test-url-value="<%= ai_judge_test_prompt_path(ai_judge.persisted? ? ai_judge.id : 'new', book_id: @book_id) %>"
+<%# locals: (ai_judge:, form:, book:, book_id:, scorer:, scorer_id:, submitted_options:) %>
+<% option_defaults = LlmService::DEFAULT_OPTIONS.merge(llm_provider: 'openai', llm_api_version: '') %>
+<%# A book's own scale if there's a book context, otherwise a scorer's (picked
+    below, in Step 2, when there's no book) - either way, the same scale an
+    actual judging run would be handed. %>
+<% scale = book ? JudgeScale.for(book) : JudgeScale.for_scorer(scorer) %>
+<div class="card" data-controller="ai-judge-form ai-judge-wizard"
+     data-ai-judge-wizard-sample-url-value="<%= ai_judge_sample_query_doc_pair_path(ai_judge.persisted? ? ai_judge.id : 'new', book_id: book_id) %>"
+     data-ai-judge-wizard-test-url-value="<%= ai_judge_test_prompt_path(ai_judge.persisted? ? ai_judge.id : 'new', book_id: book_id, scorer_id: scorer_id) %>"
+     data-ai-judge-form-presets-value="<%= LlmProvider.presets.to_json %>"
+     data-ai-judge-form-stock-prompts-value="<%= LlmProvider.stock_system_prompts.to_json %>"
+     data-ai-judge-form-option-defaults-value="<%= option_defaults.to_json %>"
+     data-ai-judge-form-has-scale-value="<%= scale.present? %>"
+     data-ai-judge-form-book-value="<%= book.present? %>"
      data-ai-judge-wizard-existing-value="<%= ai_judge.persisted? %>"
-     data-ai-judge-wizard-has-scale-value="<%= JudgeScale.for(@book).present? %>"
-     data-ai-judge-wizard-presets-value="<%= LlmProvider.presets.to_json %>"
-     data-ai-judge-wizard-stock-prompts-value="<%= LlmProvider.stock_system_prompts.to_json %>">
+     data-ai-judge-wizard-draft-key-value="<%= ai_judge.persisted? ? ai_judge.id : 'new' %>"
+     data-action="shown.bs.tab->ai-judge-form#syncTab">
   <div class="card-header">
-    <h5 class="mb-0"><i class="bi bi-robot"></i> AI Judge</h5>
+    <h5 class="card-title"><i class="bi bi-robot"></i> AI Judge</h5>
   </div>
   <div class="card-body">
     <% if ai_judge.errors.any? %>
@@ -21,275 +30,100 @@
         </ul>
       </div>
     <% end %>
-
-    <div data-ai-judge-wizard-target="status" class="alert" style="display: none;"></div>
-
-    <%# The saved provider decides the page's first render; the wizard controller
-        keeps these in step as the provider is changed. %>
+    <div data-ai-judge-wizard-target="status" class="alert" style="display:none"></div>
     <% provider = LlmProvider.find(ai_judge.judge_options[:llm_provider]) %>
-    <% foreign_prompt = provider&.stock_prompt_from_another_provider?(ai_judge.system_prompt) %>
+    <% images_supported = provider.nil? || provider.supports_images? %>
+    <% specs = LlmProvider.option_field_specs %>
+    <h4><span class="badge bg-primary">1</span> Configure AI Judge</h4>
+    <%= render 'shared/team_picker', form: form, label: 'Teams to Share this AI Judge With', selected_ids: params.dig(:user, :team_ids), help_text: "Leave unchecked to keep this judge private. Team members can use and edit shared judges." %>
+    <%= hidden_field_tag :book_id, book_id if book_id %>
 
-    <!-- Step 1: Configure -->
-    <div class="mb-4">
-      <h4><span class="badge bg-primary">1</span> Configure AI Judge</h4>
-      <p class="text-muted">Set up the judge's identity, credentials, and prompt.</p>
-
-      <%# Round-trips the book context through create/update so a validation
-          failure re-render (and the redirect target) don't lose it - matches
-          the top-level `book_id` param set_book already reads from links. %>
-      <%= hidden_field_tag :book_id, @book_id if @book_id.present? %>
-
-      <div class="row mb-3">
-        <%= form.label :name, class: 'col-sm-2 col-form-label' %>
-        <div class="col-sm-4">
-          <%= form.text_field :name, class: "form-control",
-                data: { ai_judge_wizard_target: "name", action: "input->ai-judge-wizard#checkReveal" } %>
-        </div>
+    <div class="row mb-3">
+      <%= form.label :name, class: 'col-sm-2 col-form-label' %>
+      <div class="col-sm-4">
+        <%= form.text_field :name, class: "form-control", data: { ai_judge_wizard_target: "name", action: "input->ai-judge-wizard#checkReveal" } %>
       </div>
+    </div>
 
-      <div class="mb-3">
-        <%= render 'shared/team_picker', form: form, label: 'Teams to Share this AI Judge With',
-              help_text: "AI judges are usable by anyone on a team they're shared with. Leave unchecked to keep this judge private to you." %>
-      </div>
-
-      <div class="row mb-3">
-        <%= form.label :llm_key, class: 'col-sm-2 col-form-label' %>
-        <div class="col-sm-10">
-          <%= form.text_field :llm_key, class: "form-control", data: { ai_judge_wizard_target: "llmKey" } %>
-          <div class="form-text">
-            This is the key to access your LLM provider's API. What it looks like, and
-            whether it is needed at all, depends on the provider &mdash; see its notes under
-            Model Configuration.
+    <div class="row mb-3">
+      <%= form.label :llm_key, class: 'col-sm-2 col-form-label' %>
+      <div class="col-sm-10">
+        <div class="input-group" data-controller="password-toggle">
+          <div class="masked-input-wrapper is-masked" data-password-toggle-target="wrapper">
+            <%= form.text_field :llm_key, class: "form-control masked-field", autocomplete: "off",
+                  data: { password_toggle_target: "input", action: "input->password-toggle#renderOverlay" } %>
+            <div class="masked-input-overlay" data-password-toggle-target="overlay" aria-hidden="true"></div>
           </div>
-        </div>
-      </div>
-
-      <div class="row">
-        <div class="col-md-6">
-          <ul class="nav nav-underline mb-3" id="pills-tab" role="tablist">
-            <li class="nav-item" role="presentation">
-              <button class="nav-link active" id="pills-structured-fields-tab" data-bs-toggle="pill" data-bs-target="#pills-structured-fields" type="button" role="tab" aria-controls="pills-structured-fields" aria-selected="true" data-action="click->ai-judge-wizard#showStructuredTab">Structured Fields</button>
-            </li>
-            <li class="nav-item" role="presentation">
-              <button class="nav-link" id="pills-json-tab" data-bs-toggle="pill" data-bs-target="#pills-json" type="button" role="tab" aria-controls="pills-json" aria-selected="false" data-action="click->ai-judge-wizard#showJsonTab">JSON</button>
-            </li>
-          </ul>
-          <div class="tab-content" id="pills-tabContent">
-            <div class="tab-pane fade show active" id="pills-structured-fields" role="tabpanel" aria-labelledby="pills-structured-fields-tab" tabindex="0">
-
-              <%# Options a provider declares are rendered as the widget it asked for, whether or
-                  not this judge has them saved yet, and are shown only with the provider that
-                  owns them -- so nobody has to hand-edit the JSON tab to reach a known setting. %>
-              <% specs = LlmProvider.option_field_specs %>
-              <% stored = @ai_judge.judge_options.map { |key, value| [ key.to_s, value ] } %>
-              <%# llm_provider and llm_include_images are universal fields, not ones any
-                  provider declares via option_fields (those are provider-specific extras) -
-                  list them explicitly so their rows still render for a judge_options hash
-                  saved before these keys existed, instead of silently vanishing. %>
-              <% candidate_keys = specs.keys | %w[llm_provider llm_include_images] %>
-              <% unsaved = candidate_keys.reject { |key| stored.any? { |stored_key, _| stored_key == key } } %>
-              <% rows = (stored + unsaved.map { |key| [ key, nil ] }).sort_by { |key, _| 'llm_provider' == key ? 0 : 1 } %>
-              <% rows.each do |key, value| %>
-                <% spec = specs[key] %>
-                <div class="row mb-3 <%= 'provider-option-field' if spec %>"
-                     <%= "data-provider=#{spec[:provider]}".html_safe if spec %>
-                     <%= 'data-ai-judge-wizard-target=providerOptionField'.html_safe if spec %>
-                     <%= 'style=display:none;'.html_safe if spec %>>
-                  <%= label_tag "judge_options[#{key}]", spec&.dig(:label) || ('llm_include_images' == key ? 'Judge with images' : key.humanize.titleize), class: 'col-sm-5 col-form-label text-nowrap' %>
-                  <div class="col-sm-7">
-                    <% if 'llm_provider' == key %>
-                      <%= select_tag "user[judge_options][llm_provider]",
-                            options_for_select(LlmProvider.select_options, value.to_s),
-                            id: 'judge_options_llm_provider',
-                            class: 'form-select form-select-sm structured-field',
-                            data: { ai_judge_wizard_target: "llmProvider structuredField", action: "change->ai-judge-wizard#updateProviderPreset" }
-                      %>
-                    <% elsif 'llm_include_images' == key %>
-                      <%# Unset means on: judges saved before this switch always sent images.
-                          The hidden field makes an unchecked box post "false" rather than
-                          nothing, which would read as unset. A provider that cannot take an
-                          image shows the switch disabled and off; the hidden field then posts
-                          the judge's own choice, kept for if it moves to a provider that can. %>
-                      <% wants_images = value.nil? || '' == value || ActiveModel::Type::Boolean.new.cast(value) %>
-                      <% images_supported = provider.nil? || provider.supports_images? %>
-                      <div class="form-check form-switch col-form-label">
-                        <%= hidden_field_tag "user[judge_options][llm_include_images]",
-                              images_supported ? 'false' : wants_images.to_s, id: nil,
-                              data: { ai_judge_wizard_target: "includeImagesHidden structuredField" } %>
-                        <%= check_box_tag "user[judge_options][llm_include_images]", 'true',
-                              images_supported && wants_images,
-                              id: 'judge_options_llm_include_images', class: 'form-check-input structured-field',
-                              role: 'switch', disabled: !images_supported,
-                              data: { ai_judge_wizard_target: "includeImages structuredField",
-                                      unsupported: (!images_supported).to_s, wanted: wants_images.to_s } %>
-                      </div>
-                      <div class="form-text">
-                        Attach the document's image, or its thumbnail if available, to the request as an
-                        image URL. Turn off for text-only models.
-                      </div>
-                      <div class="form-text text-warning-emphasis" data-ai-judge-wizard-target="includeImagesNotice"
-                           <%= 'style=display:none;'.html_safe if images_supported %>>
-                        <i class="bi bi-exclamation-triangle"></i>
-                        <span data-ai-judge-wizard-target="includeImagesNoticeProvider"><%= provider&.label %></span>
-                        doesn't support images, so none are sent.
-                      </div>
-                    <% else %>
-                      <% common_field_attrs = { id: "judge_options_#{key}", class: 'form-control form-control-sm structured-field',
-                           data: { ai_judge_wizard_target: "#{key.camelize(:lower)} structuredField" } } %>
-                      <% if :number == spec&.dig(:type) %>
-                        <%= number_field_tag "user[judge_options][#{key}]", value,
-                              common_field_attrs.merge(min: spec[:min], max: spec[:max], step: spec[:step]) %>
-                      <% else %>
-                        <%= text_field_tag "user[judge_options][#{key}]", value, common_field_attrs %>
-                      <% end %>
-                    <% end %>
-                    <% if spec&.dig(:hint).present? %>
-                      <div class="form-text"><%= spec[:hint] %></div>
-                    <% end %>
-                  </div>
-                </div>
-              <% end %>
-            </div>
-            <div class="tab-pane fade" id="pills-json" role="tabpanel" aria-labelledby="pills-json-tab" tabindex="0">
-              <div class="row mb-3">
-                <div class="form-text">
-                  This the raw JSON stored as <code>options</code> for the Judge.
-                  Make sure you are editing under the <code>judge_options</code> key.
-                </div>
-                <%= form.text_area :options, value: format_json(@ai_judge.options),
-                  class: 'form-control json-field', rows: 10, disabled: true,
-                  data: { ai_judge_wizard_target: "jsonField" } %>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="col-md-6">
-          <div class="fw-semibold mb-2">Model Configuration</div>
-          <div id="provider-help" data-ai-judge-wizard-target="providerHelp" class="alert alert-info small" style="display:none;">
-          </div>
-        </div>
-      </div>
-
-      <div class="row mb-3">
-        <%= form.label :system_prompt, provider&.prompt_label || 'System prompt', class: 'col-sm-2 col-form-label', id: 'system-prompt-label', data: { ai_judge_wizard_target: "systemPromptLabel" } %>
-        <%= form.textarea :system_prompt, class: "form-control", rows: 6, data: { ai_judge_wizard_target: "systemPrompt" } %>
-        <div id="system-prompt-hint" class="form-text" style="display:none;" data-ai-judge-wizard-target="systemPromptHint"></div>
-        <div id="system-prompt-warning" class="alert alert-warning mt-2 mb-0 small" <%= 'style=display:none;'.html_safe unless foreign_prompt %> data-ai-judge-wizard-target="systemPromptWarning">
-          This text is another provider's default, written for a different kind of model.
-          <button type="button" class="btn btn-sm btn-outline-secondary ms-1" data-action="click->ai-judge-wizard#useDefaultPrompt">
-            Use <span data-ai-judge-wizard-target="defaultPromptProvider"><%= provider&.label %></span>'s default
+          <button type="button" class="btn btn-outline-secondary" data-action="password-toggle#toggle" aria-label="Show LLM key">
+            <i class="bi bi-eye" data-password-toggle-target="icon"></i>
           </button>
         </div>
+        <div class="form-text">
+          This is the key to access your LLM provider's API. What it looks like, and
+          whether it is needed at all, depends on the provider &mdash; see its notes under
+          Model Configuration.
+        </div>
       </div>
     </div>
 
-    <hr>
+    <%= render "ai_judges/provider_options", ai_judge: ai_judge, form: form, option_defaults: option_defaults,
+               images_supported: images_supported, specs: specs, submitted_options: submitted_options %>
 
-    <!-- Step 2: Test & Refine -->
-    <div class="mb-4">
-      <h4><span class="badge bg-primary">2</span> Test &amp; Refine</h4>
-
-      <div data-ai-judge-wizard-target="step2" style="display: none;">
-        <p class="text-muted">Run the prompt against a real query/doc pair and see how the judge rates it. Edit the prompt above and run again as many times as you like before saving.</p>
-
-        <div class="row gx-5">
-          <div class="col-md-6">
-            <h6>Query Doc Pair to Evaluate</h6>
-            <div class="d-grid mb-2">
-              <button type="button" class="btn btn-light" data-action="click->ai-judge-wizard#sampleQueryDocPair">Change Query Doc Pair</button>
-            </div>
-
-            <div class="field">
-              <label>Query text</label>
-              <input type="text" class="form-control" data-ai-judge-wizard-target="queryText">
-            </div>
-
-            <div class="field">
-              <label>Doc ID</label>
-              <input type="text" class="form-control" data-ai-judge-wizard-target="docId">
-            </div>
-
-            <div class="field">
-              <label>Information Need</label>
-              <input type="text" class="form-control" data-ai-judge-wizard-target="informationNeed">
-            </div>
-
-            <div class="field">
-              <label>Document Fields</label> <small>JSON</small><br>
-              <textarea class="form-control" data-ai-judge-wizard-target="documentFields"
-                        data-codemirror-mode="json" data-codemirror-height="300"></textarea>
-            </div>
-
-            <div class="field">
-              <label>Options</label> <small>JSON</small><br>
-              <textarea class="form-control" data-ai-judge-wizard-target="options"
-                        data-codemirror-mode="json" data-codemirror-height="150"></textarea>
-            </div>
-
-            <div class="field">
-              <label>Notes</label><br>
-              <textarea class="form-control" data-ai-judge-wizard-target="notes"></textarea>
-            </div>
-
-            <div class="field">
-              <label>Position</label>
-              <input type="text" class="form-control" data-ai-judge-wizard-target="position">
-            </div>
+    <div class="row mb-3" id="escalation-field">
+      <%= form.label :escalates_to_id, 'When unsure, wake On-Call Judge', class: 'col-sm-2 col-form-label' %>
+      <div class="col-sm-4">
+        <%= form.collection_select :escalates_to_id, escalation_targets, :id, :name,
+              { include_blank: 'Nobody' }, class: 'form-select' %>
+        <% if ai_judge.persisted? && ai_judge.on_call? %>
+          <div class="alert alert-info small mb-0 mt-2" id="on-call-notice">
+            <i class="bi bi-moon-stars" aria-hidden="true"></i>
+            <strong>On call</strong> for <%= ai_judge.escalated_from_names %>:
+            this judge only rates pairs escalated to it.
           </div>
-          <div class="col-md-6">
-            <h6>Rating Information</h6>
-
-            <%# The other half of what gets sent: for a typed model the book's scale IS the
-                question's criteria, so show them here rather than making people guess. %>
-            <% scale = JudgeScale.for(@book) %>
-            <% if @book && scale.present? %>
-              <div class="mb-3" id="judging-criteria">
-                <div data-ai-judge-wizard-target="criteriaTable" <%= 'style=display:none;'.html_safe unless provider&.scale_as_criteria? %>>
-                  <h3 class="h6 mb-1">
-                    Criteria sent with the question
-                    <small class="text-muted fw-normal">&mdash; from <%= link_to @book.name, book_path(@book) %>'s scale</small>
-                  </h3>
-                  <table class="table table-sm table-borderless small mb-1 w-auto">
-                    <tbody>
-                      <% criteria = scale.criteria %>
-                      <% scale.values.each_with_index do |value, level| %>
-                        <tr>
-                          <td class="pe-3 text-muted">level <%= level %> &rarr; rating <strong><%= value %></strong></td>
-                          <td><%= criteria[level] %></td>
-                        </tr>
-                      <% end %>
-                    </tbody>
-                  </table>
-                </div>
-                <div data-ai-judge-wizard-target="criteriaProse" <%= 'style=display:none;'.html_safe if provider&.scale_as_criteria? %>>
-                  <h3 class="h6 mb-1">
-                    Rating scale added to the prompt
-                    <small class="text-muted fw-normal">&mdash; from <%= link_to @book.name, book_path(@book) %>'s scale</small>
-                  </h3>
-                  <p class="small mb-1"><%= scale.describe %></p>
-                </div>
-                <div class="form-text">Read-only here. Edit the labels in the book's settings to change them.</div>
-              </div>
-            <% end %>
-
-            <button type="button" class="btn btn-primary" data-ai-judge-wizard-target="runPromptButton" data-action="click->ai-judge-wizard#runPrompt" <%= 'disabled' if provider&.needs_scale? && scale.empty? %>>Run Judgement</button>
-            <div class="form-text" data-ai-judge-wizard-target="needsScaleNotice" <%= 'style=display:none;'.html_safe unless provider&.needs_scale? && scale.empty? %>>
-              This provider rates against a book's scale, so it can only be tested from a book:
-              open this judge from the book's <strong>Judgement Stats</strong> page (<strong>Refine Prompt</strong>).
-            </div>
-
-            <div data-ai-judge-wizard-target="loadingSpinner" style="display: none;" class="text-center my-4">
-              <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Loading...</span>
-              </div>
-              <p class="mt-2">Evaluating with AI Judge...</p>
-            </div>
-
-            <div data-ai-judge-wizard-target="ratingInfo" style="display: none;"></div>
+        <% end %>
+      </div>
+      <div class="col-sm-6">
+        <div class="alert alert-info small mb-0" id="escalation-help">
+          <div class="mb-2">
+            <strong>On-Call Judge</strong><br>
+            Woken when the primary judge produces an invalid or missing score.
+          </div>
+          <div class="mb-2">
+            <strong>Escalation Triggers</strong><br>
+            The query/doc pair is marked <strong>unrateable</strong> and escalated to the on-call judge
+            if the primary judge:
+            <ul class="mb-1">
+              <li>Returns no rating.</li>
+              <li>Returns a score outside the book's valid scale (e.g., giving a 3 on a 0&ndash;1 scale).</li>
+              <li>Scores below its defined <strong>Minimum Confidence</strong> threshold (applies only to
+                judges that support confidence scores, like TypeSafe Jev).</li>
+              <li>Encounters an API failure (timeout, invalid key, or provider error).</li>
+            </ul>
+          </div>
+          <div>
+            <strong>How It Works</strong><br>
+            The on-call judge remains idle until the primary judge finishes its run. It then processes
+            all escalated pairs in a separate run. Both ratings remain linked in the system so both
+            scores are preserved and visible.
           </div>
         </div>
       </div>
     </div>
+
+    <div class="row mb-3">
+      <%= form.label :system_prompt, provider&.prompt_label || 'System prompt', class: 'col-sm-2 col-form-label', data: { ai_judge_form_target: 'systemPromptLabel' } %>
+      <%= form.textarea :system_prompt, class: "form-control", rows: 6, data: { ai_judge_form_target: "systemPrompt", action: "input->ai-judge-form#updateProviderPanels" } %>
+    </div>
+    <div class="form-text" data-ai-judge-form-target="systemPromptHint" style="display:none"></div>
+    <div class="alert alert-warning small" data-ai-judge-form-target="systemPromptWarning" style="display:none">
+      This text is another provider's default, written for a different kind of model.
+      <button type="button" class="btn btn-sm btn-outline-secondary" data-action="click->ai-judge-form#useDefaultPrompt">
+        Use <span data-ai-judge-form-target="defaultPromptProvider"></span>'s default
+      </button>
+    </div>
+    <hr>
+
+    <%= render "ai_judges/prompt_testing", ai_judge: ai_judge, book: book, scorer: scorer, scorer_id: scorer_id, scale: scale, provider: provider %>
   </div>
 
   <div class="card-footer">

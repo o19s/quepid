@@ -1,480 +1,195 @@
 import { Controller } from "@hotwired/stimulus"
-import { apiFetch } from "api/fetch"
-import { showStatusMessage } from "utils/status_message"
-import { setButtonLoading, escapeHtml } from "utils/stimulus_ui"
+import { getJson, postJson } from "api/json"
+import { withStatusMessages } from "controllers/status_message_behavior"
+import { serverMessage } from "utils/error_message"
 
-// Normalize line endings before comparing prompts: a textarea gives back CRLF
-// where the stored text had LF.
-const normalizePrompt = (text) => (text || "").replace(/\r\n?/g, "\n").trim()
-
-// Returns null for text that isn't JSON, so a typo can be told apart from real content.
-function parseJsonOrNull(text) {
-  try {
-    return JSON.parse(text)
-  } catch {
-    return null
-  }
-}
-
-// A switch disabled because the provider cannot use it still reports the judge's own
-// choice (data-wanted) rather than its forced-off state, so the setting survives.
-function checkboxValue(field) {
-  if (field.dataset.unsupported === "true") return String(field.dataset.wanted !== "false")
-  return String(field.checked)
-}
-
-function showPanel(element, html) {
-  if (!element) return
-
-  if (html) {
-    element.innerHTML = html
-    element.style.display = "block"
-  } else {
-    element.style.display = "none"
-  }
-}
-
-/**
- * Combined AI judge create/edit wizard: step 1 (configure) is a normal Rails
- * form submit handled by AiJudgesController#create/#update - this controller
- * only handles step 2 (test & refine), which runs entirely against the
- * *current* form values via AiJudges::WizardController's stateless JSON
- * endpoints. Nothing step 2 does is ever saved until the real form submits.
- *
- * Provider presets (URL/model/API version, help text, prompt defaults) come
- * from the LlmProvider registry (app/models/llm_provider.rb) via the
- * presets value -- add providers there, not here.
- */
-export default class extends Controller {
-  static targets = [
-    "name",
-    "llmKey",
-    "llmProvider",
-    "llmServiceUrl",
-    "llmModel",
-    "llmTimeout",
-    "llmApiVersion",
-    "providerHelp",
-    "providerOptionField",
-    "structuredTab",
-    "jsonTab",
-    "structuredField",
-    "jsonField",
-    "systemPrompt",
-    "systemPromptLabel",
-    "systemPromptHint",
-    "systemPromptWarning",
-    "defaultPromptProvider",
-    "criteriaTable",
-    "criteriaProse",
-    "step2",
-    "queryText",
-    "docId",
-    "informationNeed",
-    "documentFields",
-    "options",
-    "notes",
-    "position",
-    "status",
-    "ratingInfo",
-    "loadingSpinner",
-    "runPromptButton",
-    "needsScaleNotice",
-    "includeImages",
-    "includeImagesHidden",
-    "includeImagesNotice",
-    "includeImagesNoticeProvider"
-  ]
-
-  static values = {
-    sampleUrl: String,
-    testUrl: String,
-    existing: Boolean,
-    presets: Object,
-    stockPrompts: Array,
-    hasScale: Boolean
-  }
+// Testing uses the active form values; only the Rails Save submission persists.
+export default class extends withStatusMessages(Controller) {
+  static targets = ["name", "step2", "queryText", "docId", "informationNeed", "documentFields", "options", "notes", "position", "status", "ratingInfo", "loadingSpinner", "runPromptButton", "rating", "explanation", "unrateable"]
+  static values = { sampleUrl: String, testUrl: String, existing: Boolean, draftKey: String }
 
   connect() {
-    this.documentFieldsEditor = null
-    this.optionsEditor = null
-    setTimeout(() => this.captureEditors(), 500)
-
-    this.readStoredOptions()
-
-    if (this.hasLlmProviderTarget) {
-      this.updateProviderPanels(this.llmProviderTarget.value)
-    }
-
-    if (this.existingValue) {
-      this.revealStep2()
-    }
+    this.abortController = new AbortController()
+    this.restoreDraft()
+    if (this.existingValue) this.revealStep2()
+    this.scrollToStep2IfRequested()
   }
 
-  captureEditors() {
-    if (this.hasDocumentFieldsTarget && this.documentFieldsTarget.editor) {
-      this.documentFieldsEditor = this.documentFieldsTarget.editor
-    }
-    if (this.hasOptionsTarget && this.optionsTarget.editor) {
-      this.optionsEditor = this.optionsTarget.editor
-    }
+  disconnect() {
+    super.disconnect()
+    this.abortController.abort()
+    this.sampleGeneration = (this.sampleGeneration || 0) + 1
   }
 
-  // Reveal step 2 once a name has been entered - there's no expensive
-  // server step gating this (unlike Mapper Wizard's HTML fetch), so this is
-  // a pure client-side check.
   checkReveal() {
-    if (this.hasNameTarget && this.nameTarget.value.trim()) {
-      this.revealStep2()
-    }
+    if (this.nameTarget.value.trim()) this.revealStep2()
   }
 
   revealStep2() {
-    if (this.hasStep2Target && this.step2Target.style.display !== "block") {
-      this.step2Target.style.display = "block"
-      this.sampleQueryDocPair()
-    }
+    if (this.step2Target.style.display === "block") return
+    this.step2Target.style.display = "block"
+    this.sampleQueryDocPair()
   }
 
-  // The two tabs are one set of values seen two ways, and only the visible one is
-  // submitted. Without syncing, editing a field and switching tabs shows the *stored*
-  // value instead of what you just typed -- and saving from there silently discards it.
-  // Anything in options that has no field of its own (or belongs to another provider)
-  // is carried through untouched.
-  showStructuredTab() {
-    this.applyJsonToFields()
-    this.jsonFieldTargets.forEach((field) => { field.disabled = true })
-    this.structuredFieldTargets.forEach((field) => { field.disabled = false })
-    this.showProviderOptionFields(this.hasLlmProviderTarget ? this.llmProviderTarget.value : "")
-    if (this.hasLlmProviderTarget) this.applyImageSupport(this.presetsValue[this.llmProviderTarget.value])
+  // The scale picker's reload lands back here with ?scorer_id= set - scroll
+  // down to Test & Refine instead of leaving the user at the top of a long
+  // page they've already filled out. Deliberately not a #fragment: the
+  // browser's own native fragment-scroll would fire against this same
+  // element and race our own (element position differs once revealStep2()
+  // reflows the page), consistently winning and overriding it.
+  scrollToStep2IfRequested() {
+    if (!new URLSearchParams(window.location.search).has("scorer_id")) return
+    if (!this.hasStep2Target) return
+
+    this.step2Target.closest("#test-and-refine")?.scrollIntoView({ block: "start" })
   }
 
-  showJsonTab() {
-    this.showFieldsAsJson()
-    this.structuredFieldTargets.forEach((field) => { field.disabled = true })
-    this.jsonFieldTargets.forEach((field) => { field.disabled = false })
+  // The scale picker (Test & Refine) navigates to this same page with a
+  // different ?scorer_id= - a real GET, not a fetch, since the criteria
+  // shown and the scale handed to test_prompt both come from server-rendered
+  // state keyed off that param. Snapshot everything typed into the not-yet-
+  // saved form first so that reload doesn't throw it all away.
+  navigateToScale(event) {
+    const url = event.target.options[event.target.selectedIndex]?.dataset.url
+    if (!url) return
+
+    this.saveDraft()
+    window.location.href = url
   }
 
-  readStoredOptions() {
-    this.otherOptions = {}
-    if (!this.hasJsonFieldTarget) return
-
-    try {
-      const { judge_options: _ignored, ...rest } = JSON.parse(this.jsonFieldTarget.value || "{}")
-      this.otherOptions = rest
-    } catch {
-      this.otherOptions = {}
-    }
+  get draftStorageKey() {
+    return `ai_judge_wizard_draft:${this.draftKeyValue}`
   }
 
-  showFieldsAsJson() {
-    if (!this.hasJsonFieldTarget) return
+  // Every input/select/textarea's own current value, keyed by name (and by
+  // value too for checkboxes/radios, since several share a name) - deliberately
+  // not FormData, which omits an unchecked checkbox entirely and would leave
+  // restoreDraft with no way to tell "unchecked" apart from "never asked".
+  saveDraft() {
+    const form = this.element.closest("form")
+    if (!form) return
 
-    this.jsonFieldTarget.value = JSON.stringify({ ...this.otherOptions, judge_options: this.judgeOptions() }, null, 2)
-  }
-
-  applyJsonToFields() {
-    if (!this.hasJsonFieldTarget) return
-
-    const parsed = parseJsonOrNull(this.jsonFieldTarget.value)
-    if (!parsed) return // leave the fields alone rather than wiping them over a typo
-
-    const { judge_options: judgeOptions = {}, ...rest } = parsed
-    this.otherOptions = rest
-
-    Object.entries(judgeOptions).forEach(([key, value]) => {
-      const field = this.element.querySelector(`#judge_options_${key}`)
-      if (!field) return
-
-      if (field.type === "checkbox") {
-        const on = String(value) !== "false"
-        field.dataset.wanted = String(on)
-        if (field.dataset.unsupported !== "true") field.checked = on
+    const snapshot = []
+    form.querySelectorAll("input[name], select[name], textarea[name]").forEach((field) => {
+      if ("checkbox" === field.type || "radio" === field.type) {
+        snapshot.push({ name: field.name, value: field.value, type: field.type, checked: field.checked })
       } else {
-        field.value = value === null || value === undefined ? "" : value
+        snapshot.push({ name: field.name, value: field.value, type: field.type })
       }
     })
 
-    if (this.hasLlmProviderTarget && judgeOptions.llm_provider) {
-      this.llmProviderTarget.value = judgeOptions.llm_provider
-      this.updateProviderPanels(this.llmProviderTarget.value)
-    }
+    sessionStorage.setItem(this.draftStorageKey, JSON.stringify(snapshot))
   }
 
-  updateProviderPreset() {
-    const preset = this.presetsValue[this.llmProviderTarget.value]
-    if (!preset) return
+  restoreDraft() {
+    const raw = sessionStorage.getItem(this.draftStorageKey)
+    if (!raw) return
 
-    if (this.hasLlmServiceUrlTarget) this.llmServiceUrlTarget.value = preset.llm_service_url
-    if (this.hasLlmApiVersionTarget) this.llmApiVersionTarget.value = preset.llm_api_version
-    if (this.hasLlmModelTarget) this.llmModelTarget.value = preset.llm_model
+    sessionStorage.removeItem(this.draftStorageKey)
+    const form = this.element.closest("form")
+    if (!form) return
 
-    this.offerDefaultSystemPrompt(preset)
-    this.updateProviderPanels(this.llmProviderTarget.value)
-  }
-
-  updateProviderPanels(provider) {
-    const preset = this.presetsValue[provider]
-
-    showPanel(this.hasProviderHelpTarget && this.providerHelpTarget, preset?.help)
-    this.applyReadOnlyFields(preset)
-    this.describePromptField(preset)
-    this.showProviderOptionFields(provider)
-    this.showCriteria(preset)
-    this.updateRunAvailability(preset)
-    this.applyImageSupport(preset)
-  }
-
-  // A provider that cannot take an image URL shows the switch disabled and off, and
-  // says why. The judge's own choice is kept in data-wanted -- and posted by the
-  // hidden field -- so moving back to a provider that can restores it.
-  applyImageSupport(preset) {
-    if (!this.hasIncludeImagesTarget) return
-
-    const field = this.includeImagesTarget
-    const supported = preset?.supports_images !== false
-
-    if (field.dataset.unsupported !== "true") field.dataset.wanted = String(field.checked)
-    field.checked = supported && field.dataset.wanted !== "false"
-    field.disabled = !supported
-    field.dataset.unsupported = String(!supported)
-
-    if (this.hasIncludeImagesHiddenTarget) {
-      this.includeImagesHiddenTarget.value = supported ? "false" : field.dataset.wanted
-    }
-    if (this.hasIncludeImagesNoticeProviderTarget) {
-      this.includeImagesNoticeProviderTarget.textContent = preset?.label || ""
-    }
-    if (this.hasIncludeImagesNoticeTarget) {
-      this.includeImagesNoticeTarget.style.display = supported ? "none" : ""
-    }
-  }
-
-  // A provider that needs a scale (currently: one sent the scale as its criteria,
-  // like Jev) has nothing to judge against without one, so don't offer a run that
-  // can only fail.
-  updateRunAvailability(preset) {
-    const missingScale = Boolean(preset?.needs_scale) && !this.hasScaleValue
-
-    if (this.hasRunPromptButtonTarget) this.runPromptButtonTarget.disabled = missingScale
-    if (this.hasNeedsScaleNoticeTarget) this.needsScaleNoticeTarget.style.display = missingScale ? "" : "none"
-  }
-
-  // Fields the provider fixes for us (e.g. a single endpoint and model) are shown
-  // read-only rather than hidden, so it is clear what the judge will actually call.
-  applyReadOnlyFields(preset) {
-    const readOnly = preset?.read_only || []
-    const fields = {
-      llm_service_url: this.hasLlmServiceUrlTarget && this.llmServiceUrlTarget,
-      llm_api_version: this.hasLlmApiVersionTarget && this.llmApiVersionTarget,
-      llm_model: this.hasLlmModelTarget && this.llmModelTarget
-    }
-
-    Object.entries(fields).forEach(([name, field]) => {
-      if (!field) return
-
-      field.readOnly = readOnly.includes(name)
-      field.classList.toggle("bg-body-secondary", field.readOnly)
-    })
-  }
-
-  // A field only one provider understands is disabled while another is selected, so
-  // switching away never posts a setting the chosen provider has no idea about.
-  showProviderOptionFields(provider) {
-    this.providerOptionFieldTargets.forEach((row) => {
-      const mine = row.dataset.provider === provider
-
-      row.style.display = mine ? "" : "none"
-      row.querySelectorAll("input").forEach((input) => { input.disabled = !mine })
-    })
-  }
-
-  // A typed model receives the book's scale as the question's criteria; a chat
-  // model receives it as prose inside the prompt instead. Toggle the matching element.
-  showCriteria(preset) {
-    const asCriteria = Boolean(preset?.scale_as_criteria)
-
-    if (this.hasCriteriaTableTarget) this.criteriaTableTarget.style.display = asCriteria ? "" : "none"
-    if (this.hasCriteriaProseTarget) this.criteriaProseTarget.style.display = asCriteria ? "none" : ""
-  }
-
-  isStockPrompt(text) {
-    const current = normalizePrompt(text)
-    return this.stockPromptsValue.some((prompt) => normalizePrompt(prompt) === current)
-  }
-
-  // What a judge should be told depends on the dialect it speaks: a chat model
-  // needs the rating scale and an output format spelled out, while a typed
-  // model is handed both as part of the request and only needs to be told what
-  // to weigh. So offer the new provider's prompt -- but never over one somebody
-  // has edited.
-  offerDefaultSystemPrompt(preset) {
-    if (!this.hasSystemPromptTarget || !preset?.system_prompt) return
-
-    const current = this.systemPromptTarget.value
-    if (normalizePrompt(current) !== "" && !this.isStockPrompt(current)) return
-
-    this.systemPromptTarget.value = preset.system_prompt
-  }
-
-  // A chat model is given a system prompt; a typed model is given instructions
-  // on a question. Same stored text, different thing, so say which one this is.
-  describePromptField(preset) {
-    if (this.hasSystemPromptLabelTarget && preset?.prompt_label) {
-      this.systemPromptLabelTarget.textContent = preset.prompt_label
-    }
-    if (this.hasSystemPromptHintTarget) {
-      this.systemPromptHintTarget.textContent = preset?.prompt_hint || ""
-      this.systemPromptHintTarget.style.display = preset?.prompt_hint ? "block" : "none"
-    }
-    if (!this.hasSystemPromptWarningTarget) return
-
-    // An existing judge switched to another dialect keeps text written for the
-    // old one, which is worse than useless: the stock chat prompt dictates a
-    // 0-3 scale this book may not use, and an output format Jev cannot follow.
-    const current = this.hasSystemPromptTarget ? this.systemPromptTarget.value : ""
-    const foreign = Boolean(preset?.system_prompt) &&
-      this.isStockPrompt(current) &&
-      normalizePrompt(preset.system_prompt) !== normalizePrompt(current)
-
-    if (foreign && this.hasDefaultPromptProviderTarget && this.hasLlmProviderTarget) {
-      const select = this.llmProviderTarget
-      this.defaultPromptProviderTarget.textContent = select.options[select.selectedIndex].text
-    }
-    this.systemPromptWarningTarget.style.display = foreign ? "block" : "none"
-  }
-
-  useDefaultPrompt(event) {
-    event?.preventDefault?.()
-    if (!this.hasLlmProviderTarget || !this.hasSystemPromptTarget) return
-
-    const preset = this.presetsValue[this.llmProviderTarget.value]
-    if (!preset) return
-
-    this.systemPromptTarget.value = preset.system_prompt
-    this.describePromptField(preset)
-  }
-
-  // Every judge option currently on the structured tab, including options only
-  // the selected provider understands (hidden rows belong to other providers).
-  judgeOptions() {
-    const collected = {}
-
-    this.structuredFieldTargets.forEach((field) => {
-      if (!field.id.startsWith("judge_options_")) return
-
-      const optionRow = field.closest(".provider-option-field")
-      if (optionRow && optionRow.style.display === "none") return
-
-      collected[field.id.replace("judge_options_", "")] = field.type === "checkbox" ? checkboxValue(field) : field.value
+    JSON.parse(raw).forEach(({ name, value, type, checked }) => {
+      if ("checkbox" === type || "radio" === type) {
+        const field = form.querySelector(`[name="${CSS.escape(name)}"][value="${CSS.escape(value)}"]`)
+        if (field) field.checked = checked
+      } else {
+        const field = form.querySelector(`[name="${CSS.escape(name)}"]`)
+        if (field) field.value = value
+      }
     })
 
-    return collected
+    // A restored name should reveal step 2 just like typing it would've.
+    this.checkReveal()
+
+    // ai-judge-form already ran its own initial provider-panel sync against
+    // the pre-restore field values (it connects before this controller
+    // does, per data-controller's token order) - redo it now that a
+    // restored draft may have changed the provider or other inputs it
+    // reads, so its panels/help/criteria aren't left showing the wrong one.
+    this.application?.getControllerForElementAndIdentifier?.(this.element, "ai-judge-form")?.updateProviderPanels()
   }
 
   async sampleQueryDocPair(event) {
-    event?.preventDefault?.()
-
+    event?.preventDefault()
+    const generation = this.sampleGeneration = (this.sampleGeneration || 0) + 1
     try {
-      const response = await apiFetch(this.sampleUrlValue, { headers: { Accept: "application/json" } })
-      if (!response.ok) throw new Error(`Failed to load a query/doc pair (${response.status})`)
-
-      const data = await response.json()
+      const data = await getJson(this.sampleUrlValue, { signal: this.abortController.signal })
+      if (generation !== this.sampleGeneration) return
       this.applyQueryDocPair(data.query_doc_pair || {})
     } catch (error) {
-      this.showStatus(`Error: ${error.message}`, "danger")
+      if (error.name !== "AbortError") this.showError(error)
     }
   }
 
   applyQueryDocPair(pair) {
-    this.captureEditors()
-
-    if (this.hasQueryTextTarget) this.queryTextTarget.value = pair.query_text || ""
-    if (this.hasDocIdTarget) this.docIdTarget.value = pair.doc_id || ""
-    if (this.hasInformationNeedTarget) this.informationNeedTarget.value = pair.information_need || ""
-    if (this.hasNotesTarget) this.notesTarget.value = pair.notes || ""
-    if (this.hasPositionTarget) this.positionTarget.value = pair.position ?? ""
-
-    const documentFieldsJson = JSON.stringify(pair.document_fields || {}, null, 2)
-    const optionsJson = JSON.stringify(pair.options || {}, null, 2)
-
-    if (this.documentFieldsEditor) {
-      this.documentFieldsEditor.setValue(documentFieldsJson)
-    } else if (this.hasDocumentFieldsTarget) {
-      this.documentFieldsTarget.value = documentFieldsJson
+    for (const [target, key] of [["queryText", "query_text"], ["docId", "doc_id"], ["informationNeed", "information_need"], ["notes", "notes"], ["position", "position"]]) {
+      this[`${target}Target`].value = pair[key] ?? ""
     }
-
-    if (this.optionsEditor) {
-      this.optionsEditor.setValue(optionsJson)
-    } else if (this.hasOptionsTarget) {
-      this.optionsTarget.value = optionsJson
+    for (const [target, key] of [["documentFields", "document_fields"], ["options", "options"]]) {
+      const field = this[`${target}Target`]
+      const value = JSON.stringify(pair[key] || {}, null, 2)
+      if (field.editor) field.editor.setValue(value)
+      else field.value = value
     }
+  }
+
+  judgeOptions(formData) {
+    if (formData.has("user[options]")) {
+      const options = JSON.parse(formData.get("user[options]"))
+      return options.judge_options || {}
+    }
+    const options = {}
+    for (const [name, value] of formData) {
+      const match = name.match(/^user\[judge_options\]\[([^\]]+)\]$/)
+      if (match) options[match[1]] = value
+    }
+    return options
   }
 
   async runPrompt(event) {
     event.preventDefault()
-
-    this.captureEditors()
-    setButtonLoading(this.runPromptButtonTarget, true)
-    if (this.hasRatingInfoTarget) this.ratingInfoTarget.style.display = "none"
-    if (this.hasLoadingSpinnerTarget) this.loadingSpinnerTarget.style.display = "block"
-
-    const documentFields = this.documentFieldsEditor
-      ? this.documentFieldsEditor.getValue()
-      : (this.hasDocumentFieldsTarget ? this.documentFieldsTarget.value : "")
-    const options = this.optionsEditor
-      ? this.optionsEditor.getValue()
-      : (this.hasOptionsTarget ? this.optionsTarget.value : "")
-
+    if (this.running) return
+    this.running = true
+    this.runPromptButtonTarget.disabled = true
+    this.ratingInfoTarget.style.display = "none"
+    this.statusTarget.style.display = "none"
+    this.loadingSpinnerTarget.style.display = "block"
     try {
-      const response = await apiFetch(this.testUrlValue, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          system_prompt: this.hasSystemPromptTarget ? this.systemPromptTarget.value : "",
-          llm_key: this.hasLlmKeyTarget ? this.llmKeyTarget.value : "",
-          judge_options: this.judgeOptions(),
-          query_doc_pair: {
-            query_text: this.hasQueryTextTarget ? this.queryTextTarget.value : "",
-            doc_id: this.hasDocIdTarget ? this.docIdTarget.value : "",
-            information_need: this.hasInformationNeedTarget ? this.informationNeedTarget.value : "",
-            document_fields: documentFields,
-            options: options,
-            notes: this.hasNotesTarget ? this.notesTarget.value : "",
-            position: this.hasPositionTarget ? this.positionTarget.value : ""
-          }
-        })
-      })
-
-      const data = await response.json()
-
-      if (!response.ok) throw new Error(data.error || `Request failed (${response.status})`)
-
-      if (this.hasRatingInfoTarget) {
-        // The server holds the preview to the same rules a real judging run applies, so a
-        // rating this book would reject shows as unrateable rather than as a usable rating.
-        const rating = data.unrateable
-          ? "<span class=\"badge text-bg-warning\">Unrateable</span>"
-          : escapeHtml(String(data.rating))
-        this.ratingInfoTarget.innerHTML =
-          `<h2>Rating Information</h2><div>LLM Response: ${rating}<br>${escapeHtml(data.explanation || "")}</div>`
-        this.ratingInfoTarget.style.display = "block"
-      }
+      const formData = new FormData(this.element.closest("form"))
+      const data = await postJson(this.testUrlValue, {
+        system_prompt: formData.get("user[system_prompt]"),
+        llm_key: formData.get("user[llm_key]"),
+        judge_options: this.judgeOptions(formData),
+        query_doc_pair: {
+          query_text: this.queryTextTarget.value,
+          doc_id: this.docIdTarget.value,
+          information_need: this.informationNeedTarget.value,
+          document_fields: this.documentFieldsTarget.editor?.getValue() ?? this.documentFieldsTarget.value,
+          options: this.optionsTarget.editor?.getValue() ?? this.optionsTarget.value,
+          notes: this.notesTarget.value,
+          position: this.positionTarget.value
+        }
+      }, { signal: this.abortController.signal })
+      this.ratingTarget.textContent = String(data.rating ?? "")
+      if (this.hasUnrateableTarget) this.unrateableTarget.style.display = data.unrateable ? "" : "none"
+      this.explanationTarget.textContent = data.explanation || ""
+      this.ratingInfoTarget.style.display = "block"
     } catch (error) {
-      this.showStatus(`Error: ${error.message}`, "danger")
+      if (error.name !== "AbortError") this.showError(error)
     } finally {
-      if (this.hasLoadingSpinnerTarget) this.loadingSpinnerTarget.style.display = "none"
-      setButtonLoading(this.runPromptButtonTarget, false)
+      this.running = false
+      const scaleNotice = this.element.querySelector("[data-ai-judge-form-target~=needsScaleNotice]")
+      this.runPromptButtonTarget.disabled = Boolean(scaleNotice && scaleNotice.style.display !== "none")
+      this.loadingSpinnerTarget.style.display = "none"
     }
   }
 
-  showStatus(message, variant) {
-    if (!this.hasStatusTarget) return
-
+  showError(error) {
     this.statusTarget.style.display = "block"
-    showStatusMessage(this.statusTarget, {
-      message,
-      className: `alert alert-${variant}`
+    this.showStatusMessage(this.statusTarget, {
+      message: `Error: ${serverMessage(error, error.message)}`,
+      className: "alert alert-danger"
     })
   }
 }

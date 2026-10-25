@@ -302,6 +302,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_05_192545) do
     t.boolean "unrateable", default: false
     t.datetime "updated_at", null: false
     t.integer "user_id"
+    t.bigint "escalated_from_judgement_id"
+    t.index ["escalated_from_judgement_id"], name: "index_judgements_on_escalated_from_judgement_id", unique: true
     t.index ["query_doc_pair_id"], name: "index_judgements_on_query_doc_pair_id"
     t.index ["user_id", "query_doc_pair_id"], name: "index_judgements_on_user_id_and_query_doc_pair_id", unique: true
   end
@@ -461,7 +463,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_05_192545) do
     t.index ["query_id", "duration", "occurred_at"], name: "index_rails_pulse_operations_query_performance"
     t.index ["query_id", "occurred_at"], name: "index_rails_pulse_operations_on_query_and_time"
     t.index ["request_id"], name: "index_rails_pulse_operations_on_request_id"
-    t.check_constraint "(request_id IS NOT NULL) OR (job_run_id IS NOT NULL)", name: "rails_pulse_operations_request_or_job_run"
+    t.check_constraint "(`request_id` is not null) or (`job_run_id` is not null)", name: "rails_pulse_operations_request_or_job_run"
   end
 
   create_table "rails_pulse_queries", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
@@ -509,7 +511,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_05_192545) do
     t.string "controller_action", comment: "Rails controller and action handling this route (e.g., articles#show)"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index "(case when (controller_action is null) then path else NULL end)", name: "index_rails_pulse_routes_on_path_without_action", unique: true
+    t.index "(case when (`controller_action` is null) then `path` else NULL end)", name: "index_rails_pulse_routes_on_path_without_action", unique: true
     t.index ["controller_action", "path"], name: "index_rails_pulse_routes_on_controller_action_and_path", unique: true
     t.index ["path"], name: "index_rails_pulse_routes_on_path"
   end
@@ -850,8 +852,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_05_192545) do
     t.string "system_prompt", limit: 4000
     t.string "type"
     t.datetime "updated_at", precision: nil, null: false
+    t.integer "escalates_to_id"
     t.index ["default_scorer_id"], name: "index_users_on_default_scorer_id"
     t.index ["email"], name: "ix_user_username", unique: true
+    t.index ["escalates_to_id"], name: "index_users_on_escalates_to_id"
     t.index ["invitation_token"], name: "index_users_on_invitation_token", unique: true, length: 191
     t.index ["invited_by_id"], name: "index_users_on_invited_by_id"
     t.index ["name"], name: "index_users_on_name"
@@ -882,6 +886,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_05_192545) do
   add_foreign_key "case_scores", "cases", name: "case_scores_ibfk_1"
   add_foreign_key "case_scores", "users", name: "case_scores_ibfk_2"
   add_foreign_key "cases", "users", column: "owner_id", name: "cases_ibfk_1"
+  add_foreign_key "judgements", "judgements", column: "escalated_from_judgement_id", on_delete: :nullify
   add_foreign_key "judgements", "query_doc_pairs"
   add_foreign_key "mapper_wizard_states", "users"
   add_foreign_key "queries", "cases", name: "queries_ibfk_1"
@@ -911,6 +916,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_05_192545) do
   add_foreign_key "teams_scorers", "teams"
   add_foreign_key "tries", "cases", name: "tries_ibfk_1"
   add_foreign_key "users", "scorers", column: "default_scorer_id"
+  add_foreign_key "users", "users", column: "escalates_to_id", on_delete: :nullify
   add_foreign_key "users", "users", column: "invited_by_id"
   add_foreign_key "web_requests", "snapshot_queries"
 end

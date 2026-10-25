@@ -6,6 +6,11 @@ A Search Endpoint tells Quepid how to reach a search engine or search API (Solr,
 
 **Where to find it:** Sidebar paper-plane icon, tooltip "Search Endpoints" → `/search_endpoints`.
 
+The standalone Mapper Wizard is separate from the case-creation wizard. Choosing
+the generic Search API engine in the case wizard shows "Custom Mapper Required" with
+a **Use Mapper Wizard** button, which abandons the draft case and opens the flow
+below; mapper-based presets such as Vespa and Qdrant configure in the case wizard directly.
+
 ## Test scenarios
 
 ### 7.1 Browse / filter the Search Endpoints list
@@ -34,7 +39,7 @@ Repeat for each: **Solr**, **Elasticsearch**, **OpenSearch**, **Vectara**, **Alg
   6. Optionally: **Custom Headers** (JSON), **Proxy requests** toggle, **Rate Limit**, **Basic Auth Credential** (`username:password`), **Options** (JSON), **Test Query**, **Mapper Code** (last two mainly relevant to Search API).
   7. Check any **Teams to Share this Endpoint With**.
   8. Submit.
-- **Expected:** Redirects to the endpoint's Show page on success.
+- **Expected:** Redirects to the endpoint's Show page on success with the green notice "Search Endpoint was successfully created.".
 - **Edge cases (validation — test at least once each):**
   - [ ] Leave Search Engine / Endpoint Url / API Method blank — each is required.
   - [ ] Enter a JSON **array** (not object) in Custom Headers or Options — expect "must be a JSON object..." error.
@@ -42,7 +47,9 @@ Repeat for each: **Solr**, **Elasticsearch**, **OpenSearch**, **Vectara**, **Alg
   - [ ] Enter a Basic Auth Credential with no colon — expect "must be in username:password format" error.
   - [ ] Choose API Method = **JSONP** while **Proxy requests** is also enabled — expect an error ("cannot be JSONP when proxy_request is enabled").
   - [ ] If the environment requires proxy with basic auth, enter a Basic Auth Credential with Proxy off — expect a validation error.
-  - [ ] With zero teams of your own, confirm the alert "Search Endpoints are meant to be shared with Teams..." with a **Create a Team** shortcut appears.
+  - [ ] With zero teams, confirm the team picker offers **Create a team** and the endpoint can still be saved privately. With teams, leaving them unchecked keeps the endpoint private.
+  - [ ] Switch the Search Engine type mid-form (e.g. Solr → Elasticsearch → Static File) — confirm engine-specific defaults/fields update, user-entered values (headers, options, credential) are not unexpectedly lost or overwritten, and the saved endpoint matches what is displayed.
+  - [ ] Create endpoints against an `https` engine with a self-signed/invalid certificate and a **Static File** endpoint — confirm each behaves sensibly (clear error or working search) and check the Basic Auth Credential and custom headers round-trip on Edit.
 
 ### 7.3 View / Edit a Search Endpoint
 
@@ -50,8 +57,9 @@ Repeat for each: **Solr**, **Elasticsearch**, **OpenSearch**, **Vectara**, **Alg
   1. Open an endpoint's Show page — confirm every field from creation displays correctly, including a **masked** Basic Auth Credential (`username:******`), Requests Per Minute ("0 means no throttling"), "Shared with Teams" (note: shows *all* teams sharing it, not just yours), "Used by Cases" (cases whose tries reference it), and Owner.
   2. Click **Edit**, change a field (e.g., Rate Limit), save.
   3. Edit again but leave the masked Basic Auth Credential field untouched, save.
-- **Expected:** The real password is preserved when the masked value is resubmitted unchanged (it should *not* get overwritten with the literal masked string).
+- **Expected:** Successful saves show one green footer notice "Search Endpoint was successfully updated."; validation failures do not show a saved notice. The real password is preserved when the masked value is resubmitted unchanged (it should *not* get overwritten with the literal masked string).
 - **Edge cases:**
+  - [ ] A Static File endpoint shows a note explaining that its results belong to a case snapshot, sharing the case grants access, and another case needs its own import. Ordinary endpoints do not show this note.
   - [ ] If archived, confirm the Show page shows "You must unarchive this search endpoint to use it with new cases."
   - [ ] Update team-sharing as a user who only has access to some of the endpoint's teams — confirm teams you can't see are preserved, not silently wiped (best tested with two accounts).
 
@@ -79,6 +87,8 @@ Repeat for each: **Solr**, **Elasticsearch**, **OpenSearch**, **Vectara**, **Alg
 
 ### 7.6 Share / unshare a Search Endpoint
 
+Static File endpoints cannot be shared with teams. Share their case instead; sharing a static case must not separately add its endpoint to the team. Existing endpoint memberships remain removable through Unshare. An unshared static endpoint has no Share button, and its edit form has no team picker. Crafted share requests and attempts to add teams through create/update forms are rejected without changing memberships.
+
 - [ ] **Steps:**
   1. Click the Share icon on an endpoint's row.
   2. Pick a team, click **Share with team** — confirm it appears under "Already shared with".
@@ -94,9 +104,10 @@ Repeat for each: **Solr**, **Elasticsearch**, **OpenSearch**, **Vectara**, **Alg
   2. Choose HTTP Method (GET/POST). Enter a Search URL and a Test Query (query-string params for GET, JSON body for POST — hint text should change with the method).
   3. Optionally expand "Advanced Options" and add a Basic Auth Credential and/or Custom HTTP Headers (JSON).
   4. Click **Fetch**.
-- **Expected:** The raw HTML/JSON response is fetched server-side and displayed in a scrollable, expandable, copyable preview pane, with its length shown. Steps 2–3 reveal themselves once this succeeds.
+  5. On a plain-HTTP origin where `isSecureContext` is false and `navigator.clipboard` is absent, click the preview's **Copy** button and paste to verify the exact preview text. Confirm the existing success status and two-second button restoration; reject the copy command and confirm the existing failure status.
+- **Expected:** Step 2/3 headings are visible from entry; their bodies start hidden for a new endpoint. Fetch displays the raw HTML/JSON in a scrollable, expandable, copyable preview with its length, and reveals Step 2's body. Generation reveals Step 3's body.
 - **Edge cases:**
-  - [ ] Leave the URL blank — expect "URL is required".
+  - [ ] Leave the URL blank — expect "Please enter a search URL" (the client check; the server's own "URL is required" is only reachable by a direct request).
   - [ ] Enter a non-http(s) URL — expect "Invalid URL format".
   - [ ] Point at an unreachable host — expect "Connection failed: ...".
   - [ ] Point at a very slow endpoint — expect a "Request timed out" message rather than hanging indefinitely.
@@ -107,15 +118,18 @@ Repeat for each: **Solr**, **Elasticsearch**, **OpenSearch**, **Vectara**, **Alg
 - [ ] **Steps:**
   1. Enter an OpenAI API key (masked field; note text confirms it's used only for this request and not stored).
   2. Click **Generate Mappers with AI**.
-- **Expected:** The two code editors in Step 3 (`numberOfResultsMapper`, `docsMapper`) populate with AI-generated JavaScript based on the fetched HTML/JSON.
+- **Expected:** The two code editors in Step 3 (`numberOfResultsMapper`, `docsMapper`) populate with AI-generated JavaScript based on the fetched HTML/JSON. Boilerplate is removed while JSON and structured-data scripts are preserved. If the cleaned sample exceeds 50,000 characters, a warning reports the original and sent sizes and asks you to test the mapper.
 - **Edge cases:**
   - [ ] Try this before completing Step 1 — expect "No HTML content. Fetch HTML first."
   - [ ] Leave the API key blank — expect "OpenAI API key required."
   - [ ] Use an invalid/revoked API key — expect "AI generation failed: ...".
   - [ ] If the model returns a response with no code block, confirm "No JavaScript code found in response" is shown rather than a silent failure.
 
+- [ ] Generate from a long response; confirm the truncation warning remains visible rather than auto-hiding as ordinary success.
+
 ### 7.9 Mapper Wizard — Step 3: Edit, Test & Refine
 
+- [ ] From a fresh wizard, click **No OpenAI key? Write the mapper code by hand instead.** Confirm both Step 2/3 bodies appear and the page scrolls to Step 3, without requiring Fetch or an API key.
 - [ ] **Steps:**
   1. For each of `numberOfResultsMapper` and `docsMapper`: hand-edit the code directly (this is a valid path even without ever using AI).
   2. Click **Test** on each — confirm the Test Result and any `console.log` output ("Console Logs") display.
@@ -123,9 +137,11 @@ Repeat for each: **Solr**, **Elasticsearch**, **OpenSearch**, **Vectara**, **Alg
 - **Expected:** Test runs the code safely (sandboxed) against the previously fetched sample data and shows accurate results/errors; Refine incorporates your feedback into a revised version.
 - **Edge cases:**
   - [ ] Test with empty/broken code — expect "Code is required" or a "JavaScript error: ..." message, not a crash.
-  - [ ] Test before ever fetching HTML — expect "HTML content is required".
+  - [ ] Test before ever fetching HTML — expect "No HTML content."
   - [ ] Refine without an API key — expect "API key required".
   - [ ] If editing an **existing** Search API endpoint's mapper code, confirm both editors pre-populate correctly from its stored `mapper_code`.
+
+- [ ] Refine from a cleaned response longer than 30,000 characters; confirm the truncation warning and test the resulting code.
 
 ### 7.10 Mapper Wizard — Step 4: Save Search Endpoint
 
@@ -140,3 +156,74 @@ Repeat for each: **Solr**, **Elasticsearch**, **OpenSearch**, **Vectara**, **Alg
   - [ ] Start a wizard session, fetch HTML, then navigate away **without saving**, and come back into the wizard — confirm you get a fresh session (previous fetch/draft state should NOT be resumed).
   - [ ] Enter the wizard via a URL referencing a `search_endpoint_id` that doesn't exist or you don't own — expect a redirect with "Search endpoint you are looking for either doesn't exist or you don't have permissions."
   - [ ] Enter a Basic Auth Credential in Step 1's Advanced Options, complete the wizard and save, then re-open the wizard for that same endpoint — confirm the credential is never displayed back to you in plaintext via the wizard (masked at most).
+
+### 7.11 Quepid proxy: SSRF guard
+
+The **Proxy requests through Quepid** option (and the case wizard's Proxy mode) routes browser search requests through `/proxy/fetch`. That endpoint must refuse to reach internal network addresses.
+
+- [ ] **Steps:**
+  1. Create/edit a search endpoint with **Proxy requests** on and a public, reachable URL — run a search from a case and confirm results return.
+  2. Point an endpoint (or call `/proxy/fetch?url=...` directly while logged in) at each of: `http://127.0.0.1:<port>/`, `http://localhost/`, a `10.x.x.x`, `172.16.x.x`, `192.168.x.x` address, a link-local `169.254.x.x` address, and an IPv6 `fc00::/7` address.
+  3. Also try a non-http(s) scheme (`file:///etc/passwd`, `ftp://...`) and a hostname that does not resolve.
+- **Expected:** The public URL works. Every internal/loopback/link-local target is rejected with HTTP 400 and `proxy_error: "Proxy URL resolves to a disallowed address"`; bad schemes and unresolvable hosts return `proxy_error: "Invalid proxy URL"`. No request is made to the internal target.
+- **Edge cases:**
+  - [ ] A public hostname that DNS-resolves to a private address is blocked (the check is on resolved addresses, not the literal URL).
+  - [ ] Confirm a saved endpoint's Basic Auth credential is attached by the proxy server-side and is never present in the response or browser network tab (Part 7.3).
+  - [ ] In a local dev setup where the search engine itself runs on localhost/Docker network (e.g. Solr on `localhost:8983`), note that Proxy mode will refuse it and CORS mode must be used — confirm the error message makes that diagnosable.
+
+Team assignment security checks (7.2, 7.3 and mapper wizard save): submit a team
+ID outside your memberships and confirm 404 without changing sharing. On wizard
+save, uncheck all visible teams and confirm hidden teams remain shared. API book
+import must likewise reject a foreign `team_id` without creating a book.
+
+For an existing mapper endpoint, submit an invalid API method while changing
+team selections. Confirm the validation error leaves the saved teams and
+endpoint attributes unchanged and retains the wizard state for correction.
+
+### 7.12 Qdrant preset: case creation, search and rated-document lookup
+
+1. Start the case wizard on a disposable case. On Endpoint, choose **Qdrant**
+   under **Create a new endpoint**. Confirm POST, Proxy enabled, a collection-scoped
+   `/points/query` URL, Custom Headers with an `api-key`, and numeric `limit` in
+   the JSON request body. The shipped key is read-only and browser-visible.
+2. Make validation fail (intercept the proxy with a 502), then retry without the
+   interception. Expect a visible error, retained settings, and successful advance
+   to Fields on retry; do not use Skip Validation.
+3. Confirm `id`, `title`, and the additional display fields are prefilled. Add
+   `star wars`, finish, and confirm the saved endpoint is Search API with the
+   Qdrant preset, POST and Proxy retained. Expand the query: titles, overview,
+   cast and thumbnails should render; no next-page control should appear.
+4. Rate a result using the selected scorer's scale. Refresh and confirm the rating
+   persists. Open **Missing Documents**: Already Rated Documents should retrieve
+   that point. Close the dialog and enable **Show only rated**: expect only rated
+   points, with numeric point ids in the outgoing `has_id` filter.
+5. Delete the disposable case and any endpoint created solely for this check;
+   preserve reused endpoints and the account's original onboarding preference.
+
+Additional mapper coverage: UUID point ids stay strings; selecting a payload id
+field uses `match/any` for strings and canonical safe integers, preserving
+leading-zero string keys; more than ten rated
+ids raises the lookup limit. Cover these with mapper tests or a suitable collection.
+See [Qdrant setup and request examples](../endpoints_qdrant.md).
+
+### 7.13 Instance-wide required proxy
+
+- [ ] Enable `REQUIRE_PROXY_FOR_ALL_SEARCH_ENDPOINTS=true` and restart the existing server.
+  Confirm boot warns about unproxied endpoints without changing saved settings.
+- [ ] Open New/Edit Search Endpoint: proxy toggle and JSONP choice are absent.
+  Save a Solr GET endpoint; verify proxy is true. Tamper the hidden proxy field to
+  false and submit: expect 422, retained fields and a proxy validation message;
+  retry normally and expect a 303 redirect with the saved record.
+- [ ] Open the case wizard with Solr: GET replaces JSONP and no proxy switch appears.
+  Validate an unreachable endpoint, then correct it to the demo URL. Confirm validation
+  uses Quepid's proxy, finish with a query, and verify persisted GET/proxy settings.
+- [ ] Select an existing unproxied or JSONP endpoint: selection is rejected with
+  instructions to edit it first or configure a new endpoint. Validation and Finish
+  also reject an incompatible endpoint already referenced by the current try.
+  Select a proxied GET endpoint and confirm Finish retains its ID. Saved endpoint
+  settings remain unchanged. An existing case's direct searches remain unchanged
+  until its endpoint is explicitly reconfigured; the flag is not a data migration.
+- [ ] Open the standalone Mapper Wizard: no visible proxy switch, and its save
+  submits proxy true. Broader mapper generation/save checks remain in 7.7–7.10.
+- [ ] Restore the flag to false and restart: JSONP and proxy controls return.
+  Remove disposable cases/endpoints and restore account onboarding state.

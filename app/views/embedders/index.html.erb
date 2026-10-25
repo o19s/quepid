@@ -75,17 +75,14 @@
                     <%= link_to clone_embedder_path(embedder), class: 'btn btn-link p-0 me-2', title: 'Clone', 'aria-label': 'Clone' do %>
                       <i class="bi bi-copy" aria-hidden="true"></i>
                     <% end %>
-                    <button type="button"
-                            class="btn btn-link text-danger p-0"
-                            title="Delete"
-                            aria-label="Delete"
-                            data-controller="confirm-delete"
-                            data-action="click->confirm-delete#open"
-                            data-confirm-delete-url-value="<%= embedder_path(embedder) %>"
-                            data-confirm-delete-message-value="<%= h("Delete embedder #{embedder.name}?") %>"
-                            data-confirm-delete-method-value="delete">
+                    <%= group_button_to embedder_path(embedder),
+                                        method: :delete,
+                                        button_class: "text-danger p-0",
+                                        title: "Delete",
+                                        aria: { label: "Delete" },
+                                        confirm: "Delete embedder #{embedder.name}?" do %>
                       <i class="bi bi-x-circle" aria-hidden="true"></i>
-                    </button>
+                    <% end %>
                   </div>
                 </td>
               </tr>

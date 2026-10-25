@@ -3,20 +3,15 @@
 class ImportBookJob < ApplicationJob
   queue_as :bulk_processing
 
-  # rubocop:disable-next Security/MarshalLoad
   def perform user, book
     book.update(import_job: "import started at #{Time.zone.now}")
     options = {}
 
-    compressed_data = book.import_file.download
-    serialized_data = Zlib::Inflate.inflate(compressed_data)
-    params  = Marshal.load(serialized_data)
+    DeferredPayload.consume(book.import_file) do |params|
+      service = ::BookImporter.new book, user, params, options
+      raise ActiveRecord::RecordInvalid, book unless service.import
 
-    service = ::BookImporter.new book, user, params, options
-
-    service.import
-    book.import_file.purge
-    book.import_job = nil
-    book.save
+      book.update!(import_job: nil)
+    end
   end
 end

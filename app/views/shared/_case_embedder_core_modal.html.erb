@@ -1,6 +1,7 @@
+<%# locals: (kase:) %>
 <%# Core case toolbar — pick the case's embedder. Laid out like the scorer picker
-    (views/pick_scorer.html): a list-group to choose from, the current one active,
-    a warning when the current one isn't shared with you, and a footer link to
+    (shared/_pick_scorer_core_modal): a list-group to choose from, the current one
+    active, a warning when the current one isn't shared with you, and a footer link to
     create a new one. Saves through the API and stays on the page. %>
 <% modal_footer = capture do %>
   <%= link_to new_embedder_path, class: 'btn btn-primary me-auto', target: '_blank', rel: 'noopener' do %>
@@ -41,6 +42,8 @@
 <%= render "shared/modal_shell", id: "caseEmbedderModal", title: safe_join(["Which embedder should vectorize this case's queries?", render("embedders/beta")]),
                                  data: {
                                    controller: "case-embedder-core",
+                                   action: "show.bs.modal->case-embedder-core#open",
+                                   case_embedder_core_id_value: kase.id,
                                    case_embedder_core_index_url_template_value: api_case_embedders_path(case_id: '__CASE_ID__'),
                                    case_embedder_core_update_url_template_value: api_case_embedder_path(case_id: '__CASE_ID__', id: '__EMBEDDER_ID__'),
                                    case_embedder_core_vectorize_url_template_value: api_case_embedders_vectorize_path(case_id: '__CASE_ID__'),

@@ -6,8 +6,10 @@ class TeamsController < ApplicationController
   rescue_from ActiveRecord::RecordNotFound do |exception|
     resource_name = exception.model.underscore.humanize
     flash[:alert] = "#{resource_name} not found."
-    redirect_back_or_to(teams_path)
+    redirect_to teams_path, status: :see_other
   end
+
+  helper_method :team_filters
 
   before_action :set_team, only: [ :show, :add_member, :remove_member, :rename, :remove_case, :archive_case, :unarchive_case, :archive_search_endpoint, :unarchive_search_endpoint, :remove_embedder, :suggest_members ]
 
@@ -18,136 +20,48 @@ class TeamsController < ApplicationController
     if @team.cases.exists?(kase.id)
       @team.cases.delete(kase)
       flash[:notice] = "Case #{kase.case_name} removed from the team."
-      Analytics::Tracker.track_case_deleted_event(current_user, kase) if defined?(Analytics::Tracker) && Analytics::Tracker.respond_to?(:track_case_deleted_event)
+      Analytics::Tracker.track_case_deleted_event(current_user, kase)
     else
       flash[:alert] = "Case #{kase.case_name} is not associated with this team."
     end
 
-    redirect_to team_path(@team)
+    redirect_to team_path(@team), status: :see_other
   end
 
-  # Share a case with a team (similar to scorer sharing pattern)
   def share_case
     team = current_user.teams.find(params.expect(:team_id))
-    kase = Case.find(params.expect(:case_id))
-
-    # Check if user has access to this case
-    unless current_user.cases_involved_with.exists?(id: kase.id)
-      flash[:alert] = 'You do not have access to that case.'
-      redirect_back_or_to(teams_path) and return
-    end
-
-    if team.cases.exists?(kase.id)
-      flash[:alert] = "#{kase.case_name} is already shared with #{team.name}."
-    else
-      team.cases << kase
-      flash[:notice] = "#{kase.case_name} shared with #{team.name}."
-      Analytics::Tracker.track_case_shared_event(current_user, kase, team) if defined?(Analytics::Tracker) && Analytics::Tracker.respond_to?(:track_case_shared_event)
-    end
-
-    redirect_back_or_to(teams_path, status: :see_other)
+    record = Case.find(params.expect(:case_id))
+    share_with_team(record, record.case_name, team)
   end
 
   def unshare_case
     team = current_user.teams.find(params.expect(:team_id))
-    kase = Case.find(params.expect(:case_id))
-
-    # Check if user has access to this case
-    unless current_user.cases_involved_with.exists?(id: kase.id)
-      flash[:alert] = 'You do not have access to that case.'
-      redirect_back_or_to(teams_path) and return
-    end
-
-    if team.cases.exists?(kase.id)
-      team.cases.delete(kase)
-      flash[:notice] = "#{kase.case_name} unshared from #{team.name}."
-    else
-      flash[:alert] = "#{kase.case_name} is not shared with #{team.name}."
-    end
-
-    redirect_back_or_to(teams_path, status: :see_other)
+    record = Case.find(params.expect(:case_id))
+    unshare_with_team(record, record.case_name, team)
   end
 
-  # Share a book with a team (similar to case sharing pattern)
   def share_book
     team = current_user.teams.find(params.expect(:team_id))
-    book = Book.find(params.expect(:book_id))
-
-    # Check if user has access to this book (owner or team member with access)
-    unless current_user.books_involved_with.exists?(id: book.id)
-      flash[:alert] = 'You do not have access to that book.'
-      redirect_back_or_to(teams_path) and return
-    end
-
-    if team.books.exists?(book.id)
-      flash[:alert] = "#{book.name} is already shared with #{team.name}."
-    else
-      team.books << book
-      flash[:notice] = "#{book.name} shared with #{team.name}."
-    end
-
-    redirect_back_or_to(teams_path, status: :see_other)
+    record = Book.find(params.expect(:book_id))
+    share_with_team(record, record.name, team)
   end
 
   def unshare_book
     team = current_user.teams.find(params.expect(:team_id))
-    book = Book.find(params.expect(:book_id))
-
-    # Check if user has access to this book
-    unless current_user.books_involved_with.exists?(id: book.id)
-      flash[:alert] = 'You do not have access to that book.'
-      redirect_back_or_to(teams_path) and return
-    end
-
-    if team.books.exists?(book.id)
-      team.books.delete(book)
-      flash[:notice] = "#{book.name} unshared from #{team.name}."
-    else
-      flash[:alert] = "#{book.name} is not shared with #{team.name}."
-    end
-
-    redirect_back_or_to(teams_path, status: :see_other)
+    record = Book.find(params.expect(:book_id))
+    unshare_with_team(record, record.name, team)
   end
 
-  # Share a search endpoint with a team (similar to case/book sharing pattern)
   def share_search_endpoint
     team = current_user.teams.find(params.expect(:team_id))
-    search_endpoint = SearchEndpoint.find(params.expect(:search_endpoint_id))
-
-    # Check if user has access to this search endpoint
-    unless current_user.search_endpoints_involved_with.exists?(id: search_endpoint.id)
-      flash[:alert] = 'You do not have access to that search endpoint.'
-      redirect_back_or_to(teams_path) and return
-    end
-
-    if team.search_endpoints.exists?(search_endpoint.id)
-      flash[:alert] = "#{search_endpoint.fullname} is already shared with #{team.name}."
-    else
-      team.search_endpoints << search_endpoint
-      flash[:notice] = "#{search_endpoint.fullname} shared with #{team.name}."
-    end
-
-    redirect_back_or_to(teams_path, status: :see_other)
+    record = SearchEndpoint.find(params.expect(:search_endpoint_id))
+    share_with_team(record, record.fullname, team)
   end
 
   def unshare_search_endpoint
     team = current_user.teams.find(params.expect(:team_id))
-    search_endpoint = SearchEndpoint.find(params.expect(:search_endpoint_id))
-
-    # Check if user has access to this search endpoint
-    unless current_user.search_endpoints_involved_with.exists?(id: search_endpoint.id)
-      flash[:alert] = 'You do not have access to that search endpoint.'
-      redirect_back_or_to(teams_path) and return
-    end
-
-    if team.search_endpoints.exists?(search_endpoint.id)
-      team.search_endpoints.delete(search_endpoint)
-      flash[:notice] = "#{search_endpoint.fullname} unshared from #{team.name}."
-    else
-      flash[:alert] = "#{search_endpoint.fullname} is not shared with #{team.name}."
-    end
-
-    redirect_back_or_to(teams_path, status: :see_other)
+    record = SearchEndpoint.find(params.expect(:search_endpoint_id))
+    unshare_with_team(record, record.fullname, team)
   end
 
   # Archive a search endpoint
@@ -163,7 +77,7 @@ class TeamsController < ApplicationController
       flash[:alert] = 'That embedder is not shared with this team.'
     end
 
-    redirect_to team_path(@team)
+    redirect_to team_path(@team), status: :see_other
   end
 
   def archive_search_endpoint
@@ -178,7 +92,7 @@ class TeamsController < ApplicationController
       flash[:alert] = "Search endpoint #{search_endpoint.fullname} is not associated with this team."
     end
 
-    redirect_to team_path(@team)
+    redirect_to team_path(@team), status: :see_other
   end
 
   # Unarchive a search endpoint
@@ -194,7 +108,7 @@ class TeamsController < ApplicationController
       flash[:alert] = "Search endpoint #{search_endpoint.fullname} is not associated with this team."
     end
 
-    redirect_to team_path(@team)
+    redirect_to team_path(@team), status: :see_other
   end
 
   # Archive a case (mark archived and set current_user as owner)
@@ -205,13 +119,13 @@ class TeamsController < ApplicationController
     if @team.cases.exists?(kase.id)
       kase.owner = current_user
       kase.mark_archived!
-      Analytics::Tracker.track_case_archived_event(current_user, kase) if defined?(Analytics::Tracker) && Analytics::Tracker.respond_to?(:track_case_archived_event)
+      Analytics::Tracker.track_case_archived_event(current_user, kase)
       flash[:notice] = "Case #{kase.case_name} archived."
     else
       flash[:alert] = "Case #{kase.case_name} is not associated with this team."
     end
 
-    redirect_to team_path(@team)
+    redirect_to team_path(@team), status: :see_other
   end
 
   # Unarchive a case
@@ -227,7 +141,7 @@ class TeamsController < ApplicationController
       flash[:alert] = "Case #{kase.case_name} is not associated with this team."
     end
 
-    redirect_to team_path(@team)
+    redirect_to team_path(@team), status: :see_other
   end
 
   def index
@@ -235,13 +149,12 @@ class TeamsController < ApplicationController
 
     query = query.joins(:members).where(users: { id: current_user.id }).distinct if params[:member].present?
 
-    query = query.where('LOWER(teams.name) LIKE ?', "%#{params[:q].to_s.downcase}%") if params[:q].present?
+    query = query.search_by(params[:q], :name) if params[:q].present?
 
     @pagy, @teams = pagy(query.order(:name))
   end
 
   # rubocop:disable Metrics/AbcSize
-  # rubocop:disable Metrics/MethodLength
   def show
     @cases_q = params[:cases_q].to_s.strip
     @cases_archived = deserialize_bool_param(params[:cases_archived])
@@ -251,18 +164,13 @@ class TeamsController < ApplicationController
     @books_count = @team.books.count
     @scorers_count = @team.scorers.count
     @search_endpoints_count = @team.search_endpoints.count
-    @embedders = @team.embedders.includes(:owner).order(:name)
-    @embedder_case_counts = Case.where(embedder_id: @embedders.map(&:id)).group(:embedder_id).count
-    @user_teams = current_user.teams.order(:name)
 
     # Cases filtering
     cases_query = @team.cases
-    if @cases_q.present?
-      cases_query = cases_query.where('LOWER(case_name) LIKE ? OR id = ?',
-                                      "%#{@cases_q.to_s.downcase}%", @cases_q.to_i)
-    end
+    cases_query = cases_query.search_by(@cases_q, :case_name).or(cases_query.where(id: @cases_q.to_i)) if @cases_q.present?
     cases_query = @cases_archived ? cases_query.archived : cases_query.active
-    @pagy_cases, @cases = pagy(cases_query.order(:id).includes(:owner, :teams))
+    @pagy_cases, @cases = pagy(cases_query.order(:id).with_counts.includes(:owner, :teams), page_key: 'cases_page')
+    @last_scores = Score.latest_summaries_for_cases(@cases.map(&:id)).index_by(&:case_id)
 
     # Books filtering
     @books_q = params[:books_q].to_s.strip
@@ -271,33 +179,28 @@ class TeamsController < ApplicationController
     books_query = @team.books
     books_query = @books_archived ? books_query.archived : books_query.active
     books_query = books_query.with_counts if books_query.respond_to?(:with_counts)
-    books_query = books_query.where('LOWER(name) LIKE ?', "%#{@books_q.to_s.downcase}%") if @books_q.present?
+    books_query = books_query.search_by(@books_q, :name) if @books_q.present?
 
-    @pagy_books, @books = pagy(books_query.order(:id))
+    @pagy_books, @books = pagy(books_query.order(:id).includes(:owner, :teams), page_key: 'books_page')
 
     # Scorers filtering
     @scorers_q = params[:scorers_q].to_s.strip
     scorers_query = @team.scorers
-    scorers_query = scorers_query.where('LOWER(name) LIKE ?', "%#{@scorers_q.to_s.downcase}%") if @scorers_q.present?
-    @pagy_scorers, @scorers = pagy(scorers_query.order(:name), page_param: :scorers_page)
+    scorers_query = scorers_query.search_by(@scorers_q, :name) if @scorers_q.present?
+    @pagy_scorers, @scorers = pagy(scorers_query.order(:name).includes(:owner, :teams), page_key: 'scorers_page')
 
     # Search Endpoints filtering
     @search_endpoints_q = params[:search_endpoints_q].to_s.strip
     @search_endpoints_archived = deserialize_bool_param(params[:search_endpoints_archived])
 
-    search_endpoints_query = @team.search_endpoints.includes(:teams)
+    search_endpoints_query = @team.search_endpoints.includes(:owner, :teams)
     search_endpoints_query = @search_endpoints_archived ? search_endpoints_query.where(archived: true) : search_endpoints_query.not_archived
-    if @search_endpoints_q.present?
-      search_endpoints_q = "%#{@search_endpoints_q.to_s.downcase}%"
-      search_endpoints_query = search_endpoints_query.where('LOWER(name) LIKE ? OR LOWER(endpoint_url) LIKE ?',
-                                                            search_endpoints_q,
-                                                            search_endpoints_q)
-    end
-    @pagy_search_endpoints, @search_endpoints = pagy(search_endpoints_query.order(:id), page_param: :search_endpoints_page)
+    search_endpoints_query = search_endpoints_query.search_by(@search_endpoints_q, :name, :endpoint_url) if @search_endpoints_q.present?
+    @pagy_search_endpoints, @search_endpoints = pagy(search_endpoints_query.order(:id), page_key: 'search_endpoints_page')
+    load_list_counts
   end
-  # rubocop:enable Metrics/AbcSize
-  # rubocop:enable Metrics/MethodLength
 
+  # rubocop:enable Metrics/AbcSize
   def new
     @team = Team.new
   end
@@ -306,65 +209,50 @@ class TeamsController < ApplicationController
     @team = Team.new(team_params)
     if @team.save
       @team.members << current_user
-      redirect_to team_path(@team), notice: 'Team created.'
+      redirect_to team_path(@team), notice: 'Team created.', status: :see_other
     else
-      render :new
+      render :new, status: :unprocessable_content
     end
   end
 
   # Looks up an existing user by email and adds to the team if found.
-  # rubocop:disable Metrics/AbcSize
-  # rubocop:disable Metrics/CyclomaticComplexity
-  # rubocop:disable Metrics/PerceivedComplexity
-  # rubocop:disable Metrics/MethodLength
+  # rubocop:disable-next Metrics/AbcSize
   def add_member
     email = params[:email].to_s.strip.downcase
     user = User.by_email(email).first
+    membership = TeamMembership.new(current_user, @team)
 
     if user
-      if @team.members.exists?(user.id)
-        flash[:alert] = "#{user.fullname} is already a member of this team."
-      else
-        @team.members << user
+      if membership.add(user)
         flash[:notice] = "#{user.fullname} added to the team."
-        Analytics::Tracker.track_member_added_to_team_event(current_user, @team, user) if defined?(Analytics::Tracker) && Analytics::Tracker.respond_to?(:track_member_added_to_team_event)
+      else
+        flash[:alert] = "#{user.fullname} is already a member of this team."
       end
-      redirect_to team_path(@team) and return
+      redirect_to team_path(@team), status: :see_other and return
     end
 
     # If the user wasn't found, try to invite them (if signups are enabled)
     unless signup_enabled?
       flash[:alert] = "No user found with email #{email}. Signups are disabled so cannot invite."
-      redirect_to team_path(@team) and return
+      redirect_to team_path(@team), status: :see_other and return
     end
 
     # Create an invited user (Devise Invitable) and add to team
     begin
-      member = User.invite!({ email: email, password: '' }, current_user) do |u|
-        # If email delivery isn't configured, mark skip_invitation so no email attempt is made
-        u.skip_invitation = Rails.application.config.action_mailer.delivery_method.blank?
-      end
+      member = membership.invite(email)
 
-      @team.members << member unless @team.members.exists?(member.id)
-
-      if @team.save
-        Analytics::Tracker.track_member_added_to_team_event(current_user, @team, member) if defined?(Analytics::Tracker) && Analytics::Tracker.respond_to?(:track_member_added_to_team_event)
-        message = member.skip_invitation.present? ? "Please share the invite link with #{member.email} directly so they can join." : "Invitation email was sent to #{member.email}"
-        flash[:notice] = message
+      if membership.add_and_save(member)
+        flash[:notice] = membership.invitation_message(member)
       else
         flash[:alert] = member.errors.full_messages.to_sentence
       end
 
-      redirect_to team_path(@team)
+      redirect_to team_path(@team), status: :see_other
     rescue ActiveRecord::RecordInvalid => e
       flash[:alert] = "Unable to add member: #{e.record.errors.full_messages.to_sentence}"
-      redirect_to team_path(@team)
+      redirect_to team_path(@team), status: :see_other
     end
   end
-  # rubocop:enable Metrics/AbcSize
-  # rubocop:enable Metrics/CyclomaticComplexity
-  # rubocop:enable Metrics/PerceivedComplexity
-  # rubocop:enable Metrics/MethodLength
 
   # Rename the team (server-side form).
   def rename
@@ -374,22 +262,20 @@ class TeamsController < ApplicationController
       flash[:alert] = @team.errors.full_messages.to_sentence
     end
 
-    redirect_to team_path(@team)
+    redirect_to team_path(@team), status: :see_other
   end
 
   def remove_member
     member = User.find(params.expect(:member_id))
 
-    if @team.members.exists?(member.id)
-      @team.members.delete(member)
+    if TeamMembership.new(current_user, @team).remove(member)
       flash[:notice] = "#{member.fullname} removed from the team."
-      Analytics::Tracker.track_member_removed_from_team_event(current_user, @team, member)
-
     else
       flash[:alert] = "#{member.fullname} is not a member of this team."
     end
 
-    redirect_to team_path(@team)
+    destination = @team.members.exists?(current_user.id) ? team_path(@team) : teams_path
+    redirect_to destination, status: :see_other
   end
 
   # rubocop:disable Metrics/AbcSize
@@ -421,7 +307,9 @@ class TeamsController < ApplicationController
     # Base scope: users who are either in teams with current user OR have same email domain
     # Used for prefix and name matching (more restricted)
     scope_start = Time.current
+    # AI judges have no email and can't be added through the email-based form, so don't suggest them.
     base_scope = User.where.not(id: @team.members.pluck(:id))
+      .where.not(email: nil)
       .where('id IN (?) OR LOWER(email) LIKE ?', team_member_ids, "%@#{current_domain.to_s.downcase}")
     scope_time = ((Time.current - scope_start) * 1000).round(2)
 
@@ -495,6 +383,64 @@ class TeamsController < ApplicationController
   # rubocop:enable Metrics/MethodLength
 
   private
+
+  def share_with_team record, name, team
+    if TeamSharing.new(current_user, team).share(record)
+      flash[:notice] = "#{name} shared with #{team.name}."
+    else
+      flash[:alert] = "#{name} is already shared with #{team.name}."
+    end
+    redirect_back_or_to(teams_path, status: :see_other)
+  rescue TeamSharing::NotShareable => e
+    flash[:alert] = e.message
+    redirect_back_or_to(teams_path, status: :see_other)
+  rescue TeamSharing::AccessDenied
+    sharing_access_denied(record)
+  end
+
+  def unshare_with_team record, name, team
+    if TeamSharing.new(current_user, team).unshare(record)
+      flash[:notice] = "#{name} unshared from #{team.name}."
+    else
+      flash[:alert] = "#{name} is not shared with #{team.name}."
+    end
+    redirect_back_or_to(teams_path, status: :see_other)
+  rescue TeamSharing::AccessDenied
+    sharing_access_denied(record)
+  end
+
+  def sharing_access_denied record
+    flash[:alert] = "You do not have access to that #{record.class.model_name.human.downcase}."
+    redirect_back_or_to(teams_path)
+  end
+
+  # Per-row counts for the team page's case, book, scorer and search endpoint
+  # tables, each in one grouped query rather than one query per row.
+  def load_list_counts
+    @ratings_counts = Case.ratings_count_by_case_id(@cases.map(&:id))
+    book_ids = @books.map(&:id)
+    @book_judgements_counts = Book.judgements_count_by_book_id(book_ids)
+    @book_cases_counts = Book.cases_count_by_book_id(book_ids)
+    @scorer_cases_counts = Scorer.cases_count_by_scorer_id(@scorers.map(&:id))
+    @search_endpoint_cases_counts = SearchEndpoint.cases_count_by_search_endpoint_id(@search_endpoints.map(&:id))
+    # Embedders are neither filtered nor paged: a team shares only a few.
+    @embedders = @team.embedders.includes(:owner).order(:name)
+    @embedder_case_counts = Case.where(embedder_id: @embedders.map(&:id)).group(:embedder_id).count
+  end
+
+  # The team page's list filters, as params. Each section's filter form carries
+  # the other sections' filters along as hidden fields.
+  def team_filters
+    {
+      cases_q:                   @cases_q.presence,
+      cases_archived:            ('1' if @cases_archived),
+      books_q:                   @books_q.presence,
+      books_archived:            ('1' if @books_archived),
+      scorers_q:                 @scorers_q.presence,
+      search_endpoints_q:        @search_endpoints_q.presence,
+      search_endpoints_archived: ('1' if @search_endpoints_archived),
+    }.compact
+  end
 
   def set_team
     @team = current_user.teams.find(params.expect(:id))

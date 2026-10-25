@@ -11,7 +11,6 @@ const PRESETS = {
     label: "OpenAI",
     service_url: "https://api.openai.com",
     model: "text-embedding-3-small",
-    help: "<strong>OpenAI</strong>",
     supports_dimensions: true,
     allowed_dimensions: [],
     supports_instructions: false,
@@ -22,7 +21,6 @@ const PRESETS = {
     label: "Voyage AI",
     service_url: "https://api.voyageai.com",
     model: "voyage-3.5",
-    help: "<strong>Voyage</strong>",
     supports_dimensions: true,
     allowed_dimensions: [256, 512, 1024, 2048],
     supports_instructions: false,
@@ -32,7 +30,6 @@ const PRESETS = {
     label: "Ollama",
     service_url: "http://ollama:11434",
     model: "qwen3-embedding:0.6b",
-    help: "<strong>Ollama</strong>",
     supports_dimensions: false,
     allowed_dimensions: [],
     supports_instructions: true,
@@ -67,7 +64,11 @@ function buildController({ provider = "openai", truncation = "none" } = {}) {
   controller.dimensionsTarget = document.createElement("input")
   controller.dimensionsHintTarget = document.createElement("div")
   controller.instructionFieldsTarget = document.createElement("div")
-  controller.helpTarget = document.createElement("div")
+  controller.helpTargets = Object.keys(PRESETS).map((key) => {
+    const help = document.createElement("div")
+    help.dataset.provider = key
+    return help
+  })
   controller.testTextTarget = document.createElement("input")
   controller.testButtonTarget = document.createElement("button")
   controller.testResultTarget = document.createElement("div")
@@ -88,7 +89,7 @@ describe("EmbedderFormController", () => {
     expect(controller.instructionFieldsTarget.hidden).toBe(false)
     expect(controller.truncationTarget.querySelector("option[value='native']").disabled).toBe(true)
     expect(controller.dimensionsRowTarget.hidden).toBe(true)
-    expect(controller.helpTarget.innerHTML).toContain("Ollama")
+    expect(controller.helpTargets.filter((help) => !help.hidden).map((help) => help.dataset.provider)).toEqual(["ollama"])
   })
 
   it("says whether the provider needs a key", () => {

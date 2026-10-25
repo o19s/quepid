@@ -1,9 +1,5 @@
 # frozen_string_literal: true
 
-# Scoped to the current user's scorers, not looked up unscoped, so a book
-# can't pick up the scale of a scorer nobody has actually shared with whoever
-# is creating or editing it. Shared by BooksController and
-# Api::V1::BooksController so both entry points handle scorer_id the same way.
 module BookScorerAssignment
   extend ActiveSupport::Concern
 

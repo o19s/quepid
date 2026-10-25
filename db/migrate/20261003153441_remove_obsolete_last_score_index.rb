@@ -2,7 +2,8 @@
 
 class RemoveObsoleteLastScoreIndex < ActiveRecord::Migration[8.1]
   def up
-    remove_index :case_scores, name: 'support_last_score'
+    # if_exists: databases created from angular-phase-10 already ran an identical copy of this migration.
+    remove_index :case_scores, name: 'support_last_score', if_exists: true
   end
 
   def down

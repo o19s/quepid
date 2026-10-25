@@ -14,10 +14,12 @@ module Api
       # @parameter owned(query) [Boolean] Whether to return only books owned by the current user, excluding ones only shared via a team.
       def index
         archived = deserialize_bool_param(params[:archived])
-        owned = deserialize_bool_param(params[:owned])
-
-        scope = owned ? current_user.books : current_user.books_involved_with
-        @books = archived ? scope.archived : scope.active
+        books = deserialize_bool_param(params[:owned]) ? current_user.books : current_user.books_involved_with
+        @books = if archived
+                   books.archived
+                 else
+                   books.active
+                 end
 
         respond_with @books
       end
@@ -29,13 +31,13 @@ module Api
       # @request_body [Reference:#/components/schemas/Book]
       # @request_body_example basic book [Reference:#/components/examples/BasicBook]
       def create
-        @book = current_user.books.build(book_params.except(:scorer_id))
+        @book = Book.new(book_params.except(:scorer_id))
         apply_scorer_to_book(@book, book_params[:scorer_id]) if book_params[:scorer_id].present?
-        if params[:book][:team_id]
-          team = Team.find_by(id: params[:book][:team_id])
-          @book.teams << team
-        end
+        team_id = params.dig(:book, :team_id)
+        team = current_user.teams.find(team_id) if team_id
+        @book.owner ||= current_user
         if @book.save
+          TeamSharing.new(current_user, team).share(@book) if team
           respond_with @book
         else
           render json: @book.errors, status: :bad_request
@@ -45,8 +47,9 @@ module Api
       # @request_body [Reference:#/components/schemas/Book]
       # @request_body_example basic book [Reference:#/components/examples/BasicBook]
       def update
+        update_params = book_params.except(:scorer_id)
         apply_scorer_to_book(@book, book_params[:scorer_id]) if book_params[:scorer_id].present?
-        if @book.update book_params.except(:scorer_id)
+        if @book.update update_params
           # Analytics::Tracker.track_case_updated_event current_user, @case
           respond_with @book
         else

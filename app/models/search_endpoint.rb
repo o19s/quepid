@@ -61,6 +61,9 @@ class SearchEndpoint < ApplicationRecord
   validates :search_engine, presence: true
   validates :endpoint_url, presence: true
   validates :api_method, presence: true
+  validates :requests_per_minute,
+            numericality: { only_integer: true, greater_than_or_equal_to: 0, less_than_or_equal_to: 100_000 },
+            allow_nil:    true
   validates :options, json_format: true, allow_blank: true
   validates :custom_headers, json_format: { normalize_values: true }, allow_blank: true
   validate :validate_proxy_requests_api_method
@@ -69,9 +72,15 @@ class SearchEndpoint < ApplicationRecord
   validate :validate_proxy_required_for_all_endpoints
   validate :validate_mapper_code_immutable_for_preset
 
+  TEAM_SHARING_MESSAGE = 'Static File endpoints cannot be shared with teams. Share the case instead.'
+
+  def team_shareable?
+    'static' != search_engine && (!persisted? || 'static' != search_engine_in_database)
+  end
+
   def fullname
-    label = mapper_based_search_engine&.name || search_engine.titleize
-    name.presence || middle_truncate("#{label} #{endpoint_url}")
+    label = mapper_based_search_engine&.name || SearchEngine.label(search_engine)
+    name.presence || middle_truncate([ label, endpoint_url ].compact_blank.join(' '))
   end
 
   # mapper_based_search_engine_id is a plain string column (see DEFINITIONS in
@@ -116,8 +125,11 @@ class SearchEndpoint < ApplicationRecord
     save
   end
 
-  def cases_count
-    Case.joins(:tries).where(tries: { search_endpoint_id: id }).distinct.count
+  # Cases per search endpoint for list pages, in one grouped query. A case is
+  # counted once however many of its tries use the endpoint.
+  def self.cases_count_by_search_endpoint_id search_endpoint_ids
+    Case.joins(:tries).where(tries: { search_endpoint_id: search_endpoint_ids })
+      .group('tries.search_endpoint_id').distinct.count(:id)
   end
 
   # Find an existing endpoint owned by or shared with the user, or build a new one.

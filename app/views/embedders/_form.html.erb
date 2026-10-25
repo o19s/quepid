@@ -1,7 +1,7 @@
-<%# locals: (embedder:, form:) %>
+<%# locals: (embedder:, form:, clone_of: nil) %>
 <%# A saved embedder (or the one being cloned) is tested with its saved key when the key
     field is left blank -- see Embedders::TestsController. %>
-<% key_source = embedder.persisted? ? embedder : @clone_of %>
+<% key_source = embedder.persisted? ? embedder : clone_of %>
 <% provider = embedder.provider_definition %>
 <div class="card"
      data-controller="embedder-form"
@@ -22,7 +22,7 @@
       </div>
     <% end %>
 
-    <%= hidden_field_tag :clone_of, @clone_of.id if @clone_of %>
+    <%= hidden_field_tag :clone_of, clone_of.id if clone_of %>
 
     <div class="alert alert-light border small">
       <i class="bi bi-info-circle" aria-hidden="true"></i>
@@ -143,7 +143,11 @@
 
       <div class="col-md-5">
         <div class="fw-semibold mb-2">Provider notes</div>
-        <div class="alert alert-info small" data-embedder-form-target="help"><%== provider&.help_html %></div>
+        <%# One panel per provider, shown for the chosen one: the help is server HTML. %>
+        <% EmbedderProvider.all.each do |definition| %>
+          <%= tag.div class: 'alert alert-info small', hidden: definition.key != provider&.key,
+                      data: { embedder_form_target: 'help', provider: definition.key } do %><%== definition.help_html %><% end %>
+        <% end %>
       </div>
     </div>
 

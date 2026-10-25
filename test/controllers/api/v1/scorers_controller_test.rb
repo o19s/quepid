@@ -9,9 +9,14 @@ module Api
 
       before do
         @controller = Api::V1::ScorersController.new
+        @original_communal_scorers_only = Rails.application.config.communal_scorers_only
         Rails.application.config.communal_scorers_only = false
 
         login_user user
+      end
+
+      after do
+        Rails.application.config.communal_scorers_only = @original_communal_scorers_only
       end
 
       describe 'Creates scorer' do

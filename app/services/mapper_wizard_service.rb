@@ -50,15 +50,14 @@ class MapperWizardService
 
     chat.with_instructions(generation_prompt)
 
-    stripped_html = strip_boilerplate(html_content)
-    sample_html, truncated = truncate_for_llm(stripped_html, 50_000)
+    truncated_html, truncated = truncate_for_llm(strip_boilerplate(html_content), 50_000)
 
     response = chat.ask(<<~PROMPT)
       Analyze this HTML from a search results page and generate the JavaScript mapper functions.
 
       HTML Content:
       ```html
-      #{sample_html}
+      #{truncated_html}
       ```
 
       Generate both numberOfResultsMapper and docsMapper functions. Wrap each function in a separate ```javascript code block.
@@ -67,7 +66,7 @@ class MapperWizardService
     extract_functions_from_response(response.content).merge(
       truncated:       truncated,
       original_length: html_content.length,
-      sent_length:     sample_html.length
+      sent_length:     truncated_html.length
     )
   rescue StandardError => e
     { success: false, error: "AI generation failed: #{e.message}" }
@@ -118,12 +117,32 @@ class MapperWizardService
 
     chat = RubyLLM.chat(model: 'gpt-4o')
 
-    stripped_html = strip_boilerplate(html_content)
-    sample_html, truncated = truncate_for_llm(stripped_html, 30_000)
+    truncated_html, truncated = truncate_for_llm(strip_boilerplate(html_content), 30_000)
 
-    response = chat.ask(refine_prompt(mapper_type, current_code, feedback, sample_html))
+    response = chat.ask(<<~PROMPT)
+      You are improving a JavaScript #{mapper_type} function for parsing search results HTML or JSON.
 
-    build_refine_result(response.content, truncated, html_content.length, sample_html.length)
+      Current code:
+      ```javascript
+      #{current_code}
+      ```
+
+      User feedback or issue: #{feedback}
+
+      HTML or JSON sample (truncated):
+      ```
+      #{truncated_html}
+      ```
+
+      Please provide an improved version of the #{mapper_type} function that addresses the feedback.
+      Return ONLY the improved function code wrapped in ```javascript code blocks.
+      Use the format: #{mapper_type} = function(data) { ... }
+      Target V8 engine only - no DOM APIs like document.querySelector.
+      Use string methods: indexOf, substring, split, match (simple regex only).
+      Please preserve any console.log or comments.
+    PROMPT
+
+    build_refine_result(response.content, truncated, html_content.length, truncated_html.length)
   rescue StandardError => e
     { success: false, error: "AI refinement failed: #{e.message}" }
   end
@@ -152,18 +171,19 @@ class MapperWizardService
     { success: false, error: e.message }
   end
 
-  # Strips markup that never helps mapper generation (scripts, styles, comments,
-  # inline SVG icons) so the truncation budget below is spent on actual page
-  # content instead of theme boilerplate that often precedes it in the DOM.
-  # <script type="application/ld+json"/"application/json"> is preserved since
-  # some sites embed their search results as structured data rather than HTML.
-  def strip_boilerplate html
-    html
-      .gsub(%r{<script(?![^>]*type=["'](?:application/ld\+json|application/json)["'])[^>]*>.*?</script>}mi, '')
-      .gsub(%r{<style[^>]*>.*?</style>}mi, '')
-      .gsub(/<!--.*?-->/m, '')
-      .gsub(%r{<svg[^>]*>.*?</svg>}mi, '')
-      .gsub(%r{<noscript[^>]*>.*?</noscript>}mi, '')
+  def build_refine_result content, truncated, original_length, sent_length
+    code_match = content.match(/```(?:javascript|js)?\s*\n(.*?)\n```/m)
+    if code_match
+      {
+        success:         true,
+        code:            code_match[1].strip,
+        truncated:       truncated,
+        original_length: original_length,
+        sent_length:     sent_length,
+      }
+    else
+      { success: false, error: 'Could not extract improved code from AI response' }
+    end
   end
 
   def truncate_for_llm text, limit
@@ -172,42 +192,23 @@ class MapperWizardService
     [ text[0...limit], true ]
   end
 
-  def refine_prompt mapper_type, current_code, feedback, sample_html
-    <<~PROMPT
-      You are improving a JavaScript #{mapper_type} function for parsing search results HTML or JSON.
+  def strip_boilerplate html
+    # JSON APIs may contain markup in string values; preserve their payload exactly.
+    begin
+      JSON.parse(html)
+      return html
+    rescue JSON::ParserError
+      # HTML responses continue below.
+    end
 
-      Current code:
-      ```javascript
-      #{current_code}
-      ```
+    document = Nokogiri::HTML.fragment(html)
+    document.css('script, style, svg, noscript').each do |node|
+      next if 'script' == node.name && %w[application/ld+json application/json].include?(node['type'].to_s.strip.downcase)
 
-      User feedback or issue: #{feedback}
-
-      HTML or JSON sample (truncated):
-      ```
-      #{sample_html}
-      ```
-
-      Please provide an improved version of the #{mapper_type} function that addresses the feedback.
-      Return ONLY the improved function code wrapped in ```javascript code blocks.
-      Use the format: #{mapper_type} = function(data) { ... }
-      Target V8 engine only - no DOM APIs like document.querySelector.
-      Use string methods: indexOf, substring, split, match (simple regex only).
-      Please preserve any console.log or comments.
-    PROMPT
-  end
-
-  def build_refine_result content, truncated, original_length, sent_length
-    code_match = content.match(/```(?:javascript|js)?\s*\n(.*?)\n```/m)
-    return { success: false, error: 'Could not extract improved code from AI response' } unless code_match
-
-    {
-      success:         true,
-      code:            code_match[1].strip,
-      truncated:       truncated,
-      original_length: original_length,
-      sent_length:     sent_length,
-    }
+      node.remove
+    end
+    document.xpath('.//comment()').remove
+    document.to_html
   end
 
   def configure_ruby_llm

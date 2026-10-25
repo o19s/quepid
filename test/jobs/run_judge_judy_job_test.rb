@@ -8,47 +8,6 @@ class RunJudgeJudyJobTest < ActiveJob::TestCase
 
   setup { register_default_openai_stubs }
 
-  describe '.actively_judging_user_ids' do
-    test "finds an ai judge's id even though its GlobalID class segment is AiJudge, not User" do
-      SolidQueue::Job.create!(
-        active_job_id: SecureRandom.uuid,
-        class_name:    'RunJudgeJudyJob',
-        queue_name:    'default',
-        arguments:     {
-          'arguments' => [
-            { '_aj_globalid' => book.to_global_id.to_s },
-            { '_aj_globalid' => judge_judy.to_global_id.to_s },
-            nil
-          ],
-        }
-      )
-
-      assert_includes RunJudgeJudyJob.actively_judging_user_ids(book), judge_judy.id
-    end
-  end
-
-  describe 'successful judging' do
-    test 'judges pair and broadcasts updates' do
-      assert_difference 'book.judgements.count', 1 do
-        perform_enqueued_jobs do
-          RunJudgeJudyJob.perform_later(book, judge_judy, 1)
-        end
-      end
-
-      judgement = book.judgements.where(user: judge_judy).last
-      assert_not_nil judgement
-      assert_in_delta(0.0, judgement.rating)
-    end
-
-    test 'syncs case ratings per judged pair rather than one bulk update at the end' do
-      assert_no_enqueued_jobs(only: UpdateCaseJob) do
-        assert_enqueued_with(job: UpdateCaseRatingsJob) do
-          RunJudgeJudyJob.new.perform(book, judge_judy, 1)
-        end
-      end
-    end
-  end
-
   describe 'failure scenarios' do
     test 'not authorized to access OpenAI' do
       # Tell webmock to return a 401 by matching the below key.
@@ -86,7 +45,7 @@ class RunJudgeJudyJobTest < ActiveJob::TestCase
       judgement = book.judgements.order(:id).last
       assert judgement.unrateable
       assert_nil judgement.rating
-      assert_match(/outside the scale/, judgement.explanation)
+      assert_match(/outside this book's scale/, judgement.explanation)
     end
 
     test 'a non-numeric judgment value is marked unrateable, not silently saved as a "0" rating' do
@@ -138,35 +97,189 @@ class RunJudgeJudyJobTest < ActiveJob::TestCase
     end
   end
 
-  describe 'cancellation' do
-    test 'stops judging as soon as its SolidQueue job row disappears' do
-      # james_bond_movies has 7 query/doc pairs available - plenty of room to
-      # prove the loop stops after 1 rather than running out of pairs.
-      job = RunJudgeJudyJob.new
-      job.job_id = SecureRandom.uuid
+  describe '.actively_judging_user_ids' do
+    test "finds an ai judge's id even though its GlobalID class segment is AiJudge, not User" do
+      SolidQueue::Job.create!(
+        active_job_id: SecureRandom.uuid,
+        class_name:    'RunJudgeJudyJob',
+        queue_name:    'default',
+        arguments:     {
+          'arguments' => [
+            { '_aj_globalid' => book.to_global_id.to_s },
+            { '_aj_globalid' => judge_judy.to_global_id.to_s },
+            nil
+          ],
+        }
+      )
 
-      # First call: the initial "am I even tracked by SolidQueue" check (true).
-      # Second call: mid-loop check before judging pair 1 (still true).
-      # Third call onward: the row has been "cancelled" - stop before pair 2.
-      responses = [ true, true, false ]
-      call_index = 0
-      exists_stub = lambda do |*|
-        result = responses[call_index] || false
-        call_index += 1
-        result
+      assert_includes RunJudgeJudyJob.actively_judging_user_ids(book), judge_judy.id
+    end
+  end
+
+  describe 'escalation to an on-call judge' do
+    # judge_judy's key is refused (401), so every answer it gives is unrateable;
+    # the on-call judges below use the valid key and rate 0.
+    let(:on_call) do
+      AiJudge.create!(name: 'On Call', llm_key: OPENAI_VALID_KEY, system_prompt: judge_judy.system_prompt)
+    end
+
+    setup do
+      judge_judy.update!(llm_key: 'BAD_OPENAI_KEY', options: nil)
+    end
+
+    test 'an unrateable answer wakes the on-call judge, which rates the pair and links back' do
+      judge_judy.update!(escalates_to: on_call)
+
+      perform_enqueued_jobs(only: RunJudgeJudyJob) do
+        RunJudgeJudyJob.perform_later(book, judge_judy, 1)
       end
 
-      SolidQueue::Job.singleton_class.send(:alias_method, :exists_without_stub?, :exists?)
-      SolidQueue::Job.define_singleton_method(:exists?, exists_stub)
+      source = book.judgements.find_by!(user: judge_judy)
+      escalated = book.judgements.find_by!(user: on_call)
+      assert source.unrateable
+      assert_equal source, escalated.escalated_from_judgement
+      assert_equal source.query_doc_pair, escalated.query_doc_pair
+      assert_in_delta(0.0, escalated.rating)
+      assert_match(/\AEscalated from Judge Judy, whose answer was unrateable: BOOM/, escalated.explanation)
+    end
 
-      begin
-        assert_difference 'book.judgements.count', 1 do
+    test 'wakes nobody when the judge has no on-call judge' do
+      RunJudgeJudyJob.new.perform(book, judge_judy, 1)
+
+      assert_no_enqueued_jobs(only: RunJudgeJudyJob)
+    end
+
+    test 'wakes nobody when every answer was usable' do
+      judge_judy.update!(llm_key: OPENAI_VALID_KEY, escalates_to: on_call)
+
+      RunJudgeJudyJob.new.perform(book, judge_judy, 1)
+
+      assert_no_enqueued_jobs(only: RunJudgeJudyJob)
+    end
+
+    test 'the second pass is queued for the on-call judge, under its own lock' do
+      judge_judy.update!(escalates_to: on_call)
+
+      assert_enqueued_with(job: RunJudgeJudyJob, args: [ book, on_call, nil, { escalating_from_judge: judge_judy } ]) do
+        RunJudgeJudyJob.new.perform(book, judge_judy, 1)
+      end
+    end
+
+    test 'a pair the on-call judge already judged is skipped, not raised' do
+      judge_judy.update!(escalates_to: on_call)
+      RunJudgeJudyJob.new.perform(book, judge_judy, 1)
+      source = book.judgements.find_by!(user: judge_judy)
+      Judgement.create!(query_doc_pair: source.query_doc_pair, user: on_call, rating: 1)
+
+      assert_no_difference 'Judgement.count' do
+        RunJudgeJudyJob.new.perform(book, on_call, nil, escalating_from_judge: judge_judy)
+      end
+    end
+
+    test 'each unrateable answer is escalated once, however often the pass runs' do
+      judge_judy.update!(escalates_to: on_call)
+      RunJudgeJudyJob.new.perform(book, judge_judy, 2)
+
+      assert_difference 'book.judgements.where(user: on_call).count', 2 do
+        RunJudgeJudyJob.new.perform(book, on_call, nil, escalating_from_judge: judge_judy)
+      end
+      assert_no_difference 'Judgement.count' do
+        RunJudgeJudyJob.new.perform(book, on_call, nil, escalating_from_judge: judge_judy)
+      end
+    end
+
+    test 'an on-call judge that is also unsure wakes the next one down the chain' do
+      unsure_on_call = AiJudge.create!(name: 'Unsure On Call', llm_key: 'BAD_OPENAI_KEY',
+                                       system_prompt: judge_judy.system_prompt, escalates_to: on_call)
+      judge_judy.update!(escalates_to: unsure_on_call)
+
+      perform_enqueued_jobs(only: RunJudgeJudyJob) do
+        RunJudgeJudyJob.perform_later(book, judge_judy, 1)
+      end
+
+      middle = book.judgements.find_by!(user: unsure_on_call)
+      last = book.judgements.find_by!(user: on_call)
+      assert middle.unrateable
+      assert_equal book.judgements.find_by!(user: judge_judy), middle.escalated_from_judgement
+      assert_equal middle, last.escalated_from_judgement
+      assert_in_delta(0.0, last.rating)
+    end
+  end
+
+  describe 'successful judging' do
+    test 'judges pair and broadcasts updates' do
+      assert_difference 'book.judgements.count', 1 do
+        perform_enqueued_jobs do
+          RunJudgeJudyJob.perform_later(book, judge_judy, 1)
+        end
+      end
+
+      judgement = book.judgements.where(user: judge_judy).last
+      assert_not_nil judgement
+      assert_in_delta(0.0, judgement.rating)
+    end
+
+    test 'syncs case ratings per judged pair rather than one bulk update at the end' do
+      assert_no_enqueued_jobs(only: UpdateCaseJob) do
+        assert_enqueued_with(job: UpdateCaseRatingsJob) do
+          RunJudgeJudyJob.new.perform(book, judge_judy, 1)
+        end
+      end
+    end
+  end
+
+  describe 'cancellation' do
+    test 'stops after saving the provider response when cancellation is requested' do
+      job = RunJudgeJudyJob.new(book, judge_judy, nil)
+      SolidQueue::Job.create!(
+        active_job_id: job.job_id,
+        class_name:    'RunJudgeJudyJob',
+        queue_name:    'default',
+        arguments:     job.serialize
+      )
+      stub_request(:post, 'https://api.openai.com/v1/chat/completions').to_return do
+        RunJudgeJudyJob.cancel(book, judge_judy)
+        { status: 200, body: { choices: [ { message: { content: '{"judgment": 0, "explanation": "Current response"}' } } ] }.to_json,
+          headers: { 'Content-Type' => 'application/json' } }
+      end
+
+      assert_difference 'book.judgements.count', 1 do
+        job.perform(book, judge_judy, nil)
+      end
+      assert_requested :post, 'https://api.openai.com/v1/chat/completions', times: 1
+    end
+
+    test 'a tracked job cancelled before execution makes no provider request' do
+      job = RunJudgeJudyJob.new
+      job.provider_job_id = 999_999_999
+      assert_no_difference 'book.judgements.count' do
+        job.perform(book, judge_judy, nil)
+      end
+      assert_not_requested :post, 'https://api.openai.com/v1/chat/completions'
+    end
+
+    test 'cancellation with pending escalations does not wake the on-call judge' do
+      on_call = AiJudge.create!(name: 'On Call', llm_key: OPENAI_VALID_KEY, system_prompt: judge_judy.system_prompt)
+      judge_judy.update!(escalates_to: on_call)
+      source = Judgement.create!(query_doc_pair: book.query_doc_pairs.first, user: judge_judy,
+                                 unrateable: true, explanation: 'Unsure')
+      assert Judgement.awaiting_escalation(book, from: judge_judy, to: on_call).exists?(source.id)
+
+      job = RunJudgeJudyJob.new(book, judge_judy, nil)
+      SolidQueue::Job.create!(
+        active_job_id: job.job_id,
+        class_name:    'RunJudgeJudyJob',
+        queue_name:    'default',
+        arguments:     job.serialize
+      )
+      RunJudgeJudyJob.cancel(book, judge_judy)
+
+      assert_no_enqueued_jobs only: RunJudgeJudyJob do
+        assert_no_difference 'Judgement.count' do
           job.perform(book, judge_judy, nil)
         end
-      ensure
-        SolidQueue::Job.singleton_class.send(:alias_method, :exists?, :exists_without_stub?)
-        SolidQueue::Job.singleton_class.send(:remove_method, :exists_without_stub?)
       end
+      assert_not_requested :post, 'https://api.openai.com/v1/chat/completions'
     end
 
     test 'runs to completion when never tracked by SolidQueue (e.g. inline/test adapter)' do

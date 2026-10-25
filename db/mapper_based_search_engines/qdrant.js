@@ -5,7 +5,7 @@
 // thing the other mapper-based engines without a total report.
 //
 // The visible consequence is that "Peek at the next page of results" never appears for a
-// Qdrant case - searchResults.html/targetedSearchModal.html both gate that button on
+// Qdrant case - the search results and Missing Documents runtime both gate that button on
 // numFound > docs.length, which can never be true when numFound IS docs.length. That is why
 // the definition in app/models/mapper_based_search_engine.rb leaves supports_pagination at
 // its false default and why there is no nextPageArgsMapper below; see the comment there for
@@ -53,7 +53,7 @@ docsMapper = function (data) {
 
 // ratedDocsQueryParamsMapper - Builds a one-off query_params string that looks up exactly the
 // given rated doc IDs, for the "Already Rated Documents" section of the
-// Find-and-Rate-Missing-Documents modal. queriesSvc.js's filterToRatings() has no generic
+// Find-and-Rate-Missing-Documents modal. query_service.js's rated-document lookup has no generic
 // ID-filter syntax for a searchapi engine (unlike Solr's {!terms f=id} or ES's terms query),
 // so that's left to whichever mapper actually knows its target API's query language.
 //
@@ -61,7 +61,7 @@ docsMapper = function (data) {
 // no query and no prefetch the request degrades to returning the filtered points ordered by
 // id, which is exactly what an ID lookup wants - there is nothing to score here.
 //
-// idField is the case's own id field (queriesSvc.js passes fieldSpec.id, i.e. whatever
+// idField is the case's own id field (query_service.js passes fieldSpec.id, i.e. whatever
 // follows "id:" in the try's field_spec). Two genuinely different lookups hide behind it:
 //
 //   - "id" (the definition's default) means Qdrant's own point id, which is NOT a payload key
@@ -70,23 +70,30 @@ docsMapper = function (data) {
 //     digits-only id is converted back to a number here; sending "42" as a string makes
 //     Qdrant try to parse it as a UUID and reject the request.
 //   - anything else means a payload key, filtered with match/any (Qdrant's IN operator).
-//     Values are passed through as the strings Quepid stores them as, deliberately without
-//     the numeric conversion above: a payload value like an "007" SKU is a string in Qdrant
-//     too, and coercing it to 7 would silently match nothing.
+//     Ratings retain only string ids, so their original payload type is unavailable.
+//     Match strings and canonical safe integers in separate OR conditions. Leading-zero
+//     keys such as "007" stay string-only so they cannot also match a different numeric id.
 //
 // limit is set explicitly because Qdrant defaults it to 10 - without it a query with more
 // than ten ratings would only get its first ten back.
 ratedDocsQueryParamsMapper = function (ratedIds, idField) {
-  const condition = idField === 'id' ?
-    {
+  let condition;
+  if (idField === 'id') {
+    condition = {
       has_id: ratedIds.map(function (id) {
         return /^\d+$/.test(id) ? Number(id) : id;
       })
-    } :
-    {
-      key:   idField,
-      match: { any: ratedIds.map(function (id) { return String(id); }) }
     };
+  } else {
+    const strings = ratedIds.map(function (id) { return String(id); });
+    const integers = strings.filter(function (id) {
+      return Number.isSafeInteger(Number(id)) && String(Number(id)) === id;
+    }).map(Number);
+    const stringMatch = { key: idField, match: { any: strings } };
+    condition = integers.length ? {
+      should: [stringMatch, { key: idField, match: { any: integers } }]
+    } : stringMatch;
+  }
 
   return JSON.stringify({
     filter:       { must: [ condition ] },

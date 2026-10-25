@@ -1,10 +1,26 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest"
-import { openDynamicModal } from "utils/dynamic_modal"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
+import DynamicModalController from "controllers/dynamic_modal_controller"
+import { openDynamicModal as cloneModal } from "utils/dynamic_modal"
+import { buildControllerFixture } from "../support/controller_fixture"
+
+// Drive the modal's Stimulus lifecycle explicitly; the browser connects it
+// after the caller has populated the cloned shell.
+function openDynamicModal(options) {
+  const handle = cloneModal(options)
+  const controller = buildControllerFixture(DynamicModalController, { element: handle.element })
+  controller.connect()
+  handle.controller = controller
+  return handle
+}
 
 describe("dynamic_modal", () => {
   beforeEach(() => {
     window.bootstrap = {
       Modal: class ModalMock {
+        static getInstance(element) {
+          return ModalMock.instances.get(element) || null
+        }
+
         constructor(el, config) {
           this.element = el
           this._config = config
@@ -17,11 +33,13 @@ describe("dynamic_modal", () => {
           const backdrop = document.createElement("div")
           backdrop.className = "modal-backdrop"
           document.body.appendChild(backdrop)
+          this.element.dispatchEvent(new Event("shown.bs.modal"))
         }
 
         hide() {
           this._shown = false
           this.element.classList.remove("show")
+          document.querySelector(".modal-backdrop:last-child")?.remove()
           this.element.dispatchEvent(new Event("hidden.bs.modal"))
         }
 
@@ -40,16 +58,26 @@ describe("dynamic_modal", () => {
   })
 
   it("builds a .modal > .modal-dialog > .modal-content wrapper with the given html and shows it", () => {
-    const { element } = openDynamicModal({ html: "<p>hi</p>", size: "lg", windowClass: "doc-detailed-explain-modal" })
+    const { element } = openDynamicModal({ html: "<p>hi</p>", size: "lg", windowClass: "full-screen-modal" })
 
     expect(element.classList.contains("modal")).toBe(true)
-    expect(element.classList.contains("doc-detailed-explain-modal")).toBe(true)
+    expect(element.classList.contains("full-screen-modal")).toBe(true)
     expect(element.querySelector(".modal-dialog.modal-lg")).not.toBeNull()
     expect(element.querySelector(".modal-content").innerHTML).toBe("<p>hi</p>")
     expect(document.body.contains(element)).toBe(true)
 
     const instance = window.bootstrap.Modal.instances.get(element)
     expect(instance._shown).toBe(true)
+  })
+
+  it("sets aria-labelledby when given (query-explain modal's title heading)", () => {
+    const { element } = openDynamicModal({ html: "<p>hi</p>", ariaLabelledBy: "some-title-id" })
+    expect(element.getAttribute("aria-labelledby")).toBe("some-title-id")
+  })
+
+  it("omits aria-labelledby when not given", () => {
+    const { element } = openDynamicModal({ html: "<p>hi</p>" })
+    expect(element.hasAttribute("aria-labelledby")).toBe(false)
   })
 
   it("omits the size class when no size is given", () => {
@@ -65,6 +93,18 @@ describe("dynamic_modal", () => {
 
     expect(instance._disposed).toBe(true)
     expect(document.body.contains(element)).toBe(false)
+  })
+
+  it("routes dispose() through hide() so BS5 can remove its backdrop", () => {
+    const { dispose } = openDynamicModal({ html: "<p>hi</p>" })
+    const instance = window.bootstrap.Modal.instances.get(
+      document.querySelector(".modal")
+    )
+    const hideSpy = vi.spyOn(instance, "hide")
+
+    dispose()
+
+    expect(hideSpy).toHaveBeenCalledTimes(1)
   })
 
   it("tears down when bootstrap.Modal is unavailable instead of leaving an orphaned element shown", () => {

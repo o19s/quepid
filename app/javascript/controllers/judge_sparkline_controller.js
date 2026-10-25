@@ -13,10 +13,12 @@ export default class extends Controller {
   static values = { color: String, values: Array }
 
   connect() {
+    this.disconnected = false
     this.embed()
   }
 
   disconnect() {
+    this.disconnected = true
     this.view?.finalize()
   }
 
@@ -25,10 +27,16 @@ export default class extends Controller {
       actions: false,
       renderer: "svg"
     })
+    if (this.disconnected) {
+      result.view.finalize()
+      return
+    }
     this.view = result.view
+    if (this.pendingValues) this.updateValues(this.pendingValues)
   }
 
   updateValues(values) {
+    this.pendingValues = values
     if (!this.view) return
 
     this.view.data("source", values)

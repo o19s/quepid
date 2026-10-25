@@ -294,7 +294,7 @@ class FetchServiceTest < ActiveSupport::TestCase
       fetch_service.begin(acase, atry)
 
       docs = [
-        { id: 'doc1', explain: '1' },
+        { id: 'doc1', explain: { match: true, value: 1.5 } },
         { id: 'doc2', explain: '2' }
       ]
 
@@ -306,7 +306,52 @@ class FetchServiceTest < ActiveSupport::TestCase
         snapshot_query.reload # reload in order to check the underlying data
         assert_equal docs.size, snapshot_query.snapshot_docs.size
         assert_equal response_status, snapshot_query.response_status
+        assert_equal({ 'match' => true, 'value' => 1.5 }, JSON.parse(snapshot_query.snapshot_docs.find_by!(doc_id: 'doc1').explain))
       end
+    end
+
+    %w[es os].each do |engine|
+      it "persists backend document IDs from #{engine} results" do
+        fetch_service = FetchService.new options
+        fetch_service.begin(acase, atry)
+        response_body = {
+          hits: {
+            hits: [
+              { _id: 'backend-1', _source: { id: 'source-1', title: 'First result' } },
+              { _id: 'backend-2', _source: { title: 'Second result' } }
+            ],
+          },
+        }.to_json
+
+        docs = fetch_service.public_send("extract_docs_from_response_body_for_#{engine}", response_body)
+        snapshot_query = fetch_service.store_query_results(first_query, docs, 200, response_body)
+        persisted_docs = snapshot_query.reload.snapshot_docs.order(:position).to_a
+
+        assert_equal %w[backend-1 backend-2], persisted_docs.map(&:doc_id)
+        assert_equal [ 1, 2 ], persisted_docs.map(&:position)
+        assert_equal({ 'id' => 'source-1', 'title' => 'First result' }, JSON.parse(persisted_docs.first.fields))
+        assert_equal({ 'title' => 'Second result' }, JSON.parse(persisted_docs.second.fields))
+        assert_equal 2, snapshot_query.number_of_results
+        assert_equal 200, snapshot_query.response_status
+      end
+    end
+
+    it 'returns the exact row and web request for each repeated query run' do
+      fetch_service = FetchService.new(options.merge(track_web_requests: true))
+      fetch_service.begin(acase, atry)
+
+      first = fetch_service.store_query_results(first_query, [ { id: 'original' } ], 200, 'first response')
+      second = fetch_service.store_query_results(first_query, [], 503, 'second response', error: 'unavailable')
+
+      assert_not_equal first.id, second.id
+      assert_equal [ 'original' ], first.reload.snapshot_docs.pluck(:doc_id)
+      assert_empty second.snapshot_docs
+      assert_equal 1, first.number_of_results
+      assert_equal 0, second.number_of_results
+      assert_equal 503, second.response_status
+      assert_equal 'unavailable', second.error
+      assert_equal 'first response', first.web_request.response
+      assert_equal 'second response', second.web_request.response
     end
 
     it 'limits how many snapshots you can have when completed' do
@@ -474,40 +519,6 @@ class FetchServiceTest < ActiveSupport::TestCase
       assert_nil doc[:explain]
     end
 
-    it 'converts docs to SnapshotDocs for SnapshotQuery' do
-      fetch_service = FetchService.new options
-
-      snapshot_query.snapshot_docs.destroy_all
-
-      docs = []
-      docs << {
-        id:      '123',
-        explain: { match: true, value: 13.647848 },
-        fields:  { version: 1234, title: [ 'milk' ] },
-      }
-      docs << {
-        id:      'abc',
-        explain: nil,
-        fields:  { version: 5678, title: [ 'eggs' ] },
-      }
-
-      results = fetch_service.setup_docs_for_query snapshot_query, docs
-      assert_equal 2, results.count
-
-      SnapshotDoc.insert_all(
-        results.map do |doc|
-          doc.attributes.except('id')
-        end
-      )
-
-      snapshot_query.reload
-      assert_equal 2, snapshot_query.snapshot_docs.count
-
-      snapshot_doc = snapshot_query.snapshot_docs.first
-
-      assert_nothing_raised { JSON.parse(snapshot_doc.explain) }
-    end
-
     it 'lets you extract from raw elasticsearch dump' do
       mock_elasticsearch_response_body = <<~HEREDOC
         {
@@ -549,7 +560,7 @@ class FetchServiceTest < ActiveSupport::TestCase
       assert_equal 2, docs.count
 
       doc = docs.first
-      assert_equal 'l_1', doc[:_id]
+      assert_equal 'l_1', doc[:id]
       assert_nil doc[:explain]
       # assert_nothing_raised { JSON.parse(doc[:explain]) }
 
@@ -586,6 +597,32 @@ class FetchServiceTest < ActiveSupport::TestCase
 
       snapshot_query.reload
       assert_in_delta(0.5, snapshot_query.score)
+    end
+
+    it 'passes doc fields and highest-first best docs to the scorer' do
+      snapshot_query.query.ratings.destroy_all
+      snapshot_query.query.ratings.create!(doc_id: 'low', rating: 1)
+      snapshot_query.query.ratings.create!(doc_id: 'high', rating: 3)
+      asnapshot.scorer.update!(code: <<~JS)
+        const top = topRatings(2);
+        setScore(docAt(0).title === 'title' && top[0] === 3 && top[1] === 1 ? 1 : 0);
+      JS
+
+      fetch_service = FetchService.new options
+      fetch_service.begin acase, atry
+      fetch_service.score_snapshot(asnapshot, atry, nil)
+
+      assert_in_delta(1.0, snapshot_query.reload.score)
+    end
+
+    it 'leaves unscored queries out of the case average' do
+      asnapshot.scorer.update!(code: 'fail()')
+
+      fetch_service = FetchService.new options
+      fetch_service.begin acase, atry
+      score_data = fetch_service.score_snapshot(asnapshot, atry, nil)
+
+      assert_in_delta(0.0, score_data[:score])
     end
   end
 

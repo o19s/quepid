@@ -1,5 +1,8 @@
 # Judgement escalation — what worries me about it
 
+Imported from upstream `957ab241`; see
+[the current implementation corrections](../adr/0001-llm-judge-provider-architecture.md#current-implementation-status).
+
 > Companion to `docs/todo/escalating_judges.md`, which is the plan. This is the risk register:
 > what I think can go wrong, what it would cost to find out, and where I would change the plan.
 > Written before any code exists, while changing our minds is still free.
@@ -15,8 +18,9 @@ Four facts the whole design rests on:
    (`ratings_manager.rb:58`), so an unrateable row never moves a rating.
 3. **A pair's rating is the mean of whoever rated it.** Same place — so on an escalated pair the
    rating is the expensive judge's alone, because the cheap judge's row is excluded.
-4. **`RunJudgeJudyJob` has no concurrency limit** (unlike `PopulateBookJob` and
-   `RunCaseEvaluationJob`). Two runs on one book can already overlap today.
+4. **`RunJudgeJudyJob` has a per-book/judge concurrency limit**, with durable
+   cancellation and automatic continuations. The overlapping-run risks below
+   concern extending that protection to multiple judges in a chain.
 
 ## 1. The judgement set stops being homogeneous — and nothing says so
 
@@ -83,7 +87,8 @@ in advance (§3). The plan's budget cap helps, but:
 - the default (10% of the run) is invented; the right number is per book and per wallet;
 - there is no preview: no "this would have escalated 412 pairs" dry run;
 - there is no spend readout afterwards, only a count of escalations;
-- two overlapping runs (fact 4) double it, and nothing stops them.
+- overlapping chains can still double it unless the per-book/judge concurrency
+  guard (fact 4) also protects work delegated to the fallback judge.
 
 ## 5. A pair that fails escalation is stuck forever
 

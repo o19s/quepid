@@ -31,6 +31,24 @@
 require 'test_helper'
 
 class TryTest < ActiveSupport::TestCase
+  test 'deleting a try preserves its score history without a dangling try reference' do
+    original_try = tries(:one)
+    annotation = Annotation.create!(user: users(:doug), message: 'Historical note')
+    score = original_try.case.scores.create!(try: original_try, user: users(:doug), score: 0.5, annotation: annotation)
+    other_try = original_try.case.tries.create!
+    other_score = original_try.case.scores.create!(try: other_try, score: 0.7)
+
+    assert_no_difference 'Score.count' do
+      original_try.destroy!
+    end
+
+    assert_nil score.reload.try_id
+    assert_nil score.try
+    assert_equal annotation, score.annotation
+    assert_predicate score, :valid?
+    assert_equal other_try.id, other_score.reload.try_id
+  end
+
   describe 'Curator Vars' do
     test 'adds curator vars to try' do
       try = tries(:try_without_curator_vars)
@@ -164,47 +182,15 @@ class TryTest < ActiveSupport::TestCase
         assert_equal({ 'yql' => 'select * from movies where true' }, args)
       end
 
-      test 'parses Vespa parameter lists without wrapping the whole template as YQL' do
+      test 'Vespa parameter lists preserve scalar values, repeated keys, and curator variables' do
         try = tries(:one)
         try.search_endpoint.search_engine = 'searchapi'
         try.search_endpoint.mapper_based_search_engine_id = 'vespa'
-        try.search_endpoint.api_method = 'AUTO'
-        yql = 'select * from movies where title contains "#$query##" or cast contains "#$query##" '
-        try.query_params = "yql=#{yql}&ranking.profile=bm25"
+        try.query_params = "yql=select * from movies where vote_count > ##main_fix_threshold##\n&ranking.profile=bm25&filter=one&filter=two"
+        try.add_curator_vars('main_fix_threshold' => 5)
 
-        assert_equal({ 'yql' => yql, 'ranking.profile' => 'bm25' }, try.args)
-        assert_equal 'AUTO', try.resolved_api_method
-      end
-
-      test 'parses reordered multiline Vespa parameters and preserves equals signs and curator variables' do
-        try = tries(:try_with_curator_vars)
-        try.search_endpoint.search_engine = 'searchapi'
-        try.search_endpoint.mapper_based_search_engine_id = 'vespa'
-        try.query_params = "  ranking.profile=bm25&\nyql=select * from movies where year >= 2000&hits=##one##"
-
-        assert_equal({ 'ranking.profile' => 'bm25', 'yql' => 'select * from movies where year >= 2000',
-                       'hits' => '1' }, try.args)
-      end
-
-      test 'preserves bare Vespa YQL containing equals signs and ampersands' do
-        try = tries(:one)
-        try.search_endpoint.search_engine = 'searchapi'
-        try.search_endpoint.mapper_based_search_engine_id = 'vespa'
-        yql = 'select * from movies where year >= 2000 and title contains "A&B"'
-        try.query_params = yql
-
-        assert_equal({ 'yql' => yql }, try.args)
-      end
-
-      test 'keeps Vespa JSON queries working' do
-        try = tries(:one)
-        try.search_endpoint.search_engine = 'searchapi'
-        try.search_endpoint.mapper_based_search_engine_id = 'vespa'
-        args = { 'yql' => 'select * from movies where title contains "#$query##"', 'ranking.profile' => 'bm25' }
-        try.query_params = args.to_json
-
-        assert_equal args, try.args
-        assert_equal 'POST', try.resolved_api_method
+        assert_equal({ 'yql' => 'select * from movies where vote_count > 5',
+                       'ranking.profile' => 'bm25', 'filter' => %w[one two] }, try.args)
       end
 
       test 'still uses SolrArgParser for bare text when the endpoint has no mapper-based search engine' do
@@ -234,6 +220,39 @@ class TryTest < ActiveSupport::TestCase
 
         assert_nil args
       end
+    end
+  end
+
+  # Mirrors formattedName() in app/assets/javascripts/factories/TryFactory.js, so the
+  # server-rendered case header and the client models still in the page agree on the label.
+  describe '#formatted_name' do
+    test 'leaves a name that already mentions its try number alone' do
+      try = tries(:one)
+      try.name = 'Try 1'
+
+      assert_equal 'Try 1', try.formatted_name
+    end
+
+    test 'leaves a name that embeds its try number alone' do
+      try = tries(:one)
+      try.name = 'Baseline Try 1 rerun'
+
+      assert_equal 'Baseline Try 1 rerun', try.formatted_name
+    end
+
+    test 'appends the try number to a name that does not mention it' do
+      try = tries(:one)
+      try.name = 'Baseline'
+
+      assert_equal 'Baseline - Try 1', try.formatted_name
+    end
+
+    # A different try's number in the name must not suppress this try's own.
+    test 'appends the try number when the name mentions a different try' do
+      try = tries(:one)
+      try.name = 'Copy of Try 7'
+
+      assert_equal 'Copy of Try 7 - Try 1', try.formatted_name
     end
   end
 

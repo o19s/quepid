@@ -13,6 +13,7 @@ class MapperBasedSearchEngineTest < ActiveSupport::TestCase
 
       assert vespa
       assert_equal 'Vespa', vespa.name
+      assert_not vespa.supports_direct_document_lookup
       assert_equal 'searchapi', vespa.search_engine
       assert_equal File.read(Rails.root.join('db/mapper_based_search_engines/vespa.js')), vespa.mapper_code
     end
@@ -29,6 +30,7 @@ class MapperBasedSearchEngineTest < ActiveSupport::TestCase
 
       assert qdrant
       assert_equal 'Qdrant', qdrant.name
+      assert_not qdrant.supports_direct_document_lookup
       assert_equal 'searchapi', qdrant.search_engine
       assert_equal File.read(Rails.root.join('db/mapper_based_search_engines/qdrant.js')), qdrant.mapper_code
     end

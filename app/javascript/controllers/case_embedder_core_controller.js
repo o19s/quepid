@@ -1,11 +1,7 @@
-import ModalTriggerControllerBase from "controllers/core_modal_trigger_controller_base"
+import CoreModalControllerBase from "controllers/core_modal_controller_base"
 import { apiFetch } from "api/fetch"
-import { getOrCreateBsModal, hideBsModal } from "utils/bs_modal"
-import { escapeHtml } from "utils/stimulus_ui"
+import { CORE_EVENTS } from "utils/core_events"
 
-const CHANGED_EVENT = "quepid:case-embedder-changed"
-// Read by queriesSvc.applyVectorStatuses (Angular) to update the query badges.
-const VECTORS_EVENT = "quepid:query-vectors-changed"
 const POLL_MS = 3000
 const STATUS_LABELS = { current: "current", pending: "pending", stale: "outdated", failed: "failed" }
 
@@ -15,20 +11,19 @@ function describe(embedder) {
 }
 
 /**
- * Picks the case's embedder from the core case toolbar. New on core (there was no
- * Angular version); laid out like the Angular scorer picker (views/pick_scorer.html),
- * saving through Api::V1::CaseEmbeddersController and staying on the page.
+ * Picks the case's embedder from the core case toolbar. Laid out like the scorer
+ * picker (pick-scorer-core), saving through Api::V1::CaseEmbeddersController and
+ * staying on the page.
  *
- * Dual-role like clone-case-core (ModalTriggerControllerBase): one instance on the
- * toolbar link, one on the modal in shared/_case_embedder_core_modal.html.erb, which
- * owns the URLs. A third, in the case header, shows the current embedder's name the
- * way the header shows the scorer's (hidden while there is none): it asks the modal
- * instance for it once Angular has filled in the case id, and again whenever a save
- * announces a change on `document`. It also hands every query's vector status to
- * Angular (VECTORS_EVENT) and, while a vectorisation run is queued or under way, polls
- * for progress -- the core page has no ActionCable.
+ * Lives on the modal in shared/_case_embedder_core_modal.html.erb, which owns the
+ * URLs and the case id. The case header shows the embedder's name server-side, so a
+ * save asks for the header frame again (`quepid:case-header-stale`). The controller
+ * also hands every query's vector status to the live query runtime
+ * (`quepid:query-vectors-changed`, read by utils/live_query_events) and, while a
+ * vectorisation run is queued or under way, polls for progress -- the core page has
+ * no ActionCable.
  */
-export default class extends ModalTriggerControllerBase {
+export default class extends CoreModalControllerBase {
   static targets = [
     "title",
     "alert",
@@ -36,7 +31,6 @@ export default class extends ModalTriggerControllerBase {
     "list",
     "emptyNotice",
     "submitButton",
-    "name",
     "vectorPanel",
     "vectorSummary",
     "revectorizeButton"
@@ -49,43 +43,30 @@ export default class extends ModalTriggerControllerBase {
     vectorizeUrlTemplate: String
   }
 
-  modalElementId = "caseEmbedderModal"
-
-  // --- case header instance ---
-
-  // Rendered by Angular, so the id arrives as "{{ … }}" and is only later
-  // interpolated into a number; act on the real one.
-  idValueChanged() {
-    if (!this.hasNameTarget || !/^\d+$/.test(this.idValue)) return
-
-    this.poll()
+  // A run may already be under way when the page loads (the statuses themselves
+  // arrive with the queries).
+  connect() {
+    if (this.idValue) this.poll()
   }
 
   disconnect() {
     clearTimeout(this.pollTimer)
   }
 
-  changed(event) {
-    if (!this.hasNameTarget || String(event.detail?.caseId) !== this.idValue) return
-
-    this.applyState(event.detail.state)
-  }
-
   async poll() {
     try {
-      const state = await this.modalController()?.fetchState(this.idValue)
-      if (state) this.applyState(state)
+      this.applyState(await this.fetchState(this.idValue))
     } catch {
       // A failed poll leaves the page as it was; the next save or reload tries again.
     }
   }
 
   applyState(state) {
-    this.renderLabel(state)
-
     if (state?.vectors) {
       document.dispatchEvent(
-        new CustomEvent(VECTORS_EVENT, { detail: { caseNo: this.idValue, queries: state.vectors.queries } })
+        new CustomEvent(CORE_EVENTS.QUERY_VECTORS_CHANGED, {
+          detail: { caseId: Number(this.idValue), queries: state.vectors.queries }
+        })
       )
     }
 
@@ -93,19 +74,11 @@ export default class extends ModalTriggerControllerBase {
     if (state?.vectors?.running) this.pollTimer = setTimeout(() => this.poll(), POLL_MS)
   }
 
-  renderLabel(state) {
-    this.nameTarget.textContent = state?.embedder?.name || ""
-    this.element.hidden = !state?.embedder
-  }
-
-  // --- modal instance ---
-
-  async openAsRoot(event) {
-    const link = event.currentTarget || event.target
-    this.caseId = link?.dataset?.caseEmbedderCoreIdValue || ""
+  async openFor(trigger) {
+    this.caseId = this.triggerValue(trigger, "id") || this.idValue
     this.selectedId = null
     this.clearAlert()
-    this.listTarget.innerHTML = ""
+    this.listTarget.replaceChildren()
     this.submitButtonTarget.disabled = true
 
     try {
@@ -132,14 +105,22 @@ export default class extends ModalTriggerControllerBase {
     // A teammate may have picked one that isn't shared with you: still show it as current.
     if (current && !current.accessible) items.push({ ...current, detail: describe(current) })
 
-    this.listTarget.innerHTML = items
-      .map(
-        (item) => `<button type="button" class="list-group-item list-group-item-action"
-            data-embedder-id="${item.embedder_id}" data-action="click->case-embedder-core#select">
-            <div>${escapeHtml(item.name)}</div>
-            <small class="text-muted">${escapeHtml(item.detail)}</small></button>`
-      )
-      .join("")
+    this.listTarget.replaceChildren(
+      ...items.map((item) => {
+        const button = document.createElement("button")
+        button.type = "button"
+        button.className = "list-group-item list-group-item-action"
+        button.dataset.embedderId = item.embedder_id
+        button.dataset.action = "click->case-embedder-core#select"
+        const name = document.createElement("div")
+        name.textContent = item.name
+        const detail = document.createElement("small")
+        detail.className = "text-muted"
+        detail.textContent = item.detail
+        button.append(name, detail)
+        return button
+      })
+    )
 
     this.emptyNoticeTarget.classList.toggle("d-none", embedders.length > 0)
 
@@ -182,7 +163,7 @@ export default class extends ModalTriggerControllerBase {
 
       this.state = data
       this.renderVectors()
-      document.dispatchEvent(new CustomEvent(CHANGED_EVENT, { detail: { caseId: this.caseId, state: data } }))
+      this.applyState(data)
     } catch (error) {
       this.showAlert(error.message, "danger")
       this.revectorizeButtonTarget.disabled = false
@@ -217,21 +198,16 @@ export default class extends ModalTriggerControllerBase {
       if (!response.ok) throw new Error(data.error || `Unable to save (${response.status})`)
 
       this.state = data
-      document.dispatchEvent(new CustomEvent(CHANGED_EVENT, { detail: { caseId: this.caseId, state: data } }))
-      hideBsModal(getOrCreateBsModal(this.element))
+      this.applyState(data)
+      document.dispatchEvent(
+        new CustomEvent(CORE_EVENTS.CASE_HEADER_STALE, {
+          detail: { caseNo: Number(this.caseId), reason: "embedder" }
+        })
+      )
+      this.hide()
     } catch (error) {
       this.showAlert(error.message, "danger")
       this.submitButtonTarget.disabled = false
     }
-  }
-
-  showAlert(message, type) {
-    this.alertTarget.className = `alert alert-${type}`
-    this.alertTarget.textContent = message
-  }
-
-  clearAlert() {
-    this.alertTarget.className = "alert d-none"
-    this.alertTarget.textContent = ""
   }
 }

@@ -4,18 +4,17 @@ require 'test_helper'
 require 'zip'
 
 class ExportBookJobTest < ActiveJob::TestCase
+  include Turbo::Broadcastable::TestHelper
+
   let(:book) { books(:james_bond_movies) }
 
   test 'export the book works' do
-    assert_nil book.export_job
+    book.update!(export_job: 'queued')
     assert_not book.export_file.attached?
 
-    perform_enqueued_jobs do
-      ExportBookJob.perform_now(book)
-      # assert_not_nil book.export_job
-    end
+    ExportBookJob.perform_now(book)
 
-    assert_nil book.export_job
+    assert_nil book.reload.export_job
     assert_predicate book.export_file, :attached?
 
     # Get the Active Storage attachment
@@ -35,5 +34,39 @@ class ExportBookJobTest < ActiveJob::TestCase
       assert_not_nil body['scale']
       assert_not_nil body['scale_with_labels']
     end
+  end
+
+  test 'broadcasts the download link to the export page when it finishes' do
+    streams = capture_turbo_stream_broadcasts([ book, :export ]) do
+      ExportBookJob.perform_now(book)
+    end
+
+    assert_equal([ "export_status_book_#{book.id}" ] * 2, streams.map { |stream| stream['target'] })
+    assert_includes streams.first.text, 'currently being exported'
+    assert_includes streams.last.text, 'available to download'
+    assert_equal 'Re-Export', streams.last.at_css('button').text.strip
+  end
+
+  test 'the completion notice links to the export tab' do
+    streams = capture_turbo_stream_broadcasts([ book.owner, :notifications ]) do
+      ExportBookJob.perform_now(book)
+    end
+
+    assert_equal "/books/#{book.id}/export", streams.last.at_css('a')['href']
+  end
+
+  test 'a failed export clears the in-progress state and tells the export page' do
+    book.update!(export_job: 'queued')
+    failing_job = ExportBookJob.new(book)
+    failing_job.define_singleton_method(:create_zip_from_json) { |*| raise 'boom' }
+
+    streams = capture_turbo_stream_broadcasts([ book, :export ]) do
+      assert_raises(RuntimeError) { failing_job.perform_now }
+    end
+
+    assert_nil book.reload.export_job
+    assert_not book.export_file.attached?
+    assert_includes streams.last.text, 'The last export failed'
+    assert_equal 'Export', streams.last.at_css('button').text.strip
   end
 end

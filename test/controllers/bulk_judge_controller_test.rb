@@ -21,6 +21,21 @@ class BulkJudgeControllerTest < ActionDispatch::IntegrationTest
       Bullet.enable = true
     end
 
+    test 'renders reset buttons for rated pairs and the template the controller clones' do
+      Bullet.enable = false
+      Judgement.create!(user: user, query_doc_pair: query_doc_pair, rating: 1)
+
+      get book_judge_bulk_path(book), params: { only_unrated: false }
+
+      assert_response :success
+      assert_select "#qdp_#{query_doc_pair.id} button[data-action=\"click->bulk-judgement#resetRating\"][data-query-doc-pair-id=\"#{query_doc_pair.id}\"]", count: 1
+      assert_select '[data-controller="bulk-judgement"] template[data-bulk-judgement-target="resetButtonTemplate"]' do
+        assert_select 'button[data-action="click->bulk-judgement#resetRating"]:not([data-query-doc-pair-id])', count: 1
+      end
+    ensure
+      Bullet.enable = true
+    end
+
     test 'filters by query text when provided' do
       get book_judge_bulk_path(book), params: { query_text: 'funny' }
       assert_response :success
@@ -116,9 +131,60 @@ class BulkJudgeControllerTest < ActionDispatch::IntegrationTest
       assert_instance_of Hash, assigns(:judgements)
       Bullet.enable = true
     end
+
+    test 'numbers documents continuously across query groups and pages' do
+      Bullet.enable = false
+      empty_book = books(:empty_book)
+      15.times { |i| empty_book.query_doc_pairs.create!(query_text: 'alpha', position: i + 1, doc_id: "a#{i}") }
+      15.times { |i| empty_book.query_doc_pairs.create!(query_text: 'beta', position: i + 1, doc_id: "b#{i}") }
+
+      get book_judge_bulk_path(empty_book), params: { only_unrated: false, rank_depth: '' }
+      assert_response :success
+      assert_select '.query-group-card', count: 2
+      assert_equal (1..25).map { |n| "##{n}" }, css_select('.document-card .badge.bg-primary').map(&:text)
+
+      get book_judge_bulk_path(empty_book), params: { only_unrated: false, rank_depth: '', page: 2 }
+      assert_equal (26..30).map { |n| "##{n}" }, css_select('.document-card .badge.bg-primary').map(&:text)
+    ensure
+      Bullet.enable = true
+    end
   end
 
   describe '#save' do
+    [ :unrateable, :judge_later ].each do |flag|
+      test "rating zero clears #{flag} and preserves the judgement identity" do
+        judgement = Judgement.create!(query_doc_pair: query_doc_pair, user: user, flag => true)
+
+        assert_no_difference 'Judgement.count' do
+          post book_judge_bulk_save_path(book),
+               params: { query_doc_pair_id: query_doc_pair.id, rating: 0 },
+               as:     :json
+        end
+
+        assert_response :success
+        assert_equal judgement.id, response.parsed_body['judgement_id']
+        assert_equal 0, judgement.reload.rating
+        assert_not judgement.unrateable
+        assert_not judgement.judge_later
+      end
+
+      test "explanation-only saves preserve #{flag} with absent or blank ratings" do
+        judgement = Judgement.create!(query_doc_pair: query_doc_pair, user: user, flag => true)
+
+        [ {}, { rating: nil }, { rating: '' } ].each do |rating_params|
+          post book_judge_bulk_save_path(book),
+               params: { query_doc_pair_id: query_doc_pair.id, explanation: 'Needs review' }.merge(rating_params),
+               as:     :json
+
+          assert_response :success
+          assert_equal judgement.id, response.parsed_body['judgement_id']
+          assert_nil judgement.reload.rating
+          assert judgement.public_send(flag)
+          assert_equal 'Needs review', judgement.explanation
+        end
+      end
+    end
+
     test 'creates a new judgement with rating' do
       assert_difference 'Judgement.count' do
         post book_judge_bulk_save_path(book),
@@ -350,6 +416,92 @@ class BulkJudgeControllerTest < ActionDispatch::IntegrationTest
 
       # Ensure total_count reflects all unrated docs (30 total - 25 rated = 5)
       assert_equal 5, assigns(:total_count), 'Total count should be 5 unrated docs'
+    end
+  end
+
+  test 'defaults rank depth to the book setting when no param is given' do
+    book.update!(rank_depth: 5)
+
+    Bullet.enable = false
+    get book_judge_bulk_path(book)
+    assert_response :success
+    assert_equal 5, assigns(:rank_depth)
+    Bullet.enable = true
+  end
+
+  test 'an explicit rank_depth param overrides the book default' do
+    book.update!(rank_depth: 5)
+
+    Bullet.enable = false
+    get book_judge_bulk_path(book), params: { rank_depth: 10 }
+    assert_response :success
+    assert_equal 10, assigns(:rank_depth)
+    Bullet.enable = true
+  end
+
+  test 'explicit All includes deeper and unranked pairs without changing the book default' do
+    book.update!(rank_depth: 1)
+    book.query_doc_pairs.create!(query_text: 'Unranked', doc_id: 'unranked')
+    Bullet.enable = false
+
+    get book_judge_bulk_path(book), params: { rank_depth: '', only_unrated: false }
+    assert_response :success
+    assert_nil assigns(:rank_depth)
+    assert_equal book.query_doc_pairs.count, assigns(:total_count)
+    assert_equal 1, book.reload.rank_depth
+
+    get book_judge_bulk_path(book), params: { only_unrated: false }
+    assert_equal 1, assigns(:rank_depth)
+    assert_equal book.query_doc_pairs_within_rank_depth.count, assigns(:total_count)
+  ensure
+    Bullet.enable = true
+  end
+
+  test 'has no rank depth limit when neither the book nor the param set one' do
+    assert_nil book.rank_depth
+
+    Bullet.enable = false
+    get book_judge_bulk_path(book)
+    assert_response :success
+    assert_nil assigns(:rank_depth)
+    Bullet.enable = true
+  end
+
+  test 'broadcasts judge activity' do
+    assert_enqueued_with(job: BroadcastJudgeActivityJob) do
+      post book_judge_bulk_save_path(book),
+           params: { query_doc_pair_id: query_doc_pair.id, rating: 3 },
+           as:     :json
+    end
+  end
+
+  test 'broadcasts judge activity when resetting a judgement' do
+    Judgement.find_or_create_by!(
+      query_doc_pair: query_doc_pair,
+      user:           user
+    ) do |j|
+      j.rating = 3
+    end
+
+    assert_enqueued_with(job: BroadcastJudgeActivityJob) do
+      post book_judge_bulk_save_path(book),
+           params: { query_doc_pair_id: query_doc_pair.id, reset: true },
+           as:     :json
+    end
+  end
+
+  test 'broadcasts judge activity when deleting a judgement' do
+    Judgement.find_or_create_by!(
+      query_doc_pair: query_doc_pair,
+      user:           user
+    ) do |j|
+      j.rating = 3
+    end
+
+    assert_enqueued_with(job: BroadcastJudgeActivityJob) do
+      delete book_judge_bulk_delete_path(book),
+             params: { query_doc_pair_id: query_doc_pair.id },
+             as:     :json
     end
   end
 end

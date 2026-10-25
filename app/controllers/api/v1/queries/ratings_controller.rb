@@ -11,7 +11,7 @@ module Api
 
           if @rating.update rating_params
             Analytics::Tracker.track_rating_created_event current_user, @rating
-            JudgementFromRatingJob.perform_later current_user, @rating
+            JudgementSync.from_ratings current_user, [ @rating ]
             respond_with @rating
           else
             render json: @rating.errors, status: :bad_request
@@ -20,8 +20,11 @@ module Api
 
         def destroy
           @rating = @query.ratings.where(doc_id: @doc_id).first
-          @rating.delete
-          Analytics::Tracker.track_rating_deleted_event current_user, @rating
+          # Deleting a rating that is already gone is a no-op, so double clicks and stale tabs don't 500.
+          if @rating
+            @rating.delete
+            Analytics::Tracker.track_rating_deleted_event current_user, @rating
+          end
 
           head :no_content
         end

@@ -1,36 +1,28 @@
-/* Non Brian Styles, brought in from dumb programmer UI quepid
- *
- *
- * */
-
-.rating, .ratingNum {
-    color: white;
-    font-size: .7em;
-}
-
-.rating {
-    background: #db918f;
-    padding: 3px;
-    position: absolute;
-}
-
-.rating:hover, .ratingNum:hover {
-    cursor: pointer;
-}
+/* Core case UI component styles (ratings, results, queries, ...), carried
+ * over from the original Quepid UI. */
 
 .ratingNum {
+    color: white;
+    font-size: .7em;
     margin-right: 2px;
     padding: 3px 5px;
 }
 
+.ratingContainer .ratingNum {
+    box-shadow: inset 0 0 20px rgba(255,255,255,0.75);
+}
+
+.ratingContainer .ratingNum:hover {
+    box-shadow: inset 0 0 15px rgba(0,0,0,0.25);
+    color: #FFF;
+}
+
 .notes-box {
-    width: 100%;
     color: #222;
-    margin-bottom: 25px;
 }
 
 .notes-box label {
-    font-family: 'allerregular';
+    font-family: Aller, sans-serif;
     font-size: 20px;
     color: #222;
 }
@@ -47,10 +39,6 @@
     margin: 0;
 }
 
-.query-score-label {
-    font-size: x-small;
-}
-
 .wiz_new_query {
   position:relative;
   background:#369;
@@ -60,10 +48,9 @@
   padding: 8px 12px;
 }
 .wiz_new_query .query_text {
-  font:italic 18px Verdana;
-  color:#FFF;
-  vertical-align:middle;
-  position: inherit;
+  font: italic 18px Verdana;
+  color: #fff;
+  vertical-align: middle;
   display: inline-block;
 }
 .wiz_new_query button {

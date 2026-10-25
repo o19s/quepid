@@ -1,0 +1,333 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Generates a pre-filled parity checklist with one row per AngularJS template and
+# behaviour-only directive at the historical baseline (see docs/legacy_comparison.md),
+# plus any template added on main afterwards. Each row lists where the template was
+# ported, whether main changed it first, and the conditionals, actions, lists, links
+# and copy to confirm on the current owner.
+#
+# Reads only git objects; the working tree and index are never touched.
+#
+# Usage:
+#   bin/angular_parity_checklist                  # write docs/manual-testing/angular-parity-checklist.md
+#   bin/angular_parity_checklist --stdout         # print instead of writing
+#   bin/angular_parity_checklist --force          # overwrite an existing (hand-edited) checklist
+#   bin/angular_parity_checklist --legacy REF --main REF --head REF
+
+require 'optparse'
+require 'open3'
+require 'set'
+begin
+  require 'nokogiri'
+rescue LoadError
+  abort 'bin/angular_parity_checklist needs the nokogiri gem on the host Ruby: gem install nokogiri'
+end
+
+ROOT = File.expand_path('..', __dir__)
+OUTPUT = 'docs/manual-testing/angular-parity-checklist.md'
+LEGACY_DEFAULT = '8ceb99e9a7f6db09d99d2ebdae4710a1646bdc65' # docs/legacy_comparison.md
+
+options = { legacy: LEGACY_DEFAULT, main: 'origin/main', head: 'HEAD', stdout: false, force: false }
+OptionParser.new do |opts|
+  opts.banner = 'Usage: bin/angular_parity_checklist [options]'
+  opts.on('--legacy REF', "Historical baseline (default: #{LEGACY_DEFAULT[0, 10]})") { |v| options[:legacy] = v }
+  opts.on('--main REF', 'Upstream ref (default: origin/main)') { |v| options[:main] = v }
+  opts.on('--head REF', 'Branch ref (default: HEAD)') { |v| options[:head] = v }
+  opts.on('--stdout', 'Print the checklist instead of writing it') { options[:stdout] = true }
+  opts.on('--force', "Overwrite an existing #{OUTPUT}") { options[:force] = true }
+end.parse!
+
+def git(*args)
+  out, err, status = Open3.capture3('git', '-C', ROOT, *args)
+  abort "git #{args.join(' ')} failed: #{err}" unless status.success?
+  out
+end
+
+def git_ok?(*args)
+  _out, _err, status = Open3.capture3('git', '-C', ROOT, *args)
+  status.success?
+end
+
+def resolve(ref) = git('rev-parse', '--verify', "#{ref}^{commit}").strip
+
+LEGACY = resolve(options[:legacy])
+MAIN = resolve(options[:main])
+HEAD = resolve(options[:head])
+TEMPLATE_RE = %r{\Aapp/assets/(templates|javascripts)/.*\.html\z}
+
+def files_at(ref, path) = git('ls-tree', '-r', '--name-only', ref, '--', path).lines.map(&:strip)
+def templates_at(ref) = files_at(ref, 'app/assets').grep(TEMPLATE_RE).to_set
+def blob(ref, path) = git('show', "#{ref}:#{path}")
+def exists_at?(ref, path) = git_ok?('cat-file', '-e', "#{ref}:#{path}")
+
+# templateUrl / ng-include strings drop the templates/ or javascripts/components/ prefix.
+def template_key(path) = path.sub(%r{\Aapp/assets/templates/}, '').sub(%r{\Aapp/assets/javascripts/components/}, '')
+
+def consumers(ref, path)
+  key = template_key(path)
+  out, _err, status = Open3.capture3('git', '-C', ROOT, 'grep', '-lF', key, ref, '--', 'app/assets')
+  return [] unless status.success?
+
+  out.lines.map { |l| l.strip.sub("#{ref}:", '') }.reject { |p| p == path }
+end
+
+# The commit that removed the file between base and tip, and whether main already has it.
+def port_info(path)
+  return { where: :angular, label: 'still Angular on this branch' } if exists_at?(HEAD, path)
+
+  commit = git('log', '--diff-filter=D', '-1', '--format=%H', "#{LEGACY}..#{HEAD}", '--', path).strip
+  return { where: :unknown, label: 'deletion commit not found' } if commit.empty?
+
+  moved_to = git('diff', '--name-status', '-M', "#{commit}^", commit).lines.map { |l| l.chomp.split("\t") }
+                .find { |status, from, _to| status.start_with?('R') && from == path }&.last
+  if moved_to
+    # A move isn't a port: follow the template to wherever it was actually removed.
+    successor = port_info(moved_to)
+    return successor.merge(moved_to: successor[:moved_to] || moved_to,
+                           label: "moved to `#{moved_to}` by `#{commit[0, 8]}`, then #{successor[:label]}")
+  end
+
+  subject = git('log', '-1', '--format=%s', commit).strip
+  on_main = git_ok?('merge-base', '--is-ancestor', commit, MAIN)
+  { where: on_main ? :main : :branch, commit: commit,
+    label: "#{on_main ? 'main' : 'branch'} `#{commit[0, 8]}` — #{subject}" }
+end
+
+# The newest Angular version the port must match, as [ref, path]: main's copy while main
+# still has it (main kept changing templates after some branch ports), otherwise the
+# version just before main removed it.
+def pre_port_ref(path, port)
+  current = port[:moved_to] || path
+  if exists_at?(MAIN, current) then [MAIN, current]
+  elsif port[:commit] then ["#{port[:commit]}^", current]
+  end
+end
+
+def short_ref(ref) = ref.sub(/\A(\h{8})\h+/, '\1')
+
+# Compares the legacy version with the newest Angular version.
+def pre_port_change(path, later)
+  return nil unless later
+
+  ref, later_path = later
+  stat = git('diff', '--numstat', "#{LEGACY}:#{path}", "#{ref}:#{later_path}").split
+  return "unchanged since legacy (compared with `#{short_ref(ref)}`)" if stat.empty?
+
+  "changed since legacy (+#{stat[0]}/−#{stat[1]}): " \
+    "`git diff #{LEGACY[0, 8]}:#{path} #{short_ref(ref)}:#{later_path}`"
+end
+
+def snake(name) = name.gsub(/([a-z\d])([A-Z])/, '\1_\2').downcase
+
+# Basenames that only identify a template together with their directory.
+GENERIC_NAMES = %w[index show import popover flash embed redirect 404].freeze
+GENERIC_DIRS = %w[views templates common].freeze
+
+def owner_candidates(path)
+  pool = files_at(HEAD, 'app/views').grep_v(%r{\Aapp/views/api/|\.jbuilder\z}) +
+         files_at(HEAD, 'app/javascript/controllers') + files_at(HEAD, 'app/components')
+  base = File.basename(path, '.*').sub(/\A_/, '')
+  dir = File.basename(File.dirname(path))
+  if GENERIC_NAMES.include?(base)
+    return [] if GENERIC_DIRS.include?(dir)
+
+    return pool.select { |p| p.include?("/#{snake(dir)}/") && File.basename(p).start_with?("#{base}.") }.first(6)
+  end
+
+  base = dir if %w[modal update].include?(base) || base.start_with?('modal_', 'denied')
+  tokens = [snake(base), snake(base).tr('_', '-')].uniq
+  pool.select { |p| tokens.any? { |t| File.basename(p).include?(t) } }.first(6)
+end
+
+INTERP = /\{\{.*?\}\}/m
+COND_ATTRS = %w[ng-if ng-show ng-hide ng-switch ng-switch-when ng-switch-default ng-disabled ng-readonly ng-required
+                ng-checked ng-selected ng-class ng-style uib-collapse].freeze
+ACTION_RE = /\Ang-(click|dblclick|submit|change|blur|focus|key(up|down|press)|mouse(enter|leave|over|down|up))\z/
+INPUT_ATTRS = %w[ng-model ng-options uib-btn-radio uib-typeahead].freeze
+BOUND_ATTRS = %w[ng-bind ng-bind-html ng-src ng-include src uib-popover-template uib-tooltip-html].freeze
+COPY_ATTRS = %w[title placeholder aria-label alt uib-tooltip uib-popover tooltip popover data-original-title].freeze
+
+def tidy(text) = text.gsub(/\s+/, ' ').strip
+
+def describe(node)
+  id = node['id'] ? "##{node['id']}" : ''
+  "`<#{node.name}#{id}>`"
+end
+
+def extract(html)
+  doc = Nokogiri::HTML::DocumentFragment.parse(html)
+  items = Hash.new { |h, k| h[k] = [] }
+  doc.traverse do |node|
+    if node.text?
+      next if node.parent&.name&.match?(/\A(script|style)\z/)
+
+      text = tidy(node.text)
+      items[:copy] << "\"#{text}\"" unless text.empty? || tidy(text.gsub(INTERP, '')).empty?
+      next
+    end
+    next unless node.element?
+
+    node.attribute_nodes.each do |attr|
+      name = attr.name
+      value = tidy(attr.value)
+      if COND_ATTRS.include?(name)
+        items[:conditions] << "#{describe(node)} `#{name}=\"#{value}\"`"
+      elsif name.match?(ACTION_RE)
+        items[:actions] << "#{describe(node)} `#{name}=\"#{value}\"`"
+      elsif INPUT_ATTRS.include?(name)
+        items[:inputs] << "#{describe(node)} `#{name}=\"#{value}\"`"
+      elsif BOUND_ATTRS.include?(name) && (name != 'src' || node.name == 'ng-include')
+        items[:bound] << "#{describe(node)} `#{name}=\"#{value}\"`"
+      elsif name == 'ng-repeat'
+        items[:lists] << "#{describe(node)} `ng-repeat=\"#{value}\"`"
+      elsif %w[href ng-href ui-sref].include?(name) && !value.empty? && value != '#' && !value.start_with?('javascript:')
+        items[:links] << "#{describe(node)} `#{name}=\"#{value}\"`"
+      elsif COPY_ATTRS.include?(name) && !tidy(value.gsub(INTERP, '')).empty?
+        items[:copy] << "#{name}: \"#{value}\""
+      end
+    end
+  end
+  items.transform_values(&:uniq)
+end
+
+SECTIONS = { conditions: 'Conditional UI', actions: 'Actions', inputs: 'Inputs', lists: 'Lists (check empty states)',
+             bound: 'Bound content', links: 'Links', copy: 'Copy' }.freeze
+
+Row = Struct.new(:path, :kind, :port, :change, :commits, :consumers, :owners, :items, keyword_init: true) do
+  def size = items.values.sum(&:size)
+end
+
+legacy_templates = templates_at(LEGACY)
+directive_files = files_at(LEGACY, 'app/assets/javascripts/directives').select { |p| p.end_with?('.js') }
+behaviour_directives = directive_files.reject { |p| blob(LEGACY, p).match?(/\btemplate(Url)?\s*:/) }
+
+# Legacy items, plus anything main added before the port (which the port must keep too).
+# Legacy items missing from main's copy stay on the list: main's own migration commits
+# may have lost them, so they only say who to ask, not that the removal was intended.
+def template_items(path, later)
+  items = extract(blob(LEGACY, path))
+  return items unless later && exists_at?(*later)
+
+  newer = extract(blob(*later))
+  items.each do |section, list|
+    list.map! { |item| newer.fetch(section, []).include?(item) ? item : "#{item} _(not in main)_" }
+  end
+  newer.each do |section, added|
+    existing = items[section] ||= []
+    (added - existing.map { |i| i.delete_suffix(' _(not in main)_') }).each { |item| existing << "#{item} _(added on main)_" }
+  end
+  items
+end
+
+# Main's commits to the template between legacy and its newest Angular version.
+def main_commits(path, later)
+  return [] unless later
+
+  ref, later_path = later
+  git('log', '--format=%h %ad %s', '--date=short', "#{LEGACY}..#{ref}", '--', *[path, later_path].uniq).lines.map(&:strip)
+end
+
+rows = legacy_templates.sort.map do |path|
+  port = port_info(path)
+  later = pre_port_ref(path, port)
+  Row.new(path: path, kind: :template, port: port, change: pre_port_change(path, later), commits: main_commits(path, later),
+          consumers: consumers(LEGACY, path), owners: owner_candidates(path), items: template_items(path, later))
+end
+# Templates main moved are covered by their legacy row.
+main_only = templates_at(MAIN) - legacy_templates - rows.filter_map { |r| r.port[:moved_to] }
+rows += main_only.sort.map do |path|
+  port = port_info(path)
+  Row.new(path: path, kind: :main_only, port: port, change: nil, commits: [],
+          consumers: consumers(MAIN, path), owners: owner_candidates(path), items: extract(blob(MAIN, path)))
+end
+rows += behaviour_directives.sort.map do |path|
+  port = port_info(path)
+  later = pre_port_ref(path, port)
+  Row.new(path: path, kind: :directive, port: port, change: pre_port_change(path, later), commits: main_commits(path, later),
+          consumers: [], owners: owner_candidates(path), items: {})
+end
+
+GROUPS = [
+  [:branch, 'Ported on this branch', 'Blocks landing until closed.'],
+  [:angular, 'Still Angular on this branch', 'Needs a port or a removal decision.'],
+  [:main, 'Ported on main before this branch',
+   'Already shipped; a loss here is an existing gap, not a branch blocker. Triage separately.'],
+  [:unknown, 'Port not located', 'Find the deletion by hand.']
+].freeze
+
+def anchor(index) = "row-#{index}"
+
+ordered = GROUPS.flat_map { |key, _, _| rows.select { |r| r.port[:where] == key }.sort_by { |r| [-r.size, r.path] } }
+numbers = ordered.each_with_index.to_h { |row, i| [row.path, i + 1] }
+
+out = +''
+out << <<~MD
+  # Angular parity checklist
+
+  Generated by `bin/angular_parity_checklist` on #{Time.now.strftime('%Y-%m-%d')}. Edit rows in place; regenerating needs `--force` and discards edits.
+
+  - Legacy baseline: `#{LEGACY[0, 10]}` (pre-deangularization, Bootstrap 3 case workspace; live at http://localhost:3001, see [legacy_comparison.md](../legacy_comparison.md))
+  - Main: `#{MAIN[0, 10]}` (#{options[:main]}) · Branch: `#{HEAD[0, 10]}` (#{options[:head]})
+
+  **Closing a row:** fill in the owner (ERB partial and Stimulus controller) and the covering scenario. Tick each extracted item that is at parity. For anything removed or changed on purpose, link the decision (NOT-DOING entry, feature doc heading, scenario or commit SHA). Tag losses that are defects `[MIGRATION]`, `[MIGRATION-FOLLOWUP]` or `[PREEXISTING]`, as defined in AGENTS.md. If no decision exists anywhere, record that as a finding; don't write one after the fact. A row is closed when every item is ticked or linked.
+
+  The legacy instance is the baseline. Items are extracted mechanically from the legacy source and compared with main's newest Angular copy (main's current copy, or the version just before main ported it). That copy is a second reference, not the source of truth: main's own Bootstrap 5 and Angular-removal commits can lose features too.
+
+  - _(added on main)_: main added it after legacy; the port must keep it.
+  - _(not in main)_: main's copy no longer has it. Still verify it against the legacy instance. If it's missing today, the row's main commits show whether a feature PR removed it deliberately or a migration commit lost it before this branch. A loss on main is triaged as an existing gap, not a branch blocker. Many are renames: `ng-class` or copy that changed shows as one _(not in main)_ item plus one _(added on main)_ item.
+
+  `{{…}}` interpolations and Angular-only plumbing will produce some noise: tick those as N/A.
+  Owner candidates are filename matches, not verified owners.
+
+  | # | Source | Ported | Items | Owner | Scenario | Status |
+  |---|---|---|---|---|---|---|
+MD
+GROUPS.each do |key, _title, _note|
+  ordered.select { |r| r.port[:where] == key }.each do |row|
+    n = numbers[row.path]
+    where = { branch: 'branch', main: 'main', angular: 'not ported', unknown: '?' }[key]
+    where += ' (main-only)' if row.kind == :main_only
+    out << "| [#{n}](##{anchor(n)}) | `#{row.path.sub(%r{\Aapp/assets/}, '')}` | #{where} | #{row.size} | | | open |\n"
+  end
+end
+
+GROUPS.each do |key, title, note|
+  group = ordered.select { |r| r.port[:where] == key }
+  next if group.empty?
+
+  out << "\n## #{title} (#{group.size})\n\n#{note}\n"
+  group.each do |row|
+    n = numbers[row.path]
+    out << "\n<a id=\"#{anchor(n)}\"></a>\n### #{n}. `#{row.path}`\n\n"
+    out << "- **Kind:** #{{ template: 'template', main_only: 'template added on main after legacy', directive: 'behaviour-only directive (no markup)' }[row.kind]}\n"
+    out << "- **Ported:** #{row.port[:label]}\n"
+    out << "- **Before the port:** #{row.change}\n" if row.change
+    unless row.commits.empty?
+      out << "- **Main commits since legacy (#{row.commits.size}):**\n\n  <details><summary>show</summary>\n\n"
+      row.commits.each { |c| out << "  - `#{c.sub(' ', '` ')}\n" }
+      out << "\n  </details>\n\n"
+    end
+    out << "- **Used by (#{row.kind == :main_only ? 'main' : 'legacy'}):**#{row.consumers.map { |c| "`#{c}`" }.join(', ')}\n" unless row.consumers.empty?
+    out << "- **Owner candidates:** #{row.owners.empty? ? '_none found_' : row.owners.map { |o| "`#{o}`" }.join(', ')}\n"
+    out << "- **Owner:** \n- **Scenario:** \n- **Decisions:** \n"
+    out << "- [ ] Behaviour reproduced (read the directive's link/controller code)\n" if row.kind == :directive
+    out << "- [ ] Rendered output reproduced (nothing to extract; compare on the legacy instance)\n" if row.kind != :directive && row.size.zero?
+    SECTIONS.each do |section, heading|
+      next if row.items[section].nil? || row.items[section].empty?
+
+      out << "\n#{heading}:\n\n"
+      row.items[section].each { |item| out << "- [ ] #{item}\n" }
+    end
+  end
+end
+
+if options[:stdout]
+  puts out
+else
+  target = File.join(ROOT, OUTPUT)
+  abort "#{OUTPUT} exists and may hold edits; pass --force to overwrite or --stdout to print." if File.exist?(target) && !options[:force]
+  File.write(target, out)
+  counts = GROUPS.map { |key, title, _| "#{ordered.count { |r| r.port[:where] == key }} #{title.downcase}" }
+  puts "Wrote #{OUTPUT}: #{ordered.size} rows (#{counts.join(', ')}), #{ordered.sum(&:size)} items."
+end

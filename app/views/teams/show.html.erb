@@ -20,16 +20,16 @@
       <div class="card-body">
         <h5 class="card-title">Add Team Member</h5>
         <%= form_with url: members_team_path(@team), method: :post, local: true do %>
-          <div class="mb-2 position-relative" 
-               data-controller="team-member-autocomplete" 
+          <div class="mb-2 position-relative"
+               data-controller="team-member-autocomplete"
                data-team-member-autocomplete-url-value="<%= suggest_members_team_path(@team) %>"
                data-action="click@window->team-member-autocomplete#clickOutside">
             <div class="position-relative">
-              <%= text_field_tag :email, nil, 
-                  class: 'form-control form-control-sm', 
-                  placeholder: 'User email address', 
+              <%= text_field_tag :email, nil,
+                  class: 'form-control form-control-sm',
+                  placeholder: 'User email address',
                   autocomplete: 'off',
-                  data: { 
+                  data: {
                     team_member_autocomplete_target: 'input',
                     action: 'input->team-member-autocomplete#search'
                   } %>
@@ -38,92 +38,22 @@
               </span>
             </div>
             <div data-team-member-autocomplete-target="suggestions" class="autocomplete-suggestions" style="display: none;"></div>
+            <template data-team-member-autocomplete-target="itemTemplate"><div class="autocomplete-item" data-action="click->team-member-autocomplete#select"><img class="autocomplete-avatar" alt=""><div class="autocomplete-details"><div class="autocomplete-name"></div><div class="autocomplete-email"></div></div></div></template>
           </div>
           <div>
             <%= submit_tag 'Add user', class: 'btn btn-success btn-sm' %>
           </div>
         <% end %>
         <p class="text-muted mt-2 small">Start typing a name or email address to add an existing user to this team.</p>
-        
-        <style>
-          .autocomplete-suggestions {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            z-index: 1000;
-            max-height: 300px;
-            overflow-y: auto;
-            background: white;
-            border: 1px solid #ced4da;
-            border-top: none;
-            border-radius: 0 0 0.25rem 0.25rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-          }
-          
-          .autocomplete-item {
-            padding: 8px 12px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            border-bottom: 1px solid #f0f0f0;
-          }
-          
-          .autocomplete-item:last-child {
-            border-bottom: none;
-          }
-          
-          .autocomplete-item:hover,
-          .autocomplete-item.selected {
-            background-color: #f8f9fa;
-          }
-          
-          .autocomplete-avatar {
-            width: 24px;
-            height: 24px;
-            border-radius: 3px;
-            flex-shrink: 0;
-          }
-          
-          .autocomplete-details {
-            flex: 1;
-            min-width: 0;
-          }
-          
-          .autocomplete-name {
-            font-weight: 500;
-            color: #212529;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-          }
-          
-          .autocomplete-email {
-            font-size: 0.85em;
-            color: #6c757d;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-          }
-          
-          .autocomplete-spinner {
-            position: absolute;
-            right: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #6c757d;
-            transition: opacity 0.2s ease-in-out;
-          }
-        </style>
+
         <hr>
-        
+
         <%= link_to new_ai_judge_path(team_id: @team.id), class: 'btn btn-primary btn-sm w-100' do %>
           <i class="bi bi-robot"></i> Create AI Judge
         <% end %>
       </div>
     </div>
-    
+
     <div class="card mt-3">
       <div class="card-body">
         <h5 class="card-title">Rename Team</h5>
@@ -167,25 +97,22 @@
                 </div>
               </div>
               <div class="ms-3">
-                
+
                 <% if member.ai_judge? %>
                   <%= link_to edit_ai_judge_path(member), class: 'btn btn-link p-0 me-2', title: 'Edit', 'aria-label': 'Edit' do %>
                     <i class="bi bi-pencil" aria-hidden="true"></i>
                   <% end %>
                 <% end %>
-                <button type="button"
-                        class="btn btn-link text-danger p-0"
-                        title="Remove member"
-                        aria-label="Remove member"
-                        data-controller="confirm-delete"
-                        data-action="click->confirm-delete#open"
-                        data-confirm-delete-url-value="<%= member_team_path(@team, member_id: member.id) %>"
-                        data-confirm-delete-message-value="<%= h("Remove #{member.fullname} from this team?") %>"
-                        data-confirm-delete-method-value="delete">
+                <%= button_to member_team_path(@team, member_id: member.id),
+                              method: :delete,
+                              class: "btn btn-link text-danger p-0",
+                              title: "Remove member",
+                              aria: { label: "Remove member" },
+                              form: { class: "d-inline", data: { turbo_confirm: "Remove #{member.fullname} from this team?" } } do %>
                   <i class="bi bi-x-circle" aria-hidden="true"></i>
                   <span class="visually-hidden">Remove member</span>
-                </button>
-                
+                <% end %>
+
               </div>
             </div>
           <% end %>
@@ -195,27 +122,34 @@
   </div>
 </div>
 
-<div class="row">
+<%# The lists share one frame: a filter or pager reloads them together, so
+    every section's hidden filters and pager links stay in step with the URL. %>
+<%= turbo_frame_tag 'team_lists', target: '_top', class: 'row', data: { turbo_action: 'advance' } do %>
   <div class="col-12 mb-3">
-    <%= render partial: 'teams/cases' %>
+    <%= render 'teams/cases', cases: @cases, filters: team_filters, last_scores: @last_scores, pagy_cases: @pagy_cases,
+                              ratings_counts: @ratings_counts, team: @team %>
   </div>
 
   <div class="col-12 mb-3">
-    <%= render partial: 'teams/books' %>
+    <%= render 'teams/books', book_cases_counts: @book_cases_counts, book_judgements_counts: @book_judgements_counts,
+                              books: @books, filters: team_filters, pagy_books: @pagy_books, team: @team %>
   </div>
 
   <div class="col-12 mb-3">
-    <%= render partial: 'teams/search_endpoints' %>
+    <%= render 'teams/search_endpoints', filters: team_filters, pagy_search_endpoints: @pagy_search_endpoints,
+                                         search_endpoint_cases_counts: @search_endpoint_cases_counts,
+                                         search_endpoints: @search_endpoints, team: @team %>
   </div>
 
   <div class="col-12 mb-3">
-    <%= render partial: 'teams/embedders' %>
+    <%= render 'teams/embedders', embedder_case_counts: @embedder_case_counts, embedders: @embedders, team: @team %>
   </div>
-  
+
   <div class="col-12 mb-3">
-    <%= render partial: 'teams/scorers' %>
+    <%= render 'teams/scorers', filters: team_filters, pagy_scorers: @pagy_scorers, scorer_cases_counts: @scorer_cases_counts,
+                                scorers: @scorers, team: @team %>
   </div>
-</div>
+<% end %>
 
   <%= render 'shared/share_case_modal' %>
   <%= render 'shared/share_book_modal' %>

@@ -92,12 +92,26 @@ module Api
       end
 
       def destroy
-        @try.destroy
+        @case.transaction do
+          # Lock without reloading: Case initialization can assign an unsaved default scorer.
+          Case.where(id: @case.id).lock.pick(:id)
+          if @case.tries.one?
+            render json: { error: 'Cannot delete the only try in a case.' }, status: :bad_request
+            return
+          end
+
+          @try.destroy!
+          @case.update! last_try_number: @case.tries.maximum(:try_number)
+        end
 
         head :no_content
       end
 
       private
+
+      def public_case_read_access?
+        'preview_args' == action_name || super
+      end
 
       # Controller-internal: renders :bad_request on save failure. Callers should
       # check Rails' `performed?` after invoking and return early if true.
@@ -125,7 +139,7 @@ module Api
         attrs = params_hash.to_h.symbolize_keys
 
         credential = attrs[:basic_auth_credential]
-        search_endpoint.basic_auth_credential = credential if credential.present? && credential != search_endpoint.masked_basic_auth_credential
+        search_endpoint.basic_auth_credential = credential if credential.present? && !search_endpoint.matches_masked_basic_auth_credential?(credential)
 
         # A match found via find_or_initialize_for_user's connection-details lookup may
         # reuse an endpoint that was previously tagged with a different (or no) preset,

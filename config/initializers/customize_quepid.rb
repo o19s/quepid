@@ -116,10 +116,7 @@ Rails.application.config.quepid_domain = ENV.fetch('QUEPID_DOMAIN', '')
 # when Rails runs directly on the host or uses a custom Ollama deployment.
 Rails.application.config.ollama_service_url = ENV.fetch('OLLAMA_SERVICE_URL', Rails.env.production? ? 'http://ollama:11434' : 'http://ollama:31434')
 
-# == LLM retry backoff
-# Base seconds between retries when an LLM provider answers "too many requests"
-# or "overloaded" (see LlmConnection). Zero in test so a stubbed 429 doesn't
-# make the suite sit through a real backoff.
+# Base seconds between refused LLM request retries; test stubs need no delay.
 Rails.application.config.llm_retry_interval = ENV.fetch('LLM_RETRY_INTERVAL') { Rails.env.test? ? 0 : 2 }.to_f
 
 # == If we have nested Quepid under a context, like tools.bigcorp.com/quepid then this deal with that situation.
@@ -139,11 +136,7 @@ Rails.application.config.search_endpoint_views_admin_only = bool.deserialize(ENV
 #
 Rails.application.config.require_proxy_with_basic_auth_credentials = bool.deserialize(ENV.fetch('REQUIRE_PROXY_WITH_BASIC_AUTH_CREDENTIALS', false))
 
-# == Require Proxy for All Search Endpoints
-# When enabled, every search endpoint must use proxy_requests, regardless of
-# basic auth credentials. Useful when the client (e.g. an embedded WebView)
-# should never make direct network requests to a user-configured endpoint.
-#
+# Require proxying independently of desktop mode; existing endpoints are only warned about.
 Rails.application.config.require_proxy_for_all_search_endpoints = bool.deserialize(ENV.fetch('REQUIRE_PROXY_FOR_ALL_SEARCH_ENDPOINTS', false))
 
 # NOTE: ActiveRecord encryption keys are configured in config/application.rb so
@@ -154,10 +147,6 @@ Rails.application.config.require_proxy_for_all_search_endpoints = bool.deseriali
 Rails.application.config.after_initialize do
   next if defined?(Rails::Console)
 
-  # Run only on server start.
-  #
-  # Loads matching endpoints once and reuses that array for both the emptiness
-  # check and the listing below, and warns about any that will fail validation.
   warn_about_endpoints_needing_proxy = lambda do |flag_name, scope_builder, detail|
     endpoints = scope_builder.call.to_a
     next if endpoints.empty?
@@ -167,18 +156,16 @@ Rails.application.config.after_initialize do
     Rails.logger.warn detail
     endpoints.each { |endpoint| Rails.logger.warn "  - #{endpoint.name} (ID: #{endpoint.id})" }
     Rails.logger.warn 'These endpoints will fail validation when edited.'
-    Rails.logger.warn "Enable proxy_requests for these endpoints or set #{flag_name}=false"
+    Rails.logger.warn "Enable proxy_requests and use a non-JSONP API method, or set #{flag_name}=false"
     Rails.logger.warn '=' * 80
   rescue ActiveRecord::StatementInvalid, ActiveRecord::NoDatabaseError
-    # Database might not be set up yet, skip check
+    # Database might not be set up yet.
   end
 
-  # The all-endpoints check below already covers every endpoint the
-  # basic-auth-only check would find, so only run one of them.
   if Rails.application.config.require_proxy_for_all_search_endpoints
     warn_about_endpoints_needing_proxy.call(
       'REQUIRE_PROXY_FOR_ALL_SEARCH_ENDPOINTS',
-      -> { SearchEndpoint.where(proxy_requests: false) },
+      -> { SearchEndpoint.where(proxy_requests: [ false, nil ]) },
       'The following search endpoints have proxy_requests disabled:'
     )
   elsif Rails.application.config.require_proxy_with_basic_auth_credentials

@@ -8,6 +8,7 @@ module AiJudges
   # you fill out a form before anything is persisted.
   class WizardController < ApplicationController
     before_action :set_book
+    before_action :set_scorer
 
     # Grab a query/doc pair to test against - book-scoped if a book_id was
     # given (e.g. arriving from a book's Judgement Stats page), otherwise any
@@ -34,12 +35,14 @@ module AiJudges
       ai_judge = AiJudge.new(system_prompt: params[:system_prompt], llm_key: params[:llm_key])
       ai_judge.judge_options = judge_options_params.to_h
 
-      # The judge is handed the book's scale, never the book.
-      scale = JudgeScale.for(@book)
+      # The judge is handed the scale, never the book/scorer it came from -
+      # a book's own scale if there's a book context, otherwise a scorer's
+      # (picked in the form's scale picker when there's no book).
+      scale = @book ? JudgeScale.for(@book) : JudgeScale.for_scorer(@scorer)
       provider = LlmProvider.find(ai_judge.judge_options[:llm_provider])
       if provider&.needs_scale? && scale.empty?
-        error = "#{provider.label} rates against a book's scale, so it can only be tested from a book that has one: " \
-                "open this judge from the book's Judgement Stats page (Refine Prompt)."
+        error = "#{provider.label} rates against a scale, so it can only be tested from a book, " \
+                'or by picking a rating scale in the form.'
         render json: { error: error }, status: :unprocessable_content
         return
       end
@@ -63,9 +66,6 @@ module AiJudges
       llm_service = LlmService.new(ai_judge.llm_key, ai_judge.judge_options)
       judgement = Judgement.new(query_doc_pair: query_doc_pair, user: ai_judge)
       llm_service.perform_safe_judgement judgement, scale: scale
-      # Apply the same acceptance rules a real judging run uses, so a rating
-      # this book would reject can't look valid during preview. The finalizer
-      # only marks the in-memory judgement -- nothing here is persisted.
       JudgementFinalizer.call judgement, scale: scale
 
       render json: { rating: judgement.rating, explanation: judgement.explanation, unrateable: judgement.unrateable }
@@ -77,15 +77,17 @@ module AiJudges
       @book = current_user.books_involved_with.where(id: params[:book_id]).first
     end
 
-    def query_doc_pair_params
-      params.expect(query_doc_pair: [ :document_fields, :position, :query_text, :doc_id, :notes,
-                                      :information_need, { options: {} } ])
+    def set_scorer
+      @scorer = current_user.scorers_involved_with.where(id: params[:scorer_id]).first
     end
 
-    # The common options plus any a provider declares for itself (e.g. Jev's
-    # confidence floor), so the preview runs with what the form would save.
+    def query_doc_pair_params
+      params.expect(query_doc_pair: [ :document_fields, :position, :query_text, :doc_id, :notes,
+                                      :information_need, :options, { options: {} } ])
+    end
+
     def judge_options_params
-      params.fetch(:judge_options, {})
+      params.fetch(:judge_options, ActionController::Parameters.new)
         .permit(:llm_provider, :llm_service_url, :llm_model, :llm_timeout, :llm_api_version, :llm_include_images,
                 *LlmProvider.option_keys)
     end

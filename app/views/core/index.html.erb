@@ -1,23 +1,112 @@
+<%#
+  Case page shell.
+
+  The former `views/queriesLayout.html` case layout is rendered here
+  instead. Rendering the shell from Rails lets the header and toolbar come straight from
+  `@case`/`@try`.
+
+  Runtime responsibilities that remain centralized, and why:
+    * the score-history graph - Stimulus/Vega, backed by the case scores and annotations APIs.
+    * the query list and search results island - rendered by `core/_queries`.
+    * the import action is Stimulus-owned; live query refresh remains bridged to the live-query runtime.
+    * the east pane  - the Tune Relevance drawer, Stimulus-owned with a settings capability bridge.
+
+  The primary case score badge (the frontend cleanup migration notes § Re-render
+  mechanism, step 4) is Stimulus now, driven by the module-owned case score store - see
+  app/javascript/controllers/qscore_case_controller.js.
+
+  The deferred live-result controls are initialized by the live-query runtime at bootstrap. The
+  query-list shell itself is Rails + Stimulus and owns its rendered read model.
+%>
 <div id="flash-messages">
-  <div class="flash fade" data-controller="flash" data-flash-channel-value="main">
-    <button type="button" class="btn-core-close float-start" aria-label="Dismiss" data-action="flash#hide"></button>
-    <span class="alert-message" data-flash-target="message"></span>
+  <div class="flash fade" data-controller="flash" data-flash-channel-value="main" data-action="flash:show@document->flash#onDocumentShow flash:hide@document->flash#onDocumentHide">
+    <button type="button" class="btn-close float-start" aria-label="Dismiss" data-action="flash#hide"></button>
+    <span data-flash-target="message"></span>
   </div>
-  <div class="flash fade" data-controller="flash" data-flash-channel-value="search-error" data-flash-duration-value="-1">
-    <button type="button" class="btn-core-close float-start" aria-label="Dismiss" data-action="flash#hide"></button>
-    <span class="alert-message" data-flash-target="message"></span>
+  <div class="flash fade" data-controller="flash" data-flash-channel-value="search-error" data-flash-duration-value="-1" data-action="flash:show@document->flash#onDocumentShow flash:hide@document->flash#onDocumentHide">
+    <button type="button" class="btn-close float-start" aria-label="Dismiss" data-action="flash#hide"></button>
+    <span data-flash-target="message"></span>
   </div>
 </div>
 
-<div ng-controller="LoadingCtrl">
-  <div ng-show="loading.isLoading()">
-    <div class="row">
-      <div class="offset-md-4 col-md-4 text-center loading-app" style="margin-top: 200px;">
-        <i ng-show="loadingUsers" class="big-spinner loading-text">Loading...</i>
+<div class="case-workbench">
+      <div id="main" data-controller="tune-relevance" data-tune-relevance-pane-outlet=".pane_container" data-action="case-settings:updated@document->tune-relevance#keepDrawerOpen" data-tune-relevance-engine-labels-value="<%= SearchEngine::LABELS.to_json %>">
+        <div class="pane_container" data-controller="pane" data-action="resize@window->pane#resize">
+          <div class="pane_main results-control" data-pane-target="main">
+            <div id="case-header" class="row">
+              <div class="col-sm-12">
+                <div
+                  class="d-inline-flex align-items-start"
+                  data-controller="diff-case-scores"
+                >
+                  <!-- Current case score (Stimulus, store-driven) -->
+                  <div class="case-score">
+                    <div
+                      class="qgraph"
+                      data-controller="qgraph"
+                      data-action="case-score:persisted@document->qgraph#handleScorePersisted annotations:changed@document->qgraph#handleAnnotationsChanged"
+                      hidden
+                      data-qgraph-case-id-value="<%= @case.id %>"
+                      data-qgraph-scores-url-value="<%= api_case_scores_path(case_id: @case.id) %>/all"
+                      data-qgraph-annotations-url-value="<%= api_case_annotations_path(case_id: @case.id) %>"
+                      data-qgraph-max-score-value="1"
+                    >
+                      <div data-qgraph-target="container"></div>
+                    </div>
+
+                    <div
+                      class="header-rating"
+                      data-controller="qscore-case"
+                      data-action="query-diffs:refreshed@document->qscore-case#handleDiffsRefreshed pick-scorer:selected@document->qscore-case#handleScorerSelected"
+                      data-qscore-case-case-id-value="<%= @case.id %>"
+                      data-qscore-case-score-label-value="<%= @case.scorer&.name %>"
+                      data-qscore-case-score-url-value="<%= api_case_scores_path(case_id: @case.id) %>"
+                      data-qscore-case-try-number-value="<%= @try&.try_number %>"
+                    >
+                      <span class="scorable-score" data-qscore-case-target="value"></span>
+                      <span class="query-score-label low-profile" data-qscore-case-target="label"></span>
+                    </div>
+                  </div>
+
+                </div>
+
+                <%= render 'core/case_header', kase: @case, a_try: @try, error: nil %>
+              </div>
+            </div>
+
+            <%= render 'core/case_toolbar', kase: @case, a_try: @try %>
+
+            <%= render 'core/queries', kase: @case %>
+
+            <div
+              data-controller="wizard-launcher"
+              data-wizard-launcher-auto-value="true"
+              data-wizard-launcher-wizard-outlet="#wizardModal"
+              data-wizard-launcher-completed-case-wizard-value="<%= current_user.completed_case_wizard %>"
+              data-wizard-launcher-cases-involved-with-count-value="<%= current_user.cases_involved_with.count %>"
+              data-wizard-launcher-teams-involved-with-count-value="<%= current_user.teams.count %>"
+              data-wizard-launcher-create-url-value="<%= case_new_path.delete_prefix('/') %>"
+            ></div>
+            <%= render 'layouts/footer' %>
+          </div>
+
+          <div class="east-slider" data-pane-target="slider" data-action="pointerdown->pane#grabSlider pointermove->pane#dragSlider pointerup->pane#releaseSlider lostpointercapture->pane#releaseSlider">
+          </div>
+
+          <div class="pane_east" data-pane-target="east"
+               data-controller="annotations"
+               data-annotations-url-value="<%= case_annotations_path(@case) %>"
+               data-annotations-annotation-url-template-value="<%= case_annotation_path(@case, '__ANNOTATION_ID__') %>"
+               data-annotations-case-id-value="<%= @case.id %>"
+               data-annotations-try-id-value="<%= @try&.id %>"
+               data-annotations-last-score-value="<%= (@case.latest_score&.slice(:all_rated, :score, :try_id, :queries) || {}).to_json %>">
+            <%= render 'core/tune_relevance', kase: @case %>
+          </div>
+        </div>
+        <%= render 'core/try_details_modal' %>
       </div>
-    </div>
-  </div>
-  <div ng-show="!loading.isLoading()">
-    <div ng-view></div>
-  </div>
 </div>
+<%# Keep the modal outside the pane stacking context so Bootstrap's body-level backdrop stays behind it. %>
+<%= render 'shared/import_ratings_core_modal', kase: @case %>
+<%= render 'shared/query_options_core_modal', kase: @case %>
+<%= render 'shared/wizard_modal', kase: @case %>

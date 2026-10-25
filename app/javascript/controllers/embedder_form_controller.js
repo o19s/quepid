@@ -1,6 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
 import { apiFetch } from "api/fetch"
-import { setButtonLoading, escapeHtml } from "utils/stimulus_ui"
 
 // Embedder form (app/views/embedders/_form.html.erb): shows only the fields the chosen
 // provider can use, fills in its defaults when the provider changes, and runs the Test
@@ -51,7 +50,9 @@ export default class extends Controller {
   refresh() {
     const preset = this.preset
 
-    this.helpTarget.innerHTML = preset.help || ""
+    this.helpTargets.forEach((help) => {
+      help.hidden = help.dataset.provider !== this.providerTarget.value
+    })
     this.apiKeyRowTarget.hidden = preset.uses_key === false
     if (this.hasApiKeyHintTarget) {
       this.apiKeyHintTarget.textContent = preset.requires_key ? `Required for ${preset.label}.` : "Optional."
@@ -82,8 +83,8 @@ export default class extends Controller {
     data.delete("_method")
     data.set("text", this.testTextTarget.value)
 
-    setButtonLoading(this.testButtonTarget, true)
-    this.testResultTarget.innerHTML = ""
+    this.setButtonLoading(this.testButtonTarget, true)
+    this.testResultTarget.replaceChildren()
 
     try {
       const response = await apiFetch(this.testUrlValue, {
@@ -95,17 +96,43 @@ export default class extends Controller {
       if (!response.ok) throw new Error(result.error || `Request failed (${response.status})`)
 
       const preview = result.preview.map((value) => value.toFixed(5)).join(", ")
-      this.testResultTarget.innerHTML =
-        "<div class=\"alert alert-success small mb-0\">" +
-        `<div><strong>${escapeHtml(String(result.dimensions))} dimensions</strong> in ${escapeHtml(String(result.elapsed_ms))} ms</div>` +
-        `<div>Sent: <code class="text-break" style="white-space: pre-wrap">${escapeHtml(result.input)}</code></div>` +
-        `<div>Vector: <code>[${escapeHtml(preview)}, …]</code></div>` +
-        "</div>"
+      const sent = element("code", { className: "text-break", text: result.input })
+      sent.style.whiteSpace = "pre-wrap"
+      this.testResultTarget.replaceChildren(
+        element("div", { className: "alert alert-success small mb-0" }, [
+          element("div", {}, [element("strong", { text: `${result.dimensions} dimensions` }), ` in ${result.elapsed_ms} ms`]),
+          element("div", {}, ["Sent: ", sent]),
+          element("div", {}, ["Vector: ", element("code", { text: `[${preview}, …]` })])
+        ])
+      )
     } catch (error) {
-      this.testResultTarget.innerHTML =
-        `<div class="alert alert-danger small mb-0">${escapeHtml(error.message)}</div>`
+      this.testResultTarget.replaceChildren(
+        element("div", { className: "alert alert-danger small mb-0", text: error.message })
+      )
     } finally {
-      setButtonLoading(this.testButtonTarget, false)
+      this.setButtonLoading(this.testButtonTarget, false)
     }
   }
+
+  setButtonLoading(button, loading) {
+    if (loading) {
+      button.disabled = true
+      this.buttonContent = [...button.childNodes]
+      const spinner = element("span", { className: "spinner-border spinner-border-sm" })
+      spinner.setAttribute("role", "status")
+      spinner.setAttribute("aria-hidden", "true")
+      button.replaceChildren(spinner, " Loading...")
+    } else {
+      button.disabled = false
+      if (this.buttonContent) button.replaceChildren(...this.buttonContent)
+    }
+  }
+}
+
+function element(tag, { className, text } = {}, children = []) {
+  const node = document.createElement(tag)
+  if (className) node.className = className
+  if (text !== undefined) node.textContent = text
+  node.append(...children)
+  return node
 }

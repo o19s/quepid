@@ -2,59 +2,73 @@
 
 ## Overview
 
-AI Judges let an LLM stand in for a human judge. An AI Judge is modeled as a special `User` belonging to a Team, configured with an LLM provider/key/model and a system prompt. Once assigned to a Book, it can be triggered to auto-judge a batch (or all) of the book's unjudged query/doc pairs — a feature nicknamed "Judge Judy."
+AI Judges let an LLM stand in for a human judge. `AiJudge` is a `User` subclass with an owner, optional team sharing, provider settings and a system prompt. Assign it to a Book to run automatic judging ("Judge Judy").
 
 ## Test scenarios
 
-### 12.1 Create a per-team AI Judge
+### 12.1 Create an owned or team-shared AI Judge
 
 - [ ] **Steps:**
-  1. From a Team's show page, click **Create AI Judge**.
-  2. Fill in Name and an **LLM Key** (required — help text notes it must be something, even a placeholder like "abc123").
-  3. Choose an **LLM Provider** from the dropdown — try each option in turn: OpenAI, Azure OpenAI, Azure AI Foundry, Azure AI Foundry Serverless, Azure AI Foundry Anthropic, Anthropic, Google Gemini, Ollama. (TypeSafe Jev is listed too, but it is a "coming soon" placeholder — see 12.6.)
-  4. For each, confirm the LLM Service URL / Model / API Version fields auto-fill with sensible presets and inline help text updates.
-  5. Toggle between the **Structured Fields** and **JSON** tabs for `judge_options` — confirm they're mutually exclusive (editing one disables the other, not just visually but functionally) **and that they agree**: change a field without saving, switch to JSON, and the edit should be there; edit the JSON, switch back, and the fields should show it. Malformed JSON leaves the fields untouched rather than wiping them.
-  6. Review/edit the default **System Prompt** (a canned 0–3 relevance-grading prompt with worked examples).
-  7. Save.
-- **Expected:** Redirects to the Team show page; the new AI judge appears in the members list with a robot indicator and an Edit link.
+  1. Open **AI Judges → Create AI Judge**, or **Create AI Judge** on a Team page (that team starts selected).
+  2. Enter a Name; confirm **Test & Refine** appears. Leave teams unchecked for a private judge, or select teams to share it.
+  3. Choose an LLM Provider. Confirm registry presets and help, provider-specific options and read-only fields. Switching between chat models and Jev replaces untouched stock prompts while retaining custom instructions.
+  4. Enter a key if the provider requires one. Local Ollama can save with a blank key.
+  5. Switch between Structured Fields and JSON; confirm only the active representation submits.
+     Remove `jev_min_confidence` in JSON and switch tabs both ways; confirm the old floor is cleared.
+     Omit OpenAI's URL/model/timeout in JSON and repeat; confirm the effective defaults return instead of blank connection settings.
+  6. Review the System Prompt, test it as described in 12.4, then Save.
+  7. Reload and confirm name, provider, prompt and sharing persist; the index shows the owner and teams.
+- **Expected:** Top-level Save redirects to the judge form. Legacy nested team submissions return to the team. Successful mutations use Turbo-compatible redirects.
 - **Edge cases:**
-  - [ ] Leave LLM Key blank — confirm what actually happens (this field doubles as part of what distinguishes an AI judge from a human user).
-  - [ ] Switch providers after already filling in custom URL/model values — confirm the preset auto-fill doesn't silently clobber intentional manual overrides in a confusing way.
+  - [ ] Blank name/prompt or malformed configuration JSON returns validation errors, retains entered values and team selections, and creates no judge.
+  - [ ] Keyless judges still appear as AI judges rather than human accounts.
 
 ### 12.2 Edit / delete an AI Judge
 
+Successful edits display **AI Judge was successfully updated.**, retaining the existing standalone/team redirect.
+
 - [ ] **Steps:**
-  1. From the team member list, click **Edit** (pencil) on an AI judge.
-  2. Change the system prompt, LLM key, or provider, save.
-  3. Remove the AI judge from the team (same "x" remove-member control as a human member, Part 9.4).
-- **Expected:** Edits persist; removing it drops it from the team like any other member.
+  1. From AI Judges or a team member list, edit an owned or team-shared judge.
+  2. Change its name, prompt or provider; save and reload.
+  3. Change selected teams; confirm only teams visible to you are changed. Existing sharing with other teams remains intact.
+  4. From AI Judges, click Delete. Cancel first, then confirm deletion of a disposable judge without judgements.
+- **Expected:** Edits persist. The confirmation dialog deletes the judge and returns to the index. Removing team membership remains available separately (Part 9.4).
+- **Edge cases:**
+  - [ ] A private judge belonging to another user cannot be viewed, edited or deleted (12.7).
+  - [ ] A judge with existing judgements retains the existing deletion restriction.
 
 ### 12.3 Assign an AI Judge to a Book
 
 - [ ] **Steps:**
-  1. Ensure the AI judge's team also shares the target book (Part 9.5 / Part 10.2/10.3).
-  2. On the Book's **Settings** tab, check the AI judge under "AI Judges Assigned to this Book", save.
-- **Expected:** The Book Overview now shows "We have an AI Judge {name} helping us rate documents." Before assignment, if an eligible-but-unassigned AI judge exists, the Overview instead shows an "Add AI Judge to this Book" call-to-action.
+  1. Open a new Book or an accessible Book's Settings. The book need not share a team with the judge.
+  2. Select an AI judge you own or that is shared with one of your teams.
+  3. Select a Rating Scale when required, save, reopen Settings and confirm the assignment remains checked.
+- **Expected:** Overview shows the assigned judge's helping text. An eligible unassigned judge produces the Add AI Judge call-to-action. Eligibility belongs to the viewer; inaccessible judges are omitted, and existing hidden assignments survive a visible selection update.
+- **Edge cases:**
+  - [ ] Assign your private judge to a teamless owned book or to a book you can edit through team sharing.
+  - [ ] Submitting an inaccessible judge ID is rejected without replacing existing assignments.
 
-### 12.4 Refine an AI Judge's prompt
+### 12.4 Test & Refine an AI Judge's prompt
 
 - [ ] **Steps:**
-  1. From the book's **Judgement Stats** tab, click **Refine Prompt** on the AI judge's row — this opens the judge's edit wizard with `?book_id=` set.
-  2. Confirm step 1 (Configure) pre-loads the current system prompt, and step 2 (**Test & Refine**) loads a random query/doc pair from the book (editable: query_text, doc_id, information_need, document_fields JSON, options JSON, notes, position).
-  3. Click **Change Query Doc Pair** — confirm a different random pair loads.
-  4. Edit the judge's text (labelled **System prompt** for a chat provider, **Judging instructions** for a typed one like Jev) and/or the sample document's fields, then click **Run Judgement**.
-  5. Confirm a spinner shows, then the "Rating Information" section displays the LLM's returned rating and explanation. With a book selected, the page also shows the rating scale that will be sent: as prose for a chat judge, as the question's criteria for a typed one.
-  6. With a book selected (`?book_id=`), get the judge to answer outside that book's scale — e.g. temporarily set the system prompt to something like *"Always respond with {\"judgment\": 3, \"explanation\": \"...\"}"* on a 0/1 book — and run it. Confirm "LLM Response:" shows an **Unrateable** badge rather than the out-of-scale number, and the explanation carries the `[LLM returned rating 3.0, outside the scale [0, 1]]` annotation. Running does **not** save; put the real prompt back before clicking **Save**.
-  7. Click **Save** to keep the refined prompt, or **Back to AI Judges** to leave without saving.
-- **Expected:** Run Judgement reliably returns a rating + explanation for the sample pair, letting you iterate on the prompt before running it on the whole book. The preview holds the answer to the same rules a real judging run applies, so a rating the book would reject never looks usable here.
+  1. Open Create/Edit AI Judge, or Refine Prompt from a book's Judgement Stats.
+  2. Confirm Test & Refine loads an editable sample pair from an accessible book (the selected book when provided).
+  3. Click Change Query Doc Pair and confirm it loads another sample when available.
+  4. Edit the unsaved prompt, active provider configuration and sample document, then Run Prompt.
+  5. Confirm the busy indicator followed by rating/explanation; a zero rating must display.
+  6. Reload without Save: judge configuration must revert to the saved values. Run Prompt must not create judges, pairs or judgements.
+  7. Save explicitly and reload to verify persistence.
+- **Expected:** Testing uses current form values and the selected book's rating scale; missing or off-scale ratings appear as Unrateable, using the same acceptance rules as a judging run. Samples respect the requesting user's book access. Legacy prompt routes remain compatible.
 - **Edge cases:**
-  - [ ] Enter malformed JSON in the Document Fields or Options editors and run it — confirm this fails gracefully (no server error page) rather than crashing.
-  - [ ] Run this against a book with **zero** query/doc pairs — confirm a sensible blank/placeholder pair is used instead of erroring.
+  - [ ] Malformed Document Fields, Options or provider JSON produces a recoverable error; correct it and retry.
+  - [ ] A provider failure re-enables Run Prompt and retains input for retry.
+  - [ ] Without a book scale, change `llm_provider` directly in JSON between Jev and OpenAI; confirm Run Prompt is disabled only for Jev. Malformed JSON remains runnable to show its recoverable error.
+  - [ ] An empty book uses a blank sample. Leaving the page during sampling must not update a disconnected form.
 
 ### 12.5 Trigger a judging run ("Judge Judy")
 
 - [ ] **Steps:**
-  1. From Judgement Stats, click **Prepare to Judge!** on the AI judge's row.
+  1. From Overview, click the AI judge's **Judge documents** play button.
   2. In the "Judge Documents" modal, leave the default **Query Doc Pairs to Judge** count (10), click the submit button (labeled "Judge Documents").
   3. Confirm the redirect notice ("AI Judge {name} will start evaluating query/doc pairs.") and watch for live progress notifications on the book pages as the background job runs.
   4. Confirm afterward that up to the requested number of new judgements were created and attributed to the AI judge (fewer if the book ran out of unjudged pairs first).
@@ -64,37 +78,85 @@ AI Judges let an LLM stand in for a human judge. An AI Judge is modeled as a spe
 - **Edge cases:**
   - [ ] Simulate (or naturally trigger) the LLM failing to return a usable rating for a given pair — confirm that specific judgement is marked `unrateable` rather than the whole run erroring out.
   - [ ] Trigger a run when the book already has zero unjudged pairs left — confirm it completes immediately having processed 0, without error.
-  - [ ] Confirm **Prepare to Judge!** is disabled/absent once the AI judge has nothing left to judge, or once the book has already reached its judgements-per-pair cap (cross-reference Part 11.7).
+  - [ ] Confirm a run with no available pairs completes without new judgements; availability follows the book's selection strategy and Rank Depth.
 
-### 12.6 Judge with TypeSafe Jev
-
-Jev is a typed evaluation model rather than a chat model: the book's rating scale is sent as the question's criteria, and the answer comes back as a position on that scale with a probability distribution and a confidence — never prose, and never a rating off the scale. Quepid writes the explanation from those numbers.
+### 12.6 AI Judge image options
 
 - [ ] **Steps:**
-  1. Create (or edit) an AI Judge and pick **TypeSafe Jev** as the LLM Provider.
-  2. Confirm **LLM Service URL** (`https://api.typesafe.ai`), **LLM Model** (`jev-latest`) and **LLM API Version** fill in and are **read-only** — Jev dictates them — while **LLM Key**, Name and Timeout stay editable. Paste your TypeSafe API key (from `console.typesafe.ai/keys`) into LLM Key and save.
-  3. Assign the judge to a book that has a scale with labels (labels become the criteria, so they matter more here than the system prompt does).
-  4. From **Judgement Stats**, use **Refine Prompt** with `?book_id=` set — confirm the prompt field is labelled "Judging instructions", not "System prompt", and that Test & Refine lists the **criteria** the question will carry (one row per rating, from the book's scale labels) read-only — then click **Run Judgement**.
-  5. Back on Judgement Stats, run a small **Judge Judy** batch (e.g. 10 pairs).
-  6. Open the resulting judgements and read the explanations.
-- **Expected:** every rating is one of the book's own scale values (Jev cannot return anything else), and each explanation reads like `Jev rated 1 ("Relevant") -- raw score 0.57 of 0-1, confidence 0.35. Distribution: 0: 43%, 1: 57%. (model jev-1.13.0)`.
+  1. Create an OpenAI judge. Confirm **Judge with images** is checked by default.
+  2. Turn it off, save and reopen; then turn it on, save and reopen. Confirm both choices persist.
+  3. Select Ollama or TypeSafe Jev. Confirm the image checkbox is disabled and off, with a provider notice. Switch back to OpenAI and confirm your previous choice returns; save/reload with a text-only provider and repeat.
+  4. Switch to the JSON tab and confirm structured inputs are disabled. Set `llm_include_images` to false there, save and reopen.
+- **Expected:** The saved option controls whether absolute HTTP(S) document image or thumbnail URLs enter the judging prompt. Ollama and Jev omit image content regardless of the saved option. Text-only document fields remain available.
 - **Edge cases:**
-  - [ ] Run the prompt preview **without** a book (`/ai_judges/:id/edit` with no `book_id`) — confirm it fails gracefully saying Jev needs a book, rather than sending a question with no criteria.
-  - [ ] Point the judge at a book whose scale has **more than 10 values** — confirm it still judges (the question becomes a choice between the rating values rather than a score).
-  - [ ] Set **Minimum confidence** to `0.5` on the judge (a number field that appears only while TypeSafe Jev is the provider, stored in the judge's options JSON — no new column) and re-run — confirm answers below that confidence are saved as **unrateable** with their numbers still in the explanation, and that switching provider away hides and disables the field.
-  - [ ] Judge a book whose documents have an `image` field — confirm judging still works and the image is simply ignored (Jev is text-only).
+  - [ ] With images enabled, provide only `thumb`, or a relative `image` plus absolute `thumb`; confirm the absolute thumbnail is used. If both are absolute, prefer `image`.
+  - [ ] With images disabled, confirm neither URL is sent as image content.
 
-### 12.8 Send document images to a judge
+### 12.7 Escalate from one AI judge to an on-call judge
 
-A judge whose provider takes image URLs (every one except Ollama and TypeSafe Jev) attaches the document's image to the request as an image URL: the `image` field if the case maps one, otherwise the case's `thumb` (with the case's thumb prefix already applied). Each judge has an **Judge with images** switch so text-only models can be left out. Providers whose API cannot take an image URL (Ollama, TypeSafe Jev) show the switch disabled and off, with a message naming the provider, and never send an image whatever the judge's setting.
+A judge can name a second judge to wake when it can't give a usable rating ("escalation", `docs/todo/escalating_judges.md`). The link lives on the judge, not on a book, and the judge it points at is **on call**: it doesn't have to be assigned to the book, it can't be started by hand, and it judges only the pairs handed to it. When the first judge's run ends, the on-call judge judges those pairs as a run of its own.
 
 - [ ] **Steps:**
-  1. Open `/ai_judges/new` — confirm **Judge with images** is a switch and is **on**.
-  2. Edit an existing judge saved before the switch existed — confirm it shows **on** too (unset means on).
-  3. Turn the switch **off**, open the **JSON** tab — confirm `judge_options` carries `"llm_include_images": "false"`; switch back to **Structured Fields** and confirm it is still off. Save, reopen the judge, confirm it is still off.
-  4. Switch the provider to **Ollama**, then **TypeSafe Jev** — confirm the switch goes disabled and off with "<provider> doesn't support images, so none are sent." Switch back to **OpenAI** — confirm the switch is enabled again and shows the choice from before (turn it on before switching away to see it come back on).
-  5. In **Test & Refine**, put a document with a `thumb` URL in Document Fields (e.g. `{"title": "Mallard Duck", "thumb": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/Anas_platyrhynchos_male_female_quadrat.jpg/330px-Anas_platyrhynchos_male_female_quadrat.jpg"}`) and **Run Judgement** with the switch on, then off.
-- **Expected:** with the switch on, a vision model's explanation refers to what the picture shows; with it off, the judge rates from the text alone, and a judge that failed on the image succeeds. Ollama rejects image *URLs* outright (400, "please use base64 encoded data instead") whatever the model, which is why its switch is disabled.
+  1. Open **AI Judges**, edit a TypeSafe Jev judge, set **When unsure, wake** to an OpenAI judge, and set **Minimum confidence** to `1.0` (every answer falls below it, so every pair escalates). Save.
+  2. Back on **AI Judges**, read the **Escalation** column, then open the OpenAI judge.
+  3. Assign **only** the Jev judge to a book whose scale matches the OpenAI judge's prompt (the stock OpenAI prompt grades 0–3). Open the book's **Settings**, then the book overview, then **Judgement Stats**.
+  4. Run the Jev judge on a handful of pairs (the ▶ button in Judge Activity opens **Judge Documents**; run 10).
+  5. When it finishes, watch the OpenAI judge start judging on its own. When it finishes, open one of Jev's judgements from the run, follow the link, and open the OpenAI judgement.
+  6. Try to start the OpenAI judge directly (it has no button; a crafted `PATCH .../run_judge_judy/<id>` should be refused).
+  7. Set Jev's **Minimum confidence** back to blank and run Jev again.
+- **Expected:**
+  - The list shows "→ wakes {OpenAI judge}" on Jev and an **On call** badge on the OpenAI judge, whose edit page says "On call for {Jev}: this judge only rates pairs escalated to it."
+  - The book's settings, Judge Activity and Judgement Stats show "wakes {OpenAI judge} when unsure" under Jev, and the OpenAI judge with **On call** and no ▶, even though it isn't assigned.
+  - After step 5, every pair Jev judged has two judgements: Jev's unrateable one and the OpenAI judge's. Jev's judgement page says **Unrateable:** "Jev gave no usable rating, because its confidence (…) was below its minimum confidence of 1.0", and that the pair was **handed on**, with what the OpenAI judge did and a link. The OpenAI judgement says **Escalated:** with Jev's reason and a link back, and its explanation starts "Escalated from Jev, whose answer was unrateable: …".
+  - Step 6 is refused with "AI Judge {name} is on call: it only judges pairs {Jev} escalates to it."
+  - After step 7, nothing escalates: no new OpenAI judgements.
 - **Edge cases:**
-  - [ ] A `thumb` that is a relative path (a case whose thumb mapping has no prefix, e.g. `/t/p/w500/abc.jpg`) — confirm judging still works and no image is sent, rather than the provider rejecting the request.
-  - [ ] A document with both `image` and `thumb` — `image` is the one sent.
+  - [ ] Try to close a loop (A wakes B, then set B to wake A): the save is refused with "would wake a judge that already escalates back to this one".
+  - [ ] Delete the on-call judge (one with no judgements): the main judge's **When unsure, wake** goes back to Nobody. A judge that has judgements can't be deleted, and the AI Judges page says why.
+  - [ ] As a user who can't see the woken judge, edit and save the main judge: the link is kept.
+  - [ ] Book with a 0–1 scale and the stock 0–3 OpenAI prompt: the OpenAI judge's off-scale answers are marked unrateable, and its judgement page gives *its own* reason ("its rating wasn't one of the book's scale values"), not Jev's.
+  - [ ] Cancel the on-call judge's run from Judge Activity mid-way: it stops; running Jev again later picks up the pairs it didn't reach.
+
+### 12.8 Judge ownership and document access
+
+- [ ] **Steps:**
+  1. Create a private judge as user A. As unrelated user B, verify it is absent from index/book choices and direct show/edit/update/delete requests fail.
+  2. Share it with a team containing B. Confirm B can use and edit it, while sharing with teams B cannot see survives B's update.
+  3. Give A a private book with a distinctive document. As B, request a wizard sample without book context and with A's inaccessible book ID.
+- **Expected:** Samples never expose A's private documents; judge sharing does not grant access to its owner's books. Confirm owned and team-shared access without requiring book and judge team overlap.
+
+### 12.9 Automatic judging, cancellation and live synchronization
+
+- [ ] **Steps:**
+  1. Assign a judge, enable **Auto-run on new pairs**, set Rank Depth to 2, save and reload Settings.
+  2. Keep Overview open and populate three ranked pairs from a linked case. Confirm automatic judging covers only eligible pairs, with live count/status/chart updates and ratings appearing in the linked case.
+  3. Disable auto-run and clear Rank Depth. Add more pairs, run manually, open live progress and confirm **Stop Judging**. Wait for the provider's current response; confirm counts then stop increasing and saved case ratings remain after refresh.
+  4. Force a provider failure. Check the Unrateable judgement's explanation in the non-compact Judgements view. Restore the provider and run again; confirm new successful judgements and synced ratings after refresh.
+  5. Save a first human judgement from another tab. Confirm that human's row appears on the already-open Overview; delete their last judgement and confirm the row disappears. Repeat with a missed subscription to exercise polling recovery.
+  6. While a bounded manual run is waiting for a provider response, add new eligible pairs with auto-run enabled. Confirm one automatic continuation waits, the manual run retains its requested limit, and the continuation judges the remaining pairs. During cancellation, a conflicting manual restart must not overlap the pending response.
+- **Expected:** Only one run per book/judge proceeds at a time; conflicting manual launches still discard. Cancellation prevents subsequent iterations and cancels queued continuations; one in-flight provider response may still save, with the lock held until the worker exits. Failed job rows do not leave activity permanently running. Per-cell updates preserve mounted sparklines. Polling recovers missed/removed rows, and synchronization retains the existing no-feedback-loop contract.
+
+  - [ ] In a linked case with automatic book population enabled, sync result A, then results A/B. Confirm book pairs retain A at position 1 and B at position 2; already-synced rows must not renumber later results.
+  - [ ] Search a linked case with 101+ queries and automatic book population enabled. Confirm all new pairs are submitted together and appear after the queued job completes. While the book is busy, search again with new pairs: confirm a visible auto-sync error. While the error banner remains visible, open Tune Relevance and confirm Rerun stays visible and clickable, including with a wrapped banner at a narrow viewport. After the job finishes, use Rerun without dismissing the error or manually reloading; confirm one settings request per click and that the rejected pairs are submitted and persisted.
+  - [ ] Add one query while automatic book population is enabled and the book is busy. Confirm successful search results refresh the new query's score badge and case score despite the visible auto-sync error. Repeat with the book available; confirm refreshed scores and successful submission. A search-engine failure must still show its error without submitting pairs.
+
+### 12.10 TypeSafe Jev and provider acceptance rules
+
+- [ ] **Steps:**
+  1. Select TypeSafe Jev in Create/Edit AI Judge. Confirm Judging instructions, the Minimum confidence number field (0–1), fixed URL/model/version and disabled images.
+  2. Without a book scale, confirm Run Prompt is disabled with guidance to open Refine Prompt from a book. A direct preview request without an accessible scale returns 422 without contacting the provider.
+  3. Open Refine Prompt from a book with a nonstandard scale such as `[1, 3, 5]`. Confirm the displayed criteria and labels match the book. Run a judgement; confirm the fractional provider score maps to a scale value and the explanation records score, confidence and distribution.
+  4. Set a confidence floor above the provider's confidence. Confirm Unrateable with the numeric explanation retained. Save/reload and confirm the confidence setting persists.
+  5. Force a 401 or missing-answer response, then restore success and retry. Force a first 429/529 followed by success; confirm two requests and a usable result. Timeouts must not be retried.
+- **Expected:** Provider selection controls the request dialect. Chat providers keep their existing routing/authentication and image behavior. Jev takes structured text and book criteria; preview remains unsaved, while judging jobs persist accepted or Unrateable judgements.
+- **Coverage note:** Local fixture providers can verify the transport and failure matrix without external keys; distinguish this from a live TypeSafe service run.
+
+### 12.11 Clone a team AI Judge
+
+- [ ] **Steps:**
+  1. Open `/teams/:team_id/ai_judges/:id/clone` for a judge shared with your team (the route is supported; no Clone button is provided).
+  2. Confirm the unsaved form has `Clone of {name}`, the original key/prompt/provider settings and only the originating team checked. Opening must not create a judge.
+  3. Clear the system prompt and Save. Confirm validation retains name, key, options, team selection and the nested create action; correct the prompt and retry.
+  4. Confirm the redirect to the team with creation notice. Reopen the new judge and verify settings, requester ownership and a distinct ID; the source is unchanged.
+- **Expected:** Only judge configuration is copied. Account privileges/tokens, book assignments and judgements are not copied; saving uses the existing create contract.
+- **Edge cases:** Inaccessible teams/private judges and sources outside the specified team return 404. Malformed Options JSON retains input for retry. Uncheck the team before Save to make the clone private.

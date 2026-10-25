@@ -106,7 +106,7 @@ module Api
         update_params = search_endpoint_params
 
         if update_params[:basic_auth_credential].present? &&
-           update_params[:basic_auth_credential] == @search_endpoint.masked_basic_auth_credential
+           @search_endpoint.matches_masked_basic_auth_credential?(update_params[:basic_auth_credential])
           update_params = update_params.except(:basic_auth_credential)
         end
 

@@ -1,4 +1,3 @@
- 
  <!--script async src="https://cdn.jsdelivr.net/npm/es-module-shims@1/dist/es-module-shims.min.js" crossorigin="anonymous"></script-->
     <!--script type="importmap">
     {
@@ -66,112 +65,43 @@
 }
 </style>
 <div class="sidebar d-flex flex-column flex-shrink-0 bg-body-tertiary" style="width: 3.5rem;">
-    <ul class="nav nav-pills nav-flush flex-column mb-auto text-center">
-      <li>
-        <%= link_to root_path, class: "nav-link #{make_active?({controller: 'home'}) ? 'active' : ''} py-3 border-bottom rounded-0", 'data-controller':'bs-tooltip', 'data-bs-tooltip-placement-value':'right', 'aria-label':'Dashboard', 'data-bs-tooltip-title-value':'Dashboard' do %>
-          <i
-            class="bi bi-speedometer2"
-            aria-hidden="true"
-            title="Dashboard"
-            alt="Dashboard"
-            style="font-size: 1.5rem; color: <%= make_active?({controller: 'home'}) ? 'white' : 'cornflowerblue' %>;"
-          ></i>
-        <% end %>
-      </li>
-      <li>
-        <%= link_to cases_path, data: { turbo_prefetch: false, controller: 'bs-tooltip', 'bs-tooltip-placement-value': 'right', 'bs-tooltip-title-value': 'Relevancy Cases' }, class: "nav-link #{make_active?({path: 'case'}) ? 'active' : ''} py-3 border-bottom rounded-0", 'aria-label':'Relevancy Cases' do %>
-          <i
-            class="bi bi-briefcase"
-            aria-hidden="true"
-            title="Relevancy Cases"
-            alt="Relevancy Cases"
-            style="font-size: 1.5rem; color: <%= make_active?({path: 'case'}) ? 'white' : 'cornflowerblue' %>;"
-          ></i>
-        <% end %>
-      </li>
-      <li>
-        <%= link_to books_path, class: "nav-link #{make_active?({path: 'book'}) ? 'active' : ''} py-3 border-bottom rounded-0", 'data-controller':'bs-tooltip', 'data-bs-tooltip-placement-value':'right', 'aria-label':'Judgements', 'data-bs-tooltip-title-value':'Judgements' do %>
-          <i
-            class="bi bi-book"
-            aria-hidden="true"
-            title="Judgement Books"
-            alt="Judgement Books"
-            style="font-size: 1.5rem; color: <%= make_active?({path: 'book'}) ? 'white' : 'cornflowerblue' %>;"
-          ></i>
-        <% end %>
-      </li>
-      <li>
-        <%= link_to ai_judges_path, data: { turbo_prefetch: false, controller: 'bs-tooltip', 'bs-tooltip-placement-value': 'right', 'bs-tooltip-title-value': 'AI Judges' }, class: "nav-link #{make_active?({path: 'ai_judge'}) ? 'active' : ''} py-3 border-bottom rounded-0", 'aria-label':'AI Judges' do %>
-          <i
-            class="bi bi-robot"
-            aria-hidden="true"
-            title="AI Judges"
-            alt="AI Judges"
-            style="font-size: 1.5rem; color: <%= make_active?({path: 'ai_judge'}) ? 'white' : 'cornflowerblue' %>;"
-          ></i>
-        <% end %>
-      </li>
+    <ul class="nav nav-pills flex-column mb-auto text-center">
+      <%= render "layouts/sidebar_item", url: root_path, label: "Dashboard", icon: "bi-speedometer2",
+                 active: make_active?({controller: 'home'}) %>
+      <%= render "layouts/sidebar_item", url: cases_path, label: "Relevancy Cases", icon: "bi-briefcase",
+                 active: make_active?({path: 'case'}), data: { turbo_prefetch: false } %>
+      <%= render "layouts/sidebar_item", url: books_path, label: "Judgements", icon: "bi-book",
+                 icon_label: "Judgement Books", active: make_active?({path: 'book'}) %>
+      <%= render "layouts/sidebar_item", url: scorers_path, label: "Scorers", icon: "bi-list-task",
+                 active: make_active?({path: 'scorers'}), data: { turbo_prefetch: false } %>
+      <%= render "layouts/sidebar_item", url: "#{root_path}notebooks/lab/index.html", label: "Notebooks",
+                 icon: "bi-journal-medical", active: false, icon_active: make_active?({path: 'case'}),
+                 link_class: "nav-link py-3 border-bottom rounded-0",
+                 target: "_blank", rel: "noopener noreferrer", data: { turbo: false } %>
+      <%= render "layouts/sidebar_item", url: search_endpoints_path, label: "Search Endpoints", icon: "bi-send-fill",
+                 active: make_active?({path: 'search_endpoint'}) %>
+      <%= render "layouts/sidebar_item", url: ai_judges_path, label: "AI Judges", icon: "bi-robot",
+                 active: make_active?({path: 'ai_judge'}), data: { turbo_prefetch: false } %>
+      <%# Not _sidebar_item: the [::] mark is an SVG, not a bi-* icon. %>
       <li>
         <%= link_to embedders_path, data: { turbo_prefetch: false, controller: 'bs-tooltip', 'bs-tooltip-placement-value': 'right', 'bs-tooltip-title-value': 'Embedders β' }, class: "nav-link #{make_active?({path: 'embedder'}) ? 'active' : ''} py-3 border-bottom rounded-0", 'aria-label':'Embedders' do %>
           <%= render 'embedders/icon', size: '1.5rem', style: "color: #{make_active?({path: 'embedder'}) ? 'white' : 'cornflowerblue'};" %>
         <% end %>
       </li>
-      <li>
-        <%= link_to scorers_path, data: { turbo_prefetch: false, controller: 'bs-tooltip', 'bs-tooltip-placement-value': 'right', 'bs-tooltip-title-value': 'Scorers' }, class: "nav-link #{make_active?({path: 'scorers'}) ? 'active' : ''} py-3 border-bottom rounded-0", 'aria-label':'Scorers' do %>
-          <i
-            class="bi bi-list-task"
-            aria-hidden="true"
-            title="Scorers"
-            alt="Scorers"
-            style="font-size: 1.5rem; color: <%= make_active?({path: 'scorers'}) ? 'white' : 'cornflowerblue' %>;"
-          ></i>
-        <% end %>
-      </li>
-      <li>
-        <%= link_to "#{root_path}notebooks/lab/index.html", target: '_blank', rel: 'noopener noreferrer', class: "nav-link py-3 border-bottom rounded-0", 'data-controller':'bs-tooltip', 'data-bs-tooltip-placement-value':'right', 'aria-label':'Notebooks', 'data-bs-tooltip-title-value':'Notebooks' do %>
-          <i
-            class="bi bi-journal-medical"
-            aria-hidden="true"
-            title="Notebooks"
-            alt="Notebooks"
-            style="font-size: 1.5rem; color: <%= make_active?({path: 'case'}) ? 'white' : 'cornflowerblue' %>;"
-          ></i>
-        <% end %>
-      </li>
-      <li>
-        <%= link_to search_endpoints_path, class: "nav-link #{make_active?({path: 'search_endpoint'}) ? 'active' : ''} py-3 border-bottom rounded-0", 'data-controller':'bs-tooltip', 'data-bs-tooltip-placement-value':'right', 'aria-label':'Search Endpoints', 'data-bs-tooltip-title-value':'Search Endpoints' do %>
-          <i
-            class="bi bi-send-fill"
-            aria-hidden="true"
-            title="Search Endpoints"
-            alt="Search Endpoints"
-            style="font-size: 1.5rem; color: <%= make_active?({path: 'search_endpoint'}) ? 'white' : 'cornflowerblue' %>;"
-          ></i>
-        <% end %>
-      </li>
       <% unless desktop_mode? %>
-      <li>
-        <%= link_to teams_path, data: { turbo_prefetch: false, controller: 'bs-tooltip', 'bs-tooltip-placement-value': 'right', 'bs-tooltip-title-value': 'Teams' }, class: "nav-link #{make_active?({path: 'teams'}) ? 'active' : ''} py-3 border-bottom rounded-0", 'aria-label':'Teams' do %>
-          <i
-            class="bi bi-people-fill"
-            aria-hidden="true"
-            title="Teams"
-            alt="Teams"
-            style="font-size: 1.5rem; color: <%= make_active?({path: 'teams'}) ? 'white' : 'cornflowerblue' %>;"
-          ></i>
-        <% end %>
-      </li>
+        <%= render "layouts/sidebar_item", url: teams_path, label: "Teams", icon: "bi-people-fill",
+                   active: make_active?({path: 'teams'}), data: { turbo_prefetch: false } %>
       <% end %>
     </ul>
     <div class="dropdown border-top">
-      <a href="#" class="d-flex align-items-center justify-content-center p-3 link-body-emphasis text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-        <%= image_tag current_user.avatar_url, size: '24x24', class: 'rounded-circle' %>
-      </a>
-      <ul class="dropdown-menu text-small shadow">
+      <button type="button" class="d-flex align-items-center justify-content-center w-100 p-3 border-0 bg-transparent link-body-emphasis text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Account menu">
+        <%= image_tag current_user.avatar_url, size: '24x24', class: 'rounded-circle', alt:'Current user avatar' %>
+      </button>
+      <ul class="dropdown-menu shadow">
         <li><%= link_to "Create case...", case_new_path, class:'dropdown-item', data: { turbo: false } %></li>
         <li><%= link_to "Profile", profile_path, class:'dropdown-item' %></li>
         <li><hr class="dropdown-divider"></li>
-        <li><%= link_to "Log out", logout_path, class:'dropdown-item' %></li>
+        <li><%= button_to "Log out", logout_path, method: :delete, class: 'dropdown-item', form: { data: { turbo: false } } %></li>
       </ul>
     </div>
   </div>

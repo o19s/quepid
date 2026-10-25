@@ -298,6 +298,40 @@ class SelectionStrategyTest < ActiveSupport::TestCase
     end
   end
 
+  describe 'escalated judgements' do
+    let(:book) { books(:james_bond_movies) }
+    let(:pair) { book.query_doc_pairs.first }
+    let(:cheap) { AiJudge.create!(name: 'Cheap') }
+    let(:expensive) { AiJudge.create!(name: 'Expensive') }
+
+    # Every other pair gets its three judgements, so `pair` is the only one
+    # that can still be offered.
+    before do
+      book.query_doc_pairs.each { |query_doc_pair| query_doc_pair.judgements.delete_all }
+      book.query_doc_pairs.where.not(id: pair.id).find_each do |other|
+        [ users(:matt), users(:joe), users(:jane) ].each { |judge| other.judgements.create!(user: judge, rating: 1) }
+      end
+    end
+
+    it 'counts a judgement and its escalation as one, so the pair still wants another opinion' do
+      source = pair.judgements.create!(user: cheap, unrateable: true)
+      pair.judgements.create!(user: expensive, rating: 1, escalated_from_judgement: source)
+      pair.judgements.create!(user: users(:matt), rating: 1)
+
+      assert_not SelectionStrategy.every_query_doc_pair_has_three_judgements?(book)
+      assert_equal pair, SelectionStrategy.random_query_doc_based_on_strategy(book, users(:doug))
+    end
+
+    it 'still counts an unrateable judgement nobody escalated, as before' do
+      pair.judgements.create!(user: cheap, unrateable: true)
+      pair.judgements.create!(user: users(:matt), rating: 1)
+      pair.judgements.create!(user: users(:joe), rating: 1)
+
+      assert SelectionStrategy.every_query_doc_pair_has_three_judgements?(book)
+      assert_nil SelectionStrategy.random_query_doc_based_on_strategy(book, users(:doug))
+    end
+  end
+
   describe 'rank depth scoping' do
     let(:book) { books(:james_bond_movies) }
     let(:matt) { users(:matt) }
@@ -349,5 +383,52 @@ class SelectionStrategyTest < ActiveSupport::TestCase
 
   def total_pairs
     @total_pairs ||= books(:james_bond_movies).query_doc_pairs.count
+  end
+
+  describe 'rank depth scoping' do
+    let(:book) { books(:james_bond_movies) }
+    let(:matt) { users(:matt) }
+
+    before do
+      book.query_doc_pairs.each { |query_doc_pair| query_doc_pair.judgements.delete_all }
+    end
+
+    it 'counts only pairs within the book rank_depth as unjudged' do
+      book.update!(rank_depth: 2)
+      expected_count = book.query_doc_pairs.where(position: ..2).count
+
+      assert_equal expected_count, SelectionStrategy.unjudged_pairs_count(book)
+    end
+
+    it 'treats a nil rank_depth as unrestricted, matching the pre-existing default' do
+      assert_nil book.rank_depth
+      assert_equal book.query_doc_pairs.count, SelectionStrategy.unjudged_pairs_count(book)
+    end
+
+    it 'only selects pairs within rank_depth for judging' do
+      book.update!(rank_depth: 2)
+
+      book.query_doc_pairs.size.times do
+        query_doc_pair = SelectionStrategy.random_query_doc_based_on_strategy(book, matt)
+        break if query_doc_pair.nil?
+
+        assert_operator query_doc_pair.position, :<=, 2
+        query_doc_pair.judgements.create rating: 2.0, user: matt
+      end
+
+      # No pair below the rank_depth should ever have been surfaced to judge.
+      assert_nil SelectionStrategy.random_query_doc_based_on_strategy(book, matt)
+    end
+
+    it 'considers every_query_doc_pair_has_three_judgements? only against pairs within rank_depth' do
+      book.update!(rank_depth: 1)
+
+      # Judge the two pairs at position 1 (one per query group) three times each.
+      book.query_doc_pairs.where(position: 1).find_each do |qdp|
+        [ :matt, :joe, :jane ].each { |name| qdp.judgements.create rating: 2.0, user: users(name) }
+      end
+
+      assert(SelectionStrategy.every_query_doc_pair_has_three_judgements?(book))
+    end
   end
 end
