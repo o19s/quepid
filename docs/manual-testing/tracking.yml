@@ -514,10 +514,10 @@ parts:
           query-rerun: "4.10/query-rerun"
           query-edited: "4.10/query-edited"
           query-sandbox: "4.10/query-sandbox"
-        last_run: 2026-10-25T13:23:59Z
+        last_run: 2026-10-25T13:34:17Z
         result: pass
-        notes: "Partial shared-editor MCP check case6/try31: bundled workspace imports the vendored editor; EditorView identity matches importmap, draft survives Settings/Query round trip, original restored without save. Screenshot inspected. Build contains no bundled CodeMirror/Lezer. Native disposable-clone settings check passes failure/retry, saved try, reload and history after disabling premature module-preload HTTP header. 2018 unit tests and59 Rails controller tests pass. Visual2pass/4known fixture/baseline failures."
-        paths: ["esbuild.config.js", "app/views/layouts/_case_workspace.html.erb", "app/javascript/core_stimulus.js", "app/javascript/utils/core_workspace_runtime.js", "test/playwright/workspace_settings.spec.ts", "app/javascript/controllers/tune_relevance_controller.js", "app/javascript/controllers/pane_controller.js", "app/javascript/controllers/core_bootstrap_controller.js", "app/javascript/controllers/case_toolbar_controller.js", "app/javascript/utils/settings_catalog_runtime.js", "app/javascript/utils/settings_runtime.js", "app/javascript/utils/search_endpoint_runtime.js", "app/javascript/utils/tune_relevance.js", "app/views/core/_tune_relevance.html.erb", "app/views/core/index.html.erb", "config/importmap.rb", "app/javascript/modules/editor.js", "app/javascript/api/json.js", "app/assets/stylesheets/core-overrides.css", "app/assets/stylesheets/core-additions.css"]
+        notes: "Partial dependency-update MCP smoke on Current case6/try31: Query sandbox renders, Bootstrap Icons font reports loaded, no console errors; screenshot inspected. No edits/rerun/save. Updated tools pass2018 unit tests, ESLint, Prettier and build; incremental Stryker compatibility check kills18/22 mutants. Native workspace settings save/failure/retry/reload/history passes with disposable clone. Axe/modal batch12pass,1fixture mismatch (expected unrated, fixture rating0); no expectation changed. ERB lint32existing errors versus36 with previous linter."
+        paths: ["yarn.lock", "package.json", "esbuild.config.js", "app/views/layouts/_case_workspace.html.erb", "app/javascript/core_stimulus.js", "app/javascript/utils/core_workspace_runtime.js", "test/playwright/workspace_settings.spec.ts", "app/javascript/controllers/tune_relevance_controller.js", "app/javascript/controllers/pane_controller.js", "app/javascript/controllers/core_bootstrap_controller.js", "app/javascript/controllers/case_toolbar_controller.js", "app/javascript/utils/settings_catalog_runtime.js", "app/javascript/utils/settings_runtime.js", "app/javascript/utils/search_endpoint_runtime.js", "app/javascript/utils/tune_relevance.js", "app/views/core/_tune_relevance.html.erb", "app/views/core/index.html.erb", "config/importmap.rb", "app/javascript/modules/editor.js", "app/javascript/api/json.js", "app/assets/stylesheets/core-overrides.css", "app/assets/stylesheets/core-additions.css"]
       "4.11":
         title: "Tune Relevance drawer — Tuning Knobs tab"
         screenshots:
@@ -1006,9 +1006,9 @@ parts:
           mapper-fetch-error: "7.7/mapper-fetch-error"
           mapper-fetch: "7.7/mapper-fetch"
           mapper-entry: "7.7/mapper-entry"
-        last_run: 2026-10-20T18:46:48Z
+        last_run: 2026-10-25T13:51:23Z
         result: pass
-        notes: "Covered live on Current :3000: Fetch on demo Solr JSON shows the preview and reveals Step 2, blank URL, ftp URL, connection refused and invalid custom headers JSON each show their message, the Test Query hint changes with GET and POST, an existing mapper endpoint opens with its URL and both editors filled. Not covered: slow-endpoint timeout, Advanced basic auth, Copy button on plain HTTP."
+        notes: "Partial Herb-cleanup MCP smoke /search_endpoints/mapper_wizard: entry renders; preview max-height600px rule now in head with dynamic Turbo tracking. Screenshot inspected. No fetch, generated code, endpoint write or preview expansion performed. 557 affected controller tests pass."
         paths: ["app/controllers/mapper_wizards_controller.rb", "app/javascript/controllers/mapper_wizard_controller.js", "app/views/mapper_wizards/show.html.erb", "app/views/mapper_wizards/_mapper_editor.html.erb", "app/javascript/controllers/status_message_behavior.js", "app/javascript/utils/clipboard.js", "app/helpers/application_helper.rb"]
       "7.8":
         title: "Mapper Wizard — Step 2: Generate Mappers with AI"
@@ -1124,16 +1124,17 @@ parts:
       "8.4":
         title: "Edit a scorer"
         screenshots:
+          sidebar-head-styles: "8.4/sidebar-head-styles"
           editor-dependencies: "8.4/editor-dependencies"
           private-edit-denied: "8.4/private-edit-denied"
           communal-edit-denied: "8.4/communal-edit-denied"
           scorer-reopened: "8.4/scorer-reopened"
           scorer-edited: "8.4/scorer-edited"
           scorer-edit: "8.4/scorer-edit"
-        last_run: 2026-10-25T13:23:59Z
+        last_run: 2026-10-25T13:51:23Z
         result: pass
-        notes: "Partial shared-editor MCP check scorer5/edit (communal AP@10): existing highlighted code loads through the same importmap EditorView as the case editor, with no core bundle on the page. Screenshot inspected. No changes/save to shared scorer. Yarn CodeMirror packages removed; Vitest tests the vendored modules. 2018 unit tests and59 Rails controller tests pass. Access-control/persistence flows not repeated live."
-        paths: ["config/importmap.rb", "app/javascript/modules/editor.js", "app/controllers/scorers_controller.rb", "app/views/scorers/edit.html.erb", "app/views/scorers/_form.html.erb", "app/views/scorers/_scale_label.html.erb", "app/javascript/controllers/scorer_scale_controller.js", "app/services/team_sharing.rb", "app/models/concerns/text_search.rb", "app/javascript/controllers/codemirror_controller.js", "app/helpers/application_helper.rb"]
+        notes: "Partial Herb-cleanup MCP smoke scorer5/edit, communal AP@10: ordinary sidebar appearance/sticky position retained; its identical CSS is now in head with dynamic Turbo tracking. Screenshot inspected. No scorer edit/save. 557 affected controller tests pass; native visual2pass/4known fixture/baseline failures."
+        paths: ["app/views/layouts/application.html.erb", "app/views/layouts/_sidebar_styles.html.erb", "config/importmap.rb", "app/javascript/modules/editor.js", "app/controllers/scorers_controller.rb", "app/views/scorers/edit.html.erb", "app/views/scorers/_form.html.erb", "app/views/scorers/_scale_label.html.erb", "app/javascript/controllers/scorer_scale_controller.js", "app/services/team_sharing.rb", "app/models/concerns/text_search.rb", "app/javascript/controllers/codemirror_controller.js", "app/helpers/application_helper.rb"]
       "8.5":
         title: "Clone a scorer"
         screenshots:
@@ -1644,9 +1645,9 @@ parts:
           json-options: "12.1/json-options"
           configured: "12.1/configured"
           new-form: "12.1/new-form"
-        last_run: 2026-10-22T20:46:43Z
+        last_run: 2026-10-25T13:51:23Z
         result: pass
-        notes: "Covered live on Current :3000 at /ai_judges/new: blank name with OSC checked and a custom prompt returns 'Name can't be blank' keeping both; entering a name shows Test & Refine; Ollama keeps the custom prompt and disables/unchecks images. JSON/Structured synchronization (the retained 2026-10-15 failure, which those notes recorded on Base 86e3de9/Legacy 8ceb99e while Current synchronized) re-verified on Current both ways: Structured edits appear in JSON, a JSON timeout of 45 appears in Structured, removing jev_min_confidence clears a 0.7 floor, and OpenAI with URL/model omitted restores https://api.openai.com / gpt-4o. Malformed JSON returns 'Options must be valid JSON' keeping name, team and the malformed text (the page reopens on Structured Fields with the text in the hidden JSON tab). Keyless Ollama judge 1044838952 saved ('AI Judge was successfully created.', redirect to its form), reload kept name/provider/URL/model/timeout 60/prompt/OSC, index lists it as ollama, owner You, team OSC. Not covered: team-page Create, legacy nested team route, other providers' presets. Disposable judge 1044838952 was deleted later in the session (17.12)."
+        notes: "Partial Herb-cleanup MCP DOM check /ai_judges/new?scorer_id=1: rating-scale picker has exactly one selected option, value1, with /ai_judges/new?scorer_id=1 data-url. Unavailable scorer5 correctly selects no eligible option. No prompt run, judge creation or sharing; full creation flow not repeated. 557 affected controller tests pass."
         paths: ["app/controllers/ai_judges_controller.rb", "app/views/ai_judges/_form.html.erb", "app/views/ai_judges/_provider_options.html.erb", "app/views/ai_judges/_prompt_testing.html.erb", "app/views/ai_judges/new.html.erb", "app/javascript/controllers/ai_judge_form_controller.js", "app/models/ai_judge.rb", "app/models/user.rb", "app/views/shared/_team_picker.html.erb", "app/javascript/controllers/ai_judge_wizard_controller.js", "config/routes.rb", "app/models/llm_provider.rb", "app/models/judge_scale.rb", "app/services/llm_judge_adapters.rb", "app/services/llm_judge_adapters/", "app/services/llm_connection.rb", "app/services/judgement_finalizer.rb", "app/javascript/controllers/status_message_behavior.js", "app/helpers/application_helper.rb"]
       "12.2":
         title: "Edit / delete an AI Judge"
@@ -1850,10 +1851,10 @@ parts:
         title: "Admin Home dashboard"
         screenshots:
           home: "14.2/home"
-        last_run: 2026-10-20T20:28:48Z
+        last_run: 2026-10-25T13:51:23Z
         result: pass
-        notes: "Covered live via Playwright MCP on Current :3000 as realisticactivity administrator: Admin Home3card groups and6named links; browser opened Users, Announcements, SQL Analytics, Job Manager, Websocket Tester and Rails Pulse, all200. Not covered live: each embedded-tool operation or diff-baseline replay."
-        paths: ["app/controllers/admin/home_controller.rb", "app/views/admin/home/index.html.erb", "app/views/layouts/_admin_sidebar.html.erb", "build_css.js", "app/assets/stylesheets/application-overrides.css", "app/assets/stylesheets/fonts.css", "app/assets/stylesheets/navbar-brand.css"]
+        notes: "Partial Herb-cleanup MCP smoke on Current /admin: admin sidebar retains appearance and sticky position with identical CSS moved into head. Clicking the Quepid link used Turbo (same document) and removed admin-only styles while adding ordinary sidebar styles. Screenshot inspected. No admin writes or embedded-tool actions. 557 affected controller tests pass."
+        paths: ["app/views/layouts/application.html.erb", "app/views/layouts/_admin_sidebar_styles.html.erb", "app/controllers/admin/home_controller.rb", "app/views/admin/home/index.html.erb", "app/views/layouts/_admin_sidebar.html.erb", "build_css.js", "app/assets/stylesheets/application-overrides.css", "app/assets/stylesheets/fonts.css", "app/assets/stylesheets/navbar-brand.css"]
       "14.3":
         title: "User management — list & search"
         screenshots:

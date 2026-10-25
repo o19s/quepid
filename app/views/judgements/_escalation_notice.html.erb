@@ -1,4 +1,4 @@
-<%# locals: (judgement:) %>
+<%# locals: (judgement:, book:) %>
 <%# Why an AI judge's answer was unrateable, and -- with escalation
     (docs/todo/escalating_judges.md) -- where the pair went next, linked both
     ways. %>
@@ -18,7 +18,7 @@
         rated it <strong><%= escalation.rating.to_s.delete_suffix('.0') %></strong>.
       <% end %>
       <%= link_to "See #{escalation.user&.fullname}'s judgement",
-            edit_book_query_doc_pair_judgement_path(@book, escalation.query_doc_pair, escalation),
+            edit_book_query_doc_pair_judgement_path(book, escalation.query_doc_pair, escalation),
             class: 'alert-link' %>
     <% end %>
   </div>
@@ -30,7 +30,7 @@
     <strong>Escalated:</strong> <%= judgement.user&.fullname %> judged this pair because
     <%= source.user&.fullname %>'s answer was unrateable<%= ": #{source.unrateable_reason}" if source.unrateable_reason %>.
     <%= link_to "See #{source.user&.fullname}'s judgement",
-          edit_book_query_doc_pair_judgement_path(@book, source.query_doc_pair, source),
+          edit_book_query_doc_pair_judgement_path(book, source.query_doc_pair, source),
           class: 'alert-link' %>
   </div>
 <% end %>

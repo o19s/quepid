@@ -1,0 +1,57 @@
+<style data-turbo-track="dynamic">
+/* position: sticky (not fixed) so the sidebar's box stays in normal flow —
+ * its height matches the .row it's in (which stretches to match `main`'s
+ * content height via flexbox's default align-items: stretch), instead of
+ * always spanning the full viewport height regardless of page content.
+ * A `fixed` sidebar with `bottom: 0` would otherwise sit next to the
+ * footer at the bottom of short pages instead of ending above it, since
+ * it's sized against the viewport rather than the actual content. */
+.sidebar {
+  position: sticky;
+  top: 0;
+  align-self: stretch;
+  z-index: 99;
+  padding: 0px 0 0;
+  box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+}
+
+@media (max-width: 767.98px) {
+  .sidebar {
+    top: 11.5rem;
+    padding: 0;
+  }
+}
+
+
+@media (min-width: 767.98px) {
+  .navbar {
+    top: 0;
+    position: sticky;
+    z-index: 999;
+  }
+}
+
+.sidebar .nav-link {
+  color: #333;
+}
+
+.sidebar .nav-link .feather {
+  margin-right: 4px;
+  color: #727272;
+}
+
+.sidebar .nav-link.active {
+  color: #0d6efd;
+}
+
+.sidebar .nav-link:hover .feather,
+.sidebar .nav-link.active .feather {
+  color: inherit;
+}
+
+/* eric - this is the icon in the navbar placeholder */
+.feather {
+  width: 24px;
+  height: 24px;
+}
+</style>
