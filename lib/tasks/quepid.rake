@@ -144,29 +144,36 @@ namespace :test do
     end
   end
 
-  desc 'Run stylelint on app/assets/stylesheets using .stylelintrc.json'
+  desc 'Run stylelint (.stylelintrc.json) and the Prettier check on app/assets/stylesheets'
   task stylelint: :environment do
     puts '-' * 100
-    puts 'Starting Stylelint'.yellow
+    puts 'Starting Stylelint and Prettier on CSS'.yellow
 
     stylelint = Rails.root.join('node_modules/.bin/stylelint')
-    unless stylelint.executable?
-      puts 'Stylelint not found; run: yarn install (or bin/docker r yarn install)'.red
+    prettier = Rails.root.join('node_modules/.bin/prettier')
+    unless stylelint.executable? && prettier.executable?
+      puts 'Stylelint or Prettier not found; run: yarn install (or bin/docker r yarn install)'.red
       puts '-' * 100
       exit false
     end
 
-    success = system(
+    stylelint_success = system(
       stylelint.to_s,
       'app/assets/stylesheets/**/*.css',
       chdir: Rails.root.to_s
     )
+    prettier_success = system(
+      prettier.to_s,
+      '--check',
+      'app/assets/stylesheets/**/*.css',
+      chdir: Rails.root.to_s
+    )
 
-    if success
-      puts 'Stylelint passed!'.green
+    if stylelint_success && prettier_success
+      puts 'Stylelint and Prettier passed!'.green
       puts '-' * 100
     else
-      puts 'Stylelint failed!'.red
+      puts 'Stylelint or Prettier failed!'.red
       puts '-' * 100
       exit false
     end

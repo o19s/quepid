@@ -1,12 +1,18 @@
 /**
  * Single source of truth for ESLint + Prettier scope on `app/javascript/`
- * (plus `test/javascript/` for Prettier).
+ * (plus `test/javascript/`, `test/playwright/` and `scripts/` for Prettier).
  */
 import { readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
-/** Directory names under app/javascript/ never linted (vendored legacy plugins). */
-export const SKIPPED_DIRECTORIES = ['vendor'];
+/** Directory names never linted or formatted (vendored legacy plugins, Playwright output). */
+export const SKIPPED_DIRECTORIES = ['vendor', 'node_modules', 'test-results', 'playwright-report'];
+
+/** File extensions the directory walk considers; `include` narrows them per scope. */
+const SCRIPT_EXTENSIONS = ['.js', '.mjs', '.ts'];
+
+/** Directories outside app/javascript/ whose `.js`, `.mjs` and `.ts` files Prettier formats. */
+const PRETTIER_DIRECTORIES = ['test/javascript', 'test/playwright', 'scripts'];
 
 /**
  * Globs for ESLint flat-config `ignores` (repo-root-relative).
@@ -53,7 +59,7 @@ export function listLintableJavascriptFiles(repoRoot = process.cwd()) {
 }
 
 /**
- * Sorted repo-relative `.js` paths under `directory` that pass `include`.
+ * Sorted repo-relative `.js`/`.mjs`/`.ts` paths under `directory` that pass `include`.
  * @param {string} repoRoot
  * @param {string} directory
  * @param {(path: string) => boolean} include
@@ -71,7 +77,7 @@ function listJavascriptFiles(repoRoot, directory, include) {
           continue;
         }
         walk(full);
-      } else if (name.endsWith('.js')) {
+      } else if (SCRIPT_EXTENSIONS.some((extension) => name.endsWith(extension))) {
         const rel = relative(repoRoot, full);
         if (include(rel)) {
           results.push(rel);
@@ -86,16 +92,23 @@ function listJavascriptFiles(repoRoot, directory, include) {
 
 /**
  * Whether a repo-relative path is in the Prettier format scope:
- * the app/javascript/ lint scope plus the Vitest specs under test/javascript/.
+ * the app/javascript/ lint scope plus the Vitest specs under test/javascript/, the
+ * Playwright specs and tooling under test/playwright/, and scripts/.
  * Project style is double quotes (see docs/js_tooling.md).
  * @param {string} path
  * @returns {boolean}
  */
 export function isPrettierJavascriptPath(path) {
   const normalized = path.replace(/^\.\//, '');
+  if (isLintableJavascriptPath(normalized)) {
+    return true;
+  }
+  if (normalized.split('/').some((segment) => SKIPPED_DIRECTORIES.includes(segment))) {
+    return false;
+  }
   return (
-    isLintableJavascriptPath(normalized) ||
-    (normalized.startsWith('test/javascript/') && normalized.endsWith('.js'))
+    PRETTIER_DIRECTORIES.some((directory) => normalized.startsWith(`${directory}/`)) &&
+    SCRIPT_EXTENSIONS.some((extension) => normalized.endsWith(extension))
   );
 }
 
@@ -107,7 +120,9 @@ export function isPrettierJavascriptPath(path) {
 export function listPrettierJavascriptFiles(repoRoot = process.cwd()) {
   return [
     ...listLintableJavascriptFiles(repoRoot),
-    ...listJavascriptFiles(repoRoot, 'test/javascript', isPrettierJavascriptPath),
+    ...PRETTIER_DIRECTORIES.flatMap((directory) =>
+      listJavascriptFiles(repoRoot, directory, isPrettierJavascriptPath)
+    ),
   ];
 }
 

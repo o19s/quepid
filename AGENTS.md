@@ -111,7 +111,7 @@ Follow [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md) for development conventions.
 - **Ruby mutation testing (Mutant, `config/mutant.yml`) is always incremental:** run `bundle exec mutant run --since origin/main` (compare against `origin/`, never local `main`), inside the existing server container with `RAILS_ENV=test`. Mutant 0.17 has no cross-run result cache, so after a test-only edit re-run just the subjects that had survivors (`--start-subject` / `--ignore-subject`) and don't repeat whole-subject runs. Use a full `mutant run 'Subject*'` only for a first baseline of unchanged code, and say so. Subjects are selected by `cover 'Subject*'` in the test class; `jobs: 1` because workers share the test database.
 
 ### CSS
-- Lint CSS via `docker compose exec app yarn lint:css` or `docker compose exec app rails test:stylelint` (config: `.stylelintrc.json`).
+- Lint CSS via `docker compose exec app yarn lint:css` and `yarn format:css:check`, or `docker compose exec app rails test:stylelint` (Stylelint + Prettier; config: `.stylelintrc.json`).
 
 ### E2E (Playwright)
 
@@ -192,7 +192,7 @@ Quepid **does not** use one global JS style. Write **new** code to modern conven
 
 **Vitest** — `vi.resetModules()` + fresh `import()` for module singletons; `@hotwired/stimulus` is stubbed via `test/javascript/support/stimulus_stub.js`.
 
-**Playwright** (`test/playwright/*.ts`) — TypeScript; linted by ESLint (`typescript-eslint`, `eslint-plugin-playwright`) and type-checked with `docker compose exec app yarn typecheck:e2e`; not yet Prettier-formatted.
+**Playwright** (`test/playwright/*.ts`) — TypeScript; linted by ESLint (`typescript-eslint`, `eslint-plugin-playwright`) and type-checked with `docker compose exec app yarn typecheck:e2e`; Prettier-formatted with the rest of the `format:js` scope.
 
 
 ## Bootstrap 5 JavaScript on `core` (BS5 CSS + patch sheets)

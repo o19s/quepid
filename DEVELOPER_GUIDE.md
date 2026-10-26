@@ -306,13 +306,13 @@ On the Ruby side there is no property-testing gem. For importer/exporter pairs, 
 
 ### Pre-commit hooks
 
-Git commits run RuboCop (Ruby), ESLint on the `app/javascript/` tree, and Prettier on `app/javascript/` and `test/javascript/` — via a version-controlled hook in `.githooks/pre-commit`. No extra tooling is required beyond what the project already uses (Bundler/RuboCop and Yarn).
+Git commits run RuboCop (Ruby), ESLint on the `app/javascript/` tree, and Prettier on `app/javascript/`, `test/javascript/`, `test/playwright/` and `scripts/`, plus Stylelint and Prettier on `app/assets/stylesheets/` — via a version-controlled hook in `.githooks/pre-commit`. No extra tooling is required beyond what the project already uses (Bundler/RuboCop and Yarn).
 
 Hooks prefer Docker when it is available. RuboCop reuses the running app container
 that mounts the current checkout at `/srv/app` (including one started by
 `bin/docker s` / `q`), so comparison servers for other worktrees do not make the
 selection ambiguous. With no running app container, it falls back to `bin/docker r`; the JS hooks
-also use `bin/docker r`.
+also use `bin/docker r`. The CSS hook (`stylelint-staged`) runs on the host.
 
 Enable hooks:
 
@@ -342,7 +342,7 @@ The detailed JavaScript lint and formatting scope is maintained in [`docs/js_too
 
 ```bash
 bin/docker r yarn lint:js
-bin/docker r yarn format:js:check    # Prettier check — app/javascript/ + test/javascript/; or yarn format:js to fix
+bin/docker r yarn format:js:check    # Prettier check — app/javascript/, test/javascript/, test/playwright/, scripts/; or yarn format:js to fix
 bin/docker r rails test:eslint       # ESLint + Prettier + Playwright tsc (CI-style)
 ```
 
@@ -353,7 +353,7 @@ pip install pre-commit   # or: pipx install pre-commit
 pre-commit install
 ```
 
-The hook lints scoped files under `app/javascript` (ESLint on `app/javascript`; Prettier on `app/javascript` and `test/javascript`). Lint/format scope is in `config/javascript_lint_scope.mjs` and [`docs/js_tooling.md`](docs/js_tooling.md). Requires `yarn install` on the host so `node_modules` exists. Re-run `pre-commit install` after cloning or pulling hook changes.
+The hook lints scoped files under `app/javascript` (ESLint on `app/javascript`; Prettier on `app/javascript`, `test/javascript`, `test/playwright` and `scripts`). Lint/format scope is in `config/javascript_lint_scope.mjs` and [`docs/js_tooling.md`](docs/js_tooling.md). Requires `yarn install` on the host so `node_modules` exists. Re-run `pre-commit install` after cloning or pulling hook changes.
 
 ### CSS Lint
 
@@ -361,19 +361,15 @@ To lint first-party stylesheets in `app/assets/stylesheets`:
 
 ```bash
 bin/docker r yarn lint:css
-# or
+bin/docker r yarn format:css:check   # Prettier; yarn format:css to fix
+bin/docker r yarn fix:css            # stylelint --fix, then Prettier — fixes both in one pass
+# or both at once
 bin/docker r rails test:stylelint
 ```
 
 Configuration lives in `.stylelintrc.json` (extends `stylelint-config-standard` with pragmatic overrides for legacy Quepid CSS). Built bundles under `app/assets/builds/` and vendored CSS are ignored (see `.stylelintignore`).
 
-Pre-commit can lint staged CSS with the same hook workflow:
-
-```bash
-pre-commit install
-```
-
-The `stylelint-staged` hook only runs on `app/assets/stylesheets/*.css`. Requires `yarn install` so `node_modules/stylelint` exists.
+Both `.githooks/pre-commit` and the pre-commit.com config (`pre-commit install`) lint staged CSS: the `stylelint-staged` hook runs Stylelint and the Prettier check on `app/assets/stylesheets/*.css`. Requires `yarn install` so `node_modules/stylelint` and `node_modules/prettier` exist.
 
 ### Playwright E2E
 

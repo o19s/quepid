@@ -1,5 +1,6 @@
 /**
- * Filter staged paths to the Prettier scope (same as the ESLint scope).
+ * Filter staged paths to the Prettier scope (the ESLint app/javascript scope plus
+ * test/javascript, test/playwright and scripts).
  * Usage: node scripts/filter_javascript_prettier_paths.mjs path1 path2 ...
  */
 import { isPrettierJavascriptPath } from "../config/javascript_lint_scope.mjs"

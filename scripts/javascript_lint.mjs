@@ -1,5 +1,5 @@
 /**
- * Run Prettier on the shared app/javascript lint scope (see config/javascript_lint_scope.mjs).
+ * Run Prettier on the shared JavaScript format scope (see config/javascript_lint_scope.mjs).
  *
  * Usage:
  *   node scripts/javascript_lint.mjs check
