@@ -5,6 +5,7 @@
 	 position: relative;
 	 overflow: hidden;
 }
+
 .pane_main,
 .pane_east {
 	 bottom: 0;
@@ -13,6 +14,7 @@
 	 position: absolute;
 	 top: 0;
 }
+
  .pane_main {
 	 display: flex;
 	 flex-direction: column;
@@ -34,15 +36,16 @@
 
 /* Keep the drawer's bottom actions above visible core error/notice banners. */
 .pane_east {
-  bottom: var(--core-flash-height, 0px);
+  bottom: var(--core-flash-height, 0);
 	 background: #333;
 	 display: none;
 	 min-width: 300px;
 }
+
  .east-slider {
 	 background: none repeat scroll 0% 0% #ddd;
-	 border: 0px solid #bbb;
-	 bottom: var(--core-flash-height, 0px);
+	 border: 0 solid #bbb;
+	 bottom: var(--core-flash-height, 0);
 	 cursor: col-resize;
 	 display: none;
 	 position: absolute;
@@ -52,6 +55,7 @@
 	 width: 6px;
 	 z-index: 99;
 }
+
  .east-slider:hover {
 	 background: none repeat scroll 0% 0% #326414;
 }

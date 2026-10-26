@@ -7,6 +7,7 @@
 	 height: 100%;
 	 z-index: 2050 !important;
 }
+
  .full-screen-modal .modal-dialog {
 	 height: calc(100% - 100px);
 	 width: calc(100% - 100px);
@@ -15,6 +16,7 @@
 	    and this modal never actually grows past the default small size. */
 	 max-width: calc(100% - 100px);
 }
+
  .full-screen-modal .modal-content {
 	 height: 100%;
 	 overflow: auto;
@@ -122,7 +124,7 @@
 }
 
 .wizard-step.done .wizard-step-dot {
-  background: #339933;
+  background: #339;
 }
 
 .wizard-step.active .wizard-step-dot {

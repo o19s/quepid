@@ -47,12 +47,14 @@
   display: inline-block;
   padding: 8px 12px;
 }
+
 .wiz_new_query .query_text {
   font: italic 18px Verdana;
   color: #fff;
   vertical-align: middle;
   display: inline-block;
 }
+
 .wiz_new_query button {
   font-size: 70%;
   font-weight: bold;
@@ -63,6 +65,7 @@
   color: #369;
   border: 1px solid #F0F0F0;
 }
+
 .wiz_new_query button:hover {
   cursor: pointer;
   border: 1px solid #69C;

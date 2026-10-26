@@ -53,7 +53,6 @@
   --bs-dropdown-border-radius: 6px;
   --bs-dropdown-divider-margin-y: 8px;
   --bs-dropdown-divider-bg: rgba(0, 0, 0, 0.175);
-
   left: auto;
   width: 250px;
   padding: 8px;
@@ -82,7 +81,6 @@
   --bs-btn-padding-x: 12px;
   --bs-btn-padding-y: 6px;
   --bs-btn-border-radius: 6px;
-
   line-height: 24px;
 }
 

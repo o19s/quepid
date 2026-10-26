@@ -108,8 +108,9 @@ header .dropdown-item:focus {
 */
 .dragging {
   border: 1px dashed #AAA;
-  padding: 5px 0px;
+  padding: 5px 0;
 }
+
 .results-control h1 {
   margin: 15px 0 20px 0;
   padding-bottom: 10px;
@@ -177,6 +178,7 @@ header .dropdown-item:focus {
   position: relative;
   padding: 10px 20px;
 }
+
 .result-header:hover {
   background: #eee;
 }
@@ -463,7 +465,7 @@ header .dropdown-item:focus {
 }
 
 #dev-settings .dev-header {
-	background: linear-gradient(to bottom, #282828, #222222);
+	background: linear-gradient(to bottom, #282828, #222);
 	padding: 15px;
 	border-bottom: 1px solid #363636;
 	cursor: pointer;
@@ -576,6 +578,7 @@ header .dropdown-item:focus {
 	overflow-wrap: break-word;
 	position: relative;
 }
+
 .history-list li:hover {
 	cursor: pointer;
 }
@@ -589,9 +592,11 @@ header .dropdown-item:focus {
 .history-list li.bucket-0 {
 	background: #666;
 }
+
 .history-list li.bucket-1 {
 	background: #64647d;
 }
+
 .history-list li.bucket-2 {
 	background: #667a66;
 }

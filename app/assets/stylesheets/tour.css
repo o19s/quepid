@@ -5,9 +5,11 @@
 	 max-width: 28rem;
 	 font-size: 1rem;
 }
+
  .shepherd-element.quepid-tour-step .shepherd-text {
 	 line-height: 1.4;
 }
+
  .shepherd-modal-overlay-container {
 	 z-index: 9998;
 }

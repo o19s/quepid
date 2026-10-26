@@ -6,15 +6,18 @@
  .qgraph .vega-embed {
 	 position: static;
 }
+
  .qgraph svg {
 	 background-color: white;
 }
+
  .qgraph .mark-line path {
 	 stroke: #587;
 	 stroke-width: 2;
 	 fill: none;
 	 stroke-linecap: round;
 }
+
  .qgraph line {
 	 stroke: blue;
 	 stroke-width: 4;

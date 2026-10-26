@@ -10,7 +10,7 @@ main > .container {
 }
 
 /* Keep the icon sidebar beside content below the Bootstrap column breakpoint. */
-@media (max-width: 767.98px) {
+@media (width <= 767.98px) {
   .sidebar + main {
     width: calc(100% - 3.5rem);
     min-width: 0;
@@ -35,7 +35,7 @@ main > .container {
 }
 
 .navbar-secondary {
-  padding: 0px;
+  padding: 0;
 }
 
 
