@@ -2,6 +2,7 @@
  .query-help {
 	 font-size: 1.5em;
 }
+
 /* Used by the match-explain Debug and Expand modals. */
  .full-screen-modal {
 	 height: 100%;
@@ -11,6 +12,7 @@
  .full-screen-modal .modal-dialog {
 	 height: calc(100% - 100px);
 	 width: calc(100% - 100px);
+
 	 /* BS5's .modal-dialog sets max-width: 500px (at the >=576px breakpoint);
 	    without overriding it here too, that cap wins over the width above
 	    and this modal never actually grows past the default small size. */
@@ -108,7 +110,7 @@
   font-size: 14px;
   font-weight: 700;
   text-transform: uppercase;
-  color: #808080;
+  color: var(--q-gray);
 }
 
 .wizard-step:disabled {
@@ -124,11 +126,11 @@
 }
 
 .wizard-step.done .wizard-step-dot {
-  background: #339;
+  background: #393;
 }
 
 .wizard-step.active .wizard-step-dot {
-  background: #808080;
+  background: var(--q-gray);
 }
 
 /* Case wizard Endpoint step: the "Create a new" / "Use an existing" accordion, as in the Angular wizard. */

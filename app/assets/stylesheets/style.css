@@ -2,7 +2,7 @@
  * over from the original Quepid UI. */
 
 .ratingNum {
-    color: white;
+    color: var(--bs-white);
     font-size: .7em;
     margin-right: 2px;
     padding: 3px 5px;
@@ -14,7 +14,7 @@
 
 .ratingContainer .ratingNum:hover {
     box-shadow: inset 0 0 15px rgba(0,0,0,0.25);
-    color: #FFF;
+    color: var(--bs-white);
 }
 
 .notes-box {
@@ -49,7 +49,7 @@
 }
 
 .wiz_new_query .query_text {
-  font: italic 18px Verdana;
+  font: italic 18px Verdana, sans-serif;
   color: #fff;
   vertical-align: middle;
   display: inline-block;

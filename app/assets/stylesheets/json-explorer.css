@@ -16,16 +16,16 @@
 }
 
 .json-explorer .null {
-	color: red;
+	color: var(--q-json-null);
 }
 
 .json-explorer .bool,
 .json-explorer .num {
-	color: blue;
+	color: var(--q-json-literal);
 }
 
 .json-explorer .string {
-	color: green;
+	color: var(--q-json-string);
 	white-space: pre-wrap;
 }
 
@@ -46,6 +46,9 @@
 }
 
 .json-explorer {
+	--q-json-null: #f00;
+	--q-json-literal: #00f;
+	--q-json-string: #008000;
 	font-family: monospace;
 	font-size: 1.1em;
 	white-space: pre-wrap;

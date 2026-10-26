@@ -3,16 +3,16 @@
  * Bundled in application.css via build_css.js.
  */
 .btn-preselected { 
-  color: black !important; 
+  color: var(--bs-black) !important; 
   font-weight: bold !important; 
-  border: 2px solid #000 !important; 
+  border: 2px solid var(--bs-black) !important; 
   box-shadow: 0 0 0 0.25rem rgba(0, 0, 0, 0.3) !important; 
   transform: scale(1.05) !important; 
 }
 
 .rating-buttons .btn-check:checked + .btn {
   box-shadow: 0 0 0 0.25rem rgba(0, 0, 0, 0.3);
-  border: 2px solid #000;
+  border: 2px solid var(--bs-black);
   font-weight: bold;
   transform: scale(1.05);
 }
@@ -23,7 +23,7 @@
   min-width: 45px;
   text-align: center;
   padding: 8px 12px;
-  color: black; /* default text color for contrast on colored buttons */
+  color: var(--bs-black); /* default text color for contrast on colored buttons */
   font-weight: 500;
   box-shadow: 0 1px 3px rgba(0,0,0,0.1);
   border: 1px solid rgba(0,0,0,0.2);
@@ -114,7 +114,7 @@
 }
 
 .document-card {
-  background-color: white;
+  background-color: var(--bs-body-bg);
 }
 
 .document-card:last-child {

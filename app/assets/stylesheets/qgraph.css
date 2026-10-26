@@ -8,7 +8,7 @@
 }
 
  .qgraph svg {
-	 background-color: white;
+	 background-color: var(--bs-white);
 }
 
  .qgraph .mark-line path {
@@ -18,8 +18,12 @@
 	 stroke-linecap: round;
 }
 
+ .qgraph {
+	 --q-qgraph-marker: #00f;
+}
+
  .qgraph line {
-	 stroke: blue;
+	 stroke: var(--q-qgraph-marker);
 	 stroke-width: 4;
 	 stroke-linecap: round;
 	 stroke-opacity: 0.3;

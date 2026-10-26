@@ -33,6 +33,7 @@ pre {
   --q-brand-blue-hover-rgb: 35, 82, 124;
   --q-success-bg: #dff0d8;
   --q-success-text: #3c763d;
+  --q-gray: #808080;
 
   /* BS3's body font, for the case view and the dev panel (core-additions.css). */
   --q-body-font: 'Helvetica Neue', Helvetica, Arial, sans-serif;
@@ -186,6 +187,7 @@ label {
   --bs-tooltip-padding-y: 4px;
   --bs-tooltip-arrow-width: 12px;
   --bs-tooltip-arrow-height: 6px;
+
   /* Quepid's tooltips use explicit <br/> tags for multi-line content, so they
    * need to be left-aligned and wider than BS5's 200px default rather than
    * centered and wrapped. */
@@ -211,6 +213,7 @@ label {
   --bs-popover-inner-border-radius: 7px;
   max-height: 600px;
   padding: 0;
+
   /* BS3's popover shadow; BS5 has none. */
   box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
 }
@@ -314,7 +317,7 @@ header.navbar-secondary .navbar-nav .nav-link {
  * the 18px/24px pair above (sized to center a link against the horizontal
  * 56px bar) turns into large, loose gaps once every item is its own row.
  * Tighten to a normal stacked-list size only in the collapsed/mobile state. */
-@media (width <= 991.98px) {
+@media (width < 992px) {
   header.navbar-secondary .navbar-nav .nav-link {
     padding: 8px 15px;
     line-height: 1.5;

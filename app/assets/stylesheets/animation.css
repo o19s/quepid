@@ -1,8 +1,9 @@
 .spinner {
+    --q-spinner-track: #d3d3d3;
     display: inline-block; /* Inline to work with <i> */
     width: 16px;
     height: 16px;
-    border: 5px solid lightgray; /* Background color */
+    border: 5px solid var(--q-spinner-track); /* Background color */
     border-top: 5px solid var(--q-brand-blue); /* Spinner color */
     border-radius: 50%;
     animation: spin 1s linear infinite;

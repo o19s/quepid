@@ -96,7 +96,7 @@
 }
 
 .case-score .qgraph svg {
-  border: var(--qscore-border-width-thick) solid grey;
+  border: var(--qscore-border-width-thick) solid var(--q-gray);
   border-right-style: none;
   border-radius: var(--qscore-border-radius);
 }

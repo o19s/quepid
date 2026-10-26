@@ -320,9 +320,9 @@ parts:
           cases-id-filter: "3.1/cases-id-filter"
           cases-name-filter: "3.1/cases-name-filter"
           cases-active: "3.1/cases-active"
-        last_run: 2026-10-20T16:33:13Z
+        last_run: 2026-10-26T12:03:32Z
         result: pass
-        notes: "Covered live on Current :3000: columns and a Never Run / System row, name, ID, Team, Archived and combined filters, a no-match filter (empty table, no first-case message), Archived with Unarchive actions, page 2 of a filtered list keeping q with no overlapping rows, and a fresh account's \"Create your first case by clicking New Case above.\" shown only when nothing is filtered or archived. A second account got the \"Case N isn't available\" 404 for another user's case. Not covered: Legacy replay, the one-score-summary-per-row query count, a long score history. The scenario's first-case wording was out of date and is corrected."
+        notes: "branch-ui-diff sweep for the Stylelint/CSS-variable change (CSS only): Current :3000 vs diff baseline :3003 at 7c27a90e on a fresh copy of the dev database, 1280x900 unless noted; captures in .playwright-mcp/branch-ui-diff-stylelint/, not recorded in screen history. Covered: list (full page), name filter 'Typeahead', archived; all pixel-identical. Not covered: ID, team and combined filters, pagination, other accounts."
         paths: ["app/controllers/cases_controller.rb", "app/views/cases/index.html.erb", "app/models/concerns/text_search.rb", "app/views/shared/_index_filters.html.erb", "app/views/shared/_index_pagination.html.erb", "app/views/layouts/application.html.erb", "app/views/layouts/_head_common.html.erb", "app/views/layouts/_case_head.html.erb", "app/views/layouts/_case_workspace.html.erb", "app/javascript/controllers/auto_submit_controller.js", "app/models/score.rb", "db/migrate/20261002202000_add_case_latest_score_index.rb", "app/assets/stylesheets/application-overrides.css", "app/assets/stylesheets/base.css"]
       "3.2":
         title: "Create a new case (setup wizard)"
@@ -342,9 +342,9 @@ parts:
           wizard-endpoint: "3.2/wizard-endpoint"
           wizard-name: "3.2/wizard-name"
           wizard-welcome: "3.2/wizard-welcome"
-        last_run: 2026-10-24T21:55:25Z
+        last_run: 2026-10-26T15:00:22Z
         result: pass
-        notes: "Partial custom-field MCP sample, case6/try31 with wizard opened directly at Fields in memory and an empty discovery list: typed author.name Title, external_id ID and function:score Additional via Enter; Continue showed the typo confirmation and cancelling retained Fields and selections. Screenshot inspected. No case created or saved. 123 focused unit tests and ESLint pass; complete wizard/save and navigation not repeated."
+        notes: "branch-ui-diff sweep for the Stylelint/CSS-variable change (CSS only): Current :3000 vs diff baseline :3003 at 7c27a90e on a fresh copy of the dev database, 1280x900 unless noted; captures in .playwright-mcp/branch-ui-diff-stylelint/, not recorded in screen history. Covered on existing scratch case 260 via ?showWizard=true: Welcome step and Name step; byte-identical to the baseline, but that baseline (7c27a90e, HEAD instead of the merge-base) already had the regression: the done dot was #339 (navy) instead of #393 (green). Caught by yarn test:visual (wizard-name, 124px); fixed to #393 in misc.css and yarn test:visual passes 6/6. Not covered: Endpoint onward, validation, completing the wizard, edge cases."
         paths: ["app/javascript/modules/tour.js", "app/assets/stylesheets/tour.css", "test/playwright/walkthrough.spec.ts", "app/javascript/modules/search_endpoint_select.js", "test/javascript/modules/search_endpoint_select.test.js", "test/playwright/wizard_behaviour.spec.ts", "app/assets/stylesheets/core-overrides.css", "package.json", "yarn.lock", "build_css.js", "test/javascript/controllers/wizard_controller.test.js", "app/javascript/utils/endpoint_settings.js", "app/controllers/core_controller.rb", "app/javascript/controllers/wizard_controller.js", "app/javascript/controllers/wizard_launcher_controller.js", "app/javascript/core_stimulus.js", "app/javascript/utils/core_capabilities_runtime.js", "app/javascript/utils/case_runtime.js", "app/javascript/utils/settings_catalog_runtime.js", "app/javascript/utils/search_endpoint_runtime.js", "app/javascript/utils/mapper_search_runtime.js", "app/javascript/utils/wizard_contracts.js", "app/javascript/utils/snapshot_import.js", "config/importmap.rb", "app/views/layouts/_header_core_app.html.erb", "app/views/core/index.html.erb", "app/views/shared/_wizard_modal.html.erb", "app/javascript/utils/live_query_runtime_owner.js", "app/javascript/utils/core_workspace_runtime.js", "app/javascript/utils/query_lifecycle.js", "test/javascript/utils/case_runtime.test.js", "test/playwright/wizard_completion.spec.ts", "app/javascript/api/json.js", "app/views/layouts/_header_navigation.html.erb", "app/views/layouts/_header_help_links.html.erb", "app/javascript/core_runtime.js", "app/javascript/controllers/core_bootstrap_controller.js", "app/javascript/utils/navigation_runtime.js", "app/javascript/utils/settings_runtime.js", "app/assets/stylesheets/fonts.css", "app/assets/stylesheets/core-additions.css"]
       "3.2b":
         title: "Case wizard: Static CSV endpoint"
@@ -424,9 +424,9 @@ parts:
           query-reloaded: "4.2/query-reloaded"
           query-added: "4.2/query-added"
           add-query-ready: "4.2/add-query-ready"
-        last_run: 2026-10-23T10:28:33Z
+        last_run: 2026-10-26T12:06:05Z
         result: pass
-        notes: "Legacy vs Current replay: Add query disabled for blank/whitespace, Enter submits, box clears, duplicate text adds nothing and flashes \"Query added successfully.\". Not covered: static-engine \"Adding queries is not supported\"."
+        notes: "branch-ui-diff sweep for the Stylelint/CSS-variable change (CSS only): Current :3000 vs diff baseline :3003 at 7c27a90e on a fresh copy of the dev database, 1280x900 unless noted; captures in .playwright-mcp/branch-ui-diff-stylelint/, not recorded in screen history. Covered: add-query spinner (unhidden client-side, no query added) with the --q-spinner-track track; byte-identical. Not covered: actually adding a query, empty input, static endpoint, failure flash."
         paths: ["app/views/core/_queries.html.erb", "app/javascript/utils/live_query_runtime_owner.js", "app/javascript/utils/query_model.js", "app/javascript/controllers/queries_list_controller.js", "app/javascript/controllers/add_query_controller.js", "app/javascript/controllers/query_lifecycle_controller.js", "app/javascript/utils/query_lifecycle.js", "app/javascript/utils/query_state.js", "app/javascript/stores/query_collection_store.js", "config/importmap.rb", "app/models/query.rb", "test/javascript/controllers/queries_list_controller.test.js", "test/javascript/controllers/query_lifecycle_controller.test.js", "test/javascript/utils/query_lifecycle.test.js", "test/javascript/utils/query_state.test.js", "app/javascript/api/json.js", "app/javascript/utils/store_subscription.js", "app/javascript/core_runtime.js", "app/javascript/utils/core_workspace_runtime.js", "app/assets/stylesheets/animation.css", "app/assets/stylesheets/navbar-brand.css"]
       "4.3":
         title: "Add multiple queries (bulk)"
@@ -476,9 +476,9 @@ parts:
           score-reset: "4.7/score-reset"
           high-query-score: "4.7/high-query-score"
           low-score: "4.7/low-score"
-        last_run: 2026-10-20T16:42:55Z
+        last_run: 2026-10-26T14:45:58Z
         result: pass
-        notes: "Covered live on Current :3000: case and query badges show numeric score with \"of 1.00\" and distinct colors from red 0.00 to green 1.00, update after rating, a never-scored case shows -- with Unrated and a failed row shows ? Not scored. Unrated queries show 0.00 for AP@10 as recorded in 4.21. Not covered: snapshot scores."
+        notes: "branch-ui-diff sweep for the Stylelint/CSS-variable change (CSS only): Current :3000 vs diff baseline :3003 at 7c27a90e on a fresh copy of the dev database, 1280x900 unless noted; captures in .playwright-mcp/branch-ui-diff-stylelint/, not recorded in screen history. Covered on case 6: case score badge, query score badges and score graph, re-shot after the qscore.css breakpoint fix; pixel-identical. Not covered: new-case `?`/`--` states, live updates while rating."
         paths: ["app/models/score.rb", "app/javascript/controllers/qscore_query_controller.js", "app/javascript/controllers/qscore_case_controller.js", "app/javascript/controllers/search_results_controller.js", "app/views/core/_query_list_templates.html.erb", "app/javascript/utils/scoring.js", "app/javascript/utils/query_scoring.js", "app/javascript/utils/ratings_store.js", "app/javascript/quepid_store.js", "app/javascript/stores/case_score_store.js", "app/javascript/stores/query_collection_store.js", "app/javascript/core_stimulus.js", "config/importmap.rb", "app/views/core/index.html.erb", "app/assets/stylesheets/qscore.css", "app/javascript/utils/live_query_runtime_owner.js", "app/javascript/api/json.js", "app/javascript/utils/store_subscription.js", "app/javascript/core_runtime.js", "app/javascript/utils/core_workspace_runtime.js", "app/javascript/stores/query_documents_store.js", "app/javascript/utils/live_query_factory.js", "app/javascript/utils/live_query_collection.js", "app/javascript/utils/query_documents.js", "app/javascript/controllers/diff_score_controller.js", "app/javascript/controllers/diff_case_scores_controller.js", "test/playwright/modal_a11y.spec.ts", "app/assets/stylesheets/fonts.css"]
       "4.8":
         title: "Select a scorer for the case"
@@ -514,9 +514,9 @@ parts:
           query-rerun: "4.10/query-rerun"
           query-edited: "4.10/query-edited"
           query-sandbox: "4.10/query-sandbox"
-        last_run: 2026-10-24T14:58:00Z
+        last_run: 2026-10-26T12:06:13Z
         result: pass
-        notes: "Covered live (MCP, case 6, save intercepted with 503 so nothing persisted): editor shows one param per line (q=#$query##\\n&magicBoost=31); a typed draft survives the failed save and a Settings/Query tab round trip unchanged, and the request carried the multi-line query_params. Native workspace_settings.spec.ts:45 had a stale assertion (toHaveText drops the new line breaks), not a draft loss; it now compares innerText. Not covered: successful save/rerun."
+        notes: "branch-ui-diff sweep for the Stylelint/CSS-variable change (CSS only): Current :3000 vs diff baseline :3003 at 7c27a90e on a fresh copy of the dev database, 1280x900 unless noted; captures in .playwright-mcp/branch-ui-diff-stylelint/, not recorded in screen history. Covered: drawer open on Query tab at 1280 (white editor) and 768 (see 4.24); byte-identical. Not covered: editing the template, tab round-trip, Rerun, static/protocol edges."
         paths: ["app/javascript/utils/core_workspace_runtime.js", "test/playwright/workspace_settings.spec.ts", "app/javascript/controllers/tune_relevance_controller.js", "app/javascript/controllers/pane_controller.js", "app/javascript/controllers/core_bootstrap_controller.js", "app/javascript/controllers/case_toolbar_controller.js", "app/javascript/utils/settings_catalog_runtime.js", "app/javascript/utils/settings_runtime.js", "app/javascript/utils/search_endpoint_runtime.js", "app/javascript/utils/tune_relevance.js", "app/views/core/_tune_relevance.html.erb", "app/views/core/index.html.erb", "config/importmap.rb", "app/javascript/modules/editor.js", "app/javascript/api/json.js", "app/assets/stylesheets/core-overrides.css", "app/assets/stylesheets/core-additions.css"]
       "4.11":
         title: "Tune Relevance drawer — Tuning Knobs tab"
@@ -525,9 +525,9 @@ parts:
           knobs-edited: "4.11/knobs-edited"
           knobs-variable: "4.11/knobs-variable"
           knobs-empty: "4.11/knobs-empty"
-        last_run: 2026-10-23T17:20:24Z
+        last_run: 2026-10-26T12:12:30Z
         result: pass
-        notes: "Free-text sample2026-10-23 MCP Current :3000 case1/try9: knob input type text accepts1.12 and true; true retained across Query/Knobs switch; screenshot inspected. Original0.9 restored without save/rerun.27 controller tests and ESLint pass. Earlier2026-10-20 coverage: a ##titleBoost## placeholder creates a knob (default 10), changing it to 50 and rerunning sent bq=...^50 and created try 2; a template with no placeholders shows the explanatory empty state. Not covered: score change interpretation."
+        notes: "branch-ui-diff sweep for the Stylelint/CSS-variable change (CSS only): Current :3000 vs diff baseline :3003 at 7c27a90e on a fresh copy of the dev database, 1280x900 unless noted; captures in .playwright-mcp/branch-ui-diff-stylelint/, not recorded in screen history. Covered: Tuning Knobs tab empty-state on case 6; byte-identical. Not covered: adding ##vars##, values, Rerun."
         paths: ["app/javascript/utils/core_workspace_runtime.js", "test/playwright/workspace_settings.spec.ts", "app/javascript/controllers/tune_relevance_controller.js", "app/views/core/_tune_relevance.html.erb", "app/javascript/modules/editor.js", "app/javascript/utils/settings_runtime.js", "app/javascript/api/json.js", "app/assets/stylesheets/core-additions.css"]
       "4.12":
         title: "Tune Relevance drawer — Settings tab"
@@ -549,9 +549,9 @@ parts:
           settings-edited: "4.12/settings-edited"
           endpoint-empty: "4.12/endpoint-empty"
           settings-initial: "4.12/settings-initial"
-        last_run: 2026-10-24T21:55:25Z
+        last_run: 2026-10-26T12:12:40Z
         result: pass
-        notes: "Partial custom-field MCP sample case6/try31: opened Settings and typed author.name into Displayed Fields, Enter created a removable selection alongside existing fields. Screenshot inspected. No rerun/save, persistence not exercised; unit tests cover serialization, refresh and existing JSON definitions. 123 focused tests and ESLint pass."
+        notes: "branch-ui-diff sweep for the Stylelint/CSS-variable change (CSS only): Current :3000 vs diff baseline :3003 at 7c27a90e on a fresh copy of the dev database, 1280x900 unless noted; captures in .playwright-mcp/branch-ui-diff-stylelint/, not recorded in screen history. Covered: Settings tab default expansion on case 6; pixel-identical. Not covered: changing endpoint, fields, results count, nightly, escaping, failure/retry."
         paths: ["app/javascript/utils/tune_relevance.js", "test/javascript/utils/tune_relevance.test.js", "test/javascript/utils/tune_relevance_properties.test.js", "app/javascript/modules/search_endpoint_select.js", "test/javascript/modules/search_endpoint_select.test.js", "test/playwright/tune_relevance.spec.ts", "test/javascript/controllers/tune_relevance_controller.test.js", "app/assets/stylesheets/core-overrides.css", "app/javascript/utils/core_workspace_runtime.js", "test/playwright/workspace_settings.spec.ts", "app/javascript/utils/endpoint_settings.js", "app/javascript/controllers/tune_relevance_controller.js", "app/views/core/_tune_relevance.html.erb", "app/javascript/utils/settings_catalog_runtime.js", "app/javascript/utils/settings_runtime.js", "app/javascript/api/json.js", "app/assets/stylesheets/core-additions.css"]
       "4.13":
         title: "Tune Relevance drawer — History tab"
@@ -561,9 +561,9 @@ parts:
           ratings-page: "4.13/ratings-page"
           scores-page: "4.13/scores-page"
           history-list: "4.13/history-list"
-        last_run: 2026-10-24T11:25:55Z
+        last_run: 2026-10-26T12:12:50Z
         result: pass
-        notes: "Partial CSS organization verification on Current :3000 case6/try31: History tab opened, screenshot inspected, container overflow-y auto with 631px viewport and 4089px contents. Current history-list refreshed. No try selection, rename, delete or analytics interactions repeated."
+        notes: "branch-ui-diff sweep for the Stylelint/CSS-variable change (CSS only): Current :3000 vs diff baseline :3003 at 7c27a90e on a fresh copy of the dev database, 1280x900 unless noted; captures in .playwright-mcp/branch-ui-diff-stylelint/, not recorded in screen history. Covered: History tab links and try list on case 6; byte-identical. Not covered: following links, Scores/Ratings pages, hover details."
         paths: ["app/javascript/utils/core_workspace_runtime.js", "app/javascript/controllers/tune_relevance_controller.js", "app/views/core/_tune_relevance.html.erb", "app/javascript/utils/settings_runtime.js", "app/controllers/scores_controller.rb", "app/controllers/ratings_controller.rb", "app/views/scores/index.html.erb", "app/views/ratings/index.html.erb", "app/controllers/analytics/tries_visualization_controller.rb", "app/views/analytics/tries_visualization/_tree.json.jbuilder", "app/views/core/_try_details_modal.html.erb", "app/javascript/api/json.js", "app/assets/stylesheets/core-additions.css", "app/views/shared/_modal_shell.html.erb", "app/models/concerns/text_search.rb", "app/javascript/controllers/score_selection_controller.js", "app/assets/stylesheets/fonts.css", "app/javascript/application.js", "app/javascript/controllers/confirm_dialog_controller.js", "app/views/shared/_confirm_modal.html.erb"]
       "4.14":
         title: "Tune Relevance drawer — Annotations tab"
@@ -599,9 +599,9 @@ parts:
           notes-saved: "4.16/notes-saved"
           notes-draft: "4.16/notes-draft"
           notes-empty: "4.16/notes-empty"
-        last_run: 2026-10-20T18:08:30Z
+        last_run: 2026-10-26T12:05:35Z
         result: pass
-        notes: "Covered live on Current :3000: Toggle Notes panel with Information Need and Notes, save flashes \"Success! Your query details have been saved.\" and collapses, both values persist after reload, a blocked save shows the failure flash and keeps the panel open with the unsaved edit. Not covered: typing before the panel loads, blank save, export round-trip."
+        notes: "branch-ui-diff sweep for the Stylelint/CSS-variable change (CSS only): Current :3000 vs diff baseline :3003 at 7c27a90e on a fresh copy of the dev database, 1280x900 unless noted; captures in .playwright-mcp/branch-ui-diff-stylelint/, not recorded in screen history. Covered: Toggle Notes panel open with saved values on query 'meetings'; byte-identical. Not covered: saving, failure flash, typing-before-load, export round-trip."
         paths: ["app/models/query.rb", "app/views/core/_query_list_templates.html.erb", "app/javascript/controllers/query_notes_controller.js", "app/javascript/controllers/search_results_controller.js", "app/javascript/core_stimulus.js", "app/javascript/api/fetch.js", "app/javascript/controllers/flash_controller.js", "app/javascript/utils/flash.js", "config/importmap.rb", "test/javascript/controllers/query_notes_controller.test.js", "app/javascript/api/json.js", "app/javascript/utils/store_subscription.js", "app/assets/stylesheets/fonts.css", "app/assets/stylesheets/style.css"]
       "4.17":
         title: "Workbench boot & case/try navigation"
@@ -663,9 +663,9 @@ parts:
           information-need: "4.21/information-need"
           zero-results: "4.21/zero-results"
           loaded-unrated: "4.21/loaded-unrated"
-        last_run: 2026-10-24T11:36:33Z
+        last_run: 2026-10-26T14:46:10Z
         result: pass
-        notes: "Partial Stylelint fix check on Current :3000 case6/try31: score-state text retained in DOM, computes clip-path inset(50%) with 1px dimensions; screenshot inspected with normal scored badges and hidden status text. Full CSS lint and build pass. Native visual suite retains missing-static-fixture and book-form baseline blockers. No screen-reader session or wider score-state matrix repeated."
+        notes: "branch-ui-diff sweep for the Stylelint/CSS-variable change (CSS only): Current :3000 vs diff baseline :3003 at 7c27a90e on a fresh copy of the dev database, 1280x900 unless noted; captures in .playwright-mcp/branch-ui-diff-stylelint/, not recorded in screen history. Covered, re-shot after the qscore.css fix: expanded query row with Info Need tooltip (case 6) and the unrated-frog notification bubble with count 9 (case 1, --bs-white text); byte-identical. Not covered: loading/error/zsr rows, Querqy icon."
         paths: ["app/assets/stylesheets/qscore.css", "app/javascript/controllers/query_row_controller.js", "app/javascript/controllers/qscore_query_controller.js", "app/javascript/controllers/queries_list_controller.js", "app/javascript/utils/query_state.js", "app/javascript/api/json.js", "app/javascript/utils/store_subscription.js", "app/javascript/stores/query_documents_store.js", "app/javascript/stores/query_collection_store.js", "app/javascript/utils/live_query_factory.js", "app/javascript/utils/live_query_collection.js", "app/javascript/utils/query_documents.js", "app/views/core/_query_list_templates.html.erb", "app/assets/stylesheets/core-additions.css", "app/javascript/controllers/search_results_controller.js"]
       "4.22":
         title: "Bulk rating (Score All) & result paging"
@@ -675,9 +675,9 @@ parts:
           rated-only: "4.22/rated-only"
           all-rated: "4.22/all-rated"
           score-all-picker: "4.22/score-all-picker"
-        last_run: 2026-10-20T18:16:59Z
+        last_run: 2026-10-26T12:05:46Z
         result: pass
-        notes: "Covered live on Current :3000: Score All rates all visible documents in one bulk request and updates scores, Show only rated lists only rated documents, the popover reset clears them in one request, Peek appends distinct documents and disappears after the last page. Not covered: Peek with Show only rated, Score All inside Missing Documents."
+        notes: "branch-ui-diff sweep for the Stylelint/CSS-variable change (CSS only): Current :3000 vs diff baseline :3003 at 7c27a90e on a fresh copy of the dev database, 1280x900 unless noted; captures in .playwright-mcp/branch-ui-diff-stylelint/, not recorded in screen history. Covered: Score All popover open; byte-identical. Not covered: applying a rating, Show only rated, reset, Peek at next page."
         paths: ["app/javascript/controllers/search_results_controller.js", "app/views/core/_query_list_templates.html.erb", "app/javascript/controllers/rating_popover_controller.js", "app/javascript/utils/store_subscription.js", "app/assets/stylesheets/style.css"]
       "4.23":
         title: "Search result rendering"
@@ -697,9 +697,9 @@ parts:
           pane-resized: "4.24/pane-resized"
           pane-open: "4.24/pane-open"
           pane-closed: "4.24/pane-closed"
-        last_run: 2026-10-20T18:18:33Z
+        last_run: 2026-10-26T12:10:48Z
         result: pass
-        notes: "Covered live on Current :3000: pane closed on load, opens at 444px, drag clamps to 230px and 300px minimums, releasing outside the window ends the drag without text selection, reload closes it again, five rapid clicks leave it open once. Not covered: narrow-window layout (16.2)."
+        notes: "branch-ui-diff sweep for the Stylelint/CSS-variable change (CSS only): Current :3000 vs diff baseline :3003 at 7c27a90e on a fresh copy of the dev database, 1280x900 unless noted; captures in .playwright-mcp/branch-ui-diff-stylelint/, not recorded in screen history. Covered: drawer open at 768x900; byte-identical. Not covered: drag resize, rapid toggling, reload reset."
         paths: ["app/javascript/controllers/pane_controller.js", "app/javascript/controllers/tune_relevance_controller.js", "app/views/core/index.html.erb", "app/javascript/controllers/case_toolbar_controller.js", "app/views/core/_case_toolbar.html.erb", "app/assets/stylesheets/panes.css", "app/assets/stylesheets/core-additions.css", "app/views/layouts/application.html.erb", "app/views/layouts/_head_common.html.erb", "app/views/layouts/_case_head.html.erb", "app/views/layouts/_case_workspace.html.erb"]
 
   "05":
@@ -736,13 +736,14 @@ parts:
           comparison-cleared: "5.3/comparison-cleared"
           selection-cleared: "5.3/selection-cleared"
           comparison-applied: "5.3/comparison-applied"
+          diff-expanded-768: "5.3/diff-expanded-768"
           comparison-limit: "5.3/comparison-limit"
           duplicate-warning: "5.3/duplicate-warning"
           snapshot-picker: "5.3/snapshot-picker"
           picker-focus: "5.3/picker-focus"
-        last_run: 2026-10-22T21:26:26Z
+        last_run: 2026-10-26T15:01:16Z
         result: pass
-        notes: "Retest of the 2026-10-22 failures on Current :3000, case 1067525379: in Compare Your Search Results, deleting 'MT52 Snap' with the DELETE aborted shows 'Could not delete snapshot.'; retrying yes (204) clears that alert, removes the snapshot from the picker and flashes 'Snapshot deleted successfully.'; applying 'MT62 Snap' closes the dialog and flashes 'Snapshot loaded successfully for comparison.'; Clear Comparison View closes it and flashes 'Comparison view has been cleared.' (the three Angular success flashes, dropped in 9b665675, are restored in diff_core_controller.js). Observation: the delete flash appears while the dialog is still open, so it sits under the modal backdrop (dimmed) until the dialog is closed; Angular also flashed with the dialog open. Not covered this pass: two-snapshot apply wording (unit-tested), duplicate warning, diff badges, the delete-cancel path."
+        notes: "branch-ui-diff sweep for the Stylelint/CSS-variable change (CSS only): Current :3000 vs diff baseline :3003 at 7c27a90e on a fresh copy of the dev database, 1280x900 unless noted; captures in .playwright-mcp/branch-ui-diff-stylelint/, not recorded in screen history. Covered: picker modal, comparison applied with query expanded at 1280, 768 and 767 wide. Found a regression from changing the diff stack breakpoint to (width < 768px): at exactly 768px the columns sat side by side and Matches collapsed to one letter per line. Restored (width <= 768px) in qscore.css; re-shot all widths after a dev-server restart: byte/pixel-identical, flex-direction column at 767/768. Recorded Current screen state 5.3/diff-expanded-768 (case 6, first snapshot, query meetings expanded, 768x900). Not covered: Add/clear rows, Clear Comparison View, delete, failure and loading states."
         paths: ["app/views/core/_snapshot_selection_template.html.erb", "test/playwright/workspace_catalog_templates.spec.ts", "app/javascript/stores/query_collection_store.js", "app/javascript/controllers/search_results_controller.js", "test/javascript/controllers/search_results_controller.test.js", "app/assets/stylesheets/qscore.css", "app/javascript/controllers/queries_list_controller.js", "app/javascript/controllers/diff_core_controller.js", "app/javascript/controllers/snapshot_bridge_controller.js", "app/javascript/controllers/diff_score_controller.js", "app/javascript/controllers/diff_case_scores_controller.js", "app/javascript/utils/diff_scores.js", "app/javascript/utils/diff_results.js", "app/javascript/utils/snapshot_searcher.js", "app/javascript/utils/snapshot_api.js", "app/javascript/utils/snapshot_model.js", "app/javascript/utils/snapshot_hydration.js", "app/javascript/utils/doc_cache.js", "app/javascript/utils/core_workspace_runtime.js", "app/javascript/stores/query_documents_store.js", "app/javascript/stores/diff_state_store.js", "app/views/core/_diff_modal.html.erb", "app/views/core/_case_toolbar.html.erb", "app/views/core/index.html.erb", "app/views/layouts/application.html.erb", "app/views/layouts/_case_head.html.erb", "app/views/layouts/_case_workspace.html.erb", "app/views/shared/_modal_shell.html.erb", "app/javascript/utils/live_query_runtime_owner.js", "config/importmap.rb", "test/javascript/controllers/diff_score_controller.test.js", "test/javascript/controllers/diff_case_scores_controller.test.js", "test/javascript/controllers/snapshot_bridge_controller.test.js", "test/javascript/stores/query_documents_store.test.js", "test/javascript/stores/diff_state_store.test.js", "test/javascript/utils/diff_scores.test.js", "test/javascript/utils/diff_results.test.js", "test/javascript/utils/snapshot_searcher.test.js", "test/javascript/utils/snapshot_api.test.js", "test/javascript/utils/snapshot_model.test.js", "test/javascript/utils/snapshot_hydration.test.js", "test/javascript/utils/doc_cache.test.js", "test/playwright/snapshots_and_annotations.spec.ts", "app/javascript/api/json.js", "app/javascript/controllers/core_modal_controller_base.js", "app/javascript/utils/store_subscription.js", "app/javascript/core_runtime.js", "app/javascript/utils/date_format.js", "app/javascript/utils/parse_explain.js", "test/javascript/utils/date_format.test.js", "test/javascript/utils/parse_explain.test.js", "app/javascript/controllers/status_message_behavior.js"]
       "5.4":
         title: "Annotations"
@@ -754,9 +755,9 @@ parts:
           annotation-edit: "5.4/annotation-edit"
           annotation-updated: "5.4/annotation-updated"
           annotation-deleted: "5.4/annotation-deleted"
-        last_run: 2026-10-20T18:27:00Z
+        last_run: 2026-10-26T12:13:01Z
         result: pass
-        notes: "Covered live on Current :3000: empty state, Create (try number and raw score), edit with Update then Cancel footer order, Cancel discards the draft, edit shows six significant digits after save and reload, Delete has no confirmation, the empty state returns after the last delete. Not covered: new-case Create disabled, failure paths, delayed delete."
+        notes: "branch-ui-diff sweep for the Stylelint/CSS-variable change (CSS only): Current :3000 vs diff baseline :3003 at 7c27a90e on a fresh copy of the dev database, 1280x900 unless noted; captures in .playwright-mcp/branch-ui-diff-stylelint/, not recorded in screen history. Covered: Annotations tab with existing annotations; byte-identical. Not covered: create, edit, delete, failure paths."
         paths: ["app/controllers/case_annotations_controller.rb", "app/controllers/concerns/annotation_persistence.rb", "app/views/core/_annotation.html.erb", "config/routes.rb", "app/views/api/v1/annotations/_annotation.json.jbuilder", "app/controllers/api/v1/annotations_controller.rb", "app/models/annotation.rb", "app/javascript/controllers/annotations_controller.js", "app/javascript/controllers/relative_time_controller.js", "app/assets/stylesheets/core-additions.css", "app/views/core/_tune_relevance.html.erb", "app/views/core/index.html.erb", "test/playwright/snapshots_and_annotations.spec.ts", "app/views/core/_edit_annotation_modal.html.erb", "app/views/shared/_modal_shell.html.erb", "app/javascript/utils/store_subscription.js"]
       "5.5":
         title: "Score graph (sparkline) & annotation markers"
@@ -764,9 +765,9 @@ parts:
           live-annotation-tooltip: "5.5/live-annotation-tooltip"
           annotation-tooltip: "5.5/annotation-tooltip"
           score-graph: "5.5/score-graph"
-        last_run: 2026-10-20T18:27:00Z
+        last_run: 2026-10-26T14:47:11Z
         result: pass
-        notes: "Covered live on Current :3000: one sparkline with annotation markers, a marker's tooltip shows the message (a marker at the newest point sits under the score badge), no duplicate graph after create or delete. Not covered: flicker under rapid updates."
+        notes: "branch-ui-diff sweep for the Stylelint/CSS-variable change (CSS only): Current :3000 vs diff baseline :3003 at 7c27a90e on a fresh copy of the dev database, 1280x900 unless noted; captures in .playwright-mcp/branch-ui-diff-stylelint/, not recorded in screen history. Covered: score graph on case 6 (white canvas via --bs-white, --q-gray border) within the 4.7 and 5.3 captures, re-shot after the qscore.css fix; identical. Not covered: marker tooltip hover, updates while open."
         paths: ["app/views/core/index.html.erb", "app/javascript/controllers/qgraph_controller.js", "app/javascript/utils/qgraph.js", "app/assets/stylesheets/qgraph.css", "app/assets/stylesheets/qscore.css", "app/controllers/api/v1/case_scores_controller.rb", "test/javascript/utils/qgraph.test.js", "app/javascript/api/json.js"]
 
   "06":
@@ -1336,9 +1337,9 @@ parts:
           archived-membership: "10.4/archived-membership"
           book-archived: "10.4/book-archived"
           book-overview: "10.4/book-overview"
-        last_run: 2026-10-20T20:17:12Z
+        last_run: 2026-10-26T12:14:47Z
         result: pass
-        notes: "Covered live via Playwright MCP on Current :3000: disposable empty-book overview, no-pairs/activity/linked-case/settings panels; Archive confirmed via Bootstrap confirmation modal, found in archived list, reopened and Unarchive confirmed. Not covered live: populated coverage/activity/live import/sync arrow matrix or diff-baseline replay. Script still says native confirm; observed current Turbo modal requires separate Confirm."
+        notes: "branch-ui-diff sweep for the Stylelint/CSS-variable change (CSS only): Current :3000 vs diff baseline :3003 at 7c27a90e on a fresh copy of the dev database, 1280x900 unless noted; captures in .playwright-mcp/branch-ui-diff-stylelint/, not recorded in screen history. Covered: book 1 Overview (full page); byte-identical. Not covered: archive/unarchive, banners, Play/Refine."
         paths: ["app/controllers/books_controller.rb", "app/views/books/show.html.erb", "app/views/books/_coverage_summary.html.erb", "app/views/books/_judge_activity_card.html.erb", "app/views/books/_settings_summary.html.erb", "app/views/books/_tabs.html.erb", "app/views/books/_case.html.erb", "app/models/concerns/text_search.rb", "app/views/books/_linked_cases_list.html.erb", "app/views/books/_judge_activity_row.html.erb", "app/views/books/_judge_status_cell.html.erb", "app/views/books/_judge_count_cell.html.erb", "app/views/books/_judge_last_cell.html.erb", "app/javascript/controllers/judge_activity_poll_controller.js", "app/javascript/controllers/judge_activity_stats_controller.js", "app/javascript/controllers/judge_sparkline_controller.js", "app/jobs/broadcast_judge_activity_job.rb", "app/jobs/auto_run_judge_judy_job.rb", "app/jobs/broadcast_linked_cases_job.rb", "app/models/book.rb", "app/assets/stylesheets/judgements.css", "app/javascript/application.js", "app/javascript/controllers/confirm_dialog_controller.js", "app/views/shared/_confirm_modal.html.erb", "app/views/shared/_metric_card.html.erb", "app/helpers/books_helper.rb"]
       "10.5":
         title: "Combine (merge) books"
@@ -1465,9 +1466,9 @@ parts:
           judge-overview-after: "10.10/judge-overview-after"
           start-judging: "10.10/start-judging"
           judge-overview-before: "10.10/judge-overview-before"
-        last_run: 2026-10-20T20:19:30Z
+        last_run: 2026-10-26T12:14:51Z
         result: pass
-        notes: "Covered live via Playwright MCP on Current :3000: personal Judge Overview initially0/9 with rubric/no activity; Start Judging works; after Good/Poor/Later/unrateable contributions, Quit returns updated personal progress/activity. Not covered live: empty/completed disablement, rank-depth/selection matrix or diff-baseline replay."
+        notes: "branch-ui-diff sweep for the Stylelint/CSS-variable change (CSS only): Current :3000 vs diff baseline :3003 at 7c27a90e on a fresh copy of the dev database, 1280x900 unless noted; captures in .playwright-mcp/branch-ui-diff-stylelint/, not recorded in screen history. Covered: book 1 Judge Overview (full page); byte-identical. Not covered: before/after a judgement, Start/Bulk links."
         paths: ["app/controllers/books_controller.rb", "app/views/books/judge_overview.html.erb", "app/models/book.rb", "app/models/selection_strategy.rb", "app/assets/stylesheets/judgements.css", "app/assets/stylesheets/navbar-brand.css", "app/views/shared/_metric_card.html.erb", "app/helpers/books_helper.rb", "app/views/books/_tabs.html.erb"]
 
       "10.11":
@@ -1510,9 +1511,9 @@ parts:
           keyboard-saved: "11.2/keyboard-saved"
           preselected: "11.2/preselected"
           typing-protected: "11.2/typing-protected"
-        last_run: 2026-10-22T20:43:08Z
+        last_run: 2026-10-26T14:49:24Z
         result: pass
-        notes: "Covered live on Current :3000 on /books/1071057353/judge (scale 0-3, so A S D F are the mapped keys, shown under the buttons): pressing A marks the 0 button btn-preselected with font-weight 700, then POSTs the judgement and advances (batman -> superman); D earlier rated joker 2. Typing 'asdf;' into the Explanation textarea and pressing s/a or f (focus on the modal and on body) with the I Can't Tell modal open sent no request and did not preselect; unmapped G and I do nothing. During the pass a stray S after the modal was dismissed rated star wars 1 for this account (test artefact on disposable book 1071057353, since deleted). Not covered: G H J K L ; on a 10-point scale."
+        notes: "branch-ui-diff sweep for the Stylelint/CSS-variable change (CSS only): Current :3000 vs diff baseline :3003 at 7c27a90e on a fresh copy of the dev database, 1280x900 unless noted; captures in .playwright-mcp/branch-ui-diff-stylelint/, not recorded in screen history. Covered: judging screen and bulk judge page for book 1; preselected rating button styling (class added client-side, nothing submitted) byte-identical with matching computed color/border/weight/scale. Judging-screen full captures differ only because each server served a different random pair. Re-shot bulk judge and preselected buttons after a 14:33Z stylesheet touch: buttons byte-identical; bulk page differs only in unstable document order within the same query. Not covered: key presses, auto-submit, focus/modal suppression."
         paths: ["app/assets/", "app/javascript/controllers/", "app/javascript/api/json.js"]
       "11.3":
         title: "I will Judge Later"
@@ -1761,9 +1762,9 @@ parts:
           busy-banner: "12.8/busy-banner"
           busy-recovered: "12.8/busy-recovered"
           busy-wrapped: "12.8/busy-wrapped"
-        last_run: 2026-10-20T20:29:44Z
+        last_run: 2026-10-26T12:15:05Z
         result: pass
-        notes: "Covered live via Playwright MCP on Current :3000: disposable assigned Ollama judge Auto-run enabled/Rank Depth2 save/reopen persisted; uploaded newrank1andrank3pairs, audit shows newrank1rated0 and existing eligible ranks1/2 judged, newrank3excluded. Bounded manual live count verified12.5. Not covered live: cancellation/continuation/failure recovery, linked-case sync/101query/busy errors or diff-baseline replay."
+        notes: "branch-ui-diff sweep for the Stylelint/CSS-variable change (CSS only): Current :3000 vs diff baseline :3003 at 7c27a90e on a fresh copy of the dev database, 1280x900 unless noted; captures in .playwright-mcp/branch-ui-diff-stylelint/, not recorded in screen history. Covered only the AI Judges list page; byte-identical. Not covered: every automatic-judging, cancellation and sync step."
         paths: ["app/controllers/books_controller.rb", "app/models/books_ai_judge.rb", "app/models/query_doc_pair.rb", "app/models/judgement.rb", "app/models/selection_strategy.rb", "app/jobs/run_judge_judy_job.rb", "app/jobs/auto_run_judge_judy_job.rb", "app/jobs/broadcast_judge_activity_job.rb", "app/jobs/broadcast_linked_cases_job.rb", "app/jobs/populate_book_job.rb", "app/jobs/update_case_job.rb", "app/jobs/update_case_ratings_job.rb", "app/jobs/judgement_from_rating_job.rb", "app/javascript/utils/book_sync.js", "app/javascript/controllers/judge_activity_poll_controller.js", "app/javascript/controllers/judge_activity_stats_controller.js", "app/javascript/controllers/judge_sparkline_controller.js", "app/views/books/_linked_cases_list.html.erb", "app/views/books/_judging_modal.html.erb", "db/migrate/20260914010000_add_rank_depth_to_books.rb", "db/migrate/20260914010100_add_auto_run_to_books_ai_judges.rb", "test/javascript/utils/book_sync.test.js", "app/javascript/utils/query_service.js", "test/javascript/utils/query_service.test.js", "app/javascript/utils/live_query_runtime_owner.js", "app/javascript/utils/live_query_lifecycle.js", "test/javascript/utils/live_query_runtime_owner.test.js", "test/javascript/utils/live_query_lifecycle.test.js", "app/controllers/api/v1/books/populate_controller.rb", "test/controllers/api/v1/books/populate_controller_test.rb", "test/jobs/populate_book_job_test.rb", "test/jobs/update_case_job_test.rb", "app/javascript/controllers/pane_controller.js", "app/assets/stylesheets/panes.css", "app/javascript/controllers/tune_relevance_controller.js", "app/javascript/controllers/flash_controller.js"]
 
       "12.10":
@@ -1849,9 +1850,9 @@ parts:
         title: "Admin Home dashboard"
         screenshots:
           home: "14.2/home"
-        last_run: 2026-10-20T20:28:48Z
+        last_run: 2026-10-26T12:19:39Z
         result: pass
-        notes: "Covered live via Playwright MCP on Current :3000 as realisticactivity administrator: Admin Home3card groups and6named links; browser opened Users, Announcements, SQL Analytics, Job Manager, Websocket Tester and Rails Pulse, all200. Not covered live: each embedded-tool operation or diff-baseline replay."
+        notes: "branch-ui-diff sweep for the Stylelint/CSS-variable change (CSS only): Current :3000 vs diff baseline :3003 at 7c27a90e on a fresh copy of the dev database, 1280x900 unless noted; captures in .playwright-mcp/branch-ui-diff-stylelint/, not recorded in screen history. Covered as quepid+admin: /admin home cards; pixel-identical. Not covered: following each link."
         paths: ["app/controllers/admin/home_controller.rb", "app/views/admin/home/index.html.erb", "app/views/layouts/_admin_sidebar.html.erb", "build_css.js", "app/assets/stylesheets/application-overrides.css", "app/assets/stylesheets/fonts.css", "app/assets/stylesheets/navbar-brand.css"]
       "14.3":
         title: "User management — list & search"
@@ -1989,9 +1990,9 @@ parts:
           core-menu: "15.2/core-menu"
           books-menu: "15.2/books-menu"
           cases-menu: "15.2/cases-menu"
-        last_run: 2026-10-24T14:43:51Z
+        last_run: 2026-10-26T12:03:42Z
         result: pass
-        notes: "Covered live (MCP, 1280px): Relevancy Cases dropdown on /cases and case 6 is identical (250px, RECENT CASES, 4 recents, View all cases / Create a case); case-page actions carry data-turbo=false, Rails-page actions do not. Not covered: Books menu, narrow viewport, zero-resource state."
+        notes: "branch-ui-diff sweep for the Stylelint/CSS-variable change (CSS only): Current :3000 vs diff baseline :3003 at 7c27a90e on a fresh copy of the dev database, 1280x900 unless noted; captures in .playwright-mcp/branch-ui-diff-stylelint/, not recorded in screen history. Covered on /cases: Cases and Books dropdowns, and 768 Toggle navigation expanded; byte-identical. Not covered: case-page variants, create-book parameters, empty states."
         paths: ["test/playwright/header_footer_navigation.spec.ts", "app/assets/stylesheets/core-additions.css", "app/assets/stylesheets/core-overrides.css", "app/assets/stylesheets/navbar-brand.css", "app/views/layouts/_header.html.erb", "app/views/shared/_page_header.html.erb", "app/views/shared/_account_dropdown.html.erb", "app/views/layouts/_header_core_app.html.erb", "app/controllers/dropdown_controller.rb", "app/controllers/api/v1/cases/dropdown_controller.rb", "app/controllers/concerns/authentication/current_case_manager.rb", "app/views/layouts/_header_navigation.html.erb", "app/views/layouts/_header_help_links.html.erb"]
       "15.3":
         title: "External links (User Manual, Wiki, API Docs)"
@@ -2035,9 +2036,9 @@ parts:
           analytics-footer: "15.7/analytics-footer"
           footer-short: "15.7/footer-short"
           footer-long: "15.7/footer-long"
-        last_run: 2026-10-21T13:01:29Z
-        result: pass_with_fixes
-        notes: "Covered live via Playwright MCP on Current :3000: analytics case6 at1280x900 now has body min-height900px/footer bottom900px after replacing h-100 with min-vh-100; at390x844 content grows to956.20px and footer ends at document bottom. Both screenshots inspected; desktop Current history refreshed, narrow capture retained as Archive. Earlier same-day checks: Scorers/Books/Teams footer bottom900px; long Cases/Profile/Admin Users footer at document end; core case6 bottom900px. Fixed the36.78px analytics gap previously compared live2026-10-20 with Legacy8ceb99e9 case4 footer bottom899.78px. Not covered live this refresh: configured-version/policies, fresh Legacy or diff-baseline replay."
+        last_run: 2026-10-26T12:19:43Z
+        result: pass
+        notes: "branch-ui-diff sweep for the Stylelint/CSS-variable change (CSS only): Current :3000 vs diff baseline :3003 at 7c27a90e on a fresh copy of the dev database, 1280x900 unless noted; captures in .playwright-mcp/branch-ui-diff-stylelint/, not recorded in screen history. Covered: footer at the bottom of /cases, short /teams page and /admin/users; identical. Not covered: narrow viewports, configured version/policy links."
         paths: ["app/views/layouts/_footer.html.erb", "app/views/layouts/application.html.erb", "app/views/layouts/analytics.html.erb", "app/assets/stylesheets/application-overrides.css"]
 
       "15.8":
@@ -2072,9 +2073,9 @@ parts:
           core-notice: "15.10/core-notice"
           access-warning: "15.10/access-warning"
           core-alert: "15.10/core-alert"
-        last_run: 2026-10-24T14:43:27Z
+        last_run: 2026-10-26T12:19:34Z
         result: pass
-        notes: "Covered live (MCP): Rails notice after a search endpoint update is fixed at the viewport bottom (position fixed, bottom 900/900), alert-success, gone after ~3.6s. Case-page z-index 1051 (above the modal backdrop) confirmed in source and core.css build order, not live. Not covered: alerts/errors, hover pause, core flashes with a modal open."
+        notes: "branch-ui-diff sweep for the Stylelint/CSS-variable change (CSS only): Current :3000 vs diff baseline :3003 at 7c27a90e on a fresh copy of the dev database, 1280x900 unless noted; captures in .playwright-mcp/branch-ui-diff-stylelint/, not recorded in screen history. Covered: profile page and the success notice after Update profile with unchanged values; byte-identical. Not covered: error flash, timing/hover/focus, Turbo back, admin and core flash layers."
         paths: ["app/javascript/utils/search_error.js", "app/javascript/utils/html.js", "app/controllers/admin/admin_controller.rb", "app/controllers/search_endpoints_controller.rb", "app/javascript/utils/flash.js", "app/helpers/application_helper.rb", "app/javascript/controllers/auto_dismiss_controller.js", "app/views/layouts/_header.html.erb", "app/assets/stylesheets/application-overrides.css", "app/assets/stylesheets/base.css", "app/javascript/controllers/flash_controller.js", "app/views/core/index.html.erb", "app/assets/stylesheets/core-additions.css"]
       "15.11":
         title: "Global avatar presentation"
@@ -2095,9 +2096,9 @@ parts:
           tooltip: "16.1/tooltip"
           score-all-popover: "16.1/score-all-popover"
           rating-popover: "16.1/rating-popover"
-        last_run: 2026-10-20T20:34:57Z
+        last_run: 2026-10-26T12:12:19Z
         result: pass
-        notes: "Covered live via Playwright MCP on Current :3000 static clone: first rating popover displayblock/opacity1/font14px with visible0/1labels/RESET and normal transform; inside click retains, trigger toggle after transition removes, outside dismisses. Screenshot inspected; sidebar tooltip14px/block/opacity0.9 verified15.1. Not covered live: Matches/longscale/narrow matrix or diff-baseline/Legacy paint comparison."
+        notes: "branch-ui-diff sweep for the Stylelint/CSS-variable change (CSS only): Current :3000 vs diff baseline :3003 at 7c27a90e on a fresh copy of the dev database, 1280x900 unless noted; captures in .playwright-mcp/branch-ui-diff-stylelint/, not recorded in screen history. Covered: document rating popover open on query 'meetings'; byte-identical. Not covered: computed-style checks, outside-click, tooltips elsewhere, 768 and long scales."
         paths: ["app/javascript/controllers/bs_popover_controller.js", "app/javascript/controllers/bs_tooltip_controller.js", "app/assets/stylesheets/core-overrides.css", "app/javascript/utils/bs_popover.js", "app/javascript/utils/bs_tooltip.js", "app/javascript/controllers/rating_popover_controller.js", "app/javascript/controllers/match_explain_controller.js", "app/javascript/controllers/match_explain_modal_controller.js", "app/views/core/_queries.html.erb", "app/views/shared/_clone_case_core_modal.html.erb", "app/views/shared/_judgements_core_modal.html.erb", "test/playwright/popover_visibility.spec.ts", "app/assets/stylesheets/core-additions.css", "test/playwright/modal_a11y.spec.ts"]
       "16.2":
         title: "Narrow viewport reflow sweep"
@@ -2110,17 +2111,17 @@ parts:
           narrow-export: "16.2/narrow-export"
           narrow-core: "16.2/narrow-core"
           narrow-list: "16.2/narrow-list"
-        last_run: 2026-10-20T20:37:24Z
+        last_run: 2026-10-26T12:17:58Z
         result: pass
-        notes: "Covered live via Playwright MCP on Current :3000 at768x900: core hamburger expands with Wiki visible, body scrollWidth/clientWidth768; Export opens within viewport and screenshot inspected, Escape closes; Cases list body768/no horizontal overflow, sidebar56px. Not covered live: wizard/import/share/diff/judgements/explain modal matrix,375/600px and Legacy clipping comparison (600 sampled separately16.6), or diff-baseline replay."
+        notes: "branch-ui-diff sweep for the Stylelint/CSS-variable change (CSS only): Current :3000 vs diff baseline :3003 at 7c27a90e on a fresh copy of the dev database, 1280x900 unless noted; captures in .playwright-mcp/branch-ui-diff-stylelint/, not recorded in screen history. Covered at 768x900: cases list with navbar expanded, workbench with expanded query, Export modal, drawer (4.24), snapshot diff (5.3); identical after the 5.3 fix. Not covered: wizard, Import/Share/Judgements/Explain modals at 768, 375 and 600 widths."
         paths: ["app/views/teams/index.html.erb", "app/views/books/index.html.erb", "app/views/search_endpoints/index.html.erb", "app/views/layouts/_header.html.erb", "app/views/layouts/_header_core_app.html.erb", "app/assets/stylesheets/navbar-brand.css", "app/assets/stylesheets/core-overrides.css", "app/views/cases/index.html.erb", "app/views/shared/_index_filters.html.erb", "app/views/shared/_index_pagination.html.erb", "app/views/layouts/_header_navigation.html.erb", "app/views/layouts/_header_help_links.html.erb", "app/javascript/controllers/codemirror_controller.js", "app/helpers/application_helper.rb", "app/javascript/controllers/auto_submit_controller.js", "app/assets/stylesheets/core-additions.css", "app/assets/stylesheets/application-overrides.css", "app/assets/stylesheets/base.css", "app/views/admin/users/index.html.erb", "app/javascript/utils/bs_modal.js", "app/javascript/controllers/dynamic_modal_controller.js"]
       "16.3":
         title: "Case header typography"
         screenshots:
           header: "16.3/header"
-        last_run: 2026-10-20T20:34:20Z
+        last_run: 2026-10-26T14:45:58Z
         result: pass
-        notes: "Covered live via Playwright MCP on Current :3000 static cloned case: #case-header h1 font35px, small subtitles30.625px, exact0.875ratio. Not covered live: narrow/RFS range or diff-baseline/Legacy typography comparison."
+        notes: "branch-ui-diff sweep for the Stylelint/CSS-variable change (CSS only): Current :3000 vs diff baseline :3003 at 7c27a90e on a fresh copy of the dev database, 1280x900 unless noted; captures in .playwright-mcp/branch-ui-diff-stylelint/, not recorded in screen history. Case header typography seen in the 4.7 captures; identical. Computed font sizes not checked."
         paths: ["app/assets/stylesheets/core-overrides.css", "app/assets/stylesheets/core-additions.css"]
       "16.4":
         title: "Modal accessibility spot-check"
@@ -2139,9 +2140,9 @@ parts:
         title: "General visual sanity sweep after any CSS/JS change"
         screenshots:
           widgets: "16.5/widgets"
-        last_run: 2026-10-20T20:56:10Z
+        last_run: 2026-10-26T14:47:11Z
         result: pass
-        notes: "Covered live via Playwright MCP on Current :3000 across this pass: inspected dashboard, ScoreAll popover, narrow Export, image result, corefooter and analytics/profile pairs; encountered scorer/AI tabs, book forms/confirmation/share modals work. Corepopover14px/opacity1, sidebar tooltip14px/opacity0.9. Exceptions recorded15.7analytics gap and15.10pre-existing flash script mismatch. Native visual initial fixture-only difference inspected, final clean run tracked17.12. Not covered live: exhaustive allwidgets or general Legacy/diff-baseline sweep."
+        notes: "branch-ui-diff sweep for the Stylelint/CSS-variable change (CSS only): Current :3000 vs diff baseline :3003 at 7c27a90e on a fresh copy of the dev database, 1280x900 unless noted; captures in .playwright-mcp/branch-ui-diff-stylelint/, not recorded in screen history. 53 scenario pairs plus team autocomplete (.autocomplete-suggestions via --bs-body-bg), Explain Query JSON explorer (string color rgb(0,128,0) on both; only the Solr rid differs) and the Turbo progress bar (rgb(255,215,0), 5px on both). Only differences: the 5.3 768px regression (fixed) and data/timing noise noted above. Also found the dev server's CSS watcher running a stale build_css.js (missing tom-select and other entries); restarted the dev server."
         paths: ["app/helpers/application_helper.rb", "app/views/layouts/_sidebar.html.erb", "app/views/layouts/_sidebar_item.html.erb", "app/assets/stylesheets/panes.css", "app/assets/stylesheets/signup.css", "app/assets/stylesheets/style.css", "app/assets/stylesheets/json-explorer.css", "app/assets/stylesheets/qscore.css", "app/assets/stylesheets/base.css", "app/assets/stylesheets/core-additions.css", "app/assets/stylesheets/application-overrides.css", "build_css.js", "app/assets/stylesheets/fonts.css", "app/assets/stylesheets/navbar-brand.css", "app/assets/stylesheets/core-overrides.css", "app/assets/stylesheets/animation.css", "app/assets/stylesheets/judgements.css"]
 
 
@@ -2153,9 +2154,9 @@ parts:
           drawer-footer: "16.6/drawer-footer"
           footer: "16.6/footer"
           flash-footer: "16.6/flash-footer"
-        last_run: 2026-10-23T14:59:11Z
+        last_run: 2026-10-26T12:18:12Z
         result: pass
-        notes: "Partial MCP coverage on Current :3000 case10 at1200x900: synthetic error flash overlays footer at viewport bottom900; screenshot inspected. Pane unit tests15 and native footer E2E pass, including homepage spacing, stacked flashes, drawer resize and dismiss. Prior same-session narrow/footer wrapping coverage predates final overlay change. Visual suite still2 pass,3 unavailable fixture failures,1 unrelated Book baseline mismatch. Deferred: final narrow replay, long-list pagination, empty case, policies, real search-error trigger and Legacy/diff-baseline replay."
+        notes: "branch-ui-diff sweep for the Stylelint/CSS-variable change (CSS only): Current :3000 vs diff baseline :3003 at 7c27a90e on a fresh copy of the dev database, 1280x900 unless noted; captures in .playwright-mcp/branch-ui-diff-stylelint/, not recorded in screen history. Covered: case 6 main pane scrolled to the bottom at 1280 and 600 wide; byte-identical. Not covered: drawer open, stacked flashes, empty case."
         paths: ["app/views/core/index.html.erb", "app/views/layouts/application.html.erb", "app/views/layouts/_case_head.html.erb", "app/views/layouts/_case_workspace.html.erb", "app/views/layouts/_footer.html.erb", "app/assets/stylesheets/base.css", "app/assets/stylesheets/panes.css", "app/javascript/controllers/pane_controller.js", "app/assets/stylesheets/core-additions.css"]
 
   "17":

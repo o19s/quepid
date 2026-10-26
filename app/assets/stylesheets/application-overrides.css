@@ -10,7 +10,7 @@ main > .container {
 }
 
 /* Keep the icon sidebar beside content below the Bootstrap column breakpoint. */
-@media (width <= 767.98px) {
+@media (width < 768px) {
   .sidebar + main {
     width: calc(100% - 3.5rem);
     min-width: 0;
@@ -81,8 +81,9 @@ h3 {
 }
 
 .turbo-progress-bar {
+  --q-progress-bar-color: #ffd700;
   height: 5px;
-  background-color: gold;
+  background-color: var(--q-progress-bar-color);
 }
 
 /* For the kraken image */
@@ -112,7 +113,7 @@ h3 {
   z-index: 1000;
   max-height: 300px;
   overflow-y: auto;
-  background: white;
+  background: var(--bs-body-bg);
   border: 1px solid #ced4da;
   border-top: none;
   border-radius: 0 0 0.25rem 0.25rem;

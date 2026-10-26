@@ -21,6 +21,7 @@
 	 left: 0;
 	 width: 100%;
 }
+
 /* Keep the existing pane footer visible without moving or duplicating its DOM. */
 .pane_main > * {
   flex-shrink: 0;

@@ -1,16 +1,22 @@
 {
   "extends": "stylelint-config-standard",
+  "reportInvalidScopeDisables": true,
+  "reportNeedlessDisables": true,
   "rules": {
     "alpha-value-notation": null,
     "color-function-alias-notation": null,
     "color-function-notation": null,
-    "comment-empty-line-before": null,
-    "font-family-no-missing-generic-family-keyword": null,
     "keyframes-name-pattern": null,
     "no-descending-specificity": null,
     "selector-class-pattern": null,
     "selector-id-pattern": null,
     "shorthand-property-no-redundant-values": null,
+    "color-named": [
+      "never",
+      {
+        "ignore": ["inside-function"]
+      }
+    ],
     "declaration-empty-line-before": "never",
     "media-feature-range-notation": "context",
     "rule-empty-line-before": [
