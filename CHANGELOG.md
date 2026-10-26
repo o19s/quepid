@@ -1,10 +1,58 @@
 # Changelog
 
-## 8.7.0 -- 2026-??-??
+## 8.8.0 -- 2026-10-26
 
-* **Performance monitoring:** administrators can inspect request, query, job and exception performance through Rails Pulse. Monitoring data stays in the application database.
-* **Kamal image compatibility:** the production Docker image includes the `service="quepid"` label.
-* **Large cases load faster and use less memory:** the case page builds a query's result details, such as explain bars, only when you expand it. A 5000-query case now loads in about a third of the time and holds well under half the memory. `yarn test:perf` measures this against generated search results.
+A HUGE milestone for Quepid: the case workbench is now free of AngularJS! This release also adds on-call AI Judges, a more usable mobile interface, and performance monitoring for self-hosted installations.
+
+### 🚀 Goodbye AngularJS
+
+The core case workbench now uses Rails-rendered views, Stimulus, and vanilla JavaScript, completing the move away from AngularJS. Querying, rating, tuning relevance, importing ratings, and comparing snapshots all run on the new stack. The old AngularJS dependencies and build infrastructure are gone. https://github.com/o19s/quepid/pull/1842 by @davidshq.
+
+The migration also brings some everyday improvements:
+
+* **Searchable field and endpoint pickers:** Title, ID, Additional Display Fields, and Tune Relevance's Displayed Fields use Tom Select. Search endpoint choices show the search engine's icon.
+* **Clearer document details:** the Detailed Document View separates formatted fields from All Fields (JSON) in tabs. Links to the search engine name it when possible and include an external-link icon.
+* **A tidier tuning experience:** the Query Sandbox has a white background and splits query-string parameters onto separate lines. Tuning knobs accept typed values, including decimals and text.
+* **Consistent feedback:** save notices float above the footer without shifting the page, and successful notices disappear after three seconds. Confirmation dialogs and the case navigation dropdown also use consistent styling.
+* **Static File endpoints stay with their case:** they no longer appear as reusable endpoints in the case wizard and cannot be newly shared with teams. Share the source case to give teammates access instead.
+
+### 🤖 On-Call AI Judges
+
+An AI Judge can now escalate an answer it is unsure about to another judge. Configure an on-call judge to handle those pairs while the first judge continues with the rest. Judgements show the escalation relationship and explanations, so you can follow how a rating was reached. https://github.com/o19s/quepid/pull/1826 by @frutik.
+
+AI Judges can also send a document's thumbnail image alongside the query and document. A per-judge **Judge with images** switch lets you keep text-only models and providers on text alone. https://github.com/o19s/quepid/pull/1822 by @frutik.
+
+### 📱 Quepid on Smaller Screens
+
+The case workbench and admin pages now adapt better to mobile screens, with improvements to sidebars, toolbars, dialogs, and wide tables. https://github.com/o19s/quepid/pull/1830, https://github.com/o19s/quepid/pull/1831, and https://github.com/o19s/quepid/pull/1832 by @epugh.
+
+### 📊 Performance and Monitoring
+
+Administrators can inspect request, database query, job, and exception performance through Rails Pulse. Monitoring data stays in the application database. https://github.com/o19s/quepid/pull/1828 by @epugh.
+
+Large cases load faster and use less browser memory by building result details, such as explanation bars, when a query is expanded. The case listing also avoids loading every historical score. https://github.com/o19s/quepid/pull/1842 by @davidshq and https://github.com/o19s/quepid/pull/1823 by @epugh.
+
+### Improvements
+
+* Creating a book from a case now preselects that case's scorer. https://github.com/o19s/quepid/pull/1836 by @epugh.
+* CodeMirror is shared through importmap across the case workbench and management pages, removing the second copy from the case JavaScript bundle. https://github.com/o19s/quepid/pull/1846 by @epugh.
+* Production Docker images include the service label needed for Kamal deployments.
+* Dependencies: Ruby 4.0.9, Rails 8.1.4, ruby_llm 2.1.1, and updates to Ruby gems, importmap libraries, and JavaScript tooling, including Chokidar 6 and Happy DOM 21. https://github.com/o19s/quepid/pull/1814 and https://github.com/o19s/quepid/pull/1846.
+
+### Bugs Addressed
+
+* Compare Snapshots no longer opens empty for proxied Search API cases such as Qdrant and Vespa. Snapshots that record document fields also retain thumbnail and image fields. https://github.com/o19s/quepid/pull/1844 by @frutik.
+* Anthropic AI Judges handle responses with thinking blocks before the answer. Anthropic and OpenAI judges no longer send a fixed temperature setting that some models reject. https://github.com/o19s/quepid/pull/1840 by @alexcastgonz.
+* Vespa and other engines using bare query text correctly handle explicit `key=value` parameter lists.
+* Snapshot CSV imports handle quoted commas and legacy quoted queries, and reject malformed rows instead of silently importing only part of a file. If an earlier import dropped rows, consider re-importing it.
+* Background case evaluations use the same scorer helpers and document fields as the case page. Unscored queries are excluded from the case average instead of aborting evaluation. Scores may change from earlier server-side runs to match the case page.
+* Sample data setup correctly configures the Ollama judge and repopulates document fields when run again. https://github.com/o19s/quepid/pull/1838 by @epugh.
+
+Thanks @davidshq, @frutik, @alexcastgonz, and @epugh for contributing to this release!
+
+## 8.7.0 -- 2026-10-02
+
+This release makes Quepid easier to run on your own, adds more search engine options, and brings a richer workflow for creating AI Judges and tracking judgement progress.
 
 ### 🤖 Create, Test, and Automate AI Judges
 
@@ -21,66 +69,34 @@ The redesigned Book Overview brings judgement coverage, live Judge Activity, and
 
 Judgement Stats now includes a rating distribution chart, making it easier to spot how ratings are spread across your scale. Large books also load faster.
 
-* **AI Judges can now see images:** a chat-based AI Judge can send the case's/document's thumbnail image to the LLM alongside the query and document, with a per-judge "Judge with images" switch for text-only models and providers (Ollama, TypeSafe Jev) that don't support images. https://github.com/o19s/quepid/pull/1822 by @frutik.
-* **Faster case listing page:** the case listing no longer loads every score blindly, speeding up the page for books with a lot of history. https://github.com/o19s/quepid/pull/1823 by @epugh.
-* **Fixed key=value query params:** engines using a bare query param (like Vespa's YQL) now correctly handle explicit `key=value` parameter lists, instead of only JSON or fully bare text.
+**Changing your rating scale?** Bulk remapping lets you convert existing book judgements and linked-case ratings to a new scale, such as moving from a ten-point scale to 0–3.
+
+### 🔎 More Search Engines and Query Options
+
+* **Vespa:** connect through a built-in preset, use YQL or JSON queries, page through results, and find already-rated documents. When Vespa returns match features, Quepid can display them in its explanation views.
 * **Qdrant:** a new setup-wizard option connects to Qdrant's collection query API, with support for looking up already-rated documents. A setup guide covers lexical and dense retrieval.
+* **Algolia:** improved error reporting and explanation displays make using Algolia clearer.
+* **Solr JSON queries:** use structured JSON queries alongside the existing query-string format. The Query Sandbox adapts to JSON or plain-text editing.
+* **Custom Search APIs:** these APIs gain configurable pagination and automatic GET/POST selection.
+
+The Find and Rate Missing Documents dialog has also been refreshed to make document lookup and rating easier across supported engines.
+
+### 🗄️ Easier Solo and Self-Hosted Use
+
+Quepid now supports **SQLite and PostgreSQL alongside MySQL**. Production Docker installs default to an embedded SQLite database when no `DATABASE_URL` is configured, removing the need to set up a separate database server. PostgreSQL is also supported for deployments that prefer it.
+
+Solo users no longer have to use a create and use a "team" just to connect their own books to cases and use AI Judges.
+
+### 🎨 A Refreshed Interface and Everyday Fixes
+
+The Bootstrap 5 migration is complete, with refreshed dialogs, toolbars, navigation, and search-result details. More case actions now use the modern interface components as the gradual move away from AngularJS continues.
+
+* Search boxes now match text regardless of capitalization.
+* Reopening a case no longer queues duplicate book-sync jobs while a sync is already running.
+* The case listing identifies nightly evaluation runs beside “Last run by.”
+* Administrators can schedule announcements with publish and expiration dates.
 
 Thanks @davidshq, @frutik, @chuckmeyer, @flaxsearch and @radu-gheorghe for contributing to this release!
-
-Three big things in this release: **Quepid now runs on SQLite or PostgreSQL, not just MySQL**; **Vespa is a fully worked-out example search engine**, backed by a coordinated `splainer-search` refactor and upgrade to 3.2.2; and **the Bootstrap 5 migration crossed the finish line**, alongside two more phases of AngularJS removal. On top of that, a batch of SQL correctness/security hardening from @frutik.
-
-## 🗄️ SQLite and PostgreSQL Support
-Quepid now runs against three database adapters. SQLite (`DB_ADAPTER=sqlite3`) is the new zero-setup default for solo Search Practitioners who don't need a separate database server — production Docker images fall back to it automatically when no `DATABASE_URL` is set. https://github.com/o19s/quepid/pull/1763 by @epugh. PostgreSQL support followed close behind: a `postgresql_schema_compatibility.rb` shim (mirroring the existing SQLite one), a Docker service, and a CI job. https://github.com/o19s/quepid/pull/1777 by @frutik. PostgreSQL 17 data was persisted at `./volumes/postgres/data` instead of an anonymous Docker volume that a container recreation could silently lose (https://github.com/o19s/quepid/pull/1778 by @frutik), and the sample data seeder is safe to re-run repeatedly against it after a `books_ai_judges` uniqueness bug was fixed in four spots (https://github.com/o19s/quepid/pull/1779 by @frutik).
-
-Running Quepid on your laptop with no database server to set up is now just:
-
-```bash
-docker run -p 3000:3000 --name quepid quepid
-```
-
-No `DATABASE_URL` means production defaults to SQLite automatically — the container creates `storage/production.sqlite3`, runs migrations, and starts serving on port 3000 on first boot.
-
-## 🔎 Vespa Search Engine Support
-Quepid now ships a fully worked-out Vespa integration, riding on the existing "Search API" (mapper-based) endpoint type: a Vespa-flavored JavaScript mapper makes it show up and behave like a first-class splainer-search-based engine, including bare-YQL query support and mapper error surfacing. https://github.com/o19s/quepid/pull/1760 by @epugh. A follow-up revamp of the "Find and Rate Missing Documents" modal and the mapper plumbing pushed several fixes down into `splainer-search` itself (see below). https://github.com/o19s/quepid/pull/1774 by @epugh.
-
-A large follow-up, https://github.com/o19s/quepid/pull/1775 by @epugh, rounds out Vespa support end-to-end:
-- **Solr JSON Query DSL support in Quepid itself**, not just splainer-search: `Try`, `TryFactory.js`, and `queriesSvc.js` now carry a query through as structured JSON instead of forcing it through the classic `q=`/`fq=` string path, and `lib/es_arg_parser.rb` was renamed to `lib/json_arg_parser.rb` to reflect that it's no longer ES-specific.
-- **Automatic GET/POST switching**, threaded from `mapper_based_search_engine.rb`/`search_endpoint.rb` down through `Try#searchapi_args` and `fetch_service.rb`, mirroring splainer-search's own `apiMethod: 'AUTO'` support above.
-- **Fixed: wizard "ping it" validation sent bare query text (e.g. Vespa's YQL) with no param key at all.** The wizard validates before any `Try` is saved, so it never went through `Try#searchapi_args`'s `bare_query_param` wrapping — Vespa rejected the resulting request as having no query. `bare_query_param` is now threaded through the mapper-engine API response and wizard settings so the same wrapping happens client-side too.
-- **Fixed:** a `TryFactory.js#toApiFormat()` bug silently dropped all six `mapperBasedSearchEngine*` fields on the reverse mapping, breaking the engine's icon, pagination, and rated-doc lookup after any settings-tab switch.
-- The **Escape Queries checkbox** (only meaningful for Solr/ES/OS) is now hidden for engines it doesn't apply to, with its tooltip polarity corrected and a BS5/legacy-CSS layout conflict fixed.
-- **Settings page rework:** Endpoint Details now comes first and Search Endpoints last (collapsed by default); a generic "Searchapi" label/icon was swept and replaced with the specific mapper-based engine's own name/icon (Vespa) across 8 templates/views; and a wiki troubleshooting link was added via a new `settingsSvc.troubleshootingWikiUrl()`.
-- The Query Sandbox now adapts between JSON and plain-text editing modes depending on the query shape.
-
-### `splainer-search` changes relevant to Quepid
-Quepid's `splainer-search` pin moved from 3.0.0 (at 8.6.0) to **3.2.2**, picking up:
-- **Custom Search API pagination and `AUTO` GET/POST switching** (3.1.0): `pager()` now builds real next-page requests from a `nextPageArgsMapper` instead of being a no-op, and `apiMethod: 'AUTO'` picks GET vs. POST based on the built URL's length — this is what powers Vespa's paging in Quepid. https://github.com/o19s/splainer-search/pull/162 by @epugh.
-- **Solr JSON Query DSL support** (3.2.0): `config.jsonQueryDsl: true` lets Solr requests use nested `bool`/`edismax` clauses that don't map onto classic `q=`/`fq=` query strings, plus a fix for `escapeQuery`'s Lucene escaping being double-applied on top of `hydrateSearchQuery`'s own. https://github.com/o19s/splainer-search/pull/163 by @epugh.
-- **Breaking (internal, absorbed by the adapter):** `SettingsValidatorFactory` and `ResolverFactory` were removed in favor of each engine's own `fetchDocs()`/`validateUrl()` (inherited from a shared `SearcherFactory` base). Quepid's side of this, also in https://github.com/o19s/quepid/pull/1775, updates `app/javascript/splainer_search_adapter.js` and `wizardModal.js` to call `searchSvc.createValidator(settings)` instead of `new SettingsValidatorFactory(settings)`; `docResolverSvc.createResolver()` keeps its existing `{docs, fetchDocs()}` contract unchanged, so `docCacheSvc.js` needed no changes at all. Verified end-to-end against the real published `splainer-search@3.2.2` npm package (not just the local dev mount) via a live Playwright sweep across every engine tile in the Create-a-Case wizard.
-
-## 🎨 Bootstrap 5 Migration Complete, Continued AngularJS Removal
-Bootstrap 3 is gone from the UI entirely — the core stylesheet bundle is npm Bootstrap 5 plus Quepid's own compat/additions layers, with Angular components that depended on angular-ui-bootstrap (modals, popovers, tooltips, typeahead, collapse/accordion) rewritten against native BS5 APIs. https://github.com/o19s/quepid/pull/1703 by @davidshq. This was followed by continued incremental AngularJS removal: shared DOM helpers extracted for both stacks and two vendored Angular plugins dropped (https://github.com/o19s/quepid/pull/1752 and https://github.com/o19s/quepid/pull/1761 by @davidshq), and the share-case modal on the Angular `core` surface replaced with a Stimulus controller while the Rails-surface UX stayed put (https://github.com/o19s/quepid/pull/1764 by @davidshq).
-
-### Features
-
-* Ratings can now be remapped in bulk — handy for teams migrating off a legacy scale (e.g. a 10-point scale down to 3,2,1,0). https://github.com/o19s/quepid/pull/1751 by @epugh.
-* A nightly-run icon now shows next to "Last run by" on the case listing. https://github.com/o19s/quepid/pull/1750 by @epugh.
-* Announcements now support a publish date and an expiration date, so multiple announcements can be queued up in advance without needing to be manually disabled later. https://github.com/o19s/quepid/pull/1762 by @epugh.
-
-### Improvements
-
-* Duplicate book-sync jobs are no longer queued while a sync is already in progress — previously reopening a case repeatedly could pile up background jobs and max out the database. https://github.com/o19s/quepid/pull/1749 by @epugh.
-* A batch of SQL correctness and security hardening from @frutik: match email case-insensitively in SQL instead of relying on collation (https://github.com/o19s/quepid/pull/1766), compare numeric columns with `=` instead of `LIKE` in search filters (https://github.com/o19s/quepid/pull/1767), match `for_user` by id instead of `SELECT DISTINCT` over every column (https://github.com/o19s/quepid/pull/1768), deduplicate by id instead of `SELECT DISTINCT` in three more queries (https://github.com/o19s/quepid/pull/1770), order query results explicitly instead of relying on the database's incidental ordering (https://github.com/o19s/quepid/pull/1771), pick the oldest match when a search endpoint lookup is ambiguous (https://github.com/o19s/quepid/pull/1772), and dispatch SQL function names per-adapter instead of a MySQL-or-not check (https://github.com/o19s/quepid/pull/1773) — the last enabling the PostgreSQL support above. Model annotations now only regenerate when running against MySQL. https://github.com/o19s/quepid/pull/1769 by @frutik. Further query optimization in https://github.com/o19s/quepid/pull/1776 by @epugh.
-* Dependencies: Node.js v24.20.0, nginx v1.31.4, and assorted other JavaScript and Ruby gem updates via Renovate. https://github.com/o19s/quepid/pull/1755, https://github.com/o19s/quepid/pull/1756, https://github.com/o19s/quepid/pull/1757, https://github.com/o19s/quepid/pull/1758, https://github.com/o19s/quepid/pull/1759.
-
-### Bug Fixes
-
-* **Fixed: importing a snapshot CSV silently dropped rows (regressed in 8.6.0).** The Import Snapshot dialog on the Cases page split every line on commas, so any row whose query text or document fields contained a comma (which Quepid's own export wraps in quotes) was skipped, and the import still reported success. It now uses the same quote-aware CSV parser as Import Ratings, and refuses a file with a malformed row, naming the line, instead of importing part of it. Quoted phrase queries such as `"star wars"` in files exported by 8.6.0 and earlier, which wrote them as `""star wars""`, also import with their quotes intact again instead of creating a duplicate query. If you imported snapshots on 8.6.0, consider re-importing them.
-* Fixed: a case could stay stuck loading if processing its query list threw an error; the failure is now reported like any other load error.
-* **Fixed: server-side case evaluations could score a case differently from the case page, or not at all.** The background evaluation ran its own copy of the scorer helpers, which lacked several that the case page provides (`avgRating100`, `editDistanceFromBest`, `pass`, `fail`, `assert`, `assertOrScore`, `max`, ...), so scorers such as v1 and ERR@10 failed when run on the server. Evaluations now run the same scorer code as the case page and pass it the document fields and the highest-rated documents in order. Unscored queries no longer abort the evaluation; they are left out of the case average, as on the case page. Scores from server-side evaluations may change from earlier runs and now match the case page.
-
-* **Behavior change: a missing id no longer matches another missing id on the case page.** Case, query, document, team, snapshot and other record ids are now compared with one shared helper (`isSameId` in `app/javascript/utils/record_identity.js`) instead of a mix of `===`, `Number(a) === Number(b)` and `String(a) === String(b)`. Ids still match across numbers and strings (`7` and `"7"`), but a `null`, `undefined` or empty id never matches anything. Previously two missing ids compared equal (`String(undefined) === String(undefined)`). This let a stale response for a modal opened without a case still be applied, and let a lookup with a missing id pick whichever record also lacked one. With well-formed data you should see no difference.
 
 ## 8.6.0 -- 2026-08-16
 
