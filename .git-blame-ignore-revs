@@ -10,3 +10,6 @@
 
 # Prettier: format test/javascript/
 93214f4ca3a08c39e3c1cffcb6540b23f2c381a7
+
+# Prettier, stylelint: format stylesheets, test/playwright/ and scripts/
+db32515af233bebc9a379b34d0d632116855f0fc
