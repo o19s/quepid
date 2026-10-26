@@ -30,11 +30,17 @@ function contentType(filePath) {
 
 function runManifestGenerator() {
   return new Promise((resolve, reject) => {
-    const child = spawn(process.execPath, [path.join(__dirname, "generate-screenshot-manifest.mjs")], {
-      cwd: repoRoot,
-      stdio: "inherit"
-    })
-    child.on("exit", (code) => (code === 0 ? resolve() : reject(new Error(`manifest generator exited ${code}`))))
+    const child = spawn(
+      process.execPath,
+      [path.join(__dirname, "generate-screenshot-manifest.mjs")],
+      {
+        cwd: repoRoot,
+        stdio: "inherit"
+      }
+    )
+    child.on("exit", (code) =>
+      code === 0 ? resolve() : reject(new Error(`manifest generator exited ${code}`))
+    )
   })
 }
 
@@ -43,12 +49,23 @@ function safePath(urlPath) {
   const relative = decoded.replace(/^\/+/, "")
   const absolute = path.resolve(repoRoot, relative)
   if (absolute !== repoRoot && !absolute.startsWith(repoRoot + path.sep)) return null
-  if (!["test/playwright/screenshot-viewer.html", "test/playwright/screenshot-manifest.json", "node_modules/pixelmatch/index.js"].includes(relative) &&
-      !(relative.startsWith(".playwright-mcp/") && /\.(png|webp)$/.test(relative))) return null
+  if (
+    ![
+      "test/playwright/screenshot-viewer.html",
+      "test/playwright/screenshot-manifest.json",
+      "node_modules/pixelmatch/index.js"
+    ].includes(relative) &&
+    !(relative.startsWith(".playwright-mcp/") && /\.(png|webp)$/.test(relative))
+  )
+    return null
   if (!fs.existsSync(absolute)) return null
   const real = fs.realpathSync(absolute)
   if (!real.startsWith(repoRoot + path.sep)) return null
-  if (relative.startsWith(".playwright-mcp/") && !real.startsWith(path.join(repoRoot, ".playwright-mcp") + path.sep)) return null
+  if (
+    relative.startsWith(".playwright-mcp/") &&
+    !real.startsWith(path.join(repoRoot, ".playwright-mcp") + path.sep)
+  )
+    return null
   return absolute
 }
 
@@ -56,12 +73,21 @@ await runManifestGenerator()
 const captures = new CaptureJobs(repoRoot, runManifestGenerator)
 
 const server = http.createServer(async (req, res) => {
-  if (req.url === "/api/reviews" || req.url === "/api/captures" || req.url.startsWith("/api/captures/")) {
+  if (
+    req.url === "/api/reviews" ||
+    req.url === "/api/captures" ||
+    req.url.startsWith("/api/captures/")
+  ) {
     res.setHeader("Content-Type", "application/json; charset=utf-8")
     res.setHeader("Cache-Control", "no-store")
     try {
       if (req.method === "GET") {
-        const data = req.url === "/api/reviews" ? screenshotReviews(repoRoot) : req.url.startsWith("/api/captures/") ? captures.get(req.url.slice("/api/captures/".length)) : captures.active()
+        const data =
+          req.url === "/api/reviews"
+            ? screenshotReviews(repoRoot)
+            : req.url.startsWith("/api/captures/")
+              ? captures.get(req.url.slice("/api/captures/".length))
+              : captures.active()
         res.end(JSON.stringify(data))
         return
       }
@@ -70,7 +96,10 @@ const server = http.createServer(async (req, res) => {
         res.end(JSON.stringify({ error: "Method not allowed" }))
         return
       }
-      if (req.headers.origin !== `http://${req.headers.host}` || req.headers["content-type"] !== "application/json") {
+      if (
+        req.headers.origin !== `http://${req.headers.host}` ||
+        req.headers["content-type"] !== "application/json"
+      ) {
         res.writeHead(403)
         res.end(JSON.stringify({ error: "Viewer actions require a same-origin JSON request" }))
         return
@@ -80,8 +109,12 @@ const server = http.createServer(async (req, res) => {
         body += chunk
         if (Buffer.byteLength(body) > 16384) throw new Error("Request too large")
       }
-      if (req.url !== "/api/reviews" && req.url !== "/api/captures") throw new Error("Invalid action URL")
-      const data = req.url === "/api/captures" ? captures.start(JSON.parse(body)) : setScreenshotApproval(repoRoot, JSON.parse(body))
+      if (req.url !== "/api/reviews" && req.url !== "/api/captures")
+        throw new Error("Invalid action URL")
+      const data =
+        req.url === "/api/captures"
+          ? captures.start(JSON.parse(body))
+          : setScreenshotApproval(repoRoot, JSON.parse(body))
       res.writeHead(req.url === "/api/captures" ? 202 : 200)
       res.end(JSON.stringify(data))
     } catch (error) {
@@ -110,7 +143,9 @@ const server = http.createServer(async (req, res) => {
   }
 
   res.writeHead(200, { "Content-Type": contentType(target), "Cache-Control": "no-store" })
-  fs.createReadStream(target).on("error", () => res.destroy()).pipe(res)
+  fs.createReadStream(target)
+    .on("error", () => res.destroy())
+    .pipe(res)
 })
 
 server.listen(port, host, () => {

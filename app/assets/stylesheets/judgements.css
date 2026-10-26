@@ -2,12 +2,12 @@
  * Judgement/rating UI (forms, bulk judge layout, scoring guidelines).
  * Bundled in application.css via build_css.js.
  */
-.btn-preselected { 
-  color: var(--bs-black) !important; 
-  font-weight: bold !important; 
-  border: 2px solid var(--bs-black) !important; 
-  box-shadow: 0 0 0 0.25rem rgba(0, 0, 0, 0.3) !important; 
-  transform: scale(1.05) !important; 
+.btn-preselected {
+  color: var(--bs-black) !important;
+  font-weight: bold !important;
+  border: 2px solid var(--bs-black) !important;
+  box-shadow: 0 0 0 0.25rem rgba(0, 0, 0, 0.3) !important;
+  transform: scale(1.05) !important;
 }
 
 .rating-buttons .btn-check:checked + .btn {
@@ -25,8 +25,8 @@
   padding: 8px 12px;
   color: var(--bs-black); /* default text color for contrast on colored buttons */
   font-weight: 500;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-  border: 1px solid rgba(0,0,0,0.2);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(0, 0, 0, 0.2);
 }
 
 .rating-buttons-container {
@@ -136,9 +136,17 @@
  * Book overview page — judge activity row flash on live Turbo Stream update.
  */
 @keyframes icon-flip {
-  0%   { transform: rotateY(0deg); }
-  50%  { transform: rotateY(90deg); }
-  100% { transform: rotateY(0deg); }
+  0% {
+    transform: rotateY(0deg);
+  }
+
+  50% {
+    transform: rotateY(90deg);
+  }
+
+  100% {
+    transform: rotateY(0deg);
+  }
 }
 
 .judge-icon-flash {
@@ -156,8 +164,14 @@
  * continuous pulsing.
  */
 @keyframes icon-pulse {
-  0%, 100% { opacity: 1; }
-  50%      { opacity: 0.35; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.35;
+  }
 }
 
 .icon-pulse {

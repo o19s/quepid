@@ -14,7 +14,7 @@
   font-weight: 400;
   font-style: italic;
   font-size: 28px;
-  color: #FFF !important;
+  color: #fff !important;
 }
 
 .navbar-brand .hover {
@@ -30,7 +30,7 @@
 
 .navbar-secondary {
   background: #369;
-  background-image: linear-gradient(to bottom, #4F8ECC 0%, #2774C0 100%);
+  background-image: linear-gradient(to bottom, #4f8ecc 0%, #2774c0 100%);
   font-family: Aller, sans-serif;
 }
 
@@ -42,7 +42,7 @@
  * links without this. Pin it explicitly so both headers match regardless
  * of ambient root font-size. */
 .navbar-secondary .navbar-nav .nav-link {
-  color: #FFF;
+  color: #fff;
   font-size: 14px;
 }
 

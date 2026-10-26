@@ -1,17 +1,17 @@
 /* Quepid tweaks on top of shepherd.js's own stylesheet (node_modules/shepherd.js/dist/css/shepherd.css). */
 
 .shepherd-element.quepid-tour-step {
-	 z-index: 9999;
-	 max-width: 28rem;
-	 font-size: 1rem;
+  z-index: 9999;
+  max-width: 28rem;
+  font-size: 1rem;
 }
 
- .shepherd-element.quepid-tour-step .shepherd-text {
-	 line-height: 1.4;
+.shepherd-element.quepid-tour-step .shepherd-text {
+  line-height: 1.4;
 }
 
- .shepherd-modal-overlay-container {
-	 z-index: 9998;
+.shepherd-modal-overlay-container {
+  z-index: 9998;
 }
 
 .shepherd-modal-overlay-container.shepherd-modal-is-visible {

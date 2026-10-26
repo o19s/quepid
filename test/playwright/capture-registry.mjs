@@ -6,7 +6,11 @@ export const captureRecipes = {
     state: "home",
     viewport: { width: 1440, height: 1000 },
     fullPage: false,
-    paths: ["test/playwright/capture-registry.mjs", "test/playwright/capture-recipes.mjs", "test/playwright/capture-screenshot.mjs"]
+    paths: [
+      "test/playwright/capture-registry.mjs",
+      "test/playwright/capture-recipes.mjs",
+      "test/playwright/capture-screenshot.mjs"
+    ]
   },
   "14.3/empty": {
     id: "admin-users-empty",
@@ -16,7 +20,10 @@ export const captureRecipes = {
     viewport: { width: 1440, height: 1000 },
     fullPage: false,
     search: "screenshot-no-such-user-20261010",
-    paths: ["test/playwright/capture-registry.mjs", "test/playwright/capture-recipes.mjs", "test/playwright/capture-screenshot.mjs"]
+    paths: [
+      "test/playwright/capture-registry.mjs",
+      "test/playwright/capture-recipes.mjs",
+      "test/playwright/capture-screenshot.mjs"
+    ]
   }
 }
-

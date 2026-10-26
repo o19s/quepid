@@ -1,27 +1,27 @@
 /* Misc. */
- .query-help {
-	 font-size: 1.5em;
+.query-help {
+  font-size: 1.5em;
 }
 
 /* Used by the match-explain Debug and Expand modals. */
- .full-screen-modal {
-	 height: 100%;
-	 z-index: 2050 !important;
+.full-screen-modal {
+  height: 100%;
+  z-index: 2050 !important;
 }
 
- .full-screen-modal .modal-dialog {
-	 height: calc(100% - 100px);
-	 width: calc(100% - 100px);
+.full-screen-modal .modal-dialog {
+  height: calc(100% - 100px);
+  width: calc(100% - 100px);
 
-	 /* BS5's .modal-dialog sets max-width: 500px (at the >=576px breakpoint);
+  /* BS5's .modal-dialog sets max-width: 500px (at the >=576px breakpoint);
 	    without overriding it here too, that cap wins over the width above
 	    and this modal never actually grows past the default small size. */
-	 max-width: calc(100% - 100px);
+  max-width: calc(100% - 100px);
 }
 
- .full-screen-modal .modal-content {
-	 height: 100%;
-	 overflow: auto;
+.full-screen-modal .modal-content {
+  height: 100%;
+  overflow: auto;
 }
 
 /* The wizard has no .modal-header, so its step headings (plain BS5 <h1>/<h2>
@@ -29,8 +29,8 @@
    flex row. At the shared 600px modal width, longer headings like "What
    Search Endpoint do you want to connect to?" run almost edge-to-edge and
    crowd the X. Give the wizard extra width so headings clear it. */
- .wizard-modal-window .modal-dialog {
-	 max-width: 700px;
+.wizard-modal-window .modal-dialog {
+  max-width: 700px;
 }
 
 /* Case wizard text, as in the Angular (Bootstrap 3) wizard: its Helvetica Neue font (BS5's system
@@ -189,14 +189,13 @@
 
 /* BS3 heading size and list-group padding/borders for the scorer lists.
    The .active blue comes from the global rule in core-overrides.css. */
- .pick-scorer-modal h4 {
-	 font-size: 18px;
-	 color: #333;
+.pick-scorer-modal h4 {
+  font-size: 18px;
+  color: #333;
 }
 
- .pick-scorer-modal .list-group-item {
-	 padding: 10px 15px;
-	 margin-bottom: -1px;
-	 border-color: #ddd;
+.pick-scorer-modal .list-group-item {
+  padding: 10px 15px;
+  margin-bottom: -1px;
+  border-color: #ddd;
 }
-

@@ -31,13 +31,12 @@ main > .container {
 */
 
 .navbar-brand:hover .hover {
-	top: 5px;
+  top: 5px;
 }
 
 .navbar-secondary {
   padding: 0;
 }
-
 
 .alert {
   z-index: 100;
@@ -93,8 +92,13 @@ h3 {
 }
 
 @keyframes fadeOut {
-  from { opacity: 1; }
-  to { opacity: 0; }
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
 }
 
 /* Bootstrap's .visually-hidden is position:absolute. Inside a table cell with no positioned ancestor it
@@ -117,7 +121,7 @@ h3 {
   border: 1px solid #ced4da;
   border-top: none;
   border-radius: 0 0 0.25rem 0.25rem;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .autocomplete-item {

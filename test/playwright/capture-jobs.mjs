@@ -13,12 +13,29 @@ const execute = promisify(execFile)
 export async function captureContainer(root) {
   if (process.env.SCREENSHOT_CAPTURE_CONTAINER) return process.env.SCREENSHOT_CAPTURE_CONTAINER
   const envFile = path.join(root, ".env")
-  const configuredPort = fs.existsSync(envFile) ? fs.readFileSync(envFile, "utf8").match(/^APP_PORT=["']?(\d+)/m)?.[1] : null
+  const configuredPort = fs.existsSync(envFile)
+    ? fs.readFileSync(envFile, "utf8").match(/^APP_PORT=["']?(\d+)/m)?.[1]
+    : null
   const port = Number(process.env.APP_PORT || configuredPort || 3000)
-  const { stdout } = await execute("docker", ["compose", "ps", "-a", "app", "--format", "json"], { cwd: root })
-  const containers = stdout.trim().split("\n").filter(Boolean).flatMap((line) => JSON.parse(line))
-  const matches = containers.filter((container) => container.State === "running" && container.Publishers?.some((publisher) => publisher.TargetPort === 3000 && publisher.PublishedPort === port))
-  if (matches.length !== 1) throw new Error(`Expected one running app server on port ${port}; configure SCREENSHOT_CAPTURE_CONTAINER for the actual server`)
+  const { stdout } = await execute("docker", ["compose", "ps", "-a", "app", "--format", "json"], {
+    cwd: root
+  })
+  const containers = stdout
+    .trim()
+    .split("\n")
+    .filter(Boolean)
+    .flatMap((line) => JSON.parse(line))
+  const matches = containers.filter(
+    (container) =>
+      container.State === "running" &&
+      container.Publishers?.some(
+        (publisher) => publisher.TargetPort === 3000 && publisher.PublishedPort === port
+      )
+  )
+  if (matches.length !== 1)
+    throw new Error(
+      `Expected one running app server on port ${port}; configure SCREENSHOT_CAPTURE_CONTAINER for the actual server`
+    )
   return matches[0].Name
 }
 
@@ -30,7 +47,11 @@ export async function runCapture(root, request, progress) {
   const container = await captureContainer(root)
   progress("Starting capture browser…")
   await new Promise((resolve, reject) => {
-    const child = spawn("docker", ["exec", "-i", container, "node", "test/playwright/capture-screenshot.mjs"], { cwd: root, stdio: ["pipe", "pipe", "pipe"] })
+    const child = spawn(
+      "docker",
+      ["exec", "-i", container, "node", "test/playwright/capture-screenshot.mjs"],
+      { cwd: root, stdio: ["pipe", "pipe", "pipe"] }
+    )
     let pending = ""
     let errorOutput = ""
     child.stdout.on("data", (chunk) => {
@@ -38,12 +59,22 @@ export async function runCapture(root, request, progress) {
       const lines = pending.split("\n")
       pending = lines.pop()
       for (const line of lines) {
-        try { progress(JSON.parse(line).message) } catch { /* Ignore non-event output. */ }
+        try {
+          progress(JSON.parse(line).message)
+        } catch {
+          /* Ignore non-event output. */
+        }
       }
     })
-    child.stderr.on("data", (chunk) => { errorOutput = (errorOutput + chunk).slice(-8000) })
+    child.stderr.on("data", (chunk) => {
+      errorOutput = (errorOutput + chunk).slice(-8000)
+    })
     child.on("error", reject)
-    child.on("exit", (code) => code === 0 ? resolve() : reject(new Error(errorOutput.trim() || `Capture worker exited ${code}`)))
+    child.on("exit", (code) =>
+      code === 0
+        ? resolve()
+        : reject(new Error(errorOutput.trim() || `Capture worker exited ${code}`))
+    )
     child.stdin.on("error", reject)
     child.stdin.end(JSON.stringify(request))
   })
@@ -93,7 +124,8 @@ export class CaptureJobs {
   }
 
   release(jobId) {
-    if (fs.existsSync(this.lock) && fs.readFileSync(this.lock, "utf8") === jobId) fs.unlinkSync(this.lock)
+    if (fs.existsSync(this.lock) && fs.readFileSync(this.lock, "utf8") === jobId)
+      fs.unlinkSync(this.lock)
   }
 
   active() {
@@ -105,14 +137,26 @@ export class CaptureJobs {
     const options = captureOptions(this.root, id, this.tracker)
     const history = readHistory(this.root)
     const current = history.screens[id]?.versions.at(-1)
-    if (history.branch !== branch || !current || current.source !== source || current.image !== image || current.capturedAt !== capturedAt) {
+    if (
+      history.branch !== branch ||
+      !current ||
+      current.source !== source ||
+      current.image !== image ||
+      current.capturedAt !== capturedAt
+    ) {
       throw new Error("Displayed capture changed; reload the viewer before recapturing")
     }
     if (options.id !== id) throw new Error("Capture recipe does not match the tracker screen ID")
     const fingerprint = sourceFingerprint(this.root, options.paths)
     fs.mkdirSync(this.directory, { recursive: true })
     this.active()
-    const job = { jobId: crypto.randomUUID(), id, state: "running", message: "Preparing capture…", owner: { pid: process.pid, host: os.hostname() } }
+    const job = {
+      jobId: crypto.randomUUID(),
+      id,
+      state: "running",
+      message: "Preparing capture…",
+      owner: { pid: process.pid, host: os.hostname() }
+    }
     const preparedLock = path.join(this.directory, `${job.jobId}.lock`)
     // Publish an initialized lock only after the owning job is readable.
     // An interrupted preparation must not leave an empty or ownerless active lock.
@@ -122,13 +166,19 @@ export class CaptureJobs {
       fs.linkSync(preparedLock, this.lock)
     } catch (error) {
       fs.rmSync(path.join(this.directory, `${job.jobId}.json`), { force: true })
-      if (error.code === "EEXIST") throw new Error("Another screenshot capture is running; retry when it finishes", { cause: error })
+      if (error.code === "EEXIST")
+        throw new Error("Another screenshot capture is running; retry when it finishes", {
+          cause: error
+        })
       throw error
     } finally {
       fs.rmSync(preparedLock, { force: true })
     }
     const save = () => this.save(job)
-    const progress = (message) => { job.message = message; save() }
+    const progress = (message) => {
+      job.message = message
+      save()
+    }
     const request = { jobId: job.jobId, id, branch, source: fingerprint, current }
     this.completion = (async () => {
       try {
@@ -138,12 +188,15 @@ export class CaptureJobs {
         job.state = "succeeded"
         job.message = "Current screenshot captured. Review the new image."
         const duplicates = duplicateCaptures(this.root, id)
-        if (duplicates.length) job.message += ` Warning: it is identical to ${duplicates.map((other) => other.title).join(", ")} — confirm it shows the requested page.`
+        if (duplicates.length)
+          job.message += ` Warning: it is identical to ${duplicates.map((other) => other.title).join(", ")} — confirm it shows the requested page.`
       } catch (error) {
         job.state = "failed"
         job.message = error.message
       } finally {
-        try { save() } finally {
+        try {
+          save()
+        } finally {
           this.release(job.jobId)
         }
       }

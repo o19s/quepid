@@ -36,7 +36,7 @@ pre {
   --q-gray: #808080;
 
   /* BS3's body font, for the case view and the dev panel (core-additions.css). */
-  --q-body-font: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --q-body-font: "Helvetica Neue", Helvetica, Arial, sans-serif;
 
   /* Core component tokens. The core root is 87.5% (14px), so component sizes
    * that must not scale with it are pinned in px here, once, and the component
@@ -195,7 +195,7 @@ label {
 }
 
 .tooltip-inner {
-  min-width:  100px;
+  min-width: 100px;
   text-align: left;
 }
 
@@ -333,7 +333,7 @@ header.navbar-secondary .navbar-nav .nav-link {
 
 /* Hover emphasis — only this header's nav-links get it. */
 .navbar-secondary .navbar-nav .nav-link:not(.header-recents-toggle):hover {
-  background: rgba(0,0,0,0.25);
+  background: rgba(0, 0, 0, 0.25);
 }
 
 /* Stop "User Manual" / "Relevancy Cases" from wrapping at 1280px. */
@@ -349,13 +349,13 @@ header .nav-link {
 
 header .dropdown-toggle .bi {
   font-size: 12px;
-  color: rgba(255,255,255,0.7);
+  color: rgba(255, 255, 255, 0.7);
 }
 
 /* Modal-body button group has a subtle paper-like fill — only the
  * `background` differs from BS5's outline button defaults. */
 .modal-body .btn-group .btn-outline-secondary {
-  background: linear-gradient(to bottom right, #EEE, #F8F8F8);
+  background: linear-gradient(to bottom right, #eee, #f8f8f8);
 }
 
 /* ── #dev-settings — Bootstrap-class overrides ──────────────────────
@@ -367,24 +367,24 @@ header .dropdown-toggle .bi {
  * BS5's dark-theme defaults use a bright blue and near-black, and their
  * looser padding wraps the five tabs onto a second row. */
 #dev-settings .nav-tabs {
-	margin-bottom: 20px;
+  margin-bottom: 20px;
 }
 
 #dev-settings .nav-tabs .nav-link {
-	padding: 5px 10px;
-	font-size: 13px;
-	color: #999;
+  padding: 5px 10px;
+  font-size: 13px;
+  color: #999;
 }
 
 #dev-settings .nav-tabs .nav-link:hover {
-	color: #FFF;
+  color: #fff;
 }
 
 #dev-settings .nav-tabs .nav-link.active {
-	color: #FFF;
-	background: #666;
-	border-bottom-left-radius: 3px;
-	border-bottom-right-radius: 3px;
+  color: #fff;
+  background: #666;
+  border-bottom-left-radius: 3px;
+  border-bottom-right-radius: 3px;
 }
 
 /* Keep BS3's white form fields inside the dark dev panel. Scoped to real
@@ -393,9 +393,9 @@ header .dropdown-toggle .bi {
 #dev-settings textarea.form-control,
 #dev-settings input.form-control,
 #dev-settings select.form-select {
-	background-color: #fff;
-	color: #555;
-	border-color: #ccc;
+  background-color: #fff;
+  color: #555;
+  border-color: #ccc;
 }
 
 /* `.form-select`'s dropdown chevron is also color-mode aware — under dark
@@ -404,7 +404,7 @@ header .dropdown-toggle .bi {
  * above. Restore BS5's own light-mode chevron (dark gray stroke) so it's
  * legible again. */
 #dev-settings select.form-select {
-	--bs-form-select-bg-img: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+  --bs-form-select-bg-img: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
 }
 
 /* Checkbox settings ("Evaluate Nightly?" / "Escape Queries")
@@ -418,21 +418,21 @@ header .dropdown-toggle .bi {
 
 /* Annotation dropdown — markup in core/_annotation.html.erb. */
 .annotation .dropdown > .dropdown-toggle {
-	color: var(--bs-link-color);
+  color: var(--bs-link-color);
 }
 
 .annotation .dropdown > .dropdown-toggle:hover {
-	color: #888;
+  color: #888;
 }
 
 .annotation > .dropdown > .dropdown-menu > li {
-	border-bottom: 1px solid #AAA !important;
+  border-bottom: 1px solid #aaa !important;
 }
 
 /* Modal body icons (dimmed) and case-name span in modal titles. */
 .modal-body .bi {
-	font-size: 16px;
-	color: #aaa;
+  font-size: 16px;
+  color: #aaa;
 }
 
 /* ...except icons inside a colored button (e.g. the diff modal's "+ Add
@@ -440,66 +440,66 @@ header .dropdown-toggle .bi {
  * color rather than the dimmed #aaa above — otherwise a gray glyph on a
  * saturated button background reads as invisible. */
 .modal-body .btn .bi {
-	color: inherit;
+  color: inherit;
 }
 
 /* BS3's .btn-default and softer warning/danger shades for the query
  * toolbar. BS5 hardcodes each button's colors, so each needs its own rule. */
 .sub-results .btn-outline-secondary {
-	--bs-btn-color: #333;
-	--bs-btn-bg: #fff;
-	--bs-btn-border-color: #ccc;
-	--bs-btn-hover-color: #333;
-	--bs-btn-hover-bg: #e6e6e6;
-	--bs-btn-hover-border-color: #adadad;
-	--bs-btn-active-color: #333;
-	--bs-btn-active-bg: #e6e6e6;
-	--bs-btn-active-border-color: #adadad;
+  --bs-btn-color: #333;
+  --bs-btn-bg: #fff;
+  --bs-btn-border-color: #ccc;
+  --bs-btn-hover-color: #333;
+  --bs-btn-hover-bg: #e6e6e6;
+  --bs-btn-hover-border-color: #adadad;
+  --bs-btn-active-color: #333;
+  --bs-btn-active-bg: #e6e6e6;
+  --bs-btn-active-border-color: #adadad;
 }
 
 .sub-results .btn-warning {
-	--bs-btn-bg: #f0ad4e;
-	--bs-btn-border-color: #f0ad4e;
-	--bs-btn-hover-bg: #ec971f;
-	--bs-btn-hover-border-color: #e28a00;
-	--bs-btn-active-bg: #ec971f;
-	--bs-btn-active-border-color: #e28a00;
+  --bs-btn-bg: #f0ad4e;
+  --bs-btn-border-color: #f0ad4e;
+  --bs-btn-hover-bg: #ec971f;
+  --bs-btn-hover-border-color: #e28a00;
+  --bs-btn-active-bg: #ec971f;
+  --bs-btn-active-border-color: #e28a00;
 }
 
 /* BS5's .btn-warning defaults to black text; BS3 used white (e.g. "Move
  * Query", the diff modal's "Clear Comparison View"). */
 .btn-warning {
-	--bs-btn-color: #fff;
-	--bs-btn-hover-color: #fff;
-	--bs-btn-active-color: #fff;
+  --bs-btn-color: #fff;
+  --bs-btn-hover-color: #fff;
+  --bs-btn-active-color: #fff;
 }
 
 .sub-results .btn-danger {
-	--bs-btn-bg: #d9534f;
-	--bs-btn-border-color: #d9534f;
-	--bs-btn-hover-bg: #c9302c;
-	--bs-btn-hover-border-color: #ac2925;
-	--bs-btn-active-bg: #c9302c;
-	--bs-btn-active-border-color: #ac2925;
+  --bs-btn-bg: #d9534f;
+  --bs-btn-border-color: #d9534f;
+  --bs-btn-hover-bg: #c9302c;
+  --bs-btn-hover-border-color: #ac2925;
+  --bs-btn-active-bg: #c9302c;
+  --bs-btn-active-border-color: #ac2925;
 }
 
 .single-rating .btn {
-	min-width: 60px;
-	white-space: nowrap;
-	font-size: 12px;
-	padding-inline: 6px;
-	box-shadow: inset 0 0 25px rgba(0,0,0,0.25);
-	color: #FFF;
-	text-shadow: 0 0 6px rgba(0,0,0,0.25);
+  min-width: 60px;
+  white-space: nowrap;
+  font-size: 12px;
+  padding-inline: 6px;
+  box-shadow: inset 0 0 25px rgba(0, 0, 0, 0.25);
+  color: #fff;
+  text-shadow: 0 0 6px rgba(0, 0, 0, 0.25);
 }
 
 .single-rating .btn .bi-caret-down-fill {
-	margin-left: 4px;
+  margin-left: 4px;
 }
 
 /* .btn-group z-index keeps toolbar dropdowns above static siblings. */
 .btn-group {
-	z-index: 10;
+  z-index: 10;
 }
 
 /* Selected display fields stay inside the wizard's editable multi-select. */
