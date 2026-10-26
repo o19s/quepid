@@ -91,7 +91,7 @@ Unit tests for the modern importmap stack.
 
 ### Setup
 
-- Config: `vitest.config.js` (`happy-dom`, import aliases for `api/fetch` and `utils/quepid_root`)
+- Config: `vitest.config.js` (`happy-dom`, directory aliases for importmap bare paths, vendored-package aliases)
 - Specs: `test/javascript/**/*.test.js`, mirroring `app/javascript/` (not colocated), e.g. `test/javascript/api/fetch.test.js` tests `app/javascript/api/fetch.js`. Import the module under test by its bare importmap path (`api/fetch`, `utils/bs_modal`, `controllers/foo_controller`) via the `resolve.alias` entries in `vitest.config.js`, not a relative path back into `app/javascript/`.
 - Module-level singletons (one-time warn flags, cached state): use `vi.resetModules()` and a fresh `import()` in `beforeEach` so tests do not leak state across files.
 
@@ -103,7 +103,7 @@ bin/docker r yarn test:unit:watch     # watch mode
 bin/docker r rails test:vitest        # same as yarn test:unit (CI-style)
 ```
 
-Add new importmap bare imports to `vitest.config.js` `resolve.alias` when tests import them (controller specs use `test/javascript/support/stimulus_stub.js` for `@hotwired/stimulus`); `controllers/*` resolves via a wildcard alias, matching `pin_all_from` in `config/importmap.rb`, so individual controllers don't need their own entry.
+Bare imports under `controllers/`, `utils/`, `stores/`, `api/`, and `modules/` (plus `core_runtime` and `quepid_store`) resolve by directory, like the aliases in `esbuild.config.js`, so new modules need no `vitest.config.js` entry. Only add an alias for a new vendored package in `vendor/javascript/` (controller specs use `test/javascript/support/stimulus_stub.js` for `@hotwired/stimulus`).
 
 ### Controller test fixtures
 
@@ -146,6 +146,7 @@ Keep fakes local to the spec; production modules have no test injection hooks.
 
 - **`api/` and `utils/`** — New or materially changed logic requires a `*.test.js` in `test/javascript/` (mirroring the source path) in the **same PR**.
 - **`controllers/`** — Add Vitest when you touch a controller for meaningful behavior change. Do not blanket-rewrite untested controllers for coverage alone.
+- Cover empty states, warnings and config flags, not only the happy path.
 - Run `bin/docker r yarn test:unit` before merging JS changes that add or update specs.
 
 ### Property-based tests (fast-check)

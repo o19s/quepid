@@ -113,7 +113,6 @@ namespace :test do
       'eslint.config.mjs',
       'stryker.config.mjs',
       'build_css.js',
-      'audit_css.js',
       'esbuild.config.js',
       'vitest.config.js',
       'lib',
