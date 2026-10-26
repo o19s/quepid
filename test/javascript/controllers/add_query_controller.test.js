@@ -76,6 +76,51 @@ describe("add_query_controller", () => {
     controller.disconnect()
   })
 
+  function pasteInto(controller, text) {
+    const event = new Event("paste", { cancelable: true })
+    Object.defineProperty(event, "clipboardData", {
+      value: { getData: () => text }
+    })
+    controller.inputTarget.dispatchEvent(event)
+    return event
+  }
+
+  it("keeps the typed query when text is pasted at the end", () => {
+    const { controller } = controllerFor({ text: "a b c" })
+    controller.connect()
+    controller.inputTarget.setSelectionRange(5, 5)
+
+    const event = pasteInto(controller, "one\ntwo")
+
+    expect(controller.inputTarget.value).toBe("a b cone;two")
+    expect(event.defaultPrevented).toBe(true)
+    controller.disconnect()
+  })
+
+  it("replaces only the selected text with the pasted text", () => {
+    const { controller } = controllerFor({ text: "first second third" })
+    controller.connect()
+    controller.inputTarget.setSelectionRange(6, 12)
+
+    pasteInto(controller, "x\ny")
+
+    expect(controller.inputTarget.value).toBe("first x;y third")
+    controller.disconnect()
+  })
+
+  it("moves the cursor after the pasted text and updates the submit label", () => {
+    const { controller } = controllerFor({ text: "ab" })
+    controller.connect()
+    controller.inputTarget.setSelectionRange(1, 1)
+
+    pasteInto(controller, "x\ny")
+
+    expect(controller.inputTarget.selectionStart).toBe(5)
+    expect(controller.inputTarget.selectionEnd).toBe(5)
+    expect(controller.submitTarget.value).toBe("Add queries")
+    controller.disconnect()
+  })
+
   it("refreshes capability state without clearing the typed query", () => {
     const { controller } = controllerFor({ text: "unfinished query" })
     testCapabilities = { queryCapabilities: {

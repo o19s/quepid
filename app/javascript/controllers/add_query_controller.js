@@ -15,7 +15,8 @@ export default class extends Controller {
   connect() {
     this.queryCapabilities = getCoreCapabilities().queryCapabilities
     this.detachPaste = attachTextPaste(this.inputTarget, text => {
-      this.inputTarget.value = text.split("\n").join(";")
+      const { selectionStart, selectionEnd } = this.inputTarget
+      this.inputTarget.setRangeText(text.split("\n").join(";"), selectionStart, selectionEnd, "end")
       this.render()
     })
     this.render()
