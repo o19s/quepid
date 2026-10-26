@@ -157,17 +157,9 @@ namespace :test do
       exit false
     end
 
-    stylelint_success = system(
-      stylelint.to_s,
-      'app/assets/stylesheets/**/*.css',
-      chdir: Rails.root.to_s
-    )
-    prettier_success = system(
-      prettier.to_s,
-      '--check',
-      'app/assets/stylesheets/**/*.css',
-      chdir: Rails.root.to_s
-    )
+    css_glob = 'app/assets/stylesheets/**/*.css'
+    stylelint_success = system(stylelint.to_s, css_glob, chdir: Rails.root.to_s)
+    prettier_success = system(prettier.to_s, '--check', css_glob, chdir: Rails.root.to_s)
 
     if stylelint_success && prettier_success
       puts 'Stylelint and Prettier passed!'.green

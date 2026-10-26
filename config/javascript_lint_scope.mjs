@@ -8,6 +8,11 @@ import { join, relative } from 'node:path';
 /** Directory names never linted or formatted (vendored legacy plugins, Playwright output). */
 export const SKIPPED_DIRECTORIES = ['vendor', 'node_modules', 'test-results', 'playwright-report'];
 
+/** Whether `name` is a never-linted/formatted directory (see SKIPPED_DIRECTORIES). */
+function isSkippedDirectoryName(name) {
+  return SKIPPED_DIRECTORIES.includes(name);
+}
+
 /** File extensions the directory walk considers; `include` narrows them per scope. */
 const SCRIPT_EXTENSIONS = ['.js', '.mjs', '.ts'];
 
@@ -73,7 +78,7 @@ function listJavascriptFiles(repoRoot, directory, include) {
     for (const name of readdirSync(dir)) {
       const full = join(dir, name);
       if (statSync(full).isDirectory()) {
-        if (SKIPPED_DIRECTORIES.includes(name)) {
+        if (isSkippedDirectoryName(name)) {
           continue;
         }
         walk(full);
@@ -103,7 +108,7 @@ export function isPrettierJavascriptPath(path) {
   if (isLintableJavascriptPath(normalized)) {
     return true;
   }
-  if (normalized.split('/').some((segment) => SKIPPED_DIRECTORIES.includes(segment))) {
+  if (normalized.split('/').some(isSkippedDirectoryName)) {
     return false;
   }
   return (
