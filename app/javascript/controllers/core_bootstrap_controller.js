@@ -36,7 +36,7 @@ export default class extends Controller {
       const { user, case: caseCapability, settings, navigation } = this.capabilities.core
       const { docCache } = this.capabilities
       const comparisonStore = stores.diff
-      const caseNo = this.caseNoValue || 0
+      const caseNo = this.caseNoValue
       let tryNo = Number.isFinite(this.tryNoValue) ? this.tryNoValue : Number.NaN
 
       user.initialize(this.initialValue.user)
@@ -54,14 +54,6 @@ export default class extends Controller {
       if (caseChanged()) runtime.queryCapabilities.resetQueryState()
 
       navigation.complete({ caseNo, tryNo })
-
-      if (caseNo === 0) {
-        coreFlash.show(
-          "error",
-          "You don't have any Cases created in Quepid. Click 'Create a Case' from the Relevancy Cases dropdown to get started."
-        )
-        return this.fail(new Error("No case selected"))
-      }
 
       runtime.queryCapabilities.resetSearchPromise()
       if (!isSameId(this.initialValue.case?.case_id, caseNo)) {
@@ -130,7 +122,7 @@ export default class extends Controller {
         `Could not load case ${this.caseNoValue} due to ${message}`,
         "search-error"
       )
-    } else if (message !== "No case selected") {
+    } else {
       coreFlash.show(
         "error",
         `Could not load the case ${this.caseNoValue} due to: ${message}`,

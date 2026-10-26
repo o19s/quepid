@@ -1095,7 +1095,7 @@ queryCommands.searchAll() → execute all queries against search engine
 flash "All queries finished successfully!" or "Some queries failed to resolve!"
 ```
 
-If there is no case (`caseNo === 0`) the page shows "You don't have any Cases created in Quepid..." and dispatches `core-bootstrap:failed`. Other failures show flash errors for blocked requests, an unreachable case, or a missing try number.
+The layout attaches `core-bootstrap` only when a case exists; a user with no cases is redirected to `/cases` by `CoreController` before the page renders. Bootstrap failures show flash errors for blocked requests, an unreachable case, or a missing try number, and dispatch `core-bootstrap:failed`.
 
 ### Document Cache (`doc_cache.js`)
 - Caches document details fetched from search engines (for snapshot viewing and rated doc display)

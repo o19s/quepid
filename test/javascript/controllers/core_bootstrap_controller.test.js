@@ -197,18 +197,6 @@ describe("CoreBootstrapController", () => {
     expect(flash.show).toHaveBeenCalledWith("error", error, "search-error")
   })
 
-  it("tells a user with no cases how to create one", async () => {
-    const { flash, failed, ready } = await bootstrapCase(0)
-
-    expect(flash.show).toHaveBeenCalledWith(
-      "error",
-      expect.stringContaining("You don't have any Cases created in Quepid")
-    )
-    expect(flash.show).toHaveBeenCalledOnce()
-    expect(failed.mock.calls[0][0].detail.error.message).toBe("No case selected")
-    expect(ready).not.toHaveBeenCalled()
-  })
-
   it.each([
     [
       "initial case data cannot be initialized",

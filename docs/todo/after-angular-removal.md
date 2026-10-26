@@ -61,13 +61,6 @@ Legacy behaved the same way (its client flashed the text when `caseNo` was 0), s
 this is parity. A better message would point at the Archived filter when
 `cases_involved_with.archived` is not empty.
 
-While there, drop the dead client copy of the text: the `caseNo === 0` branch in
-`core_bootstrap_controller.js` and its unit test cannot run, because the layout
-only attaches `core-bootstrap` when a case exists (`case_page` in
-`application.html.erb`; `core_controller_test.rb` asserts the body has no
-`data-core-bootstrap-case-no-value` for the 404 pages). The `kase&.id || 0` and
-`kase ? … : ''` fallbacks in `layout_body_attributes` are the same leftover.
-
 ## Frontend consolidation
 
 Moved from [todo.md](todo.md) on 2026-10-19. These change or restructure the
@@ -479,12 +472,6 @@ eliminate warnings, remove their fingerprints and rerun the CI Brakeman gate.
 authentication and sampling tests pass (14 tests, 44 assertions); the added
 authentication coverage passes RuboCop. These checks do not resolve the findings below.
 
-**Obsolete ignores (2026-10-25):** Brakeman now reports 22 ignored warnings and
-two obsolete entries in `config/brakeman.ignore`: the Cross-Site Scripting
-fingerprint for `layouts/_header.html.erb` (announcements now go through
-`sanitize_announcement`) and the `:txt` Dynamic Render Path fingerprint for the
-ratings export. Remove both.
-
 #### [PREEXISTING] P1 I0 C3 — Restrict nested case-import attributes
 
 **Location:** `app/services/case_importer.rb` (`build_queries_and_ratings`, `update_first_try`), `app/controllers/api/v1/import/cases_controller.rb`
@@ -509,7 +496,7 @@ MiniRacer contexts have no execution timeout or memory limit. User-authored and 
 
 **Location:** `app/controllers/api/v1/export/ratings_controller.rb`
 
-One warning (the JSON template) still covers template names derived from `file_format`; the `:txt` one is obsolete. No traversal exploit was established.
+One warning (the JSON template) still covers template names derived from `file_format`. No traversal exploit was established.
 
 **Fix direction:** Map supported formats to literal template names and define the unsupported-format response.
 
