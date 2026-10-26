@@ -29,10 +29,10 @@
   <%= hidden_field_tag 'book[auto_run_ai_judge_ids][]', '' %>
   <div class="form-text">
     You can have multiple AI judges creating ratings. Only AI judges you own, or that are shared with one of your teams, are available here - regardless of which teams you choose to share this book with above.
-    <br/><i class="bi bi-repeat"></i> <strong>Auto-run:</strong> automatically queue this judge whenever new query/doc pairs are added to the book.
-    <br/><i class="bi bi-arrow-right"></i> <strong>Wakes … when unsure:</strong> pairs this judge can't rate are handed to that judge once its run ends. The woken judge is <strong>on call</strong> and doesn't need to be assigned here; set who wakes whom on the AI judge's own page.
+    <br><i class="bi bi-repeat"></i> <strong>Auto-run:</strong> automatically queue this judge whenever new query/doc pairs are added to the book.
+    <br><i class="bi bi-arrow-right"></i> <strong>Wakes … when unsure:</strong> pairs this judge can't rate are handed to that judge once its run ends. The woken judge is <strong>on call</strong> and doesn't need to be assigned here; set who wakes whom on the AI judge's own page.
     <% if book.new_record? && ai_judges.empty? %>
-      <br/>Please create the book first and then use <b>Settings</b> to add AI judges.
+      <br>Please create the book first and then use <b>Settings</b> to add AI judges.
     <% end %>
   </div>
 </div>

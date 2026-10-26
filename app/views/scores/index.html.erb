@@ -28,8 +28,7 @@
               ),
               id: 'scorer_id',
                 class: 'form-select form-select-sm ms-4',
-                data: { controller: "auto-submit", action: "change->auto-submit#submit" }
-            %>
+                data: { controller: "auto-submit", action: "change->auto-submit#submit" } %>
           </div>
         <% end %>
 
@@ -63,8 +62,7 @@
                   score.id, false,
                   form: 'delete-scores-form',
                   data: { score_selection_target: "score", action: "score-selection#sync" },
-                  class: "form-check-input"
-              %>
+                  class: "form-check-input" %>
             </td>
             <td>
               <%= score.scorer&.name %>

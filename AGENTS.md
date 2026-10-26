@@ -29,10 +29,11 @@ Follow [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md) for development conventions.
     - When the user says “continue”, “do it”, or “do more”, keep working through the current end-to-end batch and its verification gates.
     - Do not stop after one extracted method, helper, or test to ask for another instruction, provide a commit message, or imply completion.
     - Give progress updates at meaningful boundaries; only hand back when the batch is complete, or when a concrete blocker has been recorded and reported.
-- **Do not stage or unstage changes; ask before cherry-picking.**
+- **Do not stage or unstage changes; ask before cherry-picking or merging.**
     - The user stages their own changes.
     - `git cherry-pick` is permitted only after asking for and receiving approval for the specific commits, including its index changes.
-    - This exception does not authorize other index operations: no `git add`, `git rm`, `git mv`, `git reset`, `git restore --staged`, `git stash` or `git stash pop`, including to "undo" an accidental change to the index.
+    - `git merge` (e.g. bringing `origin/main` into a branch) is permitted only after asking for and receiving approval for that merge. Once approved, resolving its conflicts may use `git add` / `git rm` on the merge's own paths. Ask rather than working around the rule with plumbing (`git merge-tree` plus a hand-written `MERGE_HEAD`): that leaves main's new files untracked, so a `git commit -a` silently drops them from the merge.
+    - These exceptions do not authorize other index operations: no `git add`, `git rm`, `git mv`, `git reset`, `git restore --staged`, `git stash` or `git stash pop`, including to "undo" an accidental change to the index.
     - Files may show up staged without you doing anything, because the editor or the user staged them. Leave them alone and don't comment on what is staged.
     - If you need a file removed, delete it with plain `rm`. If you need to test old code, copy files to the scratchpad and back instead of stashing.
 - **Commit messages must describe the staged patch.**

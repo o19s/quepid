@@ -12,6 +12,29 @@ import { defineConfig } from "vitest/config"
 
 const repoRoot = path.dirname(fileURLToPath(import.meta.url))
 
+// Exercise the same vendored editor modules that both browser page types import.
+const editorPackages = [
+  "@codemirror/autocomplete",
+  "@codemirror/commands",
+  "@codemirror/lang-javascript",
+  "@codemirror/lang-json",
+  "@codemirror/language",
+  "@codemirror/lint",
+  "@codemirror/state",
+  "@codemirror/view",
+  "@codemirror/streamparser",
+  "@lezer/common",
+  "@lezer/highlight",
+  "@lezer/json",
+  "@lezer/lr",
+  "@lezer/javascript",
+  "@marijn/find-cluster-break",
+  "crelt",
+  "style-mod",
+  "w3c-keyname"
+]
+
+
 export default defineConfig({
   test: {
     environment: "happy-dom",
@@ -20,6 +43,10 @@ export default defineConfig({
   },
   resolve: {
     alias: [
+      ...editorPackages.map(name => ({
+        find: name,
+        replacement: path.resolve(repoRoot, `vendor/javascript/${name.replaceAll("/", "--")}.js`)
+      })),
       { find: "modules/search_endpoint_select", replacement: path.resolve(repoRoot, "app/javascript/modules/search_endpoint_select.js") },
       { find: "utils/core_events", replacement: path.resolve(repoRoot, "app/javascript/utils/core_events.js") },
       { find: "@hotwired/stimulus", replacement: path.resolve(repoRoot, "test/javascript/support/stimulus_stub.js") },

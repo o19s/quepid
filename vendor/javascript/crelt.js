@@ -1,30 +1,3 @@
-// crelt@1.0.7 downloaded from https://cdn.jsdelivr.net/npm/crelt@1.0.7/index.js
+// crelt@1.0.7 downloaded from https://ga.jspm.io/npm:crelt@1.0.7/index.js
 
-export default function crelt() {
-  var elt = arguments[0]
-  if (typeof elt == "string") elt = document.createElement(elt)
-  var i = 1, next = arguments[1]
-  if (next && typeof next == "object" && next.nodeType == null && !Array.isArray(next)) {
-    for (var name in next) if (Object.prototype.hasOwnProperty.call(next, name)) {
-      var value = next[name]
-      if (typeof value == "string") elt.setAttribute(name, value)
-      else if (value != null) elt[name] = value
-    }
-    i++
-  }
-  for (; i < arguments.length; i++) add(elt, arguments[i])
-  return elt
-}
-
-function add(elt, child) {
-  if (typeof child == "string") {
-    elt.appendChild(document.createTextNode(child))
-  } else if (child == null) {
-  } else if (child.nodeType != null) {
-    elt.appendChild(child)
-  } else if (Array.isArray(child)) {
-    for (var i = 0; i < child.length; i++) add(elt, child[i])
-  } else {
-    throw new RangeError("Unsupported child node: " + child)
-  }
-}
+function e(){var e=arguments[0];typeof e==`string`&&(e=document.createElement(e));var n=1,r=arguments[1];if(r&&typeof r==`object`&&r.nodeType==null&&!Array.isArray(r)){for(var i in r)if(Object.prototype.hasOwnProperty.call(r,i)){var a=r[i];typeof a==`string`?e.setAttribute(i,a):a!=null&&(e[i]=a)}n++}for(;n<arguments.length;n++)t(e,arguments[n]);return e}function t(e,n){if(typeof n==`string`)e.appendChild(document.createTextNode(n));else if(n!=null)if(n.nodeType!=null)e.appendChild(n);else if(Array.isArray(n))for(var r=0;r<n.length;r++)t(e,n[r]);else throw RangeError(`Unsupported child node: `+n)}export{e as default};

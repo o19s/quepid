@@ -5,21 +5,21 @@ Quepid serves JavaScript through two mechanisms. Which one a page uses depends o
 | Mechanism | What it is | Output |
 |-----------|-----------|--------|
 | **Importmap** (`importmap-rails`) | Browser-native ES modules. Source files under `app/javascript/` are served as-is (via Propshaft) and resolved by bare name from `config/importmap.rb`. No bundling step. | none |
-| **esbuild bundles** (`jsbundling-rails`) | Source is bundled into IIFE scripts by [esbuild.config.js](../esbuild.config.js). | `app/assets/builds/*.js` (git-ignored) |
+| **esbuild bundles** (`jsbundling-rails`) | Source is bundled into ES modules by [esbuild.config.js](../esbuild.config.js). | `app/assets/builds/*.js` (git-ignored) |
 
 ## Which layout uses what
 
 | Layout | Pages | JavaScript loaded |
 |--------|-------|-------------------|
 | `application.html.erb` (non-case branch), `admin.html.erb` | Home, books, teams, admin, and other Rails pages | Importmap entry `application` (Turbo, Stimulus, all controllers via `controllers/index.js`, Bootstrap, CodeMirror, vega) |
-| `application.html.erb` (case branch, `controller_name == "core"`) | The case page (`/case/:id`) | `_case_head` loads the importmap for `vega_globals` and `bootstrap_globals` (not `application`); `_case_workspace` renders the page and then loads the `core_case.js` bundle (which includes the Shepherd tour in `modules/tour.js`) |
+| `application.html.erb` (case branch, `controller_name == "core"`) | The case page (`/case/:id`) | `_case_head` loads the importmap for `vega_globals` and `bootstrap_globals` (not `application`); `_case_workspace` renders the page and then loads the ES-module `core_case.js` bundle (which includes the Shepherd tour in `modules/tour.js`) |
 | `analytics.html.erb` | Analytics dashboards | Importmap for `vega_globals`, then `controllers` (Stimulus without Turbo) |
 
 ### Rails entry point
 
 - **`application.js`** is the live importmap entry. It is pinned in `config/importmap.rb`, loaded by `javascript_importmap_tags 'application'` in `application.html.erb` and `admin.html.erb`, and starts Turbo, Stimulus, local-time, ahoy and the globals. The case branch of `application.html.erb` deliberately does not load it.
 
-The case page is bundled so esbuild can inline its npm dependencies (splainer-search, Shepherd) instead of importmap-pinning them.
+The case page is bundled so esbuild can inline its npm dependencies (splainer-search, Shepherd) instead of importmap-pinning them. The editor is an exception: both page types use the vendored CodeMirror modules, and Vitest resolves those same files rather than a second Yarn installation. The case module script disables HTTP-header preloading so its bare imports resolve after the importmap is parsed.
 
 ## The bundles
 
@@ -40,7 +40,7 @@ Top-level modules (for example `core_runtime.js`) and other directories (for exa
 For a new npm package:
 
 - **Rails pages:** `bin/importmap pin <package>`, which adds a pin to `config/importmap.rb`.
-- **Case page:** import it directly in the module that uses it; esbuild bundles it into `core_case.js`. Rebuild afterward.
+- **Case page:** import it directly in the module that uses it; esbuild bundles it into `core_case.js`. The shared `modules/editor` and its CodeMirror dependencies resolve through importmap instead, as do `bootstrap_globals` and `vega_globals`. Rebuild afterward.
 
 ## Commands
 
@@ -57,5 +57,5 @@ In production, `jsbundling-rails` runs `yarn build` as part of `assets:precompil
 ## Gotchas
 
 - **Edits to `controllers/`, `utils/` and similar affect both mechanisms.** A change that works on Rails pages (importmap, no build) can still need a `core-case` rebuild to show up on the case page.
-- **Bundles are IIFEs, so top-level `var`/`function` do not become globals.** Code that expects a global must assign it to `window` explicitly.
+- **Bundles are ES modules, so top-level `var`/`function` do not become globals.** Code that expects a global must assign it to `window` explicitly.
 - **`app/assets/builds/` is git-ignored.** A fresh checkout has no bundles until `yarn build` runs (`bin/setup_docker` does this).
