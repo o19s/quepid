@@ -97,11 +97,64 @@ export function buildSearcherRequest({
   return { args, queryText, searchEngine, searcherOptions, solrQueryParamsIsJson }
 }
 
+// Thrown by createSearcherFromSettings when a query isn't ready to search yet (a qOption
+// placeholder it needs has no value) rather than when something is actually broken.
+// Callers should treat this as routine -- skip the query quietly -- not as a search error.
+export class QueryNotReadyError extends Error {}
+
+// A whole-string placeholder, e.g. "#$qOption.query_vec##" or "#$qOption.query_vec|[]##"
+// with a default. Mirrors QueryTemplate::WHOLE_PLACEHOLDER (app/services/query_template.rb)
+// and splainer-search's queryTemplateSvc, restricted to the qOption.* namespace this checks.
+const WHOLE_QOPTION_PLACEHOLDER = /^#\$qOption\.([\w.|]+)##$/
+
+/**
+ * The first qOption placeholder found anywhere in `value` (recursively) whose path has no
+ * value and no `|default` fallback -- e.g. "#$qOption.query_vec##" before a query has been
+ * vectorised. Left unresolved, splainer-search's hydrate() replaces a whole-string
+ * placeholder like this with `undefined`; JSON.stringify then drops that key silently,
+ * which turns a clear "not ready yet" condition into a vendor-specific "malformed request"
+ * error instead. Call this before building a searcher, so the query can fail with a plain
+ * message instead of ever making that request.
+ * @returns {string|undefined} the unresolved path (e.g. "query_vec"), or undefined
+ */
+export function findUnresolvedQOptionPlaceholder(value, qOption) {
+  if (typeof value === "string") {
+    const match = value.match(WHOLE_QOPTION_PLACEHOLDER)
+    if (!match) return undefined
+    const segments = match[1].split(".")
+    if (segments.some((segment) => segment.includes("|"))) return undefined
+
+    const resolved = segments.reduce(
+      (current, key) => (current == null ? current : current[key]),
+      qOption
+    )
+    return resolved === undefined ? match[1] : undefined
+  }
+  if (Array.isArray(value)) {
+    for (const entry of value) {
+      const found = findUnresolvedQOptionPlaceholder(entry, qOption)
+      if (found) return found
+    }
+    return undefined
+  }
+  if (value && typeof value === "object") {
+    for (const key of Object.keys(value)) {
+      const found = findUnresolvedQOptionPlaceholder(value[key], qOption)
+      if (found) return found
+    }
+  }
+  return undefined
+}
+
 /**
  * Create a splainer-search searcher without coupling the construction rules to
  * application services. The caller injects the searcher factory and the
  * small environment-specific predicates; the settings/query contract stays
  * independent of the case-workspace entry bundle.
+ *
+ * @throws {Error} if the try's template references a qOption placeholder this query has no
+ *   value for (see findUnresolvedQOptionPlaceholder) -- callers should treat this the same
+ *   as any other per-query search failure, not let it propagate unhandled.
  */
 export function createSearcherFromSettings({
   settings,
@@ -127,6 +180,20 @@ export function createSearcherFromSettings({
     isEsOrOs,
     ratingsFilter: options.filterToRated ? query.filterToRatings(settings) : undefined
   })
+
+  const missingPlaceholder = findUnresolvedQOptionPlaceholder(
+    request.args,
+    request.searcherOptions.qOption
+  )
+  if (missingPlaceholder) {
+    // Not a failure: a query waiting on an embedder/vectorisation (or any other qOption
+    // the template needs) is routine, not broken. QueryNotReadyError lets callers skip it
+    // quietly -- the row's own pending/stale/failed badge already explains why -- instead
+    // of showing an error, and (in a batch) without failing sibling queries alongside it.
+    throw new QueryNotReadyError(
+      `Query template references qOption.${missingPlaceholder}, which isn't set for this query.`
+    )
+  }
 
   // Normalize arguments because later Query methods read the
   // active settings object when constructing rated-doc searchers.

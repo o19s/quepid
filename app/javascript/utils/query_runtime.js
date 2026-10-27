@@ -1,5 +1,6 @@
 import { isEsLikeEngine } from "utils/search_engines"
 import { isSameId } from "utils/record_identity"
+import { QueryNotReadyError } from "utils/query_service"
 
 /**
  * Live query/search lifecycle with injected searcher construction,
@@ -33,7 +34,19 @@ export function createQueryRuntime({
       }
 
       query.hasBeenScored = false
-      query.searcher = createSearcher()
+      try {
+        query.searcher = createSearcher()
+      } catch (error) {
+        if (error instanceof QueryNotReadyError) {
+          // Not a failure -- the query's own vector-status badge already explains why
+          // (pending/stale/failed vectorisation, or no embedder yet). Resolve quietly
+          // instead of rejecting, so this doesn't show as an error or, in a batch search,
+          // stop sibling queries from scoring.
+          return Promise.resolve()
+        }
+        onError(error.message)
+        return rejectPromise(error.message)
+      }
 
       if (!query.searcher) {
         const message =

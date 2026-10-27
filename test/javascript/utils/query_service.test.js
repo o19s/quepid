@@ -4,7 +4,9 @@ import {
   buildSearchApiRatedDocsQueryParams,
   createSearcherFromSettings,
   evaluateMapperFunctions,
+  findUnresolvedQOptionPlaceholder,
   matchFeaturesExplain,
+  QueryNotReadyError,
   normalizeSearchResults,
   pAll,
   runSearchAll,
@@ -641,6 +643,93 @@ describe("createSearcherFromSettings mapper evaluation", () => {
       createSearcher: vi.fn()
     })
     expect(evaluateMapper).not.toHaveBeenCalled()
+  })
+})
+
+describe("findUnresolvedQOptionPlaceholder", () => {
+  it("finds a whole-string qOption placeholder with no value", () => {
+    const template = { query: { nearest: "#$qOption.query_vec##" }, limit: 10 }
+    expect(findUnresolvedQOptionPlaceholder(template, {})).toBe("query_vec")
+  })
+
+  it("finds one nested inside an array", () => {
+    const template = ["#$query##", { nearest: "#$qOption.query_vec##" }]
+    expect(findUnresolvedQOptionPlaceholder(template, {})).toBe("query_vec")
+  })
+
+  it("resolves a nested dotted path", () => {
+    const template = { vector: "#$qOption.embedding.values##" }
+    const qOption = { embedding: { values: [0.1, 0.2] } }
+    expect(findUnresolvedQOptionPlaceholder(template, qOption)).toBeUndefined()
+  })
+
+  it("does not flag a placeholder with a default", () => {
+    const template = { nearest: "#$qOption.query_vec|[]##" }
+    expect(findUnresolvedQOptionPlaceholder(template, {})).toBeUndefined()
+  })
+
+  it("ignores a placeholder embedded inside a longer string", () => {
+    const template = { f: "vec:[#$qOption.query_vec##]" }
+    expect(findUnresolvedQOptionPlaceholder(template, {})).toBeUndefined()
+  })
+
+  it("passes once the query has a vector", () => {
+    const template = { query: { nearest: "#$qOption.query_vec##" } }
+    expect(findUnresolvedQOptionPlaceholder(template, { query_vec: [0.1, 0.2] })).toBeUndefined()
+  })
+})
+
+describe("createSearcherFromSettings qOption validation", () => {
+  it("throws QueryNotReadyError instead of building a searcher missing a qOption value", () => {
+    const settings = {
+      searchEngine: "searchapi",
+      selectedTry: { args: { query: { nearest: "#$qOption.query_vec##" } }, searchUrl: "u" },
+      createFieldSpec: () => ({})
+    }
+    const query = { queryText: "star wars", options: {}, filterToRatings: vi.fn() }
+    const createSearcher = vi.fn()
+
+    let thrown
+    try {
+      createSearcherFromSettings({
+        settings,
+        query,
+        evaluateMapper: vi.fn(() => ({})),
+        createSearcher
+      })
+    } catch (error) {
+      thrown = error
+    }
+
+    expect(thrown).toBeInstanceOf(QueryNotReadyError)
+    expect(thrown.message).toBe(
+      "Query template references qOption.query_vec, which isn't set for this query."
+    )
+    expect(createSearcher).not.toHaveBeenCalled()
+  })
+
+  it("builds the searcher once the query's options carry the referenced value", () => {
+    const settings = {
+      searchEngine: "searchapi",
+      selectedTry: { args: { query: { nearest: "#$qOption.query_vec##" } }, searchUrl: "u" },
+      createFieldSpec: () => ({})
+    }
+    const query = {
+      queryText: "star wars",
+      options: { query_vec: [0.1, 0.2] },
+      filterToRatings: vi.fn()
+    }
+    const createSearcher = vi.fn(() => ({ type: "searchapi" }))
+
+    expect(() =>
+      createSearcherFromSettings({
+        settings,
+        query,
+        evaluateMapper: vi.fn(() => ({})),
+        createSearcher
+      })
+    ).not.toThrow()
+    expect(createSearcher).toHaveBeenCalledOnce()
   })
 })
 
