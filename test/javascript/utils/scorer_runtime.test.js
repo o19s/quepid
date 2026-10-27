@@ -80,10 +80,13 @@ describe("scorer runtime", () => {
 
   it("records ranking depth and rejects loops through the framework-free contract", async () => {
     const schedule = vi.fn((callback) => callback())
-    const scorer = createScorer({
-      scale: [0, 1],
-      code: "setScore(1); var k = 7"
-    }, { schedule })
+    const scorer = createScorer(
+      {
+        scale: [0, 1],
+        code: "setScore(1); var k = 7"
+      },
+      { schedule }
+    )
     const query = { ratedDocs: [] }
 
     await scorer.score(query, 1, [], [])
@@ -129,13 +132,21 @@ describe("scorer runtime", () => {
     })
     const query = { ratedDocs: [{ id: "a" }, { id: "b" }, { id: "c" }] }
 
-    const result = await scorer.runCode(query, 1, [makeDoc(1)], [{ rating: 3 }, { rating: 1 }, { rating: 3 }], undefined, { boost: 2 })
+    const result = await scorer.runCode(
+      query,
+      1,
+      [makeDoc(1)],
+      [{ rating: 3 }, { rating: 1 }, { rating: 3 }],
+      undefined,
+      { boost: 2 }
+    )
 
     expect(result).toBe("a@0,b@1|2|2|||")
   })
 
   it("lets scorer code pass, fail, and short-circuit with assertions", async () => {
-    const run = (code) => createScorer({ scale: [0, 1], code }).runCode({ ratedDocs: [] }, 1, [makeDoc(1)], [])
+    const run = (code) =>
+      createScorer({ scale: [0, 1], code }).runCode({ ratedDocs: [] }, 1, [makeDoc(1)], [])
 
     await expect(run("pass()")).resolves.toBe(100)
     await expect(run("fail()")).rejects.toBe(0)
@@ -152,7 +163,9 @@ describe("scorer runtime", () => {
     await expect(scorer.runCode({ ratedDocs: [] }, 2, docs, [], "max")).resolves.toBe(3)
     expect(docs[0].getRating()).toBe(1)
     // pass()-style scorers short-circuit to 100 synchronously instead of running.
-    expect(createScorer({ scale: [0, 1], code: "pass()" }).runCode({ ratedDocs: [] }, 1, docs, [], "max")).toBe(100)
+    expect(
+      createScorer({ scale: [0, 1], code: "pass()" }).runCode({ ratedDocs: [] }, 1, docs, [], "max")
+    ).toBe(100)
   })
 
   it("records a scorer error and returns null when scorer code throws", async () => {
@@ -167,15 +180,20 @@ describe("scorer runtime", () => {
     const scorer = createScorer({ scale: [0, 1], code: "setScore(null)" })
 
     await expect(scorer.score({ ratedDocs: [] }, 0, [], [{ rating: 1 }])).resolves.toBe("zsr")
-    await expect(scorer.score({ ratedDocs: [] }, 1, [makeDoc(1)], [{ rating: 1 }])).resolves.toBeNull()
+    await expect(
+      scorer.score({ ratedDocs: [] }, 1, [makeDoc(1)], [{ rating: 1 }])
+    ).resolves.toBeNull()
   })
 
   it("delegates rated-document refresh through the injected capability", async () => {
     const refreshRatedDocs = vi.fn().mockResolvedValue(undefined)
-    const scorer = createScorer({
-      scale: [0, 1],
-      code: "refreshRatedDocs(25); setScore(1)"
-    }, { refreshRatedDocs })
+    const scorer = createScorer(
+      {
+        scale: [0, 1],
+        code: "refreshRatedDocs(25); setScore(1)"
+      },
+      { refreshRatedDocs }
+    )
     const query = { queryId: 7, ratedDocs: [] }
 
     await scorer.score(query, 1, [], [])
@@ -205,9 +223,18 @@ describe("scorer runtime", () => {
     })
 
     it("adds labels to colors only when label display is on and labels exist", () => {
-      const colors = scorer({ scale_with_labels: { 0: "No", 1: "Yes" }, show_scale_labels: true }).getColors()
-      expect(colors[1]).toEqual({ color: "hsl(120, 100%, 50%)", showScaleLabels: true, label: "Yes" })
-      expect(scorer({ scale_with_labels: { 0: "No" }, show_scale_labels: false }).getColors()[0]).toEqual({
+      const colors = scorer({
+        scale_with_labels: { 0: "No", 1: "Yes" },
+        show_scale_labels: true
+      }).getColors()
+      expect(colors[1]).toEqual({
+        color: "hsl(120, 100%, 50%)",
+        showScaleLabels: true,
+        label: "Yes"
+      })
+      expect(
+        scorer({ scale_with_labels: { 0: "No" }, show_scale_labels: false }).getColors()[0]
+      ).toEqual({
         color: "hsl(0, 100%, 50%)"
       })
     })
@@ -217,14 +244,19 @@ describe("scorer runtime", () => {
       expect(scorer(labelled).showScaleLabel(0)).toBe(true)
       expect(scorer(labelled).showScaleLabel(1)).toBe(false)
       expect(scorer({ ...labelled, show_scale_labels: false }).showScaleLabel(0)).toBe(false)
-      expect(scorer({ show_scale_labels: true, scale_with_labels: null }).showScaleLabel(0)).toBe(false)
+      expect(scorer({ show_scale_labels: true, scale_with_labels: null }).showScaleLabel(0)).toBe(
+        false
+      )
     })
 
     it("fills in blank labels for scale values that lack one", () => {
       const s = scorer()
       expect(s.scaleToScaleWithLabels("0, 1,2", null)).toEqual({ 0: "", 1: "", 2: "" })
       expect(s.scaleToScaleWithLabels("0,1", undefined)).toEqual({ 0: "", 1: "" })
-      expect(s.scaleToScaleWithLabels(["0", "1"], { 1: "Good", 0: null })).toEqual({ 0: "", 1: "Good" })
+      expect(s.scaleToScaleWithLabels(["0", "1"], { 1: "Good", 0: null })).toEqual({
+        0: "",
+        1: "Good"
+      })
       expect(s.scaleToScaleWithLabels("0,,", {})).toEqual({ 0: "" })
       expect(s.scaleToScaleWithLabels(undefined, null)).toEqual({})
     })
@@ -258,14 +290,25 @@ describe("scorer runtime", () => {
       // ratings [1,2] vs best [3,2]
       expect(s.distanceFromBest(docs, best, 2)).toBe(1)
       // more best docs than returned docs: pad/limit to the docs seen
-      expect(s.distanceFromBest(docs.slice(0, 1), best, 5)).toBe(s.editDistance([1], [3, 2, 1].slice(0, 3)))
-      expect(s.distanceFromBest(docs, best.slice(0, 1), 3)).toBe(s.editDistance([1, 2, 3], [3, null, null]))
+      expect(s.distanceFromBest(docs.slice(0, 1), best, 5)).toBe(
+        s.editDistance([1], [3, 2, 1].slice(0, 3))
+      )
+      expect(s.distanceFromBest(docs, best.slice(0, 1), 3)).toBe(
+        s.editDistance([1, 2, 3], [3, null, null])
+      )
     })
   })
 
   describe("scorer code helpers", () => {
     const run = (code, { docs = [], ratedDocs = [], best = [], options } = {}) =>
-      createScorer({ scale: [0, 1, 2, 3], code }).runCode({ ratedDocs }, docs.length, docs, best, undefined, options)
+      createScorer({ scale: [0, 1, 2, 3], code }).runCode(
+        { ratedDocs },
+        docs.length,
+        docs,
+        best,
+        undefined,
+        options
+      )
 
     it("bounds doc and rated-doc lookups at the list length", async () => {
       const docs = [makeDoc(1), makeDoc(2)]

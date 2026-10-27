@@ -10,7 +10,6 @@ import {
  * Unit contract for the Solr ratings filter (options.filterToRated).
  */
 describe("rated_docs", () => {
-
   describe("supportsSearchApiRatedDocsLookup", () => {
     it("is true only for a searchapi try whose mapper opted in", () => {
       expect(

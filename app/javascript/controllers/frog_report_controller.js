@@ -10,25 +10,44 @@ import { getQuepidRootUrl } from "utils/quepid_root"
 import coreFlash from "utils/core_flash"
 
 export function buildFrogReportStats(queries) {
-  const withResults = queries.filter(query => (query.docs || []).length > 0).length
+  const withResults = queries.filter((query) => (query.docs || []).length > 0).length
   const withoutResults = queries.length - withResults
   const ratingsNeeded = queries.reduce((total, query) => total + (query.docs || []).length, 0)
   const missingRatings = queries.reduce((total, query) => {
-    const missing = query.missingRatings == null
-      ? Math.min(query.depthOfRating || 0, (query.docs || []).length)
-      : query.missingRatings
+    const missing =
+      query.missingRatings == null
+        ? Math.min(query.depthOfRating || 0, (query.docs || []).length)
+        : query.missingRatings
     return total + missing
   }, 0)
-  const missingRate = ratingsNeeded === 0 ? 0 : Math.round((missingRatings / ratingsNeeded) * 1000) / 10
-  const allRated = queries.length > 0 && queries.every(query => query.allRated === true || query.missingRatings === 0)
+  const missingRate =
+    ratingsNeeded === 0 ? 0 : Math.round((missingRatings / ratingsNeeded) * 1000) / 10
+  const allRated =
+    queries.length > 0 &&
+    queries.every((query) => query.allRated === true || query.missingRatings === 0)
   return { withResults, withoutResults, ratingsNeeded, missingRatings, missingRate, allRated }
 }
 
 export default class extends Controller {
   static targets = [
-    "caseName", "queryCount", "withResults", "withoutResults", "noneWithoutResults", "oneWithoutResults", "manyWithoutResults", "ratingsNeeded",
-    "allRated", "notAllRated", "missingRatings", "missingRate", "hopMessage",
-    "chart", "refreshButton", "refreshIcon", "bookName", "error"
+    "caseName",
+    "queryCount",
+    "withResults",
+    "withoutResults",
+    "noneWithoutResults",
+    "oneWithoutResults",
+    "manyWithoutResults",
+    "ratingsNeeded",
+    "allRated",
+    "notAllRated",
+    "missingRatings",
+    "missingRate",
+    "hopMessage",
+    "chart",
+    "refreshButton",
+    "refreshIcon",
+    "bookName",
+    "error"
   ]
 
   static values = { modalRoot: Boolean, refreshUrlTemplate: String }
@@ -57,7 +76,10 @@ export default class extends Controller {
     this.store = getCoreStores().documents
     this.render()
     this.storeChange = () => this.render()
-    this.unsubscribeStore = subscribeToStore(this.store, { change: this.storeChange, reset: this.storeChange })
+    this.unsubscribeStore = subscribeToStore(this.store, {
+      change: this.storeChange,
+      reset: this.storeChange
+    })
   }
 
   disconnect() {
@@ -76,13 +98,16 @@ export default class extends Controller {
 
   // The documents store only holds expanded queries' docs, so count from the live queries.
   queries() {
-    return bulkActionQueries(getCoreCapabilities().queryCapabilities?.getQueries(), { withDocs: false })
+    return bulkActionQueries(getCoreCapabilities().queryCapabilities?.getQueries(), {
+      withDocs: false
+    })
   }
 
   render() {
     const queries = this.queries()
     const capabilities = getCoreCapabilities()
-    const { withResults, withoutResults, ratingsNeeded, missingRatings, missingRate, allRated } = buildFrogReportStats(queries)
+    const { withResults, withoutResults, ratingsNeeded, missingRatings, missingRate, allRated } =
+      buildFrogReportStats(queries)
 
     this.setText("caseName", capabilities.caseState?.caseName || "")
     this.setText("queryCount", queries.length)
@@ -118,16 +143,20 @@ export default class extends Controller {
   distribution(queries) {
     const depth = queries.reduce((max, query) => Math.max(max, query.depthOfRating || 0), 0)
     const buckets = new Map()
-    queries.forEach(query => {
-      const missing = query.missingRatings == null
-        ? Math.min(depth, (query.docs || []).length)
-        : query.missingRatings
+    queries.forEach((query) => {
+      const missing =
+        query.missingRatings == null
+          ? Math.min(depth, (query.docs || []).length)
+          : query.missingRatings
       buckets.set(missing, (buckets.get(missing) || 0) + 1)
     })
-    return [...buckets.entries()].sort((a, b) => a[0] - b[0]).map(([missing, count]) => ({
-      category: missing === 0 ? "Fully Rated" : missing === depth ? "No Ratings" : `Missing ${missing}`,
-      amount: count
-    }))
+    return [...buckets.entries()]
+      .sort((a, b) => a[0] - b[0])
+      .map(([missing, count]) => ({
+        category:
+          missing === 0 ? "Fully Rated" : missing === depth ? "No Ratings" : `Missing ${missing}`,
+        amount: count
+      }))
   }
 
   renderChart(values) {
@@ -145,30 +174,68 @@ export default class extends Controller {
       padding: 5,
       background: "#fff",
       autosize: { type: "fit-x", contains: "padding" },
-      title: { text: "", subtitle: "Number of queries grouped by count of missing ratings", subtitleFontStyle: "italic", frame: "group", anchor: "start", offset: 10 },
+      title: {
+        text: "",
+        subtitle: "Number of queries grouped by count of missing ratings",
+        subtitleFontStyle: "italic",
+        frame: "group",
+        anchor: "start",
+        offset: 10
+      },
       data: [{ name: "table", values }],
       scales: [
-        { name: "xscale", type: "band", domain: { data: "table", field: "category" }, range: "width", padding: 0.05, round: true },
-        { name: "yscale", type: "linear", domain: { data: "table", field: "amount" }, nice: true, range: "height" }
+        {
+          name: "xscale",
+          type: "band",
+          domain: { data: "table", field: "category" },
+          range: "width",
+          padding: 0.05,
+          round: true
+        },
+        {
+          name: "yscale",
+          type: "linear",
+          domain: { data: "table", field: "amount" },
+          nice: true,
+          range: "height"
+        }
       ],
       axes: [
         { orient: "bottom", scale: "xscale", title: "Rating Status" },
         { orient: "left", scale: "yscale", title: "Number Queries" }
       ],
-      marks: [{
-        type: "rect",
-        from: { data: "table" },
-        encode: {
-          enter: { x: { scale: "xscale", field: "category" }, width: { scale: "xscale", band: 1 }, y: { scale: "yscale", field: "amount" }, y2: { scale: "yscale", value: 0 }, fill: { value: "steelblue" } },
-          hover: { fill: { value: "red" } }
+      marks: [
+        {
+          type: "rect",
+          from: { data: "table" },
+          encode: {
+            enter: {
+              x: { scale: "xscale", field: "category" },
+              width: { scale: "xscale", band: 1 },
+              y: { scale: "yscale", field: "amount" },
+              y2: { scale: "yscale", value: 0 },
+              fill: { value: "steelblue" }
+            },
+            hover: { fill: { value: "red" } }
+          }
+        },
+        {
+          type: "text",
+          from: { data: "table" },
+          encode: {
+            enter: {
+              align: { value: "center" },
+              baseline: { value: "bottom" },
+              fill: { value: "#333" },
+              x: { scale: "xscale", field: "category", band: 0.5 },
+              y: { scale: "yscale", field: "amount", offset: -2 },
+              text: { field: "amount" }
+            }
+          }
         }
-      }, {
-        type: "text",
-        from: { data: "table" },
-        encode: { enter: { align: { value: "center" }, baseline: { value: "bottom" }, fill: { value: "#333" }, x: { scale: "xscale", field: "category", band: 0.5 }, y: { scale: "yscale", field: "amount", offset: -2 }, text: { field: "amount" } } }
-      }]
+      ]
     }
-    window.vegaEmbed(chart, spec, { actions: false, renderer: "svg" }).then(result => {
+    window.vegaEmbed(chart, spec, { actions: false, renderer: "svg" }).then((result) => {
       if (!lifecycle || lifecycle !== this.lifecycle || request !== this.chartRequest) {
         result.finalize()
         return
@@ -199,7 +266,12 @@ export default class extends Controller {
         await refreshQueries(state.caseNo)
       }
       if (!lifecycle || lifecycle !== this.lifecycle) return
-      coreFlash.show("notice", background ? "Ratings are being refreshed in the background." : "Ratings have been refreshed.")
+      coreFlash.show(
+        "notice",
+        background
+          ? "Ratings are being refreshed in the background."
+          : "Ratings have been refreshed."
+      )
       if (background) window.location.assign(getQuepidRootUrl())
     } catch (error) {
       if (!lifecycle || lifecycle !== this.lifecycle) return

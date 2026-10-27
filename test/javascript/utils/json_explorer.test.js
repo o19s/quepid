@@ -89,7 +89,7 @@ describe("json_explorer", () => {
 
       const items = [...container.querySelectorAll(".json-explorer > ul > li")]
       expect(items).toHaveLength(2)
-      expect(items.map(item => item.textContent)).toEqual(['present: "value",', "missing: null"])
+      expect(items.map((item) => item.textContent)).toEqual(['present: "value",', "missing: null"])
     })
   })
 })

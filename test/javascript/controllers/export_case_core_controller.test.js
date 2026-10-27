@@ -62,7 +62,9 @@ function buildModalController(overrides = {}) {
     <input type="radio" name="export-case-format" value="basic">
     <input type="radio" name="export-case-format" value="trec">
   `
-  controller.formatTargets = [...controller.element.querySelectorAll('input[name="export-case-format"]')]
+  controller.formatTargets = [
+    ...controller.element.querySelectorAll('input[name="export-case-format"]')
+  ]
 
   Object.assign(controller, overrides)
   return controller
@@ -77,25 +79,35 @@ function buildTrigger({ id = "5", name = "Movies", supportsDetailedExport = "tru
 }
 
 // openFor starts the snapshot load without awaiting it; let it settle.
-const settle = () => new Promise(resolve => setTimeout(resolve, 0))
+const settle = () => new Promise((resolve) => setTimeout(resolve, 0))
 
 function okJsonResponse(body) {
-  return { text: async function () { return JSON.stringify(await this.json()) || "" },  ok: true, json: () => Promise.resolve(body), blob: () => Promise.resolve(new Blob([ "x" ])) }
+  return {
+    text: async function () {
+      return JSON.stringify(await this.json()) || ""
+    },
+    ok: true,
+    json: () => Promise.resolve(body),
+    blob: () => Promise.resolve(new Blob(["x"]))
+  }
 }
 
 describe("ExportCaseCoreController", () => {
-  it.each(["basic", "trec"])("keeps %s selected when changing the shared snapshot dropdown", (format) => {
-    const controller = buildModalController()
-    controller.selectedFormat = format
-    const radio = controller.formatTargets.find((target) => target.value === format)
-    radio.checked = true
-    controller.basicSnapshotSelectTarget.innerHTML = '<option value="9">Weekly</option>'
+  it.each(["basic", "trec"])(
+    "keeps %s selected when changing the shared snapshot dropdown",
+    (format) => {
+      const controller = buildModalController()
+      controller.selectedFormat = format
+      const radio = controller.formatTargets.find((target) => target.value === format)
+      radio.checked = true
+      controller.basicSnapshotSelectTarget.innerHTML = '<option value="9">Weekly</option>'
 
-    controller.selectBasicSnapshot()
+      controller.selectBasicSnapshot()
 
-    expect(controller.selectedFormat).toBe(format)
-    expect(radio.checked).toBe(true)
-  })
+      expect(controller.selectedFormat).toBe(format)
+      expect(radio.checked).toBe(true)
+    }
+  )
   beforeEach(() => {
     vi.clearAllMocks()
     queryDocumentsStore.reset()
@@ -134,12 +146,14 @@ describe("ExportCaseCoreController", () => {
   })
 
   it("opening populates every snapshot select with a date-prefixed label", async () => {
-    apiFetch.mockResolvedValue(okJsonResponse({
-      snapshots: [
-        { id: 1, name: "Weekly", time: "2026-03-05T12:00:00Z" },
-        { id: 2, name: "Monthly", time: "2026-01-01T12:00:00Z" }
-      ]
-    }))
+    apiFetch.mockResolvedValue(
+      okJsonResponse({
+        snapshots: [
+          { id: 1, name: "Weekly", time: "2026-03-05T12:00:00Z" },
+          { id: 2, name: "Monthly", time: "2026-01-01T12:00:00Z" }
+        ]
+      })
+    )
     const controller = buildModalController()
 
     controller.openFor(buildTrigger({ id: "5" }))
@@ -155,30 +169,47 @@ describe("ExportCaseCoreController", () => {
   })
 
   it.each([
-    ["an HTTP error", () => Promise.resolve({ ok: false, status: 500, statusText: "Server Error", json: () => Promise.resolve(null) })],
+    [
+      "an HTTP error",
+      () =>
+        Promise.resolve({
+          ok: false,
+          status: 500,
+          statusText: "Server Error",
+          json: () => Promise.resolve(null)
+        })
+    ],
     ["a network failure", () => Promise.reject(new TypeError("Failed to fetch"))]
-  ])("opening shows a snapshot error after %s, and reopening clears it on success", async (_label, failure) => {
-    vi.spyOn(console, "error").mockImplementation(() => {})
-    apiFetch.mockImplementationOnce(failure)
-    const controller = buildModalController()
+  ])(
+    "opening shows a snapshot error after %s, and reopening clears it on success",
+    async (_label, failure) => {
+      vi.spyOn(console, "error").mockImplementation(() => {})
+      apiFetch.mockImplementationOnce(failure)
+      const controller = buildModalController()
 
-    controller.openFor(buildTrigger({ id: "5" }))
-    await settle()
+      controller.openFor(buildTrigger({ id: "5" }))
+      await settle()
 
-    expect(controller.snapshotsErrorTarget.classList.contains("d-none")).toBe(false)
-    expect(controller.snapshotSelectTarget.children).toHaveLength(1)
+      expect(controller.snapshotsErrorTarget.classList.contains("d-none")).toBe(false)
+      expect(controller.snapshotSelectTarget.children).toHaveLength(1)
 
-    apiFetch.mockResolvedValueOnce(okJsonResponse({ snapshots: [] }))
-    controller.openFor(buildTrigger({ id: "5" }))
-    await settle()
-    expect(controller.snapshotsErrorTarget.classList.contains("d-none")).toBe(true)
-  })
+      apiFetch.mockResolvedValueOnce(okJsonResponse({ snapshots: [] }))
+      controller.openFor(buildTrigger({ id: "5" }))
+      await settle()
+      expect(controller.snapshotsErrorTarget.classList.contains("d-none")).toBe(true)
+    }
+  )
 
   it("does not report a stale snapshot failure for a case the modal has moved off", async () => {
     vi.spyOn(console, "error").mockImplementation(() => {})
     let fail
     apiFetch
-      .mockImplementationOnce(() => new Promise((_resolve, reject) => { fail = reject }))
+      .mockImplementationOnce(
+        () =>
+          new Promise((_resolve, reject) => {
+            fail = reject
+          })
+      )
       .mockResolvedValueOnce(okJsonResponse({ snapshots: [] }))
     const controller = buildModalController()
 
@@ -235,7 +266,9 @@ describe("ExportCaseCoreController", () => {
     it("general: fetches case + queries and downloads a CSV built from them", async () => {
       apiFetch.mockImplementation((url) => {
         if (url === "/api/cases/5") {
-          return Promise.resolve(okJsonResponse({ case_name: "Movies", case_id: 5, teams: [], last_score: null }))
+          return Promise.resolve(
+            okJsonResponse({ case_name: "Movies", case_id: 5, teams: [], last_score: null })
+          )
         }
         return Promise.resolve(okJsonResponse({ queries: [] }))
       })
@@ -250,15 +283,17 @@ describe("ExportCaseCoreController", () => {
     })
 
     it("detailed: fetches case metadata and exports the live document read model", async () => {
-      apiFetch.mockResolvedValue(okJsonResponse({
-        case_name: "Movies",
-        case_id: 5,
-        teams: [],
-        last_score: { case_id: 5 }
-      }))
+      apiFetch.mockResolvedValue(
+        okJsonResponse({
+          case_name: "Movies",
+          case_id: 5,
+          teams: [],
+          last_score: { case_id: 5 }
+        })
+      )
       queryDocumentsStore.replaceQuery(1, {
         queryText: "star wars",
-        fieldSpec: { fields: [ "id", "title" ], id: "id", title: "title" },
+        fieldSpec: { fields: ["id", "title"], id: "id", title: "title" },
         docs: []
       })
       const controller = buildModalController()
@@ -321,7 +356,9 @@ describe("ExportCaseCoreController", () => {
     })
 
     it("snapshot: fetches the chosen snapshot and downloads a CSV built from it", async () => {
-      apiFetch.mockResolvedValue(okJsonResponse({ name: "Weekly", time: "2026-03-05T12:00:00Z", queries: [], docs: {} }))
+      apiFetch.mockResolvedValue(
+        okJsonResponse({ name: "Weekly", time: "2026-03-05T12:00:00Z", queries: [], docs: {} })
+      )
       const controller = buildModalController()
       controller.currentCaseId = "5"
       controller.currentCaseName = "Movies"
@@ -349,53 +386,74 @@ describe("ExportCaseCoreController", () => {
     })
 
     it.each([
-      { selectedFormat: "trec", url: "/api/export/ratings/5.txt?file_format=trec", filename: "Movies_trec.txt" },
+      {
+        selectedFormat: "trec",
+        url: "/api/export/ratings/5.txt?file_format=trec",
+        filename: "Movies_trec.txt"
+      },
       {
         selectedFormat: "trec",
         snapshotId: "7",
         url: "/api/export/ratings/5.txt?file_format=trec_snapshot&snapshot_id=7",
         filename: "Movies_trec_snapshot.txt"
       },
-      { selectedFormat: "ltr", url: "/api/export/ratings/5.txt?file_format=ltr", filename: "Movies_ltr.txt" },
+      {
+        selectedFormat: "ltr",
+        url: "/api/export/ratings/5.txt?file_format=ltr",
+        filename: "Movies_ltr.txt"
+      },
       {
         selectedFormat: "information_need",
         url: "/api/export/queries/information_needs/5.csv",
         filename: "Movies_information_need.csv"
       }
-    ])("$selectedFormat (snapshot=$snapshotId): exports the correct file", async ({ selectedFormat, snapshotId, url, filename }) => {
-      apiFetch.mockResolvedValue(okJsonResponse({}))
-      const controller = buildModalController()
-      controller.currentCaseId = "5"
-      controller.currentCaseName = "Movies"
-      controller.selectedFormat = selectedFormat
-      if (snapshotId) {
-        controller.basicSnapshotSelectTarget.innerHTML = `<option value="${snapshotId}">(3/5/26) Weekly</option>`
-        controller.basicSnapshotSelectTarget.value = snapshotId
+    ])(
+      "$selectedFormat (snapshot=$snapshotId): exports the correct file",
+      async ({ selectedFormat, snapshotId, url, filename }) => {
+        apiFetch.mockResolvedValue(okJsonResponse({}))
+        const controller = buildModalController()
+        controller.currentCaseId = "5"
+        controller.currentCaseName = "Movies"
+        controller.selectedFormat = selectedFormat
+        if (snapshotId) {
+          controller.basicSnapshotSelectTarget.innerHTML = `<option value="${snapshotId}">(3/5/26) Weekly</option>`
+          controller.basicSnapshotSelectTarget.value = snapshotId
+        }
+
+        await controller.submit()
+
+        expect(apiFetch).toHaveBeenCalledWith(url, expect.anything())
+        expect(downloadBlob).toHaveBeenCalledWith(expect.any(Blob), filename)
       }
-
-      await controller.submit()
-
-      expect(apiFetch).toHaveBeenCalledWith(url, expect.anything())
-      expect(downloadBlob).toHaveBeenCalledWith(expect.any(Blob), filename)
-    })
+    )
 
     it.each([
-      { selectedFormat: "rre", url: "/api/export/ratings/5.json?file_format=rre", filename: "Movies_rre.json" },
+      {
+        selectedFormat: "rre",
+        url: "/api/export/ratings/5.json?file_format=rre",
+        filename: "Movies_rre.json"
+      },
       { selectedFormat: "quepid", url: "/api/export/cases/5", filename: "Movies_case.json" }
-    ])("$selectedFormat: pretty-prints the JSON instead of streaming raw bytes", async ({ selectedFormat, url, filename }) => {
-      apiFetch.mockResolvedValue(okJsonResponse({ foo: "bar" }))
-      const controller = buildModalController()
-      controller.currentCaseId = "5"
-      controller.currentCaseName = "Movies"
-      controller.selectedFormat = selectedFormat
+    ])(
+      "$selectedFormat: pretty-prints the JSON instead of streaming raw bytes",
+      async ({ selectedFormat, url, filename }) => {
+        apiFetch.mockResolvedValue(okJsonResponse({ foo: "bar" }))
+        const controller = buildModalController()
+        controller.currentCaseId = "5"
+        controller.currentCaseName = "Movies"
+        controller.selectedFormat = selectedFormat
 
-      await controller.submit()
+        await controller.submit()
 
-      expect(apiFetch).toHaveBeenCalledWith(url, expect.objectContaining({ headers: { Accept: "application/json" } }))
-      const [ blob, downloadedFilename ] = downloadBlob.mock.calls[0]
-      expect(downloadedFilename).toBe(filename)
-      expect(await blob.text()).toBe(JSON.stringify({ foo: "bar" }, null, 2))
-    })
+        expect(apiFetch).toHaveBeenCalledWith(
+          url,
+          expect.objectContaining({ headers: { Accept: "application/json" } })
+        )
+        const [blob, downloadedFilename] = downloadBlob.mock.calls[0]
+        expect(downloadedFilename).toBe(filename)
+        expect(await blob.text()).toBe(JSON.stringify({ foo: "bar" }, null, 2))
+      }
+    )
 
     it("swallows a thrown error instead of leaving an unhandled rejection", async () => {
       const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {})
@@ -413,7 +471,12 @@ describe("ExportCaseCoreController", () => {
 
     it("logs when the server responds with a non-2xx status instead of failing silently", async () => {
       const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {})
-      apiFetch.mockResolvedValue({ text: async () => "", json: async () => null,  ok: false, status: 500 })
+      apiFetch.mockResolvedValue({
+        text: async () => "",
+        json: async () => null,
+        ok: false,
+        status: 500
+      })
       const controller = buildModalController()
       controller.currentCaseId = "5"
       controller.currentCaseName = "Movies"

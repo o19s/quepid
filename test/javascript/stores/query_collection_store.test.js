@@ -10,7 +10,7 @@ describe("QueryCollectionStore", () => {
 
   it("publishes bootstrap state and preserves the server display order", () => {
     const changes = []
-    store.addEventListener("change", event => changes.push(event.detail))
+    store.addEventListener("change", (event) => changes.push(event.detail))
 
     store.beginBootstrap(7)
     expect(store.status).toBe("bootstrapping")
@@ -32,7 +32,8 @@ describe("QueryCollectionStore", () => {
 
   it("accepts normalized live queries at the collection boundary", () => {
     store.beginBootstrap(7)
-    store.replace({ caseId: 7,
+    store.replace({
+      caseId: 7,
       displayOrder: [2, 1],
       queries: [
         { queryId: 1, queryText: "first" },
@@ -91,7 +92,7 @@ describe("QueryCollectionStore", () => {
     const snapshot = vi.spyOn(store, "snapshot")
     store.upsert({ queryId: 1, queryText: "first" }, { publish: false })
     const details = []
-    store.addEventListener("change", event => details.push(event.detail))
+    store.addEventListener("change", (event) => details.push(event.detail))
     store.upsert({ queryId: 2, queryText: "second" })
 
     expect(details[0].queryId).toBe(2)
@@ -104,7 +105,7 @@ describe("QueryCollectionStore", () => {
     store.replace({
       caseId: 7,
       displayOrder: [9, 3, 1],
-      queries: [1, 2, 3, 4].map(queryId => ({ queryId, queryText: `q${queryId}` }))
+      queries: [1, 2, 3, 4].map((queryId) => ({ queryId, queryText: `q${queryId}` }))
     })
 
     expect(store.orderedQueryIds()).toEqual([3, 1, 2, 4])
@@ -183,7 +184,7 @@ describe("QueryCollectionStore", () => {
   it("publishes expansion changes for an existing query", () => {
     store.replace({ caseId: 7, displayOrder: [4], queries: [{ queryId: 4, queryText: "ready" }] })
     const changes = []
-    store.addEventListener("change", event => changes.push(event.detail))
+    store.addEventListener("change", (event) => changes.push(event.detail))
 
     store.setExpanded(4, true)
 
@@ -208,15 +209,12 @@ describe("QueryCollectionStore", () => {
 
   it("publishes query-list commands without knowing their owner", () => {
     const commands = []
-    store.addEventListener("command", event => commands.push(event.detail))
+    store.addEventListener("command", (event) => commands.push(event.detail))
 
     store.requestToggleShowOnlyRated()
     store.requestCollapseAll()
 
-    expect(commands).toEqual([
-      { command: "toggle-show-only-rated" },
-      { command: "collapse-all" }
-    ])
+    expect(commands).toEqual([{ command: "toggle-show-only-rated" }, { command: "collapse-all" }])
   })
 
   it("tracks the search lifecycle independently from query bootstrap", () => {
@@ -238,7 +236,7 @@ describe("QueryCollectionStore", () => {
     store.replace({ caseId: 7, displayOrder: [1], queries: [{ queryId: 1 }] })
 
     const failed = []
-    store.addEventListener("search-failed", event => failed.push(event.detail))
+    store.addEventListener("search-failed", (event) => failed.push(event.detail))
     store.failSearch(error)
 
     expect(store.searchStatus).toBe("error")
@@ -269,14 +267,23 @@ describe("QueryCollectionStore", () => {
     store.markError({ status: 500 })
 
     expect(store.snapshot().status).toBe("error")
-    expect(errored.mock.calls[0][0].detail).toMatchObject({ error: { status: 500 }, status: "error" })
+    expect(errored.mock.calls[0][0].detail).toMatchObject({
+      error: { status: 500 },
+      status: "error"
+    })
   })
 
   it.each([
     ["beginBootstrap", (s) => s.beginBootstrap(3)],
     ["replace", (s) => s.replace({ caseId: 3, queries: [{ queryId: 1 }] })],
     ["upsert", (s) => s.upsert({ queryId: 1 })],
-    ["remove", (s) => { s.upsert({ queryId: 1 }); s.remove(1) }],
+    [
+      "remove",
+      (s) => {
+        s.upsert({ queryId: 1 })
+        s.remove(1)
+      }
+    ],
     ["setDisplayOrder", (s) => s.setDisplayOrder([2, 1])],
     ["setExpanded", (s) => s.setExpanded(1, true)],
     ["collapseAll", (s) => s.collapseAll()],
@@ -301,10 +308,7 @@ describe("QueryCollectionStore", () => {
 
     expect(store.liveQueries()).toEqual({ 1: first, 2: second })
 
-    store.replace({ caseId: 7,
-      displayOrder: [1],
-      queries: [first]
-    })
+    store.replace({ caseId: 7, displayOrder: [1], queries: [first] })
 
     expect(store.liveQueries()).toEqual({ 1: first })
     expect(store.query(1).queryText).toBe("live")
@@ -325,7 +329,7 @@ describe("QueryCollectionStore", () => {
     expect(store.orderedQueryIds()).toEqual([1])
   })
 
-  it("treats only true and \"true\" as deleted, and reports a current-generation search failure", () => {
+  it('treats only true and "true" as deleted, and reports a current-generation search failure', () => {
     store.replace({
       caseId: 7,
       displayOrder: [1, 2, 3, 4],
@@ -369,5 +373,4 @@ describe("QueryCollectionStore", () => {
 
     expect(store.snapshot().displayOrder).toEqual([2])
   })
-
 })

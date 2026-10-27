@@ -29,4 +29,13 @@ class Rating < ApplicationRecord
   # arguably we shouldn't need this, however today you can have a rating object that doesn't have a
   # value set.  fully_rated means that the rating integer has been set.
   scope :fully_rated, -> { where.not(rating: nil) }
+
+  # Just the columns the query JSON needs, as { query_id => [[doc_id, rating, updated_at], ...] }.
+  # Rendering a whole case this way skips instantiating every Rating, which dominates on big cases.
+  def self.rows_by_query query_ids
+    where(query_id: query_ids)
+      .pluck(:query_id, :doc_id, :rating, :updated_at)
+      .group_by(&:first)
+      .transform_values { |rows| rows.map { |row| row.drop(1) } }
+  end
 end

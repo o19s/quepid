@@ -22,11 +22,12 @@ html {
   font-size: 87.5%;
 }
 
-html, body {
-  width:    100%;
-  height:   100%;
-  padding:  0;
-  margin:   0;
+html,
+body {
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  margin: 0;
   overflow: auto; /* when page gets too small */
 }
 
@@ -47,23 +48,23 @@ body {
 }
 
 #main {
-	padding: 0;
-	position: relative;
-	min-width: 750px;
+  padding: 0;
+  position: relative;
+  min-width: 750px;
 }
 
 /* Below #main's min-width the workbench scrolls sideways on its own, so the
  * header keeps the window's width and the page never gets a second scrollbar. */
 #main-content {
-	flex: 1 1 auto;
-	min-height: 0;
-	overflow-x: auto;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-x: auto;
 }
 
 .case-workbench,
 #main,
 .pane_container {
-	height: 100%;
+  height: 100%;
 }
 
 /*
@@ -107,9 +108,10 @@ header .dropdown-item:focus {
 	Main - results
 */
 .dragging {
-  border: 1px dashed #AAA;
-  padding: 5px 0px;
+  border: 1px dashed #aaa;
+  padding: 5px 0;
 }
+
 .results-control h1 {
   margin: 15px 0 20px 0;
   padding-bottom: 10px;
@@ -155,21 +157,21 @@ header .dropdown-item:focus {
   padding: 30px 0 20px;
   background: #fff;
   border: 1px solid #ccc;
-  border-width:1px 0;
+  border-width: 1px 0;
 }
 
 .results-list-element {
-	list-style: none;
+  list-style: none;
   display: block;
-	margin: 20px 0 0;
+  margin: 20px 0 0;
   padding-left: 0;
 }
 
 .results-list-element > li {
   border: 1px solid #eee;
-	margin: 0 0 5px 0;
-	position: relative;
-	border-radius: 5px;
+  margin: 0 0 5px 0;
+  position: relative;
+  border-radius: 5px;
 }
 
 .result-header {
@@ -177,23 +179,24 @@ header .dropdown-item:focus {
   position: relative;
   padding: 10px 20px;
 }
+
 .result-header:hover {
   background: #eee;
 }
 
 .results-title {
-	color:       #222;
-	cursor:      pointer;
-	font-size:   18px;
-	font-weight: normal;
-	line-height: 1.5em;
-	margin:      0;
+  color: #222;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: normal;
+  line-height: 1.5em;
+  margin: 0;
 }
 
 .results .total-results {
-  line-height:  30px;
+  line-height: 30px;
   margin-right: 50px;
-  text-align:   right;
+  text-align: right;
 }
 
 .low-profile {
@@ -202,65 +205,67 @@ header .dropdown-item:focus {
 }
 
 .results .error-warning {
-	display: none;
+  display: none;
 }
 
 .results .queryHeader_error .error-warning {
-	display: inline-block;
-	font-size: 1.25rem;
-	color: #fe5b00;
+  --q-query-error-warning: #fe5b00;
+  display: inline-block;
+  font-size: 1.25rem;
+  color: var(--q-query-error-warning);
 }
 
 /* Query header indicators: the 🐸 missing-ratings badge and the Querqy icon. */
 .icon-container {
-	position: relative;
-	display: inline-block;
-	/* The 🐸 emoji glyph sits well above the text baseline, so at default
+  position: relative;
+  display: inline-block;
+
+  /* The 🐸 emoji glyph sits well above the text baseline, so at default
 	   vertical-align the icon renders noticeably higher than the sibling
 	   result-count number and the toggle chevron. Nudge down to align. */
-	top: 6px;
+  top: 6px;
 }
 
 .notification-bubble {
-	position: absolute;
-	top: -10px;
-	right: -12px;
-	background-color: rgba(255, 0, 0, 0.7);
-	color: white;
-	border-radius: 50%;
-	width: 20px;
-	height: 20px;
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	font-size: 12px;
+  position: absolute;
+  top: -10px;
+  right: -12px;
+  background-color: rgba(255, 0, 0, 0.7);
+  color: var(--bs-white);
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 12px;
 }
 
 .frog-icon {
-	color: grey;
-	filter: grayscale(100%);
+  color: var(--q-gray);
+  filter: grayscale(100%);
 }
 
 .querqy-icon {
-	display: inline-block;
-	width: 24px;
-	height: 24px;
-	background-image: url('images/querqy-icon.png');
-	background-size: contain;
-	background-repeat: no-repeat;
-	background-position: center;
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  background-image: url("images/querqy-icon.png");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
 }
 
 /* Expand/collapse toggles: the results-pane one and the per-query chevron. */
 .results-pane-toggle,
 .results .toggleSign {
-	color: var(--q-brand-blue);
-	font-weight: bold;
-	font-size: 16px;
+  color: var(--q-brand-blue);
+  font-weight: bold;
+  font-size: 16px;
 }
 
 .results-pane-toggle {
-	cursor: pointer;
+  cursor: pointer;
 }
 
 /* Shared cursor; positioning and appearance apply only inside results. */
@@ -269,28 +274,28 @@ header .dropdown-item:focus {
 }
 
 .results .toggleSign {
-	position: absolute;
-	top: 50%;
-	right: 19px;
-	transform: translateY(-50%);
-	border-radius: 3px;
+  position: absolute;
+  top: 50%;
+  right: 19px;
+  transform: translateY(-50%);
+  border-radius: 3px;
 }
-
 
 /*
 	Main - Results - Sub Results
 */
 
 .sub-results {
-	background: url('sub-results-bg.png') top center no-repeat #F7F7F7;
-	padding: 75px 15px 15px 15px;
-	position: relative;
-	min-width: 650px;
-	/* Right edge of the "Score All" column below (.col-ratings.query-rating: 15px
+  background: url("sub-results-bg.png") top center no-repeat #f7f7f7;
+  padding: 75px 15px 15px 15px;
+  position: relative;
+  min-width: 650px;
+
+  /* Right edge of the "Score All" column below (.col-ratings.query-rating: 15px
 	 * margin-left + 75px width) — consumed by .sub-results .btn-toolbar's `left`
 	 * below so the two rules stay in sync from one source of
 	 * truth instead of two independently-hardcoded pixel values. */
-	--score-col-end: 90px;
+  --score-col-end: 90px;
 }
 
 /* Sub-results panel — toolbar absolutely top-right of the per-query
@@ -300,52 +305,51 @@ header .dropdown-item:focus {
  * its buttons onto a second row at narrow viewports instead of the
  * shrink-to-fit right-anchored box overlapping the "Score All" dropdown. */
 .sub-results .btn-toolbar {
-	position: absolute;
-	top: 20px;
-	right: 20px;
-	left: calc(var(--score-col-end) + 20px);
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  left: calc(var(--score-col-end) + 20px);
 }
 
 .sub-results .row {
-	padding: 5px 0;
+  padding: 5px 0;
 }
 
 .sub-results .search-result .row {
-	border-top: 1px solid #CCC;
-	position: relative;
+  border-top: 1px solid #ccc;
+  position: relative;
 }
 
 .sub-results td {
-	vertical-align: middle;
+  vertical-align: middle;
 }
-
 
 /*
 	Main - Results - Sub Results — rating columns and thumbnails
 */
 
 .col-summary {
-	text-align: left;
-	margin-left: 70px;
-	padding: 15px;
+  text-align: left;
+  margin-left: 70px;
+  padding: 15px;
 }
 
 .query-thumbnail {
-	width: 75px;
-	height: 100%;
-	margin: -10px 0;
-	padding: 0;
-	display: block;
-	line-height: 0;
-	object-fit: contain;
+  width: 75px;
+  height: 100%;
+  margin: -10px 0;
+  padding: 0;
+  display: block;
+  line-height: 0;
+  object-fit: contain;
 }
 
 .result-thumbnail {
-	width: 75px;
+  width: 75px;
 }
 
 .result-image {
-	width: 250px;
+  width: 250px;
 }
 
 .score-all {
@@ -374,49 +378,49 @@ header .dropdown-item:focus {
 }
 
 .col-ratings {
-	width: 75px;
-	padding: 0;
-	position: absolute;
-	top: 15px;
-	left: 0;
+  width: 75px;
+  padding: 0;
+  position: absolute;
+  top: 15px;
+  left: 0;
 }
 
 .result-thumb-col {
-	width: 125px;
+  width: 125px;
 }
 
 .result-image-col {
-	width: 300px;
+  width: 300px;
 }
 
 .col-summary .subfields {
-	margin: 0;
-	padding: 0;
-	list-style: none;
-	overflow-wrap: anywhere;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow-wrap: anywhere;
 }
 
 .col-summary .subfields li {
-	margin: 0 0 10px 0;
-	padding: 0;
+  margin: 0 0 10px 0;
+  padding: 0;
 }
 
 .col-summary .subfields li:last-child {
-	margin: 0;
+  margin: 0;
 }
 
 .col-summary .subfields li.subTitle {
-	font-family: Aller, sans-serif;
-	font-size: 18px;
+  font-family: Aller, sans-serif;
+  font-size: 18px;
 }
 
 .col-summary .subfields li.subTitle .btn-link {
-	font-size: inherit;
-	line-height: inherit;
+  font-size: inherit;
+  line-height: inherit;
 }
 
 .col-summary .subfields li .subLabel {
-	font-weight: bold;
+  font-weight: bold;
 }
 
 /*
@@ -424,15 +428,12 @@ header .dropdown-item:focus {
 */
 .move-query-cases-list {
   max-height: 300px;
-  overflow:   auto;
+  overflow: auto;
 }
-
-
 
 .result-rank {
-  font-size:  1em;
+  font-size: 1em;
 }
-
 
 /*
 	Dev Settings — panel layout and skin.
@@ -444,44 +445,48 @@ header .dropdown-item:focus {
 */
 
 #dev-settings {
-	width: 100%;
-	height: 100%;
-	/* Tabs, then the canvas taking the remaining height, then the TLS warning and
+  width: 100%;
+  height: 100%;
+
+  /* Tabs, then the canvas taking the remaining height, then the TLS warning and
 	 * Rerun My Searches! pinned to the drawer's bottom outside the scrolling tab. */
-	display: flex;
-	flex-direction: column;
-	/* data-bs-theme="dark" sets the --bs-body-* vars; consume them
+  display: flex;
+  flex-direction: column;
+
+  /* data-bs-theme="dark" sets the --bs-body-* vars; consume them
 	 * explicitly because a plain <div> doesn't get the theme applied
 	 * automatically (only <body> does). */
-	background-color: var(--bs-body-bg);
-	color: var(--bs-body-color);
-	/* Outside `.results-control`'s font rule; BS5's wider system-ui font
+  background-color: var(--bs-body-bg);
+  color: var(--bs-body-color);
+
+  /* Outside `.results-control`'s font rule; BS5's wider system-ui font
 	 * would wrap the "Annotations" tab onto its own row. */
-	font-family: var(--q-body-font);
-	/* main's .dev-section wrapper inset the whole panel by 15px. */
-	padding: 15px;
+  font-family: var(--q-body-font);
+
+  /* main's .dev-section wrapper inset the whole panel by 15px. */
+  padding: 15px;
 }
 
 #dev-settings .dev-header {
-	background: linear-gradient(to bottom, #282828, #222222);
-	padding: 15px;
-	border-bottom: 1px solid #363636;
-	cursor: pointer;
+  background: linear-gradient(to bottom, #282828, #222);
+  padding: 15px;
+  border-bottom: 1px solid #363636;
+  cursor: pointer;
 }
 
 #dev-settings .dev-header .bi {
-	margin-left: 10px;
-	font-size: 14px;
-	font-weight: normal;
+  margin-left: 10px;
+  font-size: 14px;
+  font-weight: normal;
 }
 
 #dev-settings .dev-body,
 #dev-settings .dev-setting-attribute {
-	padding: 15px;
+  padding: 15px;
 }
 
 #dev-settings .settings-tab {
-  height:     100%;
+  height: 100%;
   min-height: 300px;
 }
 
@@ -491,8 +496,8 @@ header .dropdown-item:focus {
  * `.container-fluid`; this lets it fill the panel height and scroll.
  */
 #dev-settings .settings-tab > .container-fluid {
-	height: 100%;
-	overflow-y: auto;
+  height: 100%;
+  overflow-y: auto;
 }
 
 /* Gap under the Query Sandbox heading row, which BS3's <h4> margin gave. */
@@ -521,24 +526,24 @@ header .dropdown-item:focus {
 }
 
 #dev-settings .rerunnable-settings-tab {
-  height:         calc(100% - 50px);
-  min-height:     300px;
-  margin-bottom:  20px;
-  overflow:       auto;
+  height: calc(100% - 50px);
+  min-height: 300px;
+  margin-bottom: 20px;
+  overflow: auto;
 }
 
 #queryParamsCanvas textarea {
-	height: calc(100% - 40px);
+  height: calc(100% - 40px);
 }
 
 #queryParamsCanvas .slider-wrap {
-	display: flex;
-	flex-wrap: wrap;
-	justify-content: space-between;
-	align-items: center;
-	gap: 10px;
-	padding: 10px 0;
-	border-bottom: 1px solid #555;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid #555;
 }
 
 #queryParamsCanvas .slider-wrap input {
@@ -564,36 +569,39 @@ header .dropdown-item:focus {
 */
 
 .history-list {
-	list-style: none;
-	padding: 0;
-	margin: 0 0 20px 0;
+  list-style: none;
+  padding: 0;
+  margin: 0 0 20px 0;
 }
 
 .history-list li {
-	padding: 5px 10px;
-	border-bottom: 1px solid var(--bs-border-color);
-	background: #666;
-	overflow-wrap: break-word;
-	position: relative;
+  padding: 5px 10px;
+  border-bottom: 1px solid var(--bs-border-color);
+  background: #666;
+  overflow-wrap: break-word;
+  position: relative;
 }
+
 .history-list li:hover {
-	cursor: pointer;
+  cursor: pointer;
 }
 
 /* The Settings help tooltips keep the Angular drawer's width, so each <br/>-split line stays on one line. */
 .setting-help-tooltip .tooltip-inner {
-	max-width: 350px;
+  max-width: 350px;
 }
 
 /* Rows are shaded by search URL (urlBucket), and, as in the Angular drawer, keep that shade on hover. */
 .history-list li.bucket-0 {
-	background: #666;
+  background: #666;
 }
+
 .history-list li.bucket-1 {
-	background: #64647d;
+  background: #64647d;
 }
+
 .history-list li.bucket-2 {
-	background: #667a66;
+  background: #667a66;
 }
 
 .history-list li:hover .try-details {
@@ -602,14 +610,14 @@ header .dropdown-item:focus {
 
 /* The try's query params stay plain and inline, followed by "...". */
 .history-list li span:not([data-try-query]) {
-	display: block;
-	text-align: left;
-	font-family: Aller, sans-serif;
-	font-weight: 700;
-	font-style: italic;
-	font-size: 16px;
-	color: #CCC;
-	padding: 3px 0 8px 0;
+  display: block;
+  text-align: left;
+  font-family: Aller, sans-serif;
+  font-weight: 700;
+  font-style: italic;
+  font-size: 16px;
+  color: #ccc;
+  padding: 3px 0 8px 0;
 }
 
 /* Try-details rename form: flex only while shown, so [hidden] actually hides it. */
@@ -635,8 +643,8 @@ footer {
 }
 
 .matches-popper:hover {
-  cursor:           pointer;
-  text-decoration:  underline;
+  cursor: pointer;
+  text-decoration: underline;
 }
 
 .matches-popper .bi-info-circle-fill {
@@ -680,13 +688,13 @@ footer {
 
 #annotations {
   overflow: auto;
-  height:   auto;
+  height: auto;
 }
 
 /* Import file preview (import ratings modal) */
 .import-content {
   max-height: 200px;
-  overflow:   auto;
+  overflow: auto;
 }
 
 /* No empty preview bars before a file is chosen. */
@@ -718,11 +726,10 @@ li.annotation {
   margin: 5px 0;
 }
 
-
 /* Audio/video/image embeds rendered in result rows (search_result_controller
  * embedField) — cap size so large media doesn't blow out the result row. */
 .media-embed {
-	vertical-align: middle;
-	max-width: 640px;
-	max-height: 640px;
+  vertical-align: middle;
+  max-width: 640px;
+  max-height: 640px;
 }

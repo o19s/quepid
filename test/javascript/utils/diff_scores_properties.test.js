@@ -19,7 +19,8 @@ const diffScore = fc.oneof(
 )
 const scores = fc.array(diffScore, { minLength: 1, maxLength: 12 })
 
-const caseDiff = (perQuery) => buildCaseDiffScores(perQuery.map((s) => queryOf([searcher("Snap", s)])))[0].score
+const caseDiff = (perQuery) =>
+  buildCaseDiffScores(perQuery.map((s) => queryOf([searcher("Snap", s)])))[0].score
 
 describe("buildCaseDiffScores properties", () => {
   it("averages exactly the numeric scores, or reports '--' when there are none", () => {

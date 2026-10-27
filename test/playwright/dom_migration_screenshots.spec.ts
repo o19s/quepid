@@ -1,176 +1,192 @@
-import { test, expect } from '@playwright/test';
-import fs from 'node:fs';
-import path from 'node:path';
+import { test, expect } from "@playwright/test"
+import fs from "node:fs"
+import path from "node:path"
 import {
   DEFAULT_RICH_CASE_ID,
   createTeamViaApi,
   deleteCaseViaApi,
   deleteTeamViaApi,
   stubEmptyBookCatalog
-} from './case_helpers';
+} from "./case_helpers"
 
 /** Set MIGRATION_SHOT_PHASE=before|after (default after). */
-const PHASE = process.env.MIGRATION_SHOT_PHASE === 'before' ? 'before' : 'after';
+const PHASE = process.env.MIGRATION_SHOT_PHASE === "before" ? "before" : "after"
 /** Configured cases are read-only sources; all mutations use disposable clones. */
-const SHARE_SOURCE_ID = Number(process.env.QUEPID_E2E_SHARE_CASE_ID || 1);
+const SHARE_SOURCE_ID = Number(process.env.QUEPID_E2E_SHARE_CASE_ID || 1)
 /** Case with queries in DB for hit-count / annotations — see DEFAULT_RICH_CASE_ID's comment. */
-const QUERIES_SOURCE_ID = Number(process.env.QUEPID_E2E_QUERIES_CASE_ID || DEFAULT_RICH_CASE_ID);
-let SHARE_CASE_ID: number;
-let QUERIES_CASE_ID: number;
-const createdCaseIds: number[] = [];
+const QUERIES_SOURCE_ID = Number(process.env.QUEPID_E2E_QUERIES_CASE_ID || DEFAULT_RICH_CASE_ID)
+let SHARE_CASE_ID: number
+let QUERIES_CASE_ID: number
+const createdCaseIds: number[] = []
 /** A team created for this run, so sharing never depends on teams already in the dev DB. */
-let SHARE_TEAM_ID: number;
+let SHARE_TEAM_ID: number
 /**
  * Topic subfolder under `.playwright-mcp/` so the screenshot viewer can group
  * this PR's shots separately from older captures. Override with MIGRATION_SHOT_TOPIC.
  * Share-case tests default to `share-case/` even when the env var is unset.
  */
-const TOPIC = process.env.MIGRATION_SHOT_TOPIC || '';
+const TOPIC = process.env.MIGRATION_SHOT_TOPIC || ""
 
 // share_case.spec.ts also provides checked-in visual baselines and behavioral
 // regression coverage; this file retains ad-hoc sharing captures.
 
-async function gotoCase(page: import('@playwright/test').Page, caseId = SHARE_CASE_ID) {
-  await page.goto(`case/${caseId}`);
-  await page.waitForSelector('#case-actions, .results-list-element li, .modal.show', { timeout: 20_000 });
+async function gotoCase(page: import("@playwright/test").Page, caseId = SHARE_CASE_ID) {
+  await page.goto(`case/${caseId}`)
+  await page.waitForSelector("#case-actions, .results-list-element li, .modal.show", {
+    timeout: 20_000
+  })
 }
 
-async function expandFirstQuery(page: import('@playwright/test').Page) {
-  if ((await page.locator('search-result').count()) > 0) return;
-  const toggle = page.locator('.results-list-element li .toggleSign').first();
-  await expect(toggle).toBeVisible({ timeout: 20_000 });
-  await toggle.click();
-  await page.waitForSelector('search-result', { timeout: 15_000 });
+async function expandFirstQuery(page: import("@playwright/test").Page) {
+  if ((await page.locator("search-result").count()) > 0) return
+  const toggle = page.locator(".results-list-element li .toggleSign").first()
+  await expect(toggle).toBeVisible({ timeout: 20_000 })
+  await toggle.click()
+  await page.waitForSelector("search-result", { timeout: 15_000 })
 }
 
-async function apiHeaders(page: import('@playwright/test').Page) {
-  if (await page.locator('meta[name="csrf-token"]').count() === 0) {
-    await page.goto('cases');
+async function apiHeaders(page: import("@playwright/test").Page) {
+  if ((await page.locator('meta[name="csrf-token"]').count()) === 0) {
+    await page.goto("cases")
   }
-  const csrf = await page.evaluate(() =>
-    document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? ''
-  );
+  const csrf = await page.evaluate(
+    () => document.querySelector('meta[name="csrf-token"]')?.getAttribute("content") ?? ""
+  )
   return {
-    Accept: 'application/json',
-    'Content-Type': 'application/json',
-    'X-CSRF-Token': csrf
-  };
+    Accept: "application/json",
+    "Content-Type": "application/json",
+    "X-CSRF-Token": csrf
+  }
 }
 
-async function shareCaseWithTeam(page: import('@playwright/test').Page, caseId: number, teamId: number) {
-  const headers = await apiHeaders(page);
+async function shareCaseWithTeam(
+  page: import("@playwright/test").Page,
+  caseId: number,
+  teamId: number
+) {
+  const headers = await apiHeaders(page)
   const response = await page.request.post(`/api/teams/${teamId}/cases`, {
     data: { id: caseId },
     headers
-  });
-  expect(response.ok()).toBeTruthy();
+  })
+  expect(response.ok()).toBeTruthy()
 }
 
-async function unshareCaseFromTeam(page: import('@playwright/test').Page, caseId: number, teamId: number) {
-  const headers = await apiHeaders(page);
+async function unshareCaseFromTeam(
+  page: import("@playwright/test").Page,
+  caseId: number,
+  teamId: number
+) {
+  const headers = await apiHeaders(page)
   const response = await page.request.delete(`/api/teams/${teamId}/cases/${caseId}`, {
     headers
-  });
-  expect(response.ok() || response.status() === 204).toBeTruthy();
+  })
+  expect(response.ok() || response.status() === 204).toBeTruthy()
 }
 
-async function shareCaseWithAllTeams(page: import('@playwright/test').Page, caseId: number) {
-  const headers = await apiHeaders(page);
-  const teamsResponse = await page.request.get('/api/teams', { headers });
-  expect(teamsResponse.ok()).toBeTruthy();
-  const payload = await teamsResponse.json();
-  const teams = Array.isArray(payload.teams) ? payload.teams : [];
+async function shareCaseWithAllTeams(page: import("@playwright/test").Page, caseId: number) {
+  const headers = await apiHeaders(page)
+  const teamsResponse = await page.request.get("/api/teams", { headers })
+  expect(teamsResponse.ok()).toBeTruthy()
+  const payload = await teamsResponse.json()
+  const teams = Array.isArray(payload.teams) ? payload.teams : []
   for (const team of teams) {
-    await shareCaseWithTeam(page, caseId, team.id);
+    await shareCaseWithTeam(page, caseId, team.id)
   }
 }
 
-async function ensureCaseSharedWithOneTeam(page: import('@playwright/test').Page, caseId: number) {
-  await shareCaseWithTeam(page, caseId, SHARE_TEAM_ID);
+async function ensureCaseSharedWithOneTeam(page: import("@playwright/test").Page, caseId: number) {
+  await shareCaseWithTeam(page, caseId, SHARE_TEAM_ID)
 }
 
 // Disposable clones sort past the index's first page; narrow the index to this case's row.
-async function gotoCasesIndex(page: import('@playwright/test').Page, caseId: number) {
-  await page.goto(`cases?q=${caseId}`);
-  await page.waitForSelector('table tbody tr', { timeout: 20_000 });
+async function gotoCasesIndex(page: import("@playwright/test").Page, caseId: number) {
+  await page.goto(`cases?q=${caseId}`)
+  await page.waitForSelector("table tbody tr", { timeout: 20_000 })
 }
 
-async function unshareAllTeamsFromCase(page: import('@playwright/test').Page, caseId: number) {
-  const headers = await apiHeaders(page);
-  const teamsResponse = await page.request.get('/api/teams', { headers });
-  expect(teamsResponse.ok()).toBeTruthy();
-  const payload = await teamsResponse.json();
-  const teams = Array.isArray(payload.teams) ? payload.teams : [];
+async function unshareAllTeamsFromCase(page: import("@playwright/test").Page, caseId: number) {
+  const headers = await apiHeaders(page)
+  const teamsResponse = await page.request.get("/api/teams", { headers })
+  expect(teamsResponse.ok()).toBeTruthy()
+  const payload = await teamsResponse.json()
+  const teams = Array.isArray(payload.teams) ? payload.teams : []
   for (const team of teams) {
-    await unshareCaseFromTeam(page, caseId, team.id);
+    await unshareCaseFromTeam(page, caseId, team.id)
   }
 }
 
-async function openCasesIndexShareModalForCase(page: import('@playwright/test').Page, caseId: number) {
-  await gotoCasesIndex(page, caseId);
-  const shareBtn = page.locator(`button[data-share-case-id-value="${caseId}"]`);
-  await expect(shareBtn).toBeVisible({ timeout: 15_000 });
-  await shareBtn.click();
-  const modal = page.locator('#shareCaseModal.show, .modal.show').first();
-  await expect(modal).toContainText(/Share Case/i);
-  return modal;
+async function openCasesIndexShareModalForCase(
+  page: import("@playwright/test").Page,
+  caseId: number
+) {
+  await gotoCasesIndex(page, caseId)
+  const shareBtn = page.locator(`button[data-share-case-id-value="${caseId}"]`)
+  await expect(shareBtn).toBeVisible({ timeout: 15_000 })
+  await shareBtn.click()
+  const modal = page.locator("#shareCaseModal.show, .modal.show").first()
+  await expect(modal).toContainText(/Share Case/i)
+  return modal
 }
 
-async function shot(page: import('@playwright/test').Page, stem: string, topic = TOPIC) {
-  const dir = path.join(__dirname, '../../.playwright-mcp', topic);
-  fs.mkdirSync(dir, { recursive: true });
-  const file = path.join(dir, `migration-${stem}-${PHASE}.png`);
-  await page.screenshot({ path: file, fullPage: false, mask: [page.locator('#flash-messages')] });
-  console.log(`wrote ${file}`);
+async function shot(page: import("@playwright/test").Page, stem: string, topic = TOPIC) {
+  const dir = path.join(__dirname, "../../.playwright-mcp", topic)
+  fs.mkdirSync(dir, { recursive: true })
+  const file = path.join(dir, `migration-${stem}-${PHASE}.png`)
+  await page.screenshot({ path: file, fullPage: false, mask: [page.locator("#flash-messages")] })
+  console.log(`wrote ${file}`)
 }
 
 async function openHelpPopover(
-  page: import('@playwright/test').Page,
-  modal: import('@playwright/test').Locator,
+  page: import("@playwright/test").Page,
+  modal: import("@playwright/test").Locator,
   expectedText: string | RegExp
 ) {
-  const help = PHASE === 'after'
-    ? modal.locator('[data-controller~="bs-popover"]').first()
-    : modal.locator('.bi-question-circle-fill').first();
+  const help =
+    PHASE === "after"
+      ? modal.locator('[data-controller~="bs-popover"]').first()
+      : modal.locator(".bi-question-circle-fill").first()
 
-  if (PHASE === 'after') {
-    await expect(help).toHaveAttribute('data-bs-popover-trigger-value', 'hover focus');
-    await expect(help).toHaveAttribute('data-bs-popover-placement-value', 'right');
+  if (PHASE === "after") {
+    await expect(help).toHaveAttribute("data-bs-popover-trigger-value", "hover focus")
+    await expect(help).toHaveAttribute("data-bs-popover-placement-value", "right")
   }
 
-  await help.scrollIntoViewIfNeeded();
+  await help.scrollIntoViewIfNeeded()
 
   // A hover is the configured trigger. Do not construct a Bootstrap Popover here:
   // that would conceal a failed Stimulus controller connection.
-  await help.hover({ force: true });
-  await expect(help).toHaveAttribute('aria-describedby', /.+/, { timeout: 8_000 });
-  const popoverId = await help.getAttribute('aria-describedby');
+  await help.hover({ force: true })
+  await expect(help).toHaveAttribute("aria-describedby", /.+/, { timeout: 8_000 })
+  const popoverId = await help.getAttribute("aria-describedby")
   if (!popoverId) {
-    throw new Error('Help icon did not identify its popover');
+    throw new Error("Help icon did not identify its popover")
   }
 
-  const popover = page.locator(`[id="${popoverId}"]`);
-  await expect(popover).toBeVisible();
-  await expect(popover.locator('.popover-body')).toHaveText(expectedText);
+  const popover = page.locator(`[id="${popoverId}"]`)
+  await expect(popover).toBeVisible()
+  await expect(popover.locator(".popover-body")).toHaveText(expectedText)
 
-  if (PHASE === 'after') {
+  if (PHASE === "after") {
     const hasStimulusPopover = await help.evaluate((element) => {
-      const bootstrap = (window as Window & {
-        bootstrap?: { Popover?: { getInstance: (element: Element) => unknown } }
-      }).bootstrap;
-      return Boolean(bootstrap?.Popover?.getInstance(element));
-    });
-    expect(hasStimulusPopover).toBeTruthy();
+      const bootstrap = (
+        window as Window & {
+          bootstrap?: { Popover?: { getInstance: (element: Element) => unknown } }
+        }
+      ).bootstrap
+      return Boolean(bootstrap?.Popover?.getInstance(element))
+    })
+    expect(hasStimulusPopover).toBeTruthy()
   }
 }
 
 test.describe(`DOM migration shots (${PHASE})`, () => {
   test.beforeAll(async ({ browser }) => {
-    const page = await browser.newPage();
+    const page = await browser.newPage()
     try {
-      await page.goto('cases');
+      await page.goto("cases")
       for (const sourceId of [SHARE_SOURCE_ID, QUERIES_SOURCE_ID]) {
-        const response = await page.request.post('api/clone/cases', {
+        const response = await page.request.post("api/clone/cases", {
           headers: await apiHeaders(page),
           data: {
             case_id: sourceId,
@@ -179,227 +195,247 @@ test.describe(`DOM migration shots (${PHASE})`, () => {
             clone_queries: true,
             clone_ratings: true
           }
-        });
-        expect(response.ok(), `Clone source ${sourceId}: ${response.status()}`).toBeTruthy();
-        const id = Number((await response.json()).case_id);
-        expect(id).toBeGreaterThan(0);
-        createdCaseIds.push(id);
+        })
+        expect(response.ok(), `Clone source ${sourceId}: ${response.status()}`).toBeTruthy()
+        const id = Number((await response.json()).case_id)
+        expect(id).toBeGreaterThan(0)
+        createdCaseIds.push(id)
       }
-      [SHARE_CASE_ID, QUERIES_CASE_ID] = createdCaseIds;
-      SHARE_TEAM_ID = await createTeamViaApi(page, `Playwright Share Team ${Date.now()}`);
+      ;[SHARE_CASE_ID, QUERIES_CASE_ID] = createdCaseIds
+      SHARE_TEAM_ID = await createTeamViaApi(page, `Playwright Share Team ${Date.now()}`)
     } finally {
-      await page.close();
+      await page.close()
     }
-  });
+  })
 
   test.afterAll(async ({ browser }) => {
-    const page = await browser.newPage();
+    const page = await browser.newPage()
     try {
-      await page.goto('cases');
-      for (const id of createdCaseIds) await deleteCaseViaApi(page, id);
-      if (SHARE_TEAM_ID) await deleteTeamViaApi(page, SHARE_TEAM_ID);
+      await page.goto("cases")
+      for (const id of createdCaseIds) await deleteCaseViaApi(page, id)
+      if (SHARE_TEAM_ID) await deleteTeamViaApi(page, SHARE_TEAM_ID)
     } finally {
-      await page.close();
+      await page.close()
     }
-  });
+  })
 
-  test('hit count', async ({ page }) => {
-    await page.setViewportSize({ width: 900, height: 900 });
-    await gotoCase(page, QUERIES_CASE_ID);
-    await expandFirstQuery(page);
-    await shot(page, 'hit-count');
-  });
+  test("hit count", async ({ page }) => {
+    await page.setViewportSize({ width: 900, height: 900 })
+    await gotoCase(page, QUERIES_CASE_ID)
+    await expandFirstQuery(page)
+    await shot(page, "hit-count")
+  })
 
-  test('share-case toolbar', async ({ page }) => {
-    await page.setViewportSize({ width: 1280, height: 900 });
-    await gotoCase(page);
-    await page.locator('#case-actions, [data-bs-target="#shareCaseModal"]').first().scrollIntoViewIfNeeded();
-    await expect(page.getByText('Share case', { exact: true })).toBeVisible();
-    await shot(page, 'share-case-toolbar', 'share-case');
-  });
+  test("share-case toolbar", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 })
+    await gotoCase(page)
+    await page
+      .locator('#case-actions, [data-bs-target="#shareCaseModal"]')
+      .first()
+      .scrollIntoViewIfNeeded()
+    await expect(page.getByText("Share case", { exact: true })).toBeVisible()
+    await shot(page, "share-case-toolbar", "share-case")
+  })
 
-  test('share-case modal with shareable', async ({ page }) => {
-    await unshareCaseFromTeam(page, SHARE_CASE_ID, SHARE_TEAM_ID);
-    await page.setViewportSize({ width: 900, height: 900 });
-    await gotoCase(page);
-    await page.getByText('Share case', { exact: true }).click();
-    const modal = page.locator('#shareCaseModal.show, .modal.show').first();
-    await expect(modal).toContainText(/Share Case/i);
-    await expect(modal.locator('[data-share-case-core-target="loading"]')).toBeHidden({ timeout: 15_000 });
-  // Requires at least one team not yet sharing this case (list-group parity).
-    await expect(modal.locator('#share-case-shareable-list [data-team-id]').first()).toBeAttached({
+  test("share-case modal with shareable", async ({ page }) => {
+    await unshareCaseFromTeam(page, SHARE_CASE_ID, SHARE_TEAM_ID)
+    await page.setViewportSize({ width: 900, height: 900 })
+    await gotoCase(page)
+    await page.getByText("Share case", { exact: true }).click()
+    const modal = page.locator("#shareCaseModal.show, .modal.show").first()
+    await expect(modal).toContainText(/Share Case/i)
+    await expect(modal.locator('[data-share-case-core-target="loading"]')).toBeHidden({
+      timeout: 15_000
+    })
+    // Requires at least one team not yet sharing this case (list-group parity).
+    await expect(modal.locator("#share-case-shareable-list [data-team-id]").first()).toBeAttached({
       timeout: 5_000
-    });
-    await page.setViewportSize({ width: 900, height: 820 });
-    await shot(page, 'share-case-modal-with-shareable', 'share-case');
-  });
+    })
+    await page.setViewportSize({ width: 900, height: 820 })
+    await shot(page, "share-case-modal-with-shareable", "share-case")
+  })
 
-  test('share-case modal shareable selected', async ({ page }) => {
-    await unshareCaseFromTeam(page, SHARE_CASE_ID, SHARE_TEAM_ID);
-    await page.setViewportSize({ width: 900, height: 900 });
-    await gotoCase(page);
-    await page.getByText('Share case', { exact: true }).click();
-    const modal = page.locator('#shareCaseModal.show, .modal.show').first();
-    await expect(modal).toContainText(/Share Case/i);
-    await expect(modal.locator('[data-share-case-core-target="loading"]')).toBeHidden({ timeout: 15_000 });
-    const shareableItems = modal.locator('#share-case-shareable-list [data-team-id]');
-    await expect(shareableItems.first()).toBeVisible();
-    await shareableItems.first().click();
-    await expect(modal.locator('#share-case-submit')).toBeVisible();
-    await page.setViewportSize({ width: 900, height: 820 });
-    await shot(page, 'share-case-modal-shareable-selected', 'share-case');
-  });
+  test("share-case modal shareable selected", async ({ page }) => {
+    await unshareCaseFromTeam(page, SHARE_CASE_ID, SHARE_TEAM_ID)
+    await page.setViewportSize({ width: 900, height: 900 })
+    await gotoCase(page)
+    await page.getByText("Share case", { exact: true }).click()
+    const modal = page.locator("#shareCaseModal.show, .modal.show").first()
+    await expect(modal).toContainText(/Share Case/i)
+    await expect(modal.locator('[data-share-case-core-target="loading"]')).toBeHidden({
+      timeout: 15_000
+    })
+    const shareableItems = modal.locator("#share-case-shareable-list [data-team-id]")
+    await expect(shareableItems.first()).toBeVisible()
+    await shareableItems.first().click()
+    await expect(modal.locator("#share-case-submit")).toBeVisible()
+    await page.setViewportSize({ width: 900, height: 820 })
+    await shot(page, "share-case-modal-shareable-selected", "share-case")
+  })
 
-  test('share-case modal no shareable', async ({ page }) => {
-    await shareCaseWithAllTeams(page, SHARE_CASE_ID);
-    await page.setViewportSize({ width: 900, height: 900 });
-    await gotoCase(page, SHARE_CASE_ID);
-    await page.getByText('Share case', { exact: true }).click();
-    const modal = page.locator('#shareCaseModal.show, .modal.show').first();
-    await expect(modal).toContainText(/Share Case/i);
-    await expect(modal.locator('[data-share-case-core-target="loading"]')).toBeHidden({ timeout: 15_000 });
-    await expect(modal.locator('#share-case-shareable-list [data-team-id]')).toHaveCount(0);
+  test("share-case modal no shareable", async ({ page }) => {
+    await shareCaseWithAllTeams(page, SHARE_CASE_ID)
+    await page.setViewportSize({ width: 900, height: 900 })
+    await gotoCase(page, SHARE_CASE_ID)
+    await page.getByText("Share case", { exact: true }).click()
+    const modal = page.locator("#shareCaseModal.show, .modal.show").first()
+    await expect(modal).toContainText(/Share Case/i)
+    await expect(modal.locator('[data-share-case-core-target="loading"]')).toBeHidden({
+      timeout: 15_000
+    })
+    await expect(modal.locator("#share-case-shareable-list [data-team-id]")).toHaveCount(0)
     // Commit 095a9e1a reserves this hero for users with zero teams at all —
     // a team that already shares this case still means the user has a team,
     // so it (and the now-empty share picker) stay hidden here.
-    await expect(modal.locator('[data-share-case-core-target="emptyShareable"]')).toBeHidden();
-    await page.setViewportSize({ width: 900, height: 820 });
-    await shot(page, 'share-case-modal-no-shareable', 'share-case');
-    await unshareAllTeamsFromCase(page, SHARE_CASE_ID);
-  });
+    await expect(modal.locator('[data-share-case-core-target="emptyShareable"]')).toBeHidden()
+    await page.setViewportSize({ width: 900, height: 820 })
+    await shot(page, "share-case-modal-no-shareable", "share-case")
+    await unshareAllTeamsFromCase(page, SHARE_CASE_ID)
+  })
 
-  test('share-case modal unshare selected', async ({ page }) => {
-    await shareCaseWithAllTeams(page, SHARE_CASE_ID);
-    await page.setViewportSize({ width: 900, height: 900 });
-    await gotoCase(page, SHARE_CASE_ID);
-    await page.getByText('Share case', { exact: true }).click();
-    const modal = page.locator('#shareCaseModal.show, .modal.show').first();
-    await expect(modal).toContainText(/Share Case/i);
-    await expect(modal.locator('[data-share-case-core-target="loading"]')).toBeHidden({ timeout: 15_000 });
-    const shared = modal.locator('#share-case-shared-list .list-group-item-success').first();
-    await expect(shared).toBeVisible();
-    await shared.click();
-    await expect(modal.locator('#unshare-case-submit')).toBeVisible();
-    await page.setViewportSize({ width: 900, height: 820 });
-    await shot(page, 'share-case-modal-unshare-selected', 'share-case');
-    const teamsResponse = await page.request.get('/api/teams', { headers: await apiHeaders(page) });
-    const payload = await teamsResponse.json();
-    const teams = Array.isArray(payload.teams) ? payload.teams : [];
+  test("share-case modal unshare selected", async ({ page }) => {
+    await shareCaseWithAllTeams(page, SHARE_CASE_ID)
+    await page.setViewportSize({ width: 900, height: 900 })
+    await gotoCase(page, SHARE_CASE_ID)
+    await page.getByText("Share case", { exact: true }).click()
+    const modal = page.locator("#shareCaseModal.show, .modal.show").first()
+    await expect(modal).toContainText(/Share Case/i)
+    await expect(modal.locator('[data-share-case-core-target="loading"]')).toBeHidden({
+      timeout: 15_000
+    })
+    const shared = modal.locator("#share-case-shared-list .list-group-item-success").first()
+    await expect(shared).toBeVisible()
+    await shared.click()
+    await expect(modal.locator("#unshare-case-submit")).toBeVisible()
+    await page.setViewportSize({ width: 900, height: 820 })
+    await shot(page, "share-case-modal-unshare-selected", "share-case")
+    const teamsResponse = await page.request.get("/api/teams", { headers: await apiHeaders(page) })
+    const payload = await teamsResponse.json()
+    const teams = Array.isArray(payload.teams) ? payload.teams : []
     if (teams.length > 0) {
-      await unshareCaseFromTeam(page, SHARE_CASE_ID, teams[0].id);
+      await unshareCaseFromTeam(page, SHARE_CASE_ID, teams[0].id)
     }
-  });
+  })
 
-  test('share-case rails modal default', async ({ page }) => {
-    await page.setViewportSize({ width: 900, height: 900 });
-    const modal = await openCasesIndexShareModalForCase(page, SHARE_CASE_ID);
+  test("share-case rails modal default", async ({ page }) => {
+    await page.setViewportSize({ width: 900, height: 900 })
+    const modal = await openCasesIndexShareModalForCase(page, SHARE_CASE_ID)
     // Rails index/teams: <select> + always-visible disabled footers (not core list-group).
-    const teamSelect = modal.locator('select#share-case-team');
-    await expect(teamSelect).toBeVisible();
-    await expect(teamSelect.locator('option').first()).toHaveText(/Select a team/i);
-    await expect(modal.locator('#share-case-submit')).toBeVisible();
-    await expect(modal.locator('#unshare-case-submit')).toBeVisible();
-    await expect(modal.locator('#share-case-submit')).toBeDisabled();
-    await expect(modal.locator('#unshare-case-submit')).toBeDisabled();
-    await page.setViewportSize({ width: 900, height: 820 });
-    await shot(page, 'share-case-rails-modal-default', 'share-case-rails');
-  });
+    const teamSelect = modal.locator("select#share-case-team")
+    await expect(teamSelect).toBeVisible()
+    await expect(teamSelect.locator("option").first()).toHaveText(/Select a team/i)
+    await expect(modal.locator("#share-case-submit")).toBeVisible()
+    await expect(modal.locator("#unshare-case-submit")).toBeVisible()
+    await expect(modal.locator("#share-case-submit")).toBeDisabled()
+    await expect(modal.locator("#unshare-case-submit")).toBeDisabled()
+    await page.setViewportSize({ width: 900, height: 820 })
+    await shot(page, "share-case-rails-modal-default", "share-case-rails")
+  })
 
-  test('share-case rails modal team selected', async ({ page }) => {
-    await unshareAllTeamsFromCase(page, SHARE_CASE_ID);
-    await page.setViewportSize({ width: 900, height: 900 });
-    const modal = await openCasesIndexShareModalForCase(page, SHARE_CASE_ID);
-    const teamSelect = modal.locator('#share-case-team');
-    const options = teamSelect.locator('option');
-    const optionCount = await options.count();
-    expect(optionCount).toBeGreaterThan(1);
-    const value = await options.nth(1).getAttribute('value');
-    expect(value, 'the team select offers a shareable team').toBeTruthy();
-    await teamSelect.selectOption(value!);
-    await expect(modal.locator('#share-case-submit')).toBeEnabled();
-    await page.setViewportSize({ width: 900, height: 820 });
-    await shot(page, 'share-case-rails-modal-team-selected', 'share-case-rails');
-  });
+  test("share-case rails modal team selected", async ({ page }) => {
+    await unshareAllTeamsFromCase(page, SHARE_CASE_ID)
+    await page.setViewportSize({ width: 900, height: 900 })
+    const modal = await openCasesIndexShareModalForCase(page, SHARE_CASE_ID)
+    const teamSelect = modal.locator("#share-case-team")
+    const options = teamSelect.locator("option")
+    const optionCount = await options.count()
+    expect(optionCount).toBeGreaterThan(1)
+    const value = await options.nth(1).getAttribute("value")
+    // eslint-disable-next-line playwright/prefer-web-first-assertions -- value is selected below
+    expect(value, "the team select offers a shareable team").toBeTruthy()
+    await teamSelect.selectOption(value!)
+    await expect(modal.locator("#share-case-submit")).toBeEnabled()
+    await page.setViewportSize({ width: 900, height: 820 })
+    await shot(page, "share-case-rails-modal-team-selected", "share-case-rails")
+  })
 
-  test('share-case rails modal unshare selected', async ({ page }) => {
-    await ensureCaseSharedWithOneTeam(page, SHARE_CASE_ID);
-    await page.setViewportSize({ width: 900, height: 900 });
-    const modal = await openCasesIndexShareModalForCase(page, SHARE_CASE_ID);
-    const shared = modal.locator('#share-case-shared-list [data-team-id]').first();
-    await expect(shared).toBeVisible();
-    await shared.click();
-    await expect(modal.locator('#unshare-case-submit')).toBeEnabled();
-    await page.setViewportSize({ width: 900, height: 820 });
-    await shot(page, 'share-case-rails-modal-unshare-selected', 'share-case-rails');
-  });
+  test("share-case rails modal unshare selected", async ({ page }) => {
+    await ensureCaseSharedWithOneTeam(page, SHARE_CASE_ID)
+    await page.setViewportSize({ width: 900, height: 900 })
+    const modal = await openCasesIndexShareModalForCase(page, SHARE_CASE_ID)
+    const shared = modal.locator("#share-case-shared-list [data-team-id]").first()
+    await expect(shared).toBeVisible()
+    await shared.click()
+    await expect(modal.locator("#unshare-case-submit")).toBeEnabled()
+    await page.setViewportSize({ width: 900, height: 820 })
+    await shot(page, "share-case-rails-modal-unshare-selected", "share-case-rails")
+  })
 
-  test('judgements share case opens core modal', async ({ page }) => {
-    await unshareAllTeamsFromCase(page, SHARE_CASE_ID);
-    await stubEmptyBookCatalog(page, SHARE_CASE_ID);
-    await page.setViewportSize({ width: 900, height: 900 });
-    await gotoCase(page, SHARE_CASE_ID);
-    await page.locator('button[data-bs-target="#judgementsModal"]').getByText('Judgements', { exact: true }).click();
-    const judgementsModal = page.locator('#judgementsModal.show, .modal.show').first();
-    await expect(judgementsModal).toBeVisible();
-    const shareCaseLink = judgementsModal.getByText('share this case', { exact: true });
-    await expect(shareCaseLink).toBeVisible({ timeout: 15_000 });
-    await shareCaseLink.click();
-    await expect(judgementsModal).toBeHidden({ timeout: 10_000 });
-    const shareModal = page.locator('#shareCaseModal.show');
-    await expect(shareModal).toBeVisible();
+  test("judgements share case opens core modal", async ({ page }) => {
+    await unshareAllTeamsFromCase(page, SHARE_CASE_ID)
+    await stubEmptyBookCatalog(page, SHARE_CASE_ID)
+    await page.setViewportSize({ width: 900, height: 900 })
+    await gotoCase(page, SHARE_CASE_ID)
+    await page
+      .locator('button[data-bs-target="#judgementsModal"]')
+      .getByText("Judgements", { exact: true })
+      .click()
+    const judgementsModal = page.locator("#judgementsModal.show, .modal.show").first()
+    await expect(judgementsModal).toBeVisible()
+    const shareCaseLink = judgementsModal.getByText("share this case", { exact: true })
+    await expect(shareCaseLink).toBeVisible({ timeout: 15_000 })
+    await shareCaseLink.click()
+    await expect(judgementsModal).toBeHidden({ timeout: 10_000 })
+    const shareModal = page.locator("#shareCaseModal.show")
+    await expect(shareModal).toBeVisible()
     await expect(shareModal.locator('[data-share-case-core-target="loading"]')).toBeHidden({
       timeout: 15_000
-    });
-    await expect(shareModal.locator('#share-case-shareable-list [data-team-id]').first()).toBeAttached({
+    })
+    await expect(
+      shareModal.locator("#share-case-shareable-list [data-team-id]").first()
+    ).toBeAttached({
       timeout: 5_000
-    });
-  });
+    })
+  })
 
-  test('clone-case popover', async ({ page }) => {
-    await page.setViewportSize({ width: 900, height: 900 });
-    await gotoCase(page);
-    await page.locator('button[data-bs-target="#cloneCaseModal"]').click();
-    const modal = page.locator('.modal.show').first();
-    await expect(modal).toBeVisible();
-    await page.setViewportSize({ width: 900, height: 760 });
-    await openHelpPopover(page, modal, /Select to include either a single try or all the tries/);
-    await shot(page, 'clone-case-popover');
-  });
+  test("clone-case popover", async ({ page }) => {
+    await page.setViewportSize({ width: 900, height: 900 })
+    await gotoCase(page)
+    await page.locator('button[data-bs-target="#cloneCaseModal"]').click()
+    const modal = page.locator(".modal.show").first()
+    await expect(modal).toBeVisible()
+    await page.setViewportSize({ width: 900, height: 760 })
+    await openHelpPopover(page, modal, /Select to include either a single try or all the tries/)
+    await shot(page, "clone-case-popover")
+  })
 
-  test('judgements popover', async ({ page }) => {
-    await ensureCaseSharedWithOneTeam(page, SHARE_CASE_ID);
-    await page.setViewportSize({ width: 900, height: 900 });
-    await gotoCase(page, SHARE_CASE_ID);
-    await page.locator('button[data-bs-target="#judgementsModal"]').getByText('Judgements', { exact: true }).click();
-    const modal = page.locator('#judgementsModal.show, .modal.show').first();
-    await expect(modal).toBeVisible();
-    await expect(modal.getByLabel('Help').first()).toBeVisible({ timeout: 15_000 });
-    await page.setViewportSize({ width: 900, height: 820 });
-    await openHelpPopover(page, modal, /Books you own are always listed below/);
-    await shot(page, 'judgements-popover');
-  });
+  test("judgements popover", async ({ page }) => {
+    await ensureCaseSharedWithOneTeam(page, SHARE_CASE_ID)
+    await page.setViewportSize({ width: 900, height: 900 })
+    await gotoCase(page, SHARE_CASE_ID)
+    await page
+      .locator('button[data-bs-target="#judgementsModal"]')
+      .getByText("Judgements", { exact: true })
+      .click()
+    const modal = page.locator("#judgementsModal.show, .modal.show").first()
+    await expect(modal).toBeVisible()
+    await expect(modal.getByLabel("Help").first()).toBeVisible({ timeout: 15_000 })
+    await page.setViewportSize({ width: 900, height: 820 })
+    await openHelpPopover(page, modal, /Books you own are always listed below/)
+    await shot(page, "judgements-popover")
+  })
 
-  test('import-ratings modal', async ({ page }) => {
-    await page.setViewportSize({ width: 900, height: 900 });
-    await gotoCase(page);
-    await page.locator('button[data-bs-target="#importRatingsModal"]').click();
-    const modal = page.locator('#importRatingsModal.show');
-    await expect(modal).toBeVisible();
-    await page.setViewportSize({ width: 900, height: 900 });
-    await expect(modal.getByText('Ratings', { exact: true })).toBeVisible();
-    await shot(page, 'import-ratings-modal');
-  });
+  test("import-ratings modal", async ({ page }) => {
+    await page.setViewportSize({ width: 900, height: 900 })
+    await gotoCase(page)
+    await page.locator('button[data-bs-target="#importRatingsModal"]').click()
+    const modal = page.locator("#importRatingsModal.show")
+    await expect(modal).toBeVisible()
+    await page.setViewportSize({ width: 900, height: 900 })
+    await expect(modal.getByText("Ratings", { exact: true })).toBeVisible()
+    await shot(page, "import-ratings-modal")
+  })
 
-  test('annotation timeAgo', async ({ page }) => {
-    await page.setViewportSize({ width: 1280, height: 900 });
-    await gotoCase(page, QUERIES_CASE_ID);
-    await page.locator('#case-actions').getByText('Tune Relevance').click();
-    await page.locator('#dev-settings button[data-tune-relevance-tab-param="annotations"]').click();
-    if ((await page.locator('.annotations-time').count()) === 0) {
-      await page.locator('#annotation-message').fill('Migration screenshot annotation');
-      await page.getByRole('button', { name: 'Create', exact: true }).click();
+  test("annotation timeAgo", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 })
+    await gotoCase(page, QUERIES_CASE_ID)
+    await page.locator("#case-actions").getByText("Tune Relevance").click()
+    await page.locator('#dev-settings button[data-tune-relevance-tab-param="annotations"]').click()
+    if ((await page.locator(".annotations-time").count()) === 0) {
+      await page.locator("#annotation-message").fill("Migration screenshot annotation")
+      await page.getByRole("button", { name: "Create", exact: true }).click()
     }
-    await expect(page.locator('.annotations-time').first()).toBeVisible({ timeout: 10_000 });
-    await shot(page, 'annotation-timeago');
-  });
-});
+    await expect(page.locator(".annotations-time").first()).toBeVisible({ timeout: 10_000 })
+    await shot(page, "annotation-timeago")
+  })
+})

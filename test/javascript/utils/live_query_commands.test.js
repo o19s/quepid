@@ -20,8 +20,8 @@ describe("live query commands runtime", () => {
       paginate: vi.fn().mockResolvedValue(undefined),
       ratedPaginate: vi.fn().mockResolvedValue(undefined)
     }
-    const schedule = vi.fn(callback => callback())
-    const getQuery = vi.fn().mockImplementation(queryId => queryId === 1 ? query : null)
+    const schedule = vi.fn((callback) => callback())
+    const getQuery = vi.fn().mockImplementation((queryId) => (queryId === 1 ? query : null))
     const getShowOnlyRated = vi.fn().mockReturnValue(false)
     const runtime = createLiveQueryCommandsRuntime({
       getQuery,

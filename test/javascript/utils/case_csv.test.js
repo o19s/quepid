@@ -1,12 +1,18 @@
 import { describe, expect, it } from "vitest"
-import { buildDetailedCaseCsv, buildGeneralCaseCsv, buildSnapshotCsv, csvField, formatDownloadFileName } from "utils/case_csv"
+import {
+  buildDetailedCaseCsv,
+  buildGeneralCaseCsv,
+  buildSnapshotCsv,
+  csvField,
+  formatDownloadFileName
+} from "utils/case_csv"
 
 // Escaping edge cases preserve the established export behavior.
 describe("buildGeneralCaseCsv", () => {
   const baseCaseData = {
     case_name: "Test Case",
     case_id: 8,
-    teams: [ { name: "Test Team" } ],
+    teams: [{ name: "Test Team" }],
     last_score: {
       updated_at: "2015-07-14 16:08:55",
       queries: {
@@ -27,9 +33,9 @@ describe("buildGeneralCaseCsv", () => {
 
     expect(result).toEqual(
       "Team Name,Case Name,Case ID,Query Text,Score,Date Last Scored,Count,Information Need,Notes,Options\r\n" +
-      "Test Team,Test Case,8,dog,30,2015-07-14 16:08:55,,,This dog looks like a great dog.,\r\n" +
-      'Test Team,Test Case,8,cat,0,2015-07-14 16:08:55,,,"Is this ""really"" a ""cat""?",\r\n' +
-      "Test Team,Test Case,8,foo,,2015-07-14 16:08:55,,,chil'laxin,\r\n"
+        "Test Team,Test Case,8,dog,30,2015-07-14 16:08:55,,,This dog looks like a great dog.,\r\n" +
+        'Test Team,Test Case,8,cat,0,2015-07-14 16:08:55,,,"Is this ""really"" a ""cat""?",\r\n' +
+        "Test Team,Test Case,8,foo,,2015-07-14 16:08:55,,,chil'laxin,\r\n"
     )
   })
 
@@ -40,21 +46,27 @@ describe("buildGeneralCaseCsv", () => {
   })
 
   it.each([
-    [ 'a value with a " in it', 'Test "Case"', '"Test ""Case"""' ],
-    [ "a value with a \\n in it", "Test \n Case", '"Test \n Case"' ],
-    [ "a value with a \\r in it", "Test \r Case", '"Test \r Case"' ],
-    [ "a value with a \\n\\r in it", "Test \n\r Case", '"Test \n\r Case"' ],
-    [ "a value with a , in it", "Test, Case", '"Test, Case"' ],
-    [ "a value that starts with =", "=Test Case", " =Test Case" ],
-    [ "a value that starts with @", "@Test Case", " @Test Case" ],
-    [ "a value that starts with +", "+Test Case", " +Test Case" ],
-    [ "a value that starts with -", "-Test Case", " -Test Case" ],
-    [ "a formula that needs CSV quoting", '=HYPERLINK("https://example.com","click")', '" =HYPERLINK(""https://example.com"",""click"")"' ]
+    ['a value with a " in it', 'Test "Case"', '"Test ""Case"""'],
+    ["a value with a \\n in it", "Test \n Case", '"Test \n Case"'],
+    ["a value with a \\r in it", "Test \r Case", '"Test \r Case"'],
+    ["a value with a \\n\\r in it", "Test \n\r Case", '"Test \n\r Case"'],
+    ["a value with a , in it", "Test, Case", '"Test, Case"'],
+    ["a value that starts with =", "=Test Case", " =Test Case"],
+    ["a value that starts with @", "@Test Case", " @Test Case"],
+    ["a value that starts with +", "+Test Case", " +Test Case"],
+    ["a value that starts with -", "-Test Case", " -Test Case"],
+    [
+      "a formula that needs CSV quoting",
+      '=HYPERLINK("https://example.com","click")',
+      '" =HYPERLINK(""https://example.com"",""click"")"'
+    ]
   ])("escapes %s", (_description, caseName, expectedCaseNameField) => {
     const result = buildGeneralCaseCsv({ ...baseCaseData, case_name: caseName }, queries)
     const firstDataRow = result.split("\r\n")[1]
 
-    expect(firstDataRow).toEqual(`Test Team,${expectedCaseNameField},8,dog,30,2015-07-14 16:08:55,,,This dog looks like a great dog.,`)
+    expect(firstDataRow).toEqual(
+      `Test Team,${expectedCaseNameField},8,dog,30,2015-07-14 16:08:55,,,This dog looks like a great dog.,`
+    )
   })
 })
 
@@ -63,7 +75,7 @@ describe("buildSnapshotCsv", () => {
     name: "Weekly check",
     // Noon UTC keeps the local calendar date stable across any test-runner timezone.
     time: "2026-03-05T12:00:00Z",
-    queries: [ { query_id: 1, query_text: "dog" } ],
+    queries: [{ query_id: 1, query_text: "dog" }],
     docs: {
       1: [
         { id: "doc-1", fields: { title: "Good dog" } },
@@ -77,8 +89,8 @@ describe("buildSnapshotCsv", () => {
 
     expect(result).toEqual(
       "Snapshot Name,Snapshot Time,Case ID,Query Text,Doc ID,Doc Position,title\r\n" +
-      "(3/5/26) Weekly check,2026-03-05T12:00:00Z,8,dog,doc-1,1,Good dog\r\n" +
-      '(3/5/26) Weekly check,2026-03-05T12:00:00Z,8,dog,doc-2,2,"Great, dog"\r\n'
+        "(3/5/26) Weekly check,2026-03-05T12:00:00Z,8,dog,doc-1,1,Good dog\r\n" +
+        '(3/5/26) Weekly check,2026-03-05T12:00:00Z,8,dog,doc-2,2,"Great, dog"\r\n'
     )
   })
 
@@ -87,7 +99,9 @@ describe("buildSnapshotCsv", () => {
     // `stringifySnapshot` this ports — only the per-query data rows are skipped.
     const result = buildSnapshotCsv(8, { ...snapshotData, queries: [] })
 
-    expect(result).toEqual("Snapshot Name,Snapshot Time,Case ID,Query Text,Doc ID,Doc Position,title\r\n")
+    expect(result).toEqual(
+      "Snapshot Name,Snapshot Time,Case ID,Query Text,Doc ID,Doc Position,title\r\n"
+    )
   })
 })
 
@@ -97,36 +111,40 @@ describe("buildDetailedCaseCsv", () => {
       {
         case_name: "Test Case",
         case_id: 8,
-        teams: [ { name: "Test Team" } ],
+        teams: [{ name: "Test Team" }],
         last_score: { case_id: 8 }
       },
       {
         1: {
           queryText: "dog",
-          fieldSpec: { fields: [ "id", "title", "brand" ], id: "id", title: "title" },
-          docs: [
-            { id: "doc-1", title: "Good dog", rating: 2, rawFields: { brand: "Acme" } }
-          ]
+          fieldSpec: { fields: ["id", "title", "brand"], id: "id", title: "title" },
+          docs: [{ id: "doc-1", title: "Good dog", rating: 2, rawFields: { brand: "Acme" } }]
         }
       }
     )
 
     expect(result).toBe(
       "Team Name,Case Name,Case ID,Query Text,Doc ID,Doc Position,Title,Rating,brand\r\n" +
-      "Test Team,Test Case,8,dog,doc-1,1,Good dog,2,Acme\r\n"
+        "Test Team,Test Case,8,dog,doc-1,1,Good dog,2,Acme\r\n"
     )
   })
 
   it("keeps empty-query rows compatible with the legacy export", () => {
     const result = buildDetailedCaseCsv(
       { case_name: "Test Case", case_id: 8, teams: [], last_score: { case_id: 8 } },
-      { 1: { queryText: "dog", fieldSpec: { fields: [ "id", "title" ], id: "id", title: "title" }, docs: [] } }
+      {
+        1: {
+          queryText: "dog",
+          fieldSpec: { fields: ["id", "title"], id: "id", title: "title" },
+          docs: []
+        }
+      }
     )
 
     // The legacy implementation emits only the four available row fields.
     expect(result).toBe(
       "Team Name,Case Name,Case ID,Query Text,Doc ID,Doc Position,Title,Rating\r\n" +
-      ",Test Case,8,dog\r\n"
+        ",Test Case,8,dog\r\n"
     )
   })
 })
@@ -142,7 +160,14 @@ describe("csvField", () => {
   })
 
   it("leaves plain numeric strings unescaped, like CsvExport", () => {
-    expect(["-1", "+2", "-3.5", "-4abc", "-1+1", "-1 "].map(csvField)).toEqual(["-1", "+2", "-3.5", " -4abc", " -1+1", "-1"])
+    expect(["-1", "+2", "-3.5", "-4abc", "-1+1", "-1 "].map(csvField)).toEqual([
+      "-1",
+      "+2",
+      "-3.5",
+      " -4abc",
+      " -1+1",
+      "-1"
+    ])
   })
 })
 
@@ -150,40 +175,43 @@ describe("formatDownloadFileName", () => {
   it("replaces spaces and colons so the name is filesystem-safe", () => {
     expect(formatDownloadFileName("My Case: general.csv")).toBe("My_Case__general.csv")
   })
-describe("csv edge cases", () => {
-  it("trims string fields", () => {
-    expect(csvField("  hello  ")).toBe("hello")
-  })
+  describe("csv edge cases", () => {
+    it("trims string fields", () => {
+      expect(csvField("  hello  ")).toBe("hello")
+    })
 
-  it("includes information need and notes only when present", () => {
-    const caseData = {
-      case_name: "C",
-      case_id: 1,
-      teams: [],
-      last_score: { updated_at: "d", queries: { 1: { score: 1, text: "a" }, 2: { score: 2, text: "b" } } }
-    }
-    const csv = buildGeneralCaseCsv(caseData, [
-      { query_id: 1, information_need: "find dogs", notes: "n1", options: { boost: 2 } },
-      { query_id: 2, information_need: "", notes: "", options: {} }
-    ])
-    const [, first, second] = csv.split("\r\n")
-    expect(first).toContain("find dogs")
-    expect(first).toContain("n1")
-    expect(first).toContain("boost")
-    expect(second).toBe("," + "C,1,b,2,d,,,,")
-  })
+    it("includes information need and notes only when present", () => {
+      const caseData = {
+        case_name: "C",
+        case_id: 1,
+        teams: [],
+        last_score: {
+          updated_at: "d",
+          queries: { 1: { score: 1, text: "a" }, 2: { score: 2, text: "b" } }
+        }
+      }
+      const csv = buildGeneralCaseCsv(caseData, [
+        { query_id: 1, information_need: "find dogs", notes: "n1", options: { boost: 2 } },
+        { query_id: 2, information_need: "", notes: "", options: {} }
+      ])
+      const [, first, second] = csv.split("\r\n")
+      expect(first).toContain("find dogs")
+      expect(first).toContain("n1")
+      expect(first).toContain("boost")
+      expect(second).toBe("," + "C,1,b,2,d,,,,")
+    })
 
-  it("prefers the last score's case id in the detailed export", () => {
-    const csv = buildDetailedCaseCsv(
-      { case_name: "C", case_id: 8, teams: [], last_score: { case_id: 99 } },
-      { 1: { queryText: "dog", fieldSpec: { id: "id", title: "title", fields: [] }, docs: [] } }
-    )
-    expect(csv.split("\r\n")[1]).toBe(",C,99,dog")
-    const fallback = buildDetailedCaseCsv(
-      { case_name: "C", case_id: 8, teams: [], last_score: {} },
-      { 1: { queryText: "dog", fieldSpec: { id: "id", title: "title", fields: [] }, docs: [] } }
-    )
-    expect(fallback.split("\r\n")[1]).toBe(",C,8,dog")
+    it("prefers the last score's case id in the detailed export", () => {
+      const csv = buildDetailedCaseCsv(
+        { case_name: "C", case_id: 8, teams: [], last_score: { case_id: 99 } },
+        { 1: { queryText: "dog", fieldSpec: { id: "id", title: "title", fields: [] }, docs: [] } }
+      )
+      expect(csv.split("\r\n")[1]).toBe(",C,99,dog")
+      const fallback = buildDetailedCaseCsv(
+        { case_name: "C", case_id: 8, teams: [], last_score: {} },
+        { 1: { queryText: "dog", fieldSpec: { id: "id", title: "title", fields: [] }, docs: [] } }
+      )
+      expect(fallback.split("\r\n")[1]).toBe(",C,8,dog")
+    })
   })
-})
 })

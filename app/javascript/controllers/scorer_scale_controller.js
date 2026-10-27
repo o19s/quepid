@@ -14,18 +14,19 @@ export default class extends Controller {
     const preset = event.target.value
     let scaleValue = ""
 
-    switch(preset) {
-      case 'binary':
+    switch (preset) {
+      case "binary":
         scaleValue = "0,1"
         break
-      case 'graded':
+      case "graded":
         scaleValue = "0,1,2,3"
         break
-      case 'custom':
+      case "custom":
         // Clear the field for custom and update placeholder
         if (this.hasScaleListTarget) {
           this.scaleListTarget.value = ""
-          this.scaleListTarget.placeholder = "Provide a list of comma separated INTEGERS to use for the scoring scale"
+          this.scaleListTarget.placeholder =
+            "Provide a list of comma separated INTEGERS to use for the scoring scale"
         }
         return
     }
@@ -34,7 +35,7 @@ export default class extends Controller {
       this.scaleListTarget.value = scaleValue
       this.scaleListTarget.placeholder = ""
       // Trigger change event to update scale labels if needed
-      this.scaleListTarget.dispatchEvent(new Event('change', { bubbles: true }))
+      this.scaleListTarget.dispatchEvent(new Event("change", { bubbles: true }))
       this.updateScaleLabels(scaleValue)
     }
   }
@@ -42,15 +43,18 @@ export default class extends Controller {
   updateScaleLabels(scaleValue) {
     if (!this.hasScaleLabelsTarget) return
 
-    const values = scaleValue.split(',').map(v => v.trim()).filter(v => v)
+    const values = scaleValue
+      .split(",")
+      .map((v) => v.trim())
+      .filter((v) => v)
     const labelsContainer = this.scaleLabelsTarget
     const labels = new Map(
-      [...labelsContainer.querySelectorAll("input")].map(input => [input.name, input.value])
+      [...labelsContainer.querySelectorAll("input")].map((input) => [input.name, input.value])
     )
-    
-    labelsContainer.innerHTML = ''
-    
-    values.forEach(value => {
+
+    labelsContainer.innerHTML = ""
+
+    values.forEach((value) => {
       const label = this.labelTemplateTarget.content.firstElementChild.cloneNode(true)
       label.querySelector("[data-scale-value]").textContent = value
       const input = label.querySelector("input")

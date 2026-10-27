@@ -10,7 +10,9 @@ vi.mock("utils/core_store_access", () => ({ getCoreStores: () => testStores || {
 
 let testCapabilities
 
-vi.mock("utils/core_capability_access", () => ({ getCoreCapabilities: () => testCapabilities || {} }))
+vi.mock("utils/core_capability_access", () => ({
+  getCoreCapabilities: () => testCapabilities || {}
+}))
 
 vi.mock("utils/core_flash", () => ({ default: { show: vi.fn(), hide: vi.fn() } }))
 beforeEach(() => {
@@ -20,10 +22,12 @@ beforeEach(() => {
 
 describe("buildFrogReportStats", () => {
   it("counts results, ratings, and missing ratings from document snapshots", () => {
-    expect(buildFrogReportStats([
-      { docs: [{ id: 1 }, { id: 2 }], depthOfRating: 2, missingRatings: 1 },
-      { docs: [], depthOfRating: 2, missingRatings: 0 }
-    ])).toEqual({
+    expect(
+      buildFrogReportStats([
+        { docs: [{ id: 1 }, { id: 2 }], depthOfRating: 2, missingRatings: 1 },
+        { docs: [], depthOfRating: 2, missingRatings: 0 }
+      ])
+    ).toEqual({
       withResults: 1,
       withoutResults: 1,
       ratingsNeeded: 2,
@@ -34,45 +38,79 @@ describe("buildFrogReportStats", () => {
   })
 
   it("avoids a NaN missing rate when there are no results", () => {
-    expect(buildFrogReportStats([{ docs: [], depthOfRating: 10, missingRatings: 0 }])).toMatchObject({
+    expect(
+      buildFrogReportStats([{ docs: [], depthOfRating: 10, missingRatings: 0 }])
+    ).toMatchObject({
       ratingsNeeded: 0,
       missingRate: 0
     })
   })
 
   it("recognizes fully rated queries", () => {
-    expect(buildFrogReportStats([{ docs: [{ id: 1 }], missingRatings: 0, allRated: true }]).allRated).toBe(true)
+    expect(
+      buildFrogReportStats([{ docs: [{ id: 1 }], missingRatings: 0, allRated: true }]).allRated
+    ).toBe(true)
   })
 
   it("treats unknown missing counts as every returned doc up to the rating depth", () => {
-    expect(buildFrogReportStats([
-      { docs: [{ id: 1 }, { id: 2 }, { id: 3 }], depthOfRating: 2 },
-      { docs: [{ id: 4 }] }
-    ])).toMatchObject({ ratingsNeeded: 4, missingRatings: 2, missingRate: 50, allRated: false })
+    expect(
+      buildFrogReportStats([
+        { docs: [{ id: 1 }, { id: 2 }, { id: 3 }], depthOfRating: 2 },
+        { docs: [{ id: 4 }] }
+      ])
+    ).toMatchObject({ ratingsNeeded: 4, missingRatings: 2, missingRate: 50, allRated: false })
     expect(buildFrogReportStats([]).allRated).toBe(false)
   })
 })
 
 const TARGETS = [
-  "caseName", "queryCount", "withResults", "withoutResults", "noneWithoutResults", "oneWithoutResults", "manyWithoutResults", "ratingsNeeded",
-  "allRated", "notAllRated", "missingRatings", "missingRate", "hopMessage",
-  "chart", "refreshButton", "refreshIcon", "bookName", "error"
+  "caseName",
+  "queryCount",
+  "withResults",
+  "withoutResults",
+  "noneWithoutResults",
+  "oneWithoutResults",
+  "manyWithoutResults",
+  "ratingsNeeded",
+  "allRated",
+  "notAllRated",
+  "missingRatings",
+  "missingRate",
+  "hopMessage",
+  "chart",
+  "refreshButton",
+  "refreshIcon",
+  "bookName",
+  "error"
 ]
 
 // Stats come from the live queries (the documents store only holds expanded queries' docs);
 // the store only tells the report when to re-render.
 function buildController({ queries = {}, caseState = {}, queryLifecycle } = {}) {
   const store = new QueryDocumentsStore()
-  const liveQueries = Object.fromEntries(Object.entries(queries).map(([id, state]) => [id, {
-    queryId: Number(id),
-    docs: state.docs || [],
-    depthOfRating: state.depthOfRating,
-    currentScore: { score: 0, countMissingRatings: state.missingRatings, allRated: state.allRated }
-  }]))
+  const liveQueries = Object.fromEntries(
+    Object.entries(queries).map(([id, state]) => [
+      id,
+      {
+        queryId: Number(id),
+        docs: state.docs || [],
+        depthOfRating: state.depthOfRating,
+        currentScore: {
+          score: 0,
+          countMissingRatings: state.missingRatings,
+          allRated: state.allRated
+        }
+      }
+    ])
+  )
   testStores = { documents: store }
-  testCapabilities = { caseState, queryLifecycle, queryCapabilities: { getQueries: () => liveQueries } }
+  testCapabilities = {
+    caseState,
+    queryLifecycle,
+    queryCapabilities: { getQueries: () => liveQueries }
+  }
   const controller = buildControllerFixture(FrogReportController, {
-    targets: Object.fromEntries(TARGETS.map(name => [name, document.createElement("div")])),
+    targets: Object.fromEntries(TARGETS.map((name) => [name, document.createElement("div")])),
     overrides: { lifecycle: {}, store }
   })
   return controller
@@ -91,13 +129,15 @@ describe("FrogReportController", () => {
   it("buckets queries by missing ratings for the chart, labelling the extremes", () => {
     const controller = buildController()
 
-    expect(controller.distribution([
-      { depthOfRating: 3, missingRatings: 0 },
-      { depthOfRating: 3, missingRatings: 0 },
-      { missingRatings: 2 },
-      { missingRatings: 3 },
-      { docs: [{ id: 1 }] }
-    ])).toEqual([
+    expect(
+      controller.distribution([
+        { depthOfRating: 3, missingRatings: 0 },
+        { depthOfRating: 3, missingRatings: 0 },
+        { missingRatings: 2 },
+        { missingRatings: 3 },
+        { docs: [{ id: 1 }] }
+      ])
+    ).toEqual([
       { category: "Fully Rated", amount: 2 },
       { category: "Missing 1", amount: 1 },
       { category: "Missing 2", amount: 1 },
@@ -144,7 +184,11 @@ describe("FrogReportController", () => {
       const controller = buildController({ queries })
       controller.render()
       const hidden = (name) => controller[`${name}Target`].classList.contains("d-none")
-      return [hidden("noneWithoutResults"), hidden("oneWithoutResults"), hidden("manyWithoutResults")]
+      return [
+        hidden("noneWithoutResults"),
+        hidden("oneWithoutResults"),
+        hidden("manyWithoutResults")
+      ]
     }
     const docs = [{ id: "a" }]
     expect(wording({ 1: { docs } })).toEqual([false, true, true])
@@ -153,7 +197,9 @@ describe("FrogReportController", () => {
   })
 
   it("hides the hop message and refresh button for a fully rated case with no book", () => {
-    const controller = buildController({ queries: { 1: { docs: [{ id: "a" }], missingRatings: 0, allRated: true } } })
+    const controller = buildController({
+      queries: { 1: { docs: [{ id: "a" }], missingRatings: 0, allRated: true } }
+    })
 
     controller.render()
 
@@ -165,16 +211,27 @@ describe("FrogReportController", () => {
   })
 
   it("refreshes ratings from the book in the foreground for a small case, then reloads queries", async () => {
-    vi.stubGlobal("fetch", vi.fn(() => Promise.resolve(new Response("{}", { status: 200 }))))
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() => Promise.resolve(new Response("{}", { status: 200 })))
+    )
     const refreshQueries = vi.fn(() => Promise.resolve())
     const flash = { show: vi.fn() }
     Object.assign(coreFlash, flash)
-    const controller = buildController({ queries: { 1: {} }, caseState: { bookId: 3, caseNo: 9 }, queryLifecycle: { refreshQueries } })
-    controller.refreshUrlTemplateValue = "books/__BOOK_ID__/cases/9/refresh?background=__BACKGROUND__"
+    const controller = buildController({
+      queries: { 1: {} },
+      caseState: { bookId: 3, caseNo: 9 },
+      queryLifecycle: { refreshQueries }
+    })
+    controller.refreshUrlTemplateValue =
+      "books/__BOOK_ID__/cases/9/refresh?background=__BACKGROUND__"
 
     await controller.refresh()
 
-    expect(fetch).toHaveBeenCalledWith("books/3/cases/9/refresh?background=false", expect.objectContaining({ method: "PUT" }))
+    expect(fetch).toHaveBeenCalledWith(
+      "books/3/cases/9/refresh?background=false",
+      expect.objectContaining({ method: "PUT" })
+    )
     expect(refreshQueries).toHaveBeenCalledWith(9)
     expect(flash.show).toHaveBeenCalledWith("notice", "Ratings have been refreshed.")
     expect(controller.refreshButtonTarget.disabled).toBe(false)
@@ -182,12 +239,19 @@ describe("FrogReportController", () => {
   })
 
   it("refreshes a case with 50+ queries in the background and returns to the home page", async () => {
-    vi.stubGlobal("fetch", vi.fn(() => Promise.resolve(new Response("{}", { status: 200 }))))
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() => Promise.resolve(new Response("{}", { status: 200 })))
+    )
     const assign = vi.spyOn(window.location, "assign").mockImplementation(() => {})
     const refreshQueries = vi.fn()
     Object.assign(coreFlash, { show: vi.fn() })
     const queries = Object.fromEntries(Array.from({ length: 50 }, (_, i) => [i + 1, {}]))
-    const controller = buildController({ queries, caseState: { bookId: 3, caseNo: 9 }, queryLifecycle: { refreshQueries } })
+    const controller = buildController({
+      queries,
+      caseState: { bookId: 3, caseNo: 9 },
+      queryLifecycle: { refreshQueries }
+    })
     controller.refreshUrlTemplateValue = "refresh?background=__BACKGROUND__"
 
     await controller.refresh()
@@ -198,13 +262,18 @@ describe("FrogReportController", () => {
   })
 
   it("shows the error and re-enables refresh when the request fails", async () => {
-    vi.stubGlobal("fetch", vi.fn(() => Promise.resolve(new Response("{}", { status: 500, statusText: "Server Error" }))))
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() => Promise.resolve(new Response("{}", { status: 500, statusText: "Server Error" })))
+    )
     const controller = buildController({ caseState: { bookId: 3, caseNo: 9 } })
     controller.refreshUrlTemplateValue = "refresh"
 
     await controller.refresh()
 
-    expect(controller.errorTarget.textContent).toBe("An error (500 Server Error) occurred, please try again.")
+    expect(controller.errorTarget.textContent).toBe(
+      "An error (500 Server Error) occurred, please try again."
+    )
     expect(controller.errorTarget.classList.contains("d-none")).toBe(false)
     expect(controller.refreshButtonTarget.disabled).toBe(false)
   })
@@ -219,7 +288,7 @@ describe("FrogReportController", () => {
   })
   it("finalizes superseded and disconnected chart results without mounting them", async () => {
     const complete = []
-    window.vegaEmbed = vi.fn(() => new Promise(resolve => complete.push(resolve)))
+    window.vegaEmbed = vi.fn(() => new Promise((resolve) => complete.push(resolve)))
     const controller = buildController()
     controller.renderChart([])
     controller.renderChart([])
@@ -242,26 +311,39 @@ describe("FrogReportController", () => {
     expect(controller.chartResult).toBeNull()
   })
 
-  it.each([200, 500])("completes the shared mutation but ignores late UI feedback (%s) after disconnect", async status => {
-    let complete
-    vi.stubGlobal("fetch", vi.fn(() => new Promise(resolve => { complete = resolve })))
-    const refreshQueries = vi.fn().mockResolvedValue()
-    const flash = { show: vi.fn() }
-    Object.assign(coreFlash, flash)
-    const controller = buildController({
-      queries: { 1: {} }, caseState: { bookId: 3, caseNo: 9 }, queryLifecycle: { refreshQueries }
-    })
-    controller.refreshUrlTemplateValue = "refresh"
-    const pending = controller.refresh()
-    controller.disconnect()
-    controller.errorTarget.textContent = "new connection"
-    controller.lifecycle = {}
-    complete(new Response("{}", { status }))
-    await pending
-    expect(refreshQueries).toHaveBeenCalledTimes(status === 200 ? 1 : 0)
-    expect(controller.errorTarget.textContent).toBe("new connection")
-    expect(flash.show).not.toHaveBeenCalled()
-  })
+  it.each([200, 500])(
+    "completes the shared mutation but ignores late UI feedback (%s) after disconnect",
+    async (status) => {
+      let complete
+      vi.stubGlobal(
+        "fetch",
+        vi.fn(
+          () =>
+            new Promise((resolve) => {
+              complete = resolve
+            })
+        )
+      )
+      const refreshQueries = vi.fn().mockResolvedValue()
+      const flash = { show: vi.fn() }
+      Object.assign(coreFlash, flash)
+      const controller = buildController({
+        queries: { 1: {} },
+        caseState: { bookId: 3, caseNo: 9 },
+        queryLifecycle: { refreshQueries }
+      })
+      controller.refreshUrlTemplateValue = "refresh"
+      const pending = controller.refresh()
+      controller.disconnect()
+      controller.errorTarget.textContent = "new connection"
+      controller.lifecycle = {}
+      complete(new Response("{}", { status }))
+      await pending
+      expect(refreshQueries).toHaveBeenCalledTimes(status === 200 ? 1 : 0)
+      expect(controller.errorTarget.textContent).toBe("new connection")
+      expect(flash.show).not.toHaveBeenCalled()
+    }
+  )
 
   it("removes its store subscription and hide listener before reconnecting", () => {
     const controller = buildController()
@@ -284,5 +366,4 @@ describe("FrogReportController", () => {
     expect(controller.lifecycle).toBeNull()
     controller.disconnect()
   })
-
 })

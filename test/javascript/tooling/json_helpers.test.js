@@ -3,11 +3,13 @@ import { Linter } from "eslint"
 import rule from "../../../scripts/eslint/json_helpers.mjs"
 
 function lint(code) {
-  return new Linter().verify(code, [{
-    languageOptions: { sourceType: "module" },
-    plugins: { quepid: { rules: { "json-helpers": rule } } },
-    rules: { "quepid/json-helpers": "error" }
-  }])
+  return new Linter().verify(code, [
+    {
+      languageOptions: { sourceType: "module" },
+      plugins: { quepid: { rules: { "json-helpers": rule } } },
+      rules: { "quepid/json-helpers": "error" }
+    }
+  ])
 }
 
 describe("api/json verb-helper guard", () => {

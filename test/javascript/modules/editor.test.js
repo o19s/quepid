@@ -100,7 +100,11 @@ describe("editor modes", () => {
     const editor = jsonEditor("{}")
     editor.view.dispatch({ selection: { anchor: 0 } })
 
-    const handled = runScopeHandlers(editor.view, new KeyboardEvent("keydown", { key: "Tab" }), "editor")
+    const handled = runScopeHandlers(
+      editor.view,
+      new KeyboardEvent("keydown", { key: "Tab" }),
+      "editor"
+    )
 
     expect(handled).toBe(true)
     expect(editor.getValue()).toBe("  {}")
@@ -166,7 +170,12 @@ describe("JavaScript linter", () => {
   it("warns about console.log at its position", async () => {
     const found = await diagnosticsFor("javascript", "var a = 1;\nconsole.log(a);")
     expect(found).toEqual([
-      { severity: "warning", message: "Consider removing console.log before production", from: 11, to: 22 }
+      {
+        severity: "warning",
+        message: "Consider removing console.log before production",
+        from: 11,
+        to: 22
+      }
     ])
   })
 
@@ -207,17 +216,23 @@ describe("JSON linter", () => {
   it("places the error at the position the engine reports, clamped to the document", async () => {
     const parse = vi.spyOn(JSON, "parse")
     try {
-      parse.mockImplementation(() => { throw new SyntaxError("Unexpected token at position 5") })
+      parse.mockImplementation(() => {
+        throw new SyntaxError("Unexpected token at position 5")
+      })
       expect(await diagnosticsFor("json", '{"a": }')).toEqual([
         { severity: "error", message: "Unexpected token at position 5", from: 5, to: 6 }
       ])
 
-      parse.mockImplementation(() => { throw new SyntaxError("Unexpected end at position 99") })
+      parse.mockImplementation(() => {
+        throw new SyntaxError("Unexpected end at position 99")
+      })
       expect(await diagnosticsFor("json", '{"a": }')).toEqual([
         { severity: "error", message: "Unexpected end at position 99", from: 7, to: 7 }
       ])
 
-      parse.mockImplementation(() => { throw new SyntaxError("No position here") })
+      parse.mockImplementation(() => {
+        throw new SyntaxError("No position here")
+      })
       expect(await diagnosticsFor("json", '{"a": }')).toEqual([
         { severity: "error", message: "No position here", from: 0, to: 1 }
       ])

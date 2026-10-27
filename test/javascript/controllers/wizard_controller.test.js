@@ -20,13 +20,18 @@ vi.mock("utils/quepid_root", () => ({ getQuepidRootUrl: () => "http://quepid" })
 
 const STEPS = { welcome: 0, name: 1, endpoint: 2, fields: 3, query: 4, finish: 5 }
 const WIZARD_ERB = readFileSync("app/views/shared/_wizard_modal.html.erb", "utf8")
-const flush = () => new Promise(resolve => setTimeout(resolve, 0))
+const flush = () => new Promise((resolve) => setTimeout(resolve, 0))
 
 function makeCapability() {
   return {
     settings: {
       editable: vi.fn(() => ({ searchEngine: "solr", searchUrl: "http://solr", caseName: "" })),
-      pick: vi.fn(preset => ({ searchEngine: preset || "solr", apiMethod: "GET", secureSearchUrl: "https://s", insecureSearchUrl: "http://s" })),
+      pick: vi.fn((preset) => ({
+        searchEngine: preset || "solr",
+        apiMethod: "GET",
+        secureSearchUrl: "https://s",
+        insecureSearchUrl: "http://s"
+      })),
       registerMapper: vi.fn(),
       proxyUrlFor: vi.fn(() => "/proxy/1"),
       demoChosen: vi.fn(() => false),
@@ -34,7 +39,11 @@ function makeCapability() {
       applicable: vi.fn(() => ({ tryNo: 1 })),
       update: vi.fn(() => Promise.resolve())
     },
-    endpoints: { list: vi.fn(() => Promise.resolve()), all: vi.fn(() => []), isEsOrOs: vi.fn(() => false) },
+    endpoints: {
+      list: vi.fn(() => Promise.resolve()),
+      all: vi.fn(() => []),
+      isEsOrOs: vi.fn(() => false)
+    },
     mapper: { list: vi.fn(() => Promise.resolve()), all: vi.fn(() => []) },
     user: { current: vi.fn(() => ({ completedCaseWizard: false })), shownIntroWizard: vi.fn() },
     navigation: {
@@ -64,7 +73,9 @@ function mount({ step = 0, settings = {} } = {}) {
     element,
     targets: {
       step: Array.from({ length: 6 }, () => element.appendChild(document.createElement("div"))),
-      tracker: Array.from({ length: 6 }, () => element.appendChild(document.createElement("button"))),
+      tracker: Array.from({ length: 6 }, () =>
+        element.appendChild(document.createElement("button"))
+      ),
       continueButton: [element.appendChild(document.createElement("button"))],
       tlsProtocol: [],
       engineName: [],
@@ -92,7 +103,12 @@ function mount({ step = 0, settings = {} } = {}) {
 }
 
 function passingValidator(overrides = {}) {
-  return { validateUrl: vi.fn(() => Promise.resolve()), fields: ["title", "body"], idFields: ["id"], ...overrides }
+  return {
+    validateUrl: vi.fn(() => Promise.resolve()),
+    fields: ["title", "body"],
+    idFields: ["id"],
+    ...overrides
+  }
 }
 
 describe("WizardController", () => {
@@ -109,7 +125,11 @@ describe("WizardController", () => {
   describe("universal proxy", () => {
     it("normalizes Solr presets without changing the default-off behavior", () => {
       const controller = mount()
-      controller.capability.settings.pick.mockReturnValue({ searchEngine: "solr", apiMethod: "JSONP", proxyRequests: false })
+      controller.capability.settings.pick.mockReturnValue({
+        searchEngine: "solr",
+        apiMethod: "JSONP",
+        proxyRequests: false
+      })
       controller.applySettings("solr")
       expect(controller.settings.apiMethod).toBe("JSONP")
       expect(controller.settings.proxyRequests).toBe(false)
@@ -127,33 +147,47 @@ describe("WizardController", () => {
       { apiMethod: "JSONP", proxyRequests: false },
       { apiMethod: "GET", proxyRequests: false },
       { apiMethod: "JSONP", proxyRequests: true }
-    ])("rejects incompatible existing endpoints before validation or saving: %j", async (transport) => {
-      const controller = mount()
-      controller.proxyRequiredValue = true
-      const endpoint = { id: 7, searchEngine: "solr", endpointUrl: "http://solr", ...transport }
-      controller.searchEndpoints = [endpoint]
-      const originalSettings = { ...controller.settings }
-      controller.selectEndpoint({ target: { value: "7" } })
-      expect(controller.error).toContain("Edit the endpoint first")
-      expect(controller.settings).toEqual(originalSettings)
-      expect(endpoint).toMatchObject(transport)
+    ])(
+      "rejects incompatible existing endpoints before validation or saving: %j",
+      async (transport) => {
+        const controller = mount()
+        controller.proxyRequiredValue = true
+        const endpoint = { id: 7, searchEngine: "solr", endpointUrl: "http://solr", ...transport }
+        controller.searchEndpoints = [endpoint]
+        const originalSettings = { ...controller.settings }
+        controller.selectEndpoint({ target: { value: "7" } })
+        expect(controller.error).toContain("Edit the endpoint first")
+        expect(controller.settings).toEqual(originalSettings)
+        expect(endpoint).toMatchObject(transport)
 
-      // A current try can already reference an incompatible endpoint when the wizard opens.
-      controller.settings = { ...controller.settings, searchEndpointId: 7, apiMethod: "GET", proxyRequests: true }
-      await controller.validate()
-      expect(controller.capability.search.createValidator).not.toHaveBeenCalled()
-      await controller.finish()
-      expect(controller.capability.settings.update).not.toHaveBeenCalled()
-      expect(controller.capability.case.rename).not.toHaveBeenCalled()
-      expect(modal.hide).not.toHaveBeenCalled()
-      expect(controller.saving).toBeFalsy()
-    })
+        // A current try can already reference an incompatible endpoint when the wizard opens.
+        controller.settings = {
+          ...controller.settings,
+          searchEndpointId: 7,
+          apiMethod: "GET",
+          proxyRequests: true
+        }
+        await controller.validate()
+        expect(controller.capability.search.createValidator).not.toHaveBeenCalled()
+        await controller.finish()
+        expect(controller.capability.settings.update).not.toHaveBeenCalled()
+        expect(controller.capability.case.rename).not.toHaveBeenCalled()
+        expect(modal.hide).not.toHaveBeenCalled()
+        expect(controller.saving).toBeFalsy()
+      }
+    )
 
     it("keeps existing endpoint selection unchanged when the flag is off", () => {
       const controller = mount()
-      controller.searchEndpoints = [{ id: 7, searchEngine: "solr", apiMethod: "JSONP", proxyRequests: false }]
+      controller.searchEndpoints = [
+        { id: 7, searchEngine: "solr", apiMethod: "JSONP", proxyRequests: false }
+      ]
       controller.selectEndpoint({ target: { value: "7" } })
-      expect(controller.settings).toMatchObject({ searchEndpointId: 7, apiMethod: "JSONP", proxyRequests: false })
+      expect(controller.settings).toMatchObject({
+        searchEndpointId: 7,
+        apiMethod: "JSONP",
+        proxyRequests: false
+      })
       expect(controller.proxyEndpointError()).toBeNull()
     })
 
@@ -162,22 +196,35 @@ describe("WizardController", () => {
       controller.proxyRequiredValue = true
       controller.searchEndpoints = [
         { id: 7, searchEngine: "solr", apiMethod: "JSONP", proxyRequests: false },
-        { id: 8, searchEngine: "solr", endpointUrl: "http://solr", apiMethod: "GET", proxyRequests: true }
+        {
+          id: 8,
+          searchEngine: "solr",
+          endpointUrl: "http://solr",
+          apiMethod: "GET",
+          proxyRequests: true
+        }
       ]
       controller.selectEndpoint({ target: { value: "7" } })
       controller.selectEndpoint({ target: { value: "8" } })
       expect(controller.error).toBeNull()
       const runtime = createSettingsRuntime({ caseNo: () => 5, tryNo: () => 1 })
-      runtime.setCaseTries([{ try_number: 1, search_endpoint_id: 8, api_method: "GET", proxy_requests: true }])
+      runtime.setCaseTries([
+        { try_number: 1, search_endpoint_id: 8, api_method: "GET", proxy_requests: true }
+      ])
       runtime.setCurrentTry(1)
       controller.capability.settings.applicable = runtime.applicable
       controller.capability.settings.update = vi.fn(runtime.update)
       const request = vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response("{}"))
       getCoreCapabilities.mockReturnValue({ queryCapabilities: { changeSettings: vi.fn() } })
       await controller.finish()
-      expect(controller.capability.settings.update).toHaveBeenCalledWith(expect.objectContaining({
-        searchEndpointId: 8, apiMethod: "GET", proxyRequests: true
-      }), { navigateAfterSave: false })
+      expect(controller.capability.settings.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          searchEndpointId: 8,
+          apiMethod: "GET",
+          proxyRequests: true
+        }),
+        { navigateAfterSave: false }
+      )
       const payload = JSON.parse(request.mock.calls[0][1].body)
       expect(payload.try.search_endpoint_id).toBe(8)
       expect(payload).not.toHaveProperty("search_endpoint")
@@ -190,7 +237,7 @@ describe("WizardController", () => {
       const controller = mount()
       controller.loaded = false
       controller.render()
-      expect(controller.stepTargets.every(step => step.hidden)).toBe(true)
+      expect(controller.stepTargets.every((step) => step.hidden)).toBe(true)
 
       const capability = makeCapability()
       getWizardCapabilities.mockResolvedValue({ capability })
@@ -243,7 +290,11 @@ describe("WizardController", () => {
     it("stops loading when disconnected mid-load", async () => {
       const capability = makeCapability()
       let resolveEndpoints
-      capability.endpoints.list.mockReturnValue(new Promise(resolve => { resolveEndpoints = resolve }))
+      capability.endpoints.list.mockReturnValue(
+        new Promise((resolve) => {
+          resolveEndpoints = resolve
+        })
+      )
       getWizardCapabilities.mockResolvedValue({ capability })
       const controller = mount()
       controller.loaded = false
@@ -261,9 +312,14 @@ describe("WizardController", () => {
 
   describe("field dropdowns", () => {
     it("keeps custom fields and selections across renders, updates suggestions, and cleans up", () => {
-      const controller = mount({ step: STEPS.fields, settings: { titleField: "custom_title", idField: "id" } })
+      const controller = mount({
+        step: STEPS.fields,
+        settings: { titleField: "custom_title", idField: "id" }
+      })
       for (const field of ["titleField", "idField"]) {
-        controller[`${field}Target`] = controller.element.appendChild(document.createElement("input"))
+        controller[`${field}Target`] = controller.element.appendChild(
+          document.createElement("input")
+        )
         controller[`has${field[0].toUpperCase()}${field.slice(1)}Target`] = true
       }
       controller.searchFields = ["title", "overview"]
@@ -289,8 +345,13 @@ describe("WizardController", () => {
 
   describe("additional field multi-select", () => {
     it("retains selected fields, adds modifier suggestions, removes fields, and cleans up", () => {
-      const controller = mount({ step: STEPS.fields, settings: { titleField: "title", idField: "id", additionalFields: ["overview", "cast"] } })
-      controller.additionalFieldsTarget = controller.element.appendChild(document.createElement("input"))
+      const controller = mount({
+        step: STEPS.fields,
+        settings: { titleField: "title", idField: "id", additionalFields: ["overview", "cast"] }
+      })
+      controller.additionalFieldsTarget = controller.element.appendChild(
+        document.createElement("input")
+      )
       controller.hasAdditionalFieldsTarget = true
       controller.additionalFieldsTarget.value = "overview, cast"
       controller.searchFields = ["title", "id", "overview", "cast", "poster_path"]
@@ -301,7 +362,11 @@ describe("WizardController", () => {
       select.settings.onType("thumb:pos")
       expect(select.options["thumb:poster_path"]).toBeDefined()
       select.addItem("thumb:poster_path")
-      expect(controller.settings.additionalFields).toEqual(["overview", "cast", "thumb:poster_path"])
+      expect(controller.settings.additionalFields).toEqual([
+        "overview",
+        "cast",
+        "thumb:poster_path"
+      ])
       select.removeItem("cast")
       expect(controller.settings.additionalFields).toEqual(["overview", "thumb:poster_path"])
       select.createItem("custom_field")
@@ -330,7 +395,10 @@ describe("WizardController", () => {
     })
 
     it("does not advance past the query step for searchapi without a query pattern", () => {
-      const controller = mount({ step: STEPS.query, settings: { searchEngine: "searchapi", queryParams: " " } })
+      const controller = mount({
+        step: STEPS.query,
+        settings: { searchEngine: "searchapi", queryParams: " " }
+      })
       controller.next()
       expect(controller.stepIndex).toBe(STEPS.query)
     })
@@ -368,7 +436,7 @@ describe("WizardController", () => {
       controller.render()
 
       expect(controller.stepIndex).toBe(STEPS.endpoint)
-      expect(controller.trackerTargets.every(item => item.disabled)).toBe(true)
+      expect(controller.trackerTargets.every((item) => item.disabled)).toBe(true)
     })
 
     it("marks the current step in the tracker and disables steps not yet reached", () => {
@@ -376,15 +444,26 @@ describe("WizardController", () => {
 
       controller.render()
 
-      const states = controller.trackerTargets.map(item => [item.classList.contains("active"), item.disabled])
-      expect(states).toEqual([[false, false], [false, false], [true, false], [false, true], [false, true], [false, true]])
+      const states = controller.trackerTargets.map((item) => [
+        item.classList.contains("active"),
+        item.disabled
+      ])
+      expect(states).toEqual([
+        [false, false],
+        [false, false],
+        [true, false],
+        [false, true],
+        [false, true],
+        [false, true]
+      ])
       expect(controller.trackerTargets[STEPS.endpoint].getAttribute("aria-current")).toBe("step")
       expect(controller.trackerTargets[STEPS.name].hasAttribute("aria-current")).toBe(false)
     })
 
     it("shows only the elements for the current step", () => {
       const controller = mount({ step: STEPS.query })
-      controller.element.innerHTML = '<i data-wizard-only="query"></i><i data-wizard-only="name"></i>'
+      controller.element.innerHTML =
+        '<i data-wizard-only="query"></i><i data-wizard-only="name"></i>'
 
       controller.render()
 
@@ -396,13 +475,23 @@ describe("WizardController", () => {
 
   describe("validate (endpoint step)", () => {
     it("moves to the fields step with the preset's display fields and records the discovered ones", async () => {
-      const controller = mount({ step: STEPS.endpoint, settings: { searchEnginePreset: "solr", searchUrl: "http://solr/tmdb/select" } })
-      controller.capability.settings.pick.mockReturnValue({ idField: "id", titleField: "title", additionalFields: ["overview"] })
+      const controller = mount({
+        step: STEPS.endpoint,
+        settings: { searchEnginePreset: "solr", searchUrl: "http://solr/tmdb/select" }
+      })
+      controller.capability.settings.pick.mockReturnValue({
+        idField: "id",
+        titleField: "title",
+        additionalFields: ["overview"]
+      })
       controller.capability.search.createValidator.mockReturnValue(passingValidator())
 
       await controller.validate()
 
-      expect(controller.capability.settings.pick).toHaveBeenCalledWith("solr", "http://solr/tmdb/select")
+      expect(controller.capability.settings.pick).toHaveBeenCalledWith(
+        "solr",
+        "http://solr/tmdb/select"
+      )
       expect(controller.stepIndex).toBe(STEPS.fields)
       expect(controller.searchFields).toEqual(["title", "body"])
       expect(controller.settings.idField).toBe("id")
@@ -413,10 +502,18 @@ describe("WizardController", () => {
     })
 
     describe("Search API mapper", () => {
-      const searchApi = () => mount({
-        step: STEPS.endpoint,
-        settings: { searchEngine: "searchapi", searchEnginePreset: "searchapi", searchUrl: "http://api/search", queryParams: "q=#$query##", testQuery: "shirts", mapperCode: "docsMapper = function () {}" }
-      })
+      const searchApi = () =>
+        mount({
+          step: STEPS.endpoint,
+          settings: {
+            searchEngine: "searchapi",
+            searchEnginePreset: "searchapi",
+            searchUrl: "http://api/search",
+            queryParams: "q=#$query##",
+            testQuery: "shirts",
+            mapperCode: "docsMapper = function () {}"
+          }
+        })
 
       it("validates with the endpoint's evaluated mapper functions", async () => {
         const controller = searchApi()
@@ -427,33 +524,59 @@ describe("WizardController", () => {
 
         await controller.validate()
 
-        expect(controller.capability.search.evaluateMapper).toHaveBeenCalledWith("docsMapper = function () {}")
-        expect(controller.capability.search.createValidator).toHaveBeenCalledWith(expect.objectContaining(mapper))
+        expect(controller.capability.search.evaluateMapper).toHaveBeenCalledWith(
+          "docsMapper = function () {}"
+        )
+        expect(controller.capability.search.createValidator).toHaveBeenCalledWith(
+          expect.objectContaining(mapper)
+        )
         expect(controller.stepIndex).toBe(STEPS.fields)
       })
 
       it.each([
-        ["code that throws", () => { throw new Error("Unexpected token") }, "Mapper code evaluation failed: Unexpected token"],
-        ["no numberOfResultsMapper", () => ({ docsMapper: () => [] }), 'You need to define a "numberOfResultsMapper"'],
-        ["no docsMapper", () => ({ numberOfResultsMapper: () => 1 }), 'You need to define a "docsMapper"']
-      ])("stops with a mapper message for %s, without searching", async (_label, evaluate, message) => {
-        const controller = searchApi()
-        controller.capability.search.evaluateMapper.mockImplementation(evaluate)
+        [
+          "code that throws",
+          () => {
+            throw new Error("Unexpected token")
+          },
+          "Mapper code evaluation failed: Unexpected token"
+        ],
+        [
+          "no numberOfResultsMapper",
+          () => ({ docsMapper: () => [] }),
+          'You need to define a "numberOfResultsMapper"'
+        ],
+        [
+          "no docsMapper",
+          () => ({ numberOfResultsMapper: () => 1 }),
+          'You need to define a "docsMapper"'
+        ]
+      ])(
+        "stops with a mapper message for %s, without searching",
+        async (_label, evaluate, message) => {
+          const controller = searchApi()
+          controller.capability.search.evaluateMapper.mockImplementation(evaluate)
 
-        await controller.validate()
+          await controller.validate()
 
-        expect(controller.mapperInvalid).toBe(true)
-        expect(controller.mapperErrorMessage).toBe(message)
-        expect(controller.capability.search.createValidator).not.toHaveBeenCalled()
-        expect(controller.stepIndex).toBe(STEPS.endpoint)
-        expect(controller.validating).toBe(false)
-      })
+          expect(controller.mapperInvalid).toBe(true)
+          expect(controller.mapperErrorMessage).toBe(message)
+          expect(controller.capability.search.createValidator).not.toHaveBeenCalled()
+          expect(controller.stepIndex).toBe(STEPS.endpoint)
+          expect(controller.validating).toBe(false)
+        }
+      )
     })
 
     it("leaves Title blank when the preset has none, instead of using the first discovered field", async () => {
-      const controller = mount({ step: STEPS.endpoint, settings: { searchEngine: "static", searchEnginePreset: "static" } })
+      const controller = mount({
+        step: STEPS.endpoint,
+        settings: { searchEngine: "static", searchEnginePreset: "static" }
+      })
       controller.capability.settings.pick.mockReturnValue({ idField: "id", titleField: "" })
-      controller.capability.search.createValidator.mockReturnValue(passingValidator({ fields: ["id", "MovieTitle"] }))
+      controller.capability.search.createValidator.mockReturnValue(
+        passingValidator({ fields: ["id", "MovieTitle"] })
+      )
 
       await controller.validate()
 
@@ -467,7 +590,10 @@ describe("WizardController", () => {
     it("stays on the step when only validating, and keeps fields the user already edited", async () => {
       const controller = mount({ step: STEPS.endpoint })
       controller.capability.settings.pick.mockReturnValue({ idField: "id", titleField: "" })
-      const edit = (field, value) => controller.updateSetting({ target: { type: "text", value, dataset: { wizardField: field } } })
+      const edit = (field, value) =>
+        controller.updateSetting({
+          target: { type: "text", value, dataset: { wizardField: field } }
+        })
       edit("idField", "mine")
       edit("titleField", "mine_title")
       controller.capability.search.createValidator.mockReturnValue(passingValidator())
@@ -475,20 +601,30 @@ describe("WizardController", () => {
       await controller.validate(true)
 
       expect(controller.stepIndex).toBe(STEPS.endpoint)
-      expect([controller.settings.idField, controller.settings.titleField]).toEqual(["mine", "mine_title"])
+      expect([controller.settings.idField, controller.settings.titleField]).toEqual([
+        "mine",
+        "mine_title"
+      ])
       expect(controller.urlValid).toBe(true)
     })
 
     it("applies the new engine's display fields again after the engine changes", async () => {
       const controller = mount({ step: STEPS.endpoint })
-      controller.updateSetting({ target: { type: "text", value: "mine", dataset: { wizardField: "titleField" } } })
-      controller.updateSetting({ target: { type: "radio", value: "es", dataset: { wizardField: "searchEnginePreset" } } })
+      controller.updateSetting({
+        target: { type: "text", value: "mine", dataset: { wizardField: "titleField" } }
+      })
+      controller.updateSetting({
+        target: { type: "radio", value: "es", dataset: { wizardField: "searchEnginePreset" } }
+      })
       controller.capability.settings.pick.mockReturnValue({ idField: "_id", titleField: "title" })
       controller.capability.search.createValidator.mockReturnValue(passingValidator())
 
       await controller.validate()
 
-      expect([controller.settings.idField, controller.settings.titleField]).toEqual(["_id", "title"])
+      expect([controller.settings.idField, controller.settings.titleField]).toEqual([
+        "_id",
+        "title"
+      ])
     })
 
     it("shows the validator's error, stripping the Error: prefix", async () => {
@@ -540,11 +676,16 @@ describe("WizardController", () => {
     })
 
     it("rejects proxying with JSONP", async () => {
-      const controller = mount({ step: STEPS.endpoint, settings: { proxyRequests: true, apiMethod: "JSONP" } })
+      const controller = mount({
+        step: STEPS.endpoint,
+        settings: { proxyRequests: true, apiMethod: "JSONP" }
+      })
 
       await controller.validate()
 
-      expect(controller.error).toBe("You must change from JSONP to another API method when proxying.")
+      expect(controller.error).toBe(
+        "You must change from JSONP to another API method when proxying."
+      )
     })
 
     it("validates a static engine as solr and a proxied request through the proxy url", async () => {
@@ -621,7 +762,10 @@ describe("WizardController", () => {
     })
 
     it("confirms a title or ID field that validation did not discover, except for Search API", () => {
-      const controller = mount({ step: STEPS.fields, settings: { idField: "id", titleField: "titel" } })
+      const controller = mount({
+        step: STEPS.fields,
+        settings: { idField: "id", titleField: "titel" }
+      })
       controller.searchFields = ["id", "title"]
       window.confirm.mockReturnValue(false)
       controller.validateFields()
@@ -633,14 +777,20 @@ describe("WizardController", () => {
       expect(controller.stepIndex).toBe(STEPS.query)
 
       window.confirm.mockClear()
-      const searchApi = mount({ step: STEPS.fields, settings: { searchEngine: "searchapi", idField: "id", titleField: "name" } })
+      const searchApi = mount({
+        step: STEPS.fields,
+        settings: { searchEngine: "searchapi", idField: "id", titleField: "name" }
+      })
       searchApi.validateFields()
       expect(window.confirm).not.toHaveBeenCalled()
       expect(searchApi.stepIndex).toBe(STEPS.query)
     })
 
     it("does not confirm discovered fields", () => {
-      const controller = mount({ step: STEPS.fields, settings: { idField: "id", titleField: "title" } })
+      const controller = mount({
+        step: STEPS.fields,
+        settings: { idField: "id", titleField: "title" }
+      })
       controller.searchFields = ["id", "title"]
       controller.validateFields()
       expect(window.confirm).not.toHaveBeenCalled()
@@ -681,7 +831,7 @@ describe("WizardController", () => {
 
       controller.removeQuery({ params: { index: 1 } })
 
-      expect(controller.newQueries.map(q => q.queryString)).toEqual(["a", "c"])
+      expect(controller.newQueries.map((q) => q.queryString)).toEqual(["a", "c"])
     })
 
     it("renders each query with a remove button", () => {
@@ -700,13 +850,22 @@ describe("WizardController", () => {
   describe("settings", () => {
     it("splits additional fields on commas and whitespace", () => {
       const controller = mount({ step: STEPS.fields })
-      controller.updateSetting({ target: { dataset: { wizardField: "additionalFields" }, type: "text", value: "a, b  c,,d" } })
+      controller.updateSetting({
+        target: { dataset: { wizardField: "additionalFields" }, type: "text", value: "a, b  c,,d" }
+      })
       expect(controller.settings.additionalFields).toEqual(["a", "b", "c", "d"])
     })
 
     it("reads checkboxes by checked state", () => {
       const controller = mount({ step: STEPS.endpoint })
-      controller.updateSetting({ target: { dataset: { wizardField: "proxyRequests" }, type: "checkbox", checked: true, value: "on" } })
+      controller.updateSetting({
+        target: {
+          dataset: { wizardField: "proxyRequests" },
+          type: "checkbox",
+          checked: true,
+          value: "on"
+        }
+      })
       expect(controller.settings.proxyRequests).toBe(true)
     })
 
@@ -715,7 +874,9 @@ describe("WizardController", () => {
       controller.urlInvalid = true
       controller.error = "old"
 
-      controller.updateSetting({ target: { dataset: { wizardField: "searchUrl" }, type: "text", value: "http://new" } })
+      controller.updateSetting({
+        target: { dataset: { wizardField: "searchUrl" }, type: "text", value: "http://new" }
+      })
 
       expect(controller.urlInvalid).toBe(false)
       expect(controller.error).toBeNull()
@@ -724,7 +885,9 @@ describe("WizardController", () => {
     it("resets the chosen endpoint and applies presets when the engine changes", () => {
       const controller = mount({ step: STEPS.endpoint, settings: { searchEndpointId: 3 } })
 
-      controller.updateSetting({ target: { dataset: { wizardField: "searchEnginePreset" }, type: "select-one", value: "es" } })
+      controller.updateSetting({
+        target: { dataset: { wizardField: "searchEnginePreset" }, type: "select-one", value: "es" }
+      })
 
       expect(controller.settings.searchEndpointId).toBeNull()
       expect(controller.capability.settings.pick).toHaveBeenCalledWith("es", undefined)
@@ -739,39 +902,69 @@ describe("WizardController", () => {
 
     it("applies a saved endpoint's settings and formats object headers as JSON", () => {
       const controller = mount({ step: STEPS.endpoint })
-      controller.searchEndpoints = [{
-        id: 4, name: "Prod", searchEngine: "es", endpointUrl: "http://es", apiMethod: "POST",
-        proxyRequests: false, customHeaders: { a: "b" }, mapperCode: "code", testQuery: "t"
-      }]
+      controller.searchEndpoints = [
+        {
+          id: 4,
+          name: "Prod",
+          searchEngine: "es",
+          endpointUrl: "http://es",
+          apiMethod: "POST",
+          proxyRequests: false,
+          customHeaders: { a: "b" },
+          mapperCode: "code",
+          testQuery: "t"
+        }
+      ]
       controller.capability.settings.pick.mockReturnValue({ apiMethod: "GET", queryParams: "" })
 
       controller.selectEndpoint({ target: { value: "4" } })
 
       expect(controller.settings).toMatchObject({
-        searchEndpointId: 4, searchEngine: "es", searchEnginePreset: "es", searchUrl: "http://es", apiMethod: "POST"
+        searchEndpointId: 4,
+        searchEngine: "es",
+        searchEnginePreset: "es",
+        searchUrl: "http://es",
+        apiMethod: "POST"
       })
       expect(controller.settings.customHeaders).toBe(JSON.stringify({ a: "b" }, null, 2))
     })
 
-    it.each(["q=#$query##", "shirts"])("seeds a searchapi endpoint's query pattern from its test query %s, as the Angular wizard did", (testQuery) => {
-      const controller = mount({ step: STEPS.endpoint })
-      controller.searchEndpoints = [{ id: 4, searchEngine: "searchapi", endpointUrl: "http://x", testQuery }]
-      controller.capability.settings.pick.mockReturnValue({ apiMethod: "GET" })
+    it.each(["q=#$query##", "shirts"])(
+      "seeds a searchapi endpoint's query pattern from its test query %s, as the Angular wizard did",
+      (testQuery) => {
+        const controller = mount({ step: STEPS.endpoint })
+        controller.searchEndpoints = [
+          { id: 4, searchEngine: "searchapi", endpointUrl: "http://x", testQuery }
+        ]
+        controller.capability.settings.pick.mockReturnValue({ apiMethod: "GET" })
 
-      controller.selectEndpoint({ target: { value: "4" } })
+        controller.selectEndpoint({ target: { value: "4" } })
 
-      expect(controller.settings.queryParams).toBe(testQuery)
-    })
+        expect(controller.settings.queryParams).toBe(testQuery)
+      }
+    )
 
     it("leaves a searchapi endpoint without a test query with an empty pattern, reported missing straight away", () => {
       const controller = mount({ step: STEPS.endpoint })
-      controller.searchEndpoints = [{ id: 4, searchEngine: "searchapi", endpointUrl: "http://x", apiMethod: "POST", testQuery: "" }]
+      controller.searchEndpoints = [
+        {
+          id: 4,
+          searchEngine: "searchapi",
+          endpointUrl: "http://x",
+          apiMethod: "POST",
+          testQuery: ""
+        }
+      ]
       controller.capability.settings.pick.mockReturnValue({ apiMethod: "GET" })
 
       controller.selectEndpoint({ target: { value: "4" } })
 
       expect(controller.settings.queryParams).toBe("")
-      expect(controller.conditions()).toMatchObject({ "query-pattern-empty": true, "api-get": false, "api-body": true })
+      expect(controller.conditions()).toMatchObject({
+        "query-pattern-empty": true,
+        "api-get": false,
+        "api-body": true
+      })
     })
 
     it("disables ping in the existing-endpoint panel until an endpoint is chosen", () => {
@@ -792,22 +985,49 @@ describe("WizardController", () => {
     })
 
     it("keeps Continue on the query step disabled while a searchapi pattern is empty", () => {
-      const controller = mount({ step: STEPS.query, settings: { searchEngine: "searchapi", queryParams: "" } })
+      const controller = mount({
+        step: STEPS.query,
+        settings: { searchEngine: "searchapi", queryParams: "" }
+      })
       controller.render()
       expect(controller.continueButtonTarget.disabled).toBe(true)
 
-      controller.updateSetting({ target: { type: "text", value: "q=#$query##", dataset: { wizardField: "queryParams" } } })
+      controller.updateSetting({
+        target: { type: "text", value: "q=#$query##", dataset: { wizardField: "queryParams" } }
+      })
       expect(controller.continueButtonTarget.disabled).toBe(false)
     })
 
-    it.each([undefined, null, ""])("retains wizard defaults for absent endpoint method %s", apiMethod => {
-      const controller = mount({ step: STEPS.endpoint })
-      controller.searchEndpoints = [{ id: 4, searchEngine: "searchapi", mapperBasedSearchEngineId: "vespa", apiMethod, customHeaders: null, testQuery: "q=#$query##" }]
-      controller.capability.settings.pick.mockReturnValue({ apiMethod: "POST", queryParams: "preset query", titleField: "title" })
-      controller.selectEndpoint({ target: { value: "4" } })
-      expect(controller.capability.settings.pick).toHaveBeenCalledWith("vespa", undefined)
-      expect(controller.settings).toMatchObject({ apiMethod: "POST", queryParams: "preset query", searchEnginePreset: "vespa", customHeaders: null, titleField: "title" })
-    })
+    it.each([undefined, null, ""])(
+      "retains wizard defaults for absent endpoint method %s",
+      (apiMethod) => {
+        const controller = mount({ step: STEPS.endpoint })
+        controller.searchEndpoints = [
+          {
+            id: 4,
+            searchEngine: "searchapi",
+            mapperBasedSearchEngineId: "vespa",
+            apiMethod,
+            customHeaders: null,
+            testQuery: "q=#$query##"
+          }
+        ]
+        controller.capability.settings.pick.mockReturnValue({
+          apiMethod: "POST",
+          queryParams: "preset query",
+          titleField: "title"
+        })
+        controller.selectEndpoint({ target: { value: "4" } })
+        expect(controller.capability.settings.pick).toHaveBeenCalledWith("vespa", undefined)
+        expect(controller.settings).toMatchObject({
+          apiMethod: "POST",
+          queryParams: "preset query",
+          searchEnginePreset: "vespa",
+          customHeaders: null,
+          titleField: "title"
+        })
+      }
+    )
 
     it("ignores an unknown endpoint id", () => {
       const controller = mount({ step: STEPS.endpoint })
@@ -827,8 +1047,9 @@ describe("WizardController", () => {
 
       controller.renderEndpointChoices()
 
-      expect([...controller.endpointSelectTarget.options].map(o => o.textContent)).toEqual([
-        "Select a search endpoint…", "Live"
+      expect([...controller.endpointSelectTarget.options].map((o) => o.textContent)).toEqual([
+        "Select a search endpoint…",
+        "Live"
       ])
       expect(controller.endpointSelectTarget.disabled).toBe(false)
     })
@@ -840,8 +1061,10 @@ describe("WizardController", () => {
       const template = document.createElement("template")
       template.innerHTML = `<label class="wizard-engine-tile" data-mapper-engine><input type="radio"><img alt=""></label>`
       Object.assign(controller, {
-        mapperEnginesTarget: row, hasMapperEnginesTarget: true,
-        engineTileTemplateTarget: template, hasEngineTileTemplateTarget: true,
+        mapperEnginesTarget: row,
+        hasMapperEnginesTarget: true,
+        engineTileTemplateTarget: template,
+        hasEngineTileTemplateTarget: true,
         mapperEngines: [{ id: "vespa", name: "Vespa", logo: "vespa" }]
       })
 
@@ -886,7 +1109,7 @@ describe("WizardController", () => {
   })
 
   describe("endpoint accordion", () => {
-    const withPanels = controller => {
+    const withPanels = (controller) => {
       controller.hasCreatePanelTarget = true
       controller.hasExistingPanelTarget = true
       controller.createPanelTarget = document.createElement("details")
@@ -901,11 +1124,11 @@ describe("WizardController", () => {
       controller.existingPanelTarget.open = true
       controller.endpointPanelToggled()
       expect(controller.conditions()["endpoint-open"]).toBe(true)
-      expect(controller.continueButtonTargets.every(button => button.disabled)).toBe(true)
+      expect(controller.continueButtonTargets.every((button) => button.disabled)).toBe(true)
 
       controller.searchEndpoints = [{ id: 4, searchEngine: "solr", endpointUrl: "http://s" }]
       controller.selectEndpoint({ target: { value: "4" } })
-      expect(controller.continueButtonTargets.every(button => !button.disabled)).toBe(true)
+      expect(controller.continueButtonTargets.every((button) => !button.disabled)).toBe(true)
     })
 
     it("drops the chosen existing endpoint when Create a new Search Endpoint is opened", () => {
@@ -925,7 +1148,10 @@ describe("WizardController", () => {
 
     it("sends existingSearchEndpoint on a protocol reload from the existing panel, and reopens that panel", () => {
       const assign = vi.fn()
-      vi.stubGlobal("location", { assign, search: "?searchEngine=solr&existingSearchEndpoint=true" })
+      vi.stubGlobal("location", {
+        assign,
+        search: "?searchEngine=solr&existingSearchEndpoint=true"
+      })
       const controller = withPanels(mount({ step: STEPS.endpoint }))
       controller.endpointMode = "existing"
 
@@ -942,7 +1168,7 @@ describe("WizardController", () => {
   })
 
   describe("static CSV preview and import", () => {
-    const csvFile = text => ({ target: { files: [{ text: async () => text }] } })
+    const csvFile = (text) => ({ target: { files: [{ text: async () => text }] } })
     const HEADER = "Query Text,Doc ID,Doc Position,title"
     const chooseAndImport = async (controller, text) => {
       await controller.previewStatic(csvFile(text))
@@ -983,7 +1209,9 @@ describe("WizardController", () => {
     it("rejects malformed rows before posting an import", async () => {
       const controller = mount()
       await chooseAndImport(controller, `${HEADER}\nq,d`)
-      expect(controller.staticAlert).toMatch(/CSV format error: line 2: expected 4 columns but found 2/)
+      expect(controller.staticAlert).toMatch(
+        /CSV format error: line 2: expected 4 columns but found 2/
+      )
       expect(importSnapshotsToCase).not.toHaveBeenCalled()
     })
 
@@ -997,9 +1225,13 @@ describe("WizardController", () => {
     it("imports rows as a snapshot, switches to static, and collects unique queries", async () => {
       importSnapshotsToCase.mockResolvedValue([{ id: 11 }])
       const controller = mount()
-      controller.snapshotSearchUrlTemplateValue = "http://quepid/api/cases/5/snapshots/__SNAPSHOT_ID__/search"
+      controller.snapshotSearchUrlTemplateValue =
+        "http://quepid/api/cases/5/snapshots/__SNAPSHOT_ID__/search"
 
-      await chooseAndImport(controller, `${HEADER}\nstar wars,d1,1,A\n\n   \nstar wars,d2,2,B\nalien,d3,1,C\n,,,\n\n`)
+      await chooseAndImport(
+        controller,
+        `${HEADER}\nstar wars,d1,1,A\n\n   \nstar wars,d2,2,B\nalien,d3,1,C\n,,,\n\n`
+      )
 
       expect(importSnapshotsToCase).toHaveBeenCalledWith(
         [
@@ -1012,7 +1244,10 @@ describe("WizardController", () => {
       )
       expect(controller.settings.searchEngine).toBe("static")
       expect(controller.settings.searchUrl).toBe("http://quepid/api/cases/5/snapshots/11/search")
-      expect(controller.staticQueries).toEqual([{ queryString: "star wars" }, { queryString: "alien" }])
+      expect(controller.staticQueries).toEqual([
+        { queryString: "star wars" },
+        { queryString: "alien" }
+      ])
       expect(controller.activeQueries()).toBe(controller.staticQueries)
       // Success is a status line, never the wizard's error alert.
       expect(controller.staticStatus).toBe("Static data imported successfully.")
@@ -1023,10 +1258,14 @@ describe("WizardController", () => {
     it("keeps the imported snapshot when switching engines and back, without another import", async () => {
       importSnapshotsToCase.mockResolvedValue([{ id: 11 }])
       const controller = mount({ step: STEPS.endpoint })
-      controller.snapshotSearchUrlTemplateValue = "http://quepid/api/cases/5/snapshots/__SNAPSHOT_ID__/search"
+      controller.snapshotSearchUrlTemplateValue =
+        "http://quepid/api/cases/5/snapshots/__SNAPSHOT_ID__/search"
       controller.hasStaticFileTarget = true
       controller.staticFileTarget = document.createElement("input")
-      const pickEngine = (value) => controller.updateSetting({ target: { type: "radio", value, dataset: { wizardField: "searchEnginePreset" } } })
+      const pickEngine = (value) =>
+        controller.updateSetting({
+          target: { type: "radio", value, dataset: { wizardField: "searchEnginePreset" } }
+        })
 
       await chooseAndImport(controller, `${HEADER}\nq,d,1,x`)
       pickEngine("solr")
@@ -1066,16 +1305,25 @@ describe("WizardController", () => {
     })
 
     it("renames the case, saves settings with the new queries, persists queries, and closes", async () => {
-      const controller = mount({ step: STEPS.finish, settings: { caseName: "Named", searchEngine: "solr" } })
+      const controller = mount({
+        step: STEPS.finish,
+        settings: { caseName: "Named", searchEngine: "solr" }
+      })
       controller.newQueries = [{ queryString: "a" }, { queryString: "b" }]
 
       await controller.finish()
 
       const { case: c, settings } = controller.capability
       expect(c.rename).toHaveBeenCalledWith({ id: 5 }, "Named")
-      expect(settings.update).toHaveBeenCalledWith(expect.objectContaining({ newQueries: controller.newQueries }), { navigateAfterSave: false })
+      expect(settings.update).toHaveBeenCalledWith(
+        expect.objectContaining({ newQueries: controller.newQueries }),
+        { navigateAfterSave: false }
+      )
       expect(persistQueries).toHaveBeenCalledWith(5, ["a", "b"])
-      expect(controller.capability.navigation.navigateTo).toHaveBeenCalledWith({ tryNo: 1, startTour: true })
+      expect(controller.capability.navigation.navigateTo).toHaveBeenCalledWith({
+        tryNo: 1,
+        startTour: true
+      })
       expect(controller.capability.user.shownIntroWizard).toHaveBeenCalled()
       expect(modal.hide).toHaveBeenCalled()
     })
@@ -1092,7 +1340,10 @@ describe("WizardController", () => {
       switched.newQueries = [{ queryString: "typed" }]
       await switched.finish()
       expect(persistQueries).toHaveBeenLastCalledWith(5, ["typed"])
-      expect(switched.capability.settings.update).toHaveBeenCalledWith(expect.objectContaining({ newQueries: [{ queryString: "typed" }] }), { navigateAfterSave: false })
+      expect(switched.capability.settings.update).toHaveBeenCalledWith(
+        expect.objectContaining({ newQueries: [{ queryString: "typed" }] }),
+        { navigateAfterSave: false }
+      )
     })
 
     it("uses the default solr query params unless a demo was chosen", async () => {
@@ -1101,7 +1352,10 @@ describe("WizardController", () => {
       await controller.finish()
       expect(controller.settings.queryParams).toBe("q=#$query##")
 
-      const demo = mount({ step: STEPS.finish, settings: { searchEngine: "solr", queryParams: "keep" } })
+      const demo = mount({
+        step: STEPS.finish,
+        settings: { searchEngine: "solr", queryParams: "keep" }
+      })
       demo.capability.settings.demoChosen.mockReturnValue(true)
       await demo.finish()
       expect(demo.settings.queryParams).toBe("keep")
@@ -1110,7 +1364,11 @@ describe("WizardController", () => {
     it("fills REPLACE_ME with the title field for ES/OS query params", async () => {
       const controller = mount({
         step: STEPS.finish,
-        settings: { searchEngine: "es", queryParams: '{"fields":["REPLACE_ME"]}', titleField: "name" }
+        settings: {
+          searchEngine: "es",
+          queryParams: '{"fields":["REPLACE_ME"]}',
+          titleField: "name"
+        }
       })
       controller.capability.endpoints.isEsOrOs.mockReturnValue(true)
 
@@ -1130,13 +1388,18 @@ describe("WizardController", () => {
     it("requests the tour on the loaded workspace only for first-time wizard users", async () => {
       const first = mount({ step: STEPS.finish })
       await first.finish()
-      expect(first.capability.navigation.navigateTo).toHaveBeenCalledWith({ tryNo: 1, startTour: true })
+      expect(first.capability.navigation.navigateTo).toHaveBeenCalledWith({
+        tryNo: 1,
+        startTour: true
+      })
 
       const returning = mount({ step: STEPS.finish })
       returning.capability.user.current.mockReturnValue({ completedCaseWizard: true })
       await returning.finish()
-      expect(returning.capability.navigation.navigateTo).toHaveBeenCalledWith({ tryNo: 1, startTour: false })
-
+      expect(returning.capability.navigation.navigateTo).toHaveBeenCalledWith({
+        tryNo: 1,
+        startTour: false
+      })
     })
 
     it("shows the save error, re-enables Finish, and lets the user retry", async () => {
@@ -1147,7 +1410,9 @@ describe("WizardController", () => {
 
       await controller.finish()
 
-      expect(controller.error).toBe("Could not save your case settings: bad url. Please click Finish to try again.")
+      expect(controller.error).toBe(
+        "Could not save your case settings: bad url. Please click Finish to try again."
+      )
       expect(controller.saving).toBe(false)
       expect(controller.finishButtonTarget.disabled).toBe(false)
       expect(modal.hide).not.toHaveBeenCalled()
@@ -1205,7 +1470,11 @@ describe("WizardController", () => {
   describe("guidance invariants", () => {
     it("knows every condition the wizard partial names in data-wizard-when", () => {
       // An unknown name is silently falsy, which would hide that element for good.
-      const names = new Set([...WIZARD_ERB.matchAll(/data-wizard-when="([^"]+)"/g)].flatMap((match) => match[1].split(/\s+/)))
+      const names = new Set(
+        [...WIZARD_ERB.matchAll(/data-wizard-when="([^"]+)"/g)].flatMap((match) =>
+          match[1].split(/\s+/)
+        )
+      )
       const known = Object.keys(mount({ step: STEPS.endpoint }).conditions())
 
       expect(names.size).toBeGreaterThan(10)
@@ -1213,7 +1482,10 @@ describe("WizardController", () => {
     })
 
     it("ignores a leftover URL's protocol for a static endpoint, whose URL import replaces", () => {
-      const controller = mount({ step: STEPS.endpoint, settings: { searchEngine: "static", searchUrl: "https://example.com/api/search" } })
+      const controller = mount({
+        step: STEPS.endpoint,
+        settings: { searchEngine: "static", searchUrl: "https://example.com/api/search" }
+      })
       controller.capability.navigation.needToRedirectProtocol.mockReturnValue(true)
 
       expect(controller.tlsMismatch()).toBe(false)
@@ -1225,19 +1497,35 @@ describe("WizardController", () => {
   it("opens the modal statically (no backdrop dismiss, no escape) when opened", () => {
     const controller = mount()
     controller.open()
-    expect(getOrCreateBsModal).toHaveBeenCalledWith(controller.element, { backdrop: "static", keyboard: false })
+    expect(getOrCreateBsModal).toHaveBeenCalledWith(controller.element, {
+      backdrop: "static",
+      keyboard: false
+    })
     expect(modal.show).toHaveBeenCalled()
   })
 })
 
 it("validates Vespa parameter lists and bare YQL using named scalar arguments", async () => {
   for (const [input, expected] of [
-    ["yql=select * from movies&ranking.profile=bm25", { yql: "select * from movies", "ranking.profile": "bm25" }],
+    [
+      "yql=select * from movies&ranking.profile=bm25",
+      { yql: "select * from movies", "ranking.profile": "bm25" }
+    ],
     ["select * from movies", { yql: "select * from movies" }]
   ]) {
-    const controller = mount({ step: STEPS.endpoint, settings: { searchEngine: "searchapi", bareQueryParam: "yql", queryParams: input, testQuery: input } })
+    const controller = mount({
+      step: STEPS.endpoint,
+      settings: {
+        searchEngine: "searchapi",
+        bareQueryParam: "yql",
+        queryParams: input,
+        testQuery: input
+      }
+    })
     controller.capability.search.createValidator.mockReturnValue(passingValidator())
     await controller.validate()
-    expect(controller.capability.search.createValidator).toHaveBeenCalledWith(expect.objectContaining({ args: expected }))
+    expect(controller.capability.search.createValidator).toHaveBeenCalledWith(
+      expect.objectContaining({ args: expected })
+    )
   }
 })

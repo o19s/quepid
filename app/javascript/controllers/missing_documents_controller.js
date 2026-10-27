@@ -7,7 +7,18 @@ import { fromTextArea } from "modules/editor"
 import { withStatusMessages } from "controllers/status_message_behavior"
 
 export default class extends withStatusMessages(Controller) {
-  static targets = ["queryParams", "searchButton", "resetButton", "status", "results", "next", "spinner", "engineName", "supported", "unsupported"]
+  static targets = [
+    "queryParams",
+    "searchButton",
+    "resetButton",
+    "status",
+    "results",
+    "next",
+    "spinner",
+    "engineName",
+    "supported",
+    "unsupported"
+  ]
   static values = { queryId: Number, modalRoot: Boolean, engineLabels: Object }
 
   open(event) {
@@ -64,7 +75,11 @@ export default class extends withStatusMessages(Controller) {
   }
 
   get queryParams() {
-    return this.editor ? this.editor.getValue() : (this.hasQueryParamsTarget ? this.queryParamsTarget.value : "")
+    return this.editor
+      ? this.editor.getValue()
+      : this.hasQueryParamsTarget
+        ? this.queryParamsTarget.value
+        : ""
   }
 
   setQueryParams(value) {
@@ -123,8 +138,11 @@ export default class extends withStatusMessages(Controller) {
   }
 
   setControlsDisabled(disabled) {
-    if (this.hasSearchButtonTarget) this.searchButtonTarget.disabled = disabled || !this.adapter.usesQueryParamsEditor
-    if (this.hasResetButtonTarget) this.resetButtonTarget.disabled = disabled || !this.adapter.usesQueryParamsEditor || this.adapter.defaultList
+    if (this.hasSearchButtonTarget)
+      this.searchButtonTarget.disabled = disabled || !this.adapter.usesQueryParamsEditor
+    if (this.hasResetButtonTarget)
+      this.resetButtonTarget.disabled =
+        disabled || !this.adapter.usesQueryParamsEditor || this.adapter.defaultList
     if (this.hasNextTarget) this.nextTarget.disabled = disabled
   }
 
@@ -147,8 +165,9 @@ export default class extends withStatusMessages(Controller) {
           // Child search-result controllers rebuild the rating buttons on connect.
           queueMicrotask(() => {
             if (this.disconnected || document.activeElement !== document.body) return
-            const result = [...this.resultsTarget.querySelectorAll("search-result")]
-              .find(element => element.dataset.docId === docId)
+            const result = [...this.resultsTarget.querySelectorAll("search-result")].find(
+              (element) => element.dataset.docId === docId
+            )
             const trigger = docId ? result?.querySelector(".single-rating button") : null
             const focusTarget = trigger || this.element.closest(".modal")
             focusTarget?.focus()
@@ -170,7 +189,11 @@ export default class extends withStatusMessages(Controller) {
     } else if (this.adapter.defaultList && this.adapter.ratedDocsLookupUnsupported) {
       const message = document.createElement("div")
       message.className = "alert alert-warning"
-      message.append("There are ", String(this.adapter.totalRatings), " ratings for your original query, but looking up already-rated documents by ID isn't supported for the ")
+      message.append(
+        "There are ",
+        String(this.adapter.totalRatings),
+        " ratings for your original query, but looking up already-rated documents by ID isn't supported for the "
+      )
       const engine = document.createElement("strong")
       engine.textContent = this.engineLabel
       message.append(engine, " search engine.")
@@ -193,12 +216,24 @@ export default class extends withStatusMessages(Controller) {
     const summary = document.createElement("p")
     if (this.adapter.defaultList) {
       const count = this.adapter.numFound
-      const lead = count === 0 ? "There are no ratings created yet" : count === 1 ? "There is one rating" : `There are ${count} ratings`
-      summary.append(`${lead} for your original query `, Object.assign(document.createElement("em"), { textContent: this.adapter.queryText }), ".")
+      const lead =
+        count === 0
+          ? "There are no ratings created yet"
+          : count === 1
+            ? "There is one rating"
+            : `There are ${count} ratings`
+      summary.append(
+        `${lead} for your original query `,
+        Object.assign(document.createElement("em"), { textContent: this.adapter.queryText }),
+        "."
+      )
     } else {
       const query = document.createElement("em")
       query.textContent = this.adapter.lastQuery?.replace(/\s*&\s*/g, "&")
-      const count = this.adapter.numFound === 1 ? "one matching document." : `${this.adapter.numFound} matching documents.`
+      const count =
+        this.adapter.numFound === 1
+          ? "one matching document."
+          : `${this.adapter.numFound} matching documents.`
       summary.append("Your query ", query, ` returned ${count}`)
     }
     this.resultsTarget.appendChild(summary)

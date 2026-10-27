@@ -41,13 +41,24 @@ describe("createLiveQueryLifecycleRuntime", () => {
     const setQueryId = vi.fn()
     const registerQuery = vi.fn()
     const updateScores = vi.fn()
-    const runtime = runtimeFor({ searchAndScore, applyDisplayOrder, setQueryId, registerQuery, updateScores })
+    const runtime = runtimeFor({
+      searchAndScore,
+      applyDisplayOrder,
+      setQueryId,
+      registerQuery,
+      updateScores
+    })
     const query = { ratingsStore: { setQueryId: vi.fn() } }
 
-    await expect(runtime.commitQueries({ query }, {
-      status: 201,
-      data: { display_order: [12], query: { query_id: 12 } }
-    })).resolves.toEqual({ searchError })
+    await expect(
+      runtime.commitQueries(
+        { query },
+        {
+          status: 201,
+          data: { display_order: [12], query: { query_id: 12 } }
+        }
+      )
+    ).resolves.toEqual({ searchError })
 
     expect(applyDisplayOrder).toHaveBeenCalledWith([12])
     expect(setQueryId).toHaveBeenCalledWith(query, 12)
@@ -75,8 +86,9 @@ describe("createLiveQueryLifecycleRuntime", () => {
     })
     const runtime = runtimeFor({ updateScores, syncToBook })
 
-    await expect(runtime.commitQueries({ query: {} }, { status: 204 }))
-      .resolves.toEqual({ searchError: syncError })
+    await expect(runtime.commitQueries({ query: {} }, { status: 204 })).resolves.toEqual({
+      searchError: syncError
+    })
     expect(syncToBook).toHaveBeenCalledOnce()
   })
 
@@ -88,8 +100,9 @@ describe("createLiveQueryLifecycleRuntime", () => {
       syncToBook
     })
 
-    await expect(runtime.commitQueries({ query: {} }, { status: 204 }))
-      .resolves.toEqual({ searchError })
+    await expect(runtime.commitQueries({ query: {} }, { status: 204 })).resolves.toEqual({
+      searchError
+    })
     expect(syncToBook).not.toHaveBeenCalled()
   })
 
@@ -102,7 +115,9 @@ describe("createLiveQueryLifecycleRuntime", () => {
     const persisted = { data: { queries: [{ query_id: 1 }, { query_id: 2 }] } }
 
     await expect(runtime.commitQueries({ queries: [{}, {}] }, persisted)).resolves.toEqual({})
-    await expect(runtime.commitQueries({ queries: [{}, {}] }, persisted)).resolves.toEqual({ searchError })
+    await expect(runtime.commitQueries({ queries: [{}, {}] }, persisted)).resolves.toEqual({
+      searchError
+    })
 
     expect(clearQueries).toHaveBeenCalledTimes(2)
     expect(addQueriesFromResponse).toHaveBeenCalledWith(persisted.data, 7)

@@ -31,7 +31,7 @@ function buildOwner({
     framework: {
       request: vi.fn(() => Promise.resolve({ data: {} })),
       get: vi.fn(() => Promise.resolve({ data: {} })),
-      schedule: callback => callback(),
+      schedule: (callback) => callback(),
       logger: { error: vi.fn(), warn: vi.fn(), info: vi.fn() }
     },
     domain: {
@@ -66,34 +66,49 @@ function buildStores() {
 }
 
 describe("createLiveQueryRuntimeOwner", () => {
-  it.each(["removed", "replaced"])("ignores a pending rated response for a %s query", async disposition => {
-    const stores = buildStores()
-    let resolveSearch
-    const searcher = {
-      type: "solr", docs: [{ id: "rated" }], numFound: 1,
-      search: () => new Promise(resolve => { resolveSearch = resolve })
+  it.each(["removed", "replaced"])(
+    "ignores a pending rated response for a %s query",
+    async (disposition) => {
+      const stores = buildStores()
+      let resolveSearch
+      const searcher = {
+        type: "solr",
+        docs: [{ id: "rated" }],
+        numFound: 1,
+        search: () =>
+          new Promise((resolve) => {
+            resolveSearch = resolve
+          })
+      }
+      const search = buildOwner({ store: stores, searcher })
+      search.splainerSearch.solrExplainExtractorSvc.docsWithExplainOther.mockImplementation(
+        (docs) => docs
+      )
+      await search.queryCapabilities.changeSettings(-1, {
+        searchEngine: "solr",
+        selectedTry: { searchUrl: "http://solr", args: {} },
+        createFieldSpec: () => ({ id: "id" })
+      })
+      const query = {
+        queryId: 7,
+        docs: [],
+        ratedDocs: [],
+        ratings: {},
+        ratingsGeneration: 0,
+        ratingsStore: { createRateableDoc: (doc) => doc },
+        filterToRatings: () => "{!terms f=id}rated"
+      }
+      stores.queries.upsert(query)
+      const pending = search.queryCapabilities.refreshRatedDocs(7)
+      search.queryCapabilities.reconcileQueryRemoval(7)
+      const replacement = { ...query, docs: [], ratedDocs: [] }
+      if (disposition === "replaced") stores.queries.upsert(replacement)
+      resolveSearch()
+      await pending
+      expect(stores.queries.liveQuery(7)).toBe(disposition === "removed" ? null : replacement)
+      expect(stores.documents.query(7)?.ratedDocs || []).toEqual([])
     }
-    const search = buildOwner({ store: stores, searcher })
-    search.splainerSearch.solrExplainExtractorSvc.docsWithExplainOther.mockImplementation(docs => docs)
-    await search.queryCapabilities.changeSettings(-1, {
-      searchEngine: "solr", selectedTry: { searchUrl: "http://solr", args: {} },
-      createFieldSpec: () => ({ id: "id" })
-    })
-    const query = {
-      queryId: 7, docs: [], ratedDocs: [], ratings: {},
-      ratingsGeneration: 0, ratingsStore: { createRateableDoc: doc => doc },
-      filterToRatings: () => "{!terms f=id}rated"
-    }
-    stores.queries.upsert(query)
-    const pending = search.queryCapabilities.refreshRatedDocs(7)
-    search.queryCapabilities.reconcileQueryRemoval(7)
-    const replacement = { ...query, docs: [], ratedDocs: [] }
-    if (disposition === "replaced") stores.queries.upsert(replacement)
-    resolveSearch()
-    await pending
-    expect(stores.queries.liveQuery(7)).toBe(disposition === "removed" ? null : replacement)
-    expect(stores.documents.query(7)?.ratedDocs || []).toEqual([])
-  })
+  )
   afterEach(() => {
     vi.unstubAllGlobals()
     delete window.quepidStore
@@ -149,16 +164,28 @@ describe("createLiveQueryRuntimeOwner", () => {
   it("only reports show-only-rated as unsupported once a try is selected", () => {
     const algolia = { searchEngine: "algolia" }
 
-    expect(buildOwner({ store: buildStores(), selectedTry: algolia, isTrySelected: false })
-      .queryCapabilities.getListState().showOnlyRatedUnsupported).toBe(false)
-    expect(buildOwner({ store: buildStores(), selectedTry: algolia, isTrySelected: true })
-      .queryCapabilities.getListState().showOnlyRatedUnsupported).toBe(true)
+    expect(
+      buildOwner({
+        store: buildStores(),
+        selectedTry: algolia,
+        isTrySelected: false
+      }).queryCapabilities.getListState().showOnlyRatedUnsupported
+    ).toBe(false)
+    expect(
+      buildOwner({
+        store: buildStores(),
+        selectedTry: algolia,
+        isTrySelected: true
+      }).queryCapabilities.getListState().showOnlyRatedUnsupported
+    ).toBe(true)
   })
 
   it("toggles show-only-rated and refreshes rated docs only for queries that aren't ready", () => {
     const stores = buildStores()
     const search = buildOwner({ store: stores })
-    const refreshRatedDocs = vi.spyOn(search.queryCapabilities, "refreshRatedDocs").mockReturnValue(undefined)
+    const refreshRatedDocs = vi
+      .spyOn(search.queryCapabilities, "refreshRatedDocs")
+      .mockReturnValue(undefined)
     const stateChanged = vi.fn()
     document.addEventListener("queries-state:changed", stateChanged)
     stores.queries.upsert({ queryId: 1, ratingsReady: true })
@@ -199,7 +226,10 @@ describe("createLiveQueryRuntimeOwner", () => {
     vi.spyOn(stores.scoring, "setLatestScoreInfo")
     const searcher = {
       type: "solr",
-      docs: [{ id: "d1", ...docExtras }, { id: "d2", ...docExtras }],
+      docs: [
+        { id: "d1", ...docExtras },
+        { id: "d2", ...docExtras }
+      ],
       numFound: 2,
       linkUrl: "http://solr/select?q=star",
       search: vi.fn(() => Promise.resolve())
@@ -210,18 +240,29 @@ describe("createLiveQueryRuntimeOwner", () => {
     const search = buildOwner({ store: stores, searcher, scorer, eventTarget })
     const settings = {
       searchEngine: "solr",
-      selectedTry: { searchUrl: "http://solr/select", args: { q: ["#$query##"] }, requestsPerMinute: 0 },
+      selectedTry: {
+        searchUrl: "http://solr/select",
+        args: { q: ["#$query##"] },
+        requestsPerMinute: 0
+      },
       createFieldSpec: () => ({ id: "id" })
     }
     await search.queryCapabilities.changeSettings(-1, settings)
 
     if (syncConflict) {
-      vi.stubGlobal("fetch", vi.fn(async () => ({
-        ok: false, status: 409, json: async () => null
-      })))
-      eventTarget.dispatchEvent(new CustomEvent("quepid:case-book-updated", {
-        detail: { caseId: -1, bookId: 7, autoPopulateBookPairs: true }
-      }))
+      vi.stubGlobal(
+        "fetch",
+        vi.fn(async () => ({
+          ok: false,
+          status: 409,
+          json: async () => null
+        }))
+      )
+      eventTarget.dispatchEvent(
+        new CustomEvent("quepid:case-book-updated", {
+          detail: { caseId: -1, bookId: 7, autoPopulateBookPairs: true }
+        })
+      )
     }
 
     const prepared = search.queryLifecycle.prepareQueries(["star wars"])
@@ -242,7 +283,12 @@ describe("createLiveQueryRuntimeOwner", () => {
     const query = search.queryCapabilities.getQuery(5)
     expect(query.queryText).toBe("star wars")
     expect(search.splainerSearch.searchSvc.createSearcher).toHaveBeenCalledWith(
-      { id: "id" }, "http://solr/select", expect.anything(), "star wars", expect.anything(), "solr"
+      { id: "id" },
+      "http://solr/select",
+      expect.anything(),
+      "star wars",
+      expect.anything(),
+      "solr"
     )
     expect(query.linkUrl).toBe("http://solr/select?q=star")
     expect(query.docs.map((doc) => doc.id)).toEqual(["d1", "d2"])
@@ -262,16 +308,16 @@ describe("createLiveQueryRuntimeOwner", () => {
     }
     const { stores, search } = await addQuery({ docExtras: tripwires })
     const listChanges = []
-    stores.queries.addEventListener("change", event => listChanges.push(event.detail.queryId))
+    stores.queries.addEventListener("change", (event) => listChanges.push(event.detail.queryId))
     await search.queryCommands.searchAll()
 
     // The list still hears about a collapsed query's new results.
     expect(listChanges).toContain(5)
     expect(stores.documents.query(5).docs).toEqual([])
-    Object.values(tripwires).forEach(tripwire => expect(tripwire).not.toHaveBeenCalled())
+    Object.values(tripwires).forEach((tripwire) => expect(tripwire).not.toHaveBeenCalled())
 
     search.queryCommands.toggleQuery(5)
-    expect(stores.documents.query(5).docs.map(doc => doc.id)).toEqual(["d1", "d2"])
+    expect(stores.documents.query(5).docs.map((doc) => doc.id)).toEqual(["d1", "d2"])
     expect(tripwires.explain).toHaveBeenCalled()
 
     search.queryCommands.toggleQuery(5)
@@ -291,13 +337,21 @@ describe("createLiveQueryRuntimeOwner", () => {
       docs: vi.fn(() => [diffDoc])
     }
     search.queryCommands.toggleQuery(5)
-    expect(stores.documents.query(5).diffs.searchers[0].docs).toEqual([expect.objectContaining({ id: "s1" })])
+    expect(stores.documents.query(5).diffs.searchers[0].docs).toEqual([
+      expect.objectContaining({ id: "s1" })
+    ])
     query.diffs.docs.mockClear()
     diffDoc.score.mockClear()
 
     search.queryCommands.toggleQuery(5)
     expect(stores.documents.query(5).diffs.searchers).toEqual([
-      expect.objectContaining({ name: "Baseline", version: 3, score: { score: 0.4 }, docs: [], ratedDocs: [] })
+      expect.objectContaining({
+        name: "Baseline",
+        version: 3,
+        score: { score: 0.4 },
+        docs: [],
+        ratedDocs: []
+      })
     ])
     expect(query.diffs.docs).not.toHaveBeenCalled()
     expect(diffDoc.score).not.toHaveBeenCalled()
@@ -362,11 +416,15 @@ describe("createLiveQueryRuntimeOwner", () => {
 
   it("bootstraps a newly selected case, and a reset returns the store to idle", async () => {
     const stores = buildStores()
-    const fetch = vi.fn((url) => Promise.resolve(jsonResponse(
-      String(url).includes("/queries")
-        ? { display_order: [7], queries: [{ query_id: 7, query_text: "dune" }] }
-        : { book_id: null, auto_populate_book_pairs: false }
-    )))
+    const fetch = vi.fn((url) =>
+      Promise.resolve(
+        jsonResponse(
+          String(url).includes("/queries")
+            ? { display_order: [7], queries: [{ query_id: 7, query_text: "dune" }] }
+            : { book_id: null, auto_populate_book_pairs: false }
+        )
+      )
+    )
     vi.stubGlobal("fetch", fetch)
     const bootstrapScorer = vi.fn()
     const search = buildOwner({ store: stores, bootstrapScorer })
@@ -396,7 +454,7 @@ describe("createLiveQueryRuntimeOwner", () => {
     stores.queries.upsert({ queryId: 1 })
     stores.queries.upsert({ queryId: 2 })
     search.queryCapabilities.setDisplayOrder([2, 1])
-    expect(search.queryCapabilities.getQueryArray().map(query => query.queryId)).toEqual([2, 1])
+    expect(search.queryCapabilities.getQueryArray().map((query) => query.queryId)).toEqual([2, 1])
     stores.queries.setExpanded(1, true)
     stores.documents.replaceQuery(1)
     const replaceQuery = vi.spyOn(stores.documents, "replaceQuery")
@@ -414,7 +472,10 @@ describe("createLiveQueryRuntimeOwner", () => {
 
   it("keeps live, collection, document and completed case scores consistent after a rating", async () => {
     const { stores, search } = await addQuery()
-    vi.stubGlobal("fetch", vi.fn(() => Promise.resolve(jsonResponse({}))))
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() => Promise.resolve(jsonResponse({})))
+    )
     const query = search.queryCapabilities.getQuery(5)
     expect(stores.documents.query(5)).toMatchObject({ allRated: false, missingRatings: 2 })
     const completed = stores.scoring.queryScore(5)
@@ -423,9 +484,17 @@ describe("createLiveQueryRuntimeOwner", () => {
     await query.ratingsStore.rateBulkDocuments(["d1", "d2"], 1)
     await vi.waitFor(() => expect(stores.scoring.queryScore(5).allRated).toBe(true))
     expect(query.currentScore).toMatchObject({ score: 0.5, allRated: true, countMissingRatings: 0 })
-    expect(stores.queries.query(5).currentScore).toMatchObject({ score: 0.5, allRated: true, countMissingRatings: 0 })
+    expect(stores.queries.query(5).currentScore).toMatchObject({
+      score: 0.5,
+      allRated: true,
+      countMissingRatings: 0
+    })
     expect(stores.documents.query(5)).toMatchObject({ allRated: true, missingRatings: 0 })
-    expect(stores.scoring.queryScore(5)).toMatchObject({ score: 0.5, allRated: true, countMissingRatings: 0 })
+    expect(stores.scoring.queryScore(5)).toMatchObject({
+      score: 0.5,
+      allRated: true,
+      countMissingRatings: 0
+    })
     expect(completed.allRated).toBe(false)
   })
 
@@ -466,19 +535,39 @@ describe("createLiveQueryRuntimeOwner", () => {
       stores.queries.upsert(registered({ ratings: { scale: { 1: "own" } } }))
       const adapter = buildOwner({ store: stores, editable: editable() }).targetedSearch(7)
 
-      expect(adapter).toMatchObject({ queryId: 7, queryText: "star wars", usesQueryParamsEditor: true, ratingScale: { 1: "own" } })
+      expect(adapter).toMatchObject({
+        queryId: 7,
+        queryText: "star wars",
+        usesQueryParamsEditor: true,
+        ratingScale: { 1: "own" }
+      })
       // Pre-filled from the try's own query params, just like the Query Sandbox.
       expect(adapter.initialQueryParams()).toBe("q=star wars")
-      const preview = buildOwner({ store: stores, editable: editable({ searchEngine: "es" }) }).targetedSearch(7)
+      const preview = buildOwner({
+        store: stores,
+        editable: editable({ searchEngine: "es" })
+      }).targetedSearch(7)
       expect(preview.initialQueryParams()).toBe("q=star wars")
 
-      const staticAdapter = buildOwner({ store: stores, editable: editable({ searchEngine: "static" }) }).targetedSearch(7)
+      const staticAdapter = buildOwner({
+        store: stores,
+        editable: editable({ searchEngine: "static" })
+      }).targetedSearch(7)
       expect(staticAdapter.usesQueryParamsEditor).toBe(false)
-      const algolia = buildOwner({ store: stores, editable: editable({ searchEngine: "searchapi" }) }).targetedSearch(7)
+      const algolia = buildOwner({
+        store: stores,
+        editable: editable({ searchEngine: "searchapi" })
+      }).targetedSearch(7)
       expect(algolia.usesQueryParamsEditor).toBe(true)
-      const es = buildOwner({ store: stores, editable: editable({ searchEngine: "os" }) }).targetedSearch(7)
+      const es = buildOwner({
+        store: stores,
+        editable: editable({ searchEngine: "os" })
+      }).targetedSearch(7)
       expect(es.usesQueryParamsEditor).toBe(true)
-      const vectara = buildOwner({ store: stores, editable: editable({ searchEngine: "vectara" }) }).targetedSearch(7)
+      const vectara = buildOwner({
+        store: stores,
+        editable: editable({ searchEngine: "vectara" })
+      }).targetedSearch(7)
       expect(vectara.usesQueryParamsEditor).toBe(false)
     })
 
@@ -488,7 +577,9 @@ describe("createLiveQueryRuntimeOwner", () => {
         stores.queries.upsert(query)
         return buildOwner({ store: stores, editable: editable() }).targetedSearch(7).ratingScale
       }
-      expect(withScorer(registered({ effectiveScorer: () => ({ getColors: () => ({ 0: "red" }) }) }))).toEqual({ 0: "red" })
+      expect(
+        withScorer(registered({ effectiveScorer: () => ({ getColors: () => ({ 0: "red" }) }) }))
+      ).toEqual({ 0: "red" })
       expect(withScorer(registered({ effectiveScorer: () => ({}) }))).toEqual({})
       expect(withScorer(registered({ effectiveScorer: () => null }))).toEqual({})
       expect(withScorer(registered())).toEqual({})
@@ -498,12 +589,27 @@ describe("createLiveQueryRuntimeOwner", () => {
       const run = async (overrides) => {
         const stores = buildStores()
         stores.queries.upsert(registered())
-        const searcher = { type: "static", docs: [], numFound: 0, search: vi.fn(() => Promise.resolve()) }
+        const searcher = {
+          type: "static",
+          docs: [],
+          numFound: 0,
+          search: vi.fn(() => Promise.resolve())
+        }
         const proxyUrlFor = vi.fn(() => "/proxy/9?url=")
         const previewArgs = vi.fn(() => Promise.resolve({ q: ["x"] }))
-        const search = buildOwner({ store: stores, searcher, previewArgs, proxyUrlFor, editable: editable({ searchEngine: "es", ...overrides }) })
+        const search = buildOwner({
+          store: stores,
+          searcher,
+          previewArgs,
+          proxyUrlFor,
+          editable: editable({ searchEngine: "es", ...overrides })
+        })
         await search.targetedSearch(7).search("q=x")
-        return { proxyUrlFor, previewArgs, createSearcher: search.splainerSearch.searchSvc.createSearcher }
+        return {
+          proxyUrlFor,
+          previewArgs,
+          createSearcher: search.splainerSearch.searchSvc.createSearcher
+        }
       }
 
       const proxied = await run({ proxyRequests: true, searchEndpointId: 9 })
@@ -545,7 +651,12 @@ describe("createLiveQueryRuntimeOwner", () => {
         }
         const search = buildOwner({ store: stores, searcher, previewArgs, editable: settings })
         const adapter = await search.targetedSearch(7).resetToRated()
-        return { adapter, searcher, previewArgs, createSearcher: search.splainerSearch.searchSvc.createSearcher }
+        return {
+          adapter,
+          searcher,
+          previewArgs,
+          createSearcher: search.splainerSearch.searchSvc.createSearcher
+        }
       }
 
       it("looks up rated docs through the mapper and forces POST", async () => {
@@ -561,7 +672,10 @@ describe("createLiveQueryRuntimeOwner", () => {
 
       it("leaves the list empty when the mapper builds no query or the args cannot be resolved", async () => {
         const noMapper = vi.fn(() => Promise.resolve({}))
-        const without = await run({ settings: searchApi({ mapperCode: "x = 1" }), previewArgs: noMapper })
+        const without = await run({
+          settings: searchApi({ mapperCode: "x = 1" }),
+          previewArgs: noMapper
+        })
         expect(noMapper).not.toHaveBeenCalled()
         expect(without.adapter.docs).toEqual([])
 

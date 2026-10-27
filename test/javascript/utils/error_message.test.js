@@ -50,8 +50,15 @@ describe("flashErrorMessage", () => {
 
 describe("serverMessage", () => {
   it("uses server errors and messages before the contextual fallback", () => {
-    expect(serverMessage(new HttpError({ status: 422, data: { error: "Invalid", message: "Other" } }), "fallback")).toBe("Invalid")
-    expect(serverMessage(new HttpError({ status: 422, data: { message: "Invalid" } }), "fallback")).toBe("Invalid")
+    expect(
+      serverMessage(
+        new HttpError({ status: 422, data: { error: "Invalid", message: "Other" } }),
+        "fallback"
+      )
+    ).toBe("Invalid")
+    expect(
+      serverMessage(new HttpError({ status: 422, data: { message: "Invalid" } }), "fallback")
+    ).toBe("Invalid")
   })
 
   it("keeps a contextual fallback for HTTP responses without a usable message", () => {

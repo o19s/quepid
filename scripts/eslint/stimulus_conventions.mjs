@@ -9,7 +9,8 @@ export default {
     type: "suggestion",
     schema: [{ type: "object", additionalProperties: { type: "object" } }],
     messages: {
-      increase: "{{kind}} exceeds this controller's recorded baseline. Use Stimulus data-action or an ERB shell with targets; document any required exception."
+      increase:
+        "{{kind}} exceeds this controller's recorded baseline. Use Stimulus data-action or an ERB shell with targets; document any required exception."
     }
   },
   create(context) {
@@ -19,9 +20,12 @@ export default {
     return {
       CallExpression(node) {
         const callee = node.callee
-        if (callee?.type === "MemberExpression" &&
-            callee.object.type === "Identifier" && callee.object.name === "document" &&
-            propertyName(callee) === "addEventListener") {
+        if (
+          callee?.type === "MemberExpression" &&
+          callee.object.type === "Identifier" &&
+          callee.object.name === "document" &&
+          propertyName(callee) === "addEventListener"
+        ) {
           sites.documentListener.push(node)
         }
       },

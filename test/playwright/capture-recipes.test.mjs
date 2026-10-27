@@ -43,10 +43,17 @@ test("failed authentication never creates a screenshot and does not disclose cre
   const image = path.join(directory, "home.png")
   const email = "quepid-capture-missing-account@example.invalid"
   const password = "capture-private-fixture-password"
-  await assert.rejects(captureAdminHome(image, () => {}, { ...process.env, QUEPID_E2E_ADMIN_EMAIL: email, QUEPID_E2E_ADMIN_PASSWORD: password }), (error) => {
-    assert.equal(error.message.includes(email), false)
-    assert.equal(error.message.includes(password), false)
-    return true
-  })
+  await assert.rejects(
+    captureAdminHome(image, () => {}, {
+      ...process.env,
+      QUEPID_E2E_ADMIN_EMAIL: email,
+      QUEPID_E2E_ADMIN_PASSWORD: password
+    }),
+    (error) => {
+      assert.equal(error.message.includes(email), false)
+      assert.equal(error.message.includes(password), false)
+      return true
+    }
+  )
   assert.equal(fs.existsSync(image), false)
 })

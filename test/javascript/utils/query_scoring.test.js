@@ -17,7 +17,12 @@ describe("query scoring runtime", () => {
     })
 
     expect(scorer.score).toHaveBeenCalledWith(query, 3, docs, [{ id: "rated", rating: 1 }], {})
-    expect(result).toMatchObject({ score: 0.75, maxScore: 1, allRated: false, countMissingRatings: 1 })
+    expect(result).toMatchObject({
+      score: 0.75,
+      maxScore: 1,
+      allRated: false,
+      countMissingRatings: 1
+    })
   })
 
   it("preserves zero scores and scorer max-score defaults", async () => {
@@ -59,7 +64,8 @@ describe("query scoring runtime", () => {
           queryId: 1,
           queryText: "one",
           numFound: 4,
-          score: () => Promise.resolve({ score: 0.5, maxScore: 1, allRated: true, countMissingRatings: 0 })
+          score: () =>
+            Promise.resolve({ score: 0.5, maxScore: 1, allRated: true, countMissingRatings: 0 })
         },
         second: {
           queryId: 2,
@@ -81,8 +87,22 @@ describe("query scoring runtime", () => {
       allRated: false,
       score: 0.5,
       queries: {
-        1: { score: 0.5, maxScore: 1, text: "one", numFound: 4, allRated: true, countMissingRatings: 0 },
-        3: { score: "--", maxScore: 1, text: "three", numFound: 0, allRated: false, countMissingRatings: undefined }
+        1: {
+          score: 0.5,
+          maxScore: 1,
+          text: "one",
+          numFound: 4,
+          allRated: true,
+          countMissingRatings: 0
+        },
+        3: {
+          score: "--",
+          maxScore: 1,
+          text: "three",
+          numFound: 0,
+          allRated: false,
+          countMissingRatings: undefined
+        }
       }
     })
     expect(logger.log).toHaveBeenCalledWith("Skipping null score in scoreAll calculation")
@@ -116,10 +136,9 @@ describe("query scoring runtime", () => {
 
     await runtime.scoreAll()
 
-    expect(onComplete).toHaveBeenCalledWith(
-      expect.objectContaining({ score: 1 }),
-      { isFullScoreAll: true }
-    )
+    expect(onComplete).toHaveBeenCalledWith(expect.objectContaining({ score: 1 }), {
+      isFullScoreAll: true
+    })
   })
 
   it("marks explicit collections as partial scoring", async () => {
@@ -133,10 +152,9 @@ describe("query scoring runtime", () => {
       { queryId: 2, score: () => Promise.resolve({ score: 0.5, maxScore: 1, allRated: true }) }
     ])
 
-    expect(onComplete).toHaveBeenCalledWith(
-      expect.objectContaining({ score: 0.5 }),
-      { isFullScoreAll: false }
-    )
+    expect(onComplete).toHaveBeenCalledWith(expect.objectContaining({ score: 0.5 }), {
+      isFullScoreAll: false
+    })
   })
 })
 
@@ -167,7 +185,13 @@ describe("scoreAllQueries allRated", () => {
       numFound: 1,
       score: () => Promise.resolve({ score: 1, maxScore: 1, allRated, countMissingRatings: 0 })
     })
-    expect((await scoreAllQueries({ scorableCollection: [scorable(1, true), scorable(2, true)] })).allRated).toBe(true)
-    expect((await scoreAllQueries({ scorableCollection: [scorable(1, true), scorable(2, false)] })).allRated).toBe(false)
+    expect(
+      (await scoreAllQueries({ scorableCollection: [scorable(1, true), scorable(2, true)] }))
+        .allRated
+    ).toBe(true)
+    expect(
+      (await scoreAllQueries({ scorableCollection: [scorable(1, true), scorable(2, false)] }))
+        .allRated
+    ).toBe(false)
   })
 })

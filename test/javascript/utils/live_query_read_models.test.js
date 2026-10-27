@@ -4,7 +4,9 @@ import { buildDiffReadModel, createDocList, documentUrlFor } from "utils/live_qu
 describe("createDocList", () => {
   function build(docs, { fieldSpecId = "id", explain } = {}) {
     const createNormalDoc = vi.fn((spec, doc, altExplain) => ({ id: doc.id, altExplain }))
-    const ratingsStore = { createRateableDoc: vi.fn((normalDoc) => ({ ...normalDoc, rateable: true })) }
+    const ratingsStore = {
+      createRateableDoc: vi.fn((normalDoc) => ({ ...normalDoc, rateable: true }))
+    }
     const docList = createDocList({
       docs,
       fieldSpec: { id: fieldSpecId },
@@ -77,32 +79,51 @@ describe("createDocList", () => {
   })
 
   it("escapes the id field and doc id in error HTML", () => {
-    const { docList } = build([{ id: "<b>x</b>" }, { id: "<b>x</b>" }], { fieldSpecId: "<img src=x>" })
+    const { docList } = build([{ id: "<b>x</b>" }, { id: "<b>x</b>" }], {
+      fieldSpecId: "<img src=x>"
+    })
 
     expect(docList.errorMsg()).not.toContain("<img")
     expect(docList.errorMsg()).toContain("&lt;img src=x&gt;")
-    expect(docList.list()[1].error).toBe("ID <strong>&lt;b&gt;x&lt;/b&gt;</strong> Shared With Another Doc")
+    expect(docList.list()[1].error).toBe(
+      "ID <strong>&lt;b&gt;x&lt;/b&gt;</strong> Shared With Another Doc"
+    )
   })
 })
 
 describe("documentUrlFor", () => {
   const doc = (url) => ({ _url: () => url })
 
-  it.each([undefined, false])("disables mapper document links unless explicitly supported: %s", supported => {
-    expect(documentUrlFor(doc("http://a.aa"), {
-      settings: { searchEngine: "searchapi", mapperBasedSearchEngineSupportsDirectDocumentLookup: supported }
-    })).toBeNull()
-  })
+  it.each([undefined, false])(
+    "disables mapper document links unless explicitly supported: %s",
+    (supported) => {
+      expect(
+        documentUrlFor(doc("http://a.aa"), {
+          settings: {
+            searchEngine: "searchapi",
+            mapperBasedSearchEngineSupportsDirectDocumentLookup: supported
+          }
+        })
+      ).toBeNull()
+    }
+  )
 
   it("allows opted-in mapper links", () => {
-    expect(documentUrlFor(doc("https://search.test/doc/1"), {
-      settings: { searchEngine: "searchapi", mapperBasedSearchEngineSupportsDirectDocumentLookup: true }
-    })).toBe("https://search.test/doc/1")
+    expect(
+      documentUrlFor(doc("https://search.test/doc/1"), {
+        settings: {
+          searchEngine: "searchapi",
+          mapperBasedSearchEngineSupportsDirectDocumentLookup: true
+        }
+      })
+    ).toBe("https://search.test/doc/1")
   })
 
-  it.each([null, undefined, "", " "])("does not proxy a missing document URL: %s", value => {
+  it.each([null, undefined, "", " "])("does not proxy a missing document URL: %s", (value) => {
     const proxyUrlFor = vi.fn(() => "/proxy?url=")
-    expect(documentUrlFor(doc(value), { settings: { proxyRequests: true }, proxyUrlFor })).toBeNull()
+    expect(
+      documentUrlFor(doc(value), { settings: { proxyRequests: true }, proxyUrlFor })
+    ).toBeNull()
     expect(proxyUrlFor).not.toHaveBeenCalled()
   })
 
@@ -112,7 +133,13 @@ describe("documentUrlFor", () => {
   })
 
   it("returns null when the url function throws", () => {
-    expect(documentUrlFor({ _url: () => { throw new Error("no url") } })).toBeNull()
+    expect(
+      documentUrlFor({
+        _url: () => {
+          throw new Error("no url")
+        }
+      })
+    ).toBeNull()
   })
 
   it("returns the doc url unchanged by default", () => {
@@ -207,15 +234,40 @@ describe("buildDiffReadModel", () => {
   it("builds only each searcher's score for a collapsed row, never touching its docs", () => {
     const doc = { score: vi.fn(() => 5) }
     const query = queryWith(
-      [{ name: () => "Snap A", version: () => 3, inError: false, searchError: "", diffScore: { score: 0.5 } }, {}],
+      [
+        {
+          name: () => "Snap A",
+          version: () => 3,
+          inError: false,
+          searchError: "",
+          diffScore: { score: 0.5 }
+        },
+        {}
+      ],
       [{ all: [doc], rated: [doc] }]
     )
     const docs = vi.spyOn(query.diffs, "docs")
 
     expect(buildDiffReadModel(query, { withDocs: false })).toEqual({
       searchers: [
-        { name: "Snap A", version: 3, inError: false, searchError: "", score: { score: 0.5 }, docs: [], ratedDocs: [] },
-        { name: "Snapshot", version: null, inError: undefined, searchError: undefined, score: { score: "?", allRated: false }, docs: [], ratedDocs: [] }
+        {
+          name: "Snap A",
+          version: 3,
+          inError: false,
+          searchError: "",
+          score: { score: 0.5 },
+          docs: [],
+          ratedDocs: []
+        },
+        {
+          name: "Snapshot",
+          version: null,
+          inError: undefined,
+          searchError: undefined,
+          score: { score: "?", allRated: false },
+          docs: [],
+          ratedDocs: []
+        }
       ]
     })
     expect(docs).not.toHaveBeenCalled()

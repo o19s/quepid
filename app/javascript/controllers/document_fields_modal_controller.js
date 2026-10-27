@@ -7,7 +7,7 @@ export default class extends Controller {
 
   show(event) {
     event.preventDefault()
-    
+
     const link = event.currentTarget
     const documentFields = link.dataset.documentFields
     const queryText = link.dataset.queryText

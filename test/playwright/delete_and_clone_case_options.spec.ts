@@ -1,5 +1,5 @@
-import { test, expect, type Page } from '@playwright/test';
-import { apiHeaders, createDisposableCase, deleteCaseViaApi } from './case_helpers';
+import { test, expect, type Page } from "@playwright/test"
+import { apiHeaders, createDisposableCase, deleteCaseViaApi } from "./case_helpers"
 
 /**
  * End-to-end coverage for two core-case-toolbar Stimulus controllers that
@@ -22,130 +22,149 @@ import { apiHeaders, createDisposableCase, deleteCaseViaApi } from './case_helpe
 async function addQuery(page: Page, caseId: number, queryText: string) {
   const response = await page.request.post(`api/cases/${caseId}/queries`, {
     data: { query: { query_text: queryText } },
-    headers: await apiHeaders(page, { 'Content-Type': 'application/json' })
-  });
-  expect(response.ok()).toBeTruthy();
+    headers: await apiHeaders(page, { "Content-Type": "application/json" })
+  })
+  expect(response.ok()).toBeTruthy()
 }
 
 async function fetchQueryCount(page: Page, caseId: number): Promise<number> {
-  const response = await page.request.get(`api/cases/${caseId}/queries`, { headers: await apiHeaders(page, { 'Content-Type': 'application/json' }) });
-  expect(response.ok()).toBeTruthy();
-  const json = await response.json();
-  return Array.isArray(json.queries) ? json.queries.length : 0;
+  const response = await page.request.get(`api/cases/${caseId}/queries`, {
+    headers: await apiHeaders(page, { "Content-Type": "application/json" })
+  })
+  expect(response.ok()).toBeTruthy()
+  const json = await response.json()
+  return Array.isArray(json.queries) ? json.queries.length : 0
 }
 
 async function caseExists(page: Page, caseId: number): Promise<boolean> {
-  const response = await page.request.get(`api/cases/${caseId}`, { headers: await apiHeaders(page, { 'Content-Type': 'application/json' }) });
-  return response.ok();
+  const response = await page.request.get(`api/cases/${caseId}`, {
+    headers: await apiHeaders(page, { "Content-Type": "application/json" })
+  })
+  return response.ok()
 }
 
 async function gotoCase(page: Page, caseId: number) {
-  await page.goto(`case/${caseId}/try/1`);
-  await page.waitForSelector('#case-actions', { timeout: 20_000 });
+  await page.goto(`case/${caseId}/try/1`)
+  await page.waitForSelector("#case-actions", { timeout: 20_000 })
 }
 
-test.describe('core case toolbar: delete-case-options-core (submitDestructiveForm wiring)', () => {
+test.describe("core case toolbar: delete-case-options-core (submitDestructiveForm wiring)", () => {
   test('"Delete All Queries" removes queries but keeps the case', async ({ page }) => {
-    const caseId = await createDisposableCase(page, 'Delete-Queries');
+    const caseId = await createDisposableCase(page, "Delete-Queries")
 
     try {
-      await addQuery(page, caseId, 'star wars');
-      await addQuery(page, caseId, 'moana');
-      expect(await fetchQueryCount(page, caseId)).toBe(2);
+      await addQuery(page, caseId, "star wars")
+      await addQuery(page, caseId, "moana")
+      expect(await fetchQueryCount(page, caseId)).toBe(2)
 
-      await gotoCase(page, caseId);
-      await page.locator('#case-actions').getByRole('button', { name: 'Delete', exact: true }).click();
+      await gotoCase(page, caseId)
+      await page
+        .locator("#case-actions")
+        .getByRole("button", { name: "Delete", exact: true })
+        .click()
 
-      const modal = page.locator('#deleteCaseOptionsModal.show, .modal.show').first();
-      await expect(modal).toContainText(/Delete Options for Case/i);
+      const modal = page.locator("#deleteCaseOptionsModal.show, .modal.show").first()
+      await expect(modal).toContainText(/Delete Options for Case/i)
 
-      await modal.getByRole('button', { name: 'Delete All Queries' }).click();
-      const confirmButton = modal.locator('[data-delete-case-options-core-target="submitButton"]');
-      await expect(confirmButton).toBeEnabled();
+      await modal.getByRole("button", { name: "Delete All Queries" }).click()
+      const confirmButton = modal.locator('[data-delete-case-options-core-target="submitButton"]')
+      await expect(confirmButton).toBeEnabled()
       // The page is already on a /case/ URL, so waiting for that URL proves nothing: wait for the
       // DELETE itself, then for the queries to be gone.
-      const deleted = page.waitForResponse(response =>
-        response.request().method() === 'DELETE' && /\/cases\/\d+\/queries/.test(response.url())
-      );
-      await confirmButton.click();
-      expect((await deleted).ok()).toBeTruthy();
+      const deleted = page.waitForResponse(
+        (response) =>
+          response.request().method() === "DELETE" && /\/cases\/\d+\/queries/.test(response.url())
+      )
+      await confirmButton.click()
+      expect((await deleted).ok()).toBeTruthy()
       // The success redirect reloads the page; reading the CSRF token mid-navigation throws, so retry.
-      await expect.poll(
-        () => fetchQueryCount(page, caseId).catch(() => -1),
-        { timeout: 15_000 }
-      ).toBe(0);
-      await page.waitForLoadState('load');
-      expect(await caseExists(page, caseId)).toBeTruthy();
+      await expect
+        .poll(() => fetchQueryCount(page, caseId).catch(() => -1), { timeout: 15_000 })
+        .toBe(0)
+      await page.waitForLoadState("load")
+      expect(await caseExists(page, caseId)).toBeTruthy()
     } finally {
-      await deleteCaseViaApi(page, caseId);
+      await deleteCaseViaApi(page, caseId)
     }
-  });
+  })
 
-  test('"Delete Case" permanently deletes the case and redirects to the cases listing', async ({ page }) => {
-    const caseId = await createDisposableCase(page, 'Delete-Case');
-    let deletedByUi = false;
+  test('"Delete Case" permanently deletes the case and redirects to the cases listing', async ({
+    page
+  }) => {
+    const caseId = await createDisposableCase(page, "Delete-Case")
+    let deletedByUi = false
 
     try {
-      await gotoCase(page, caseId);
-      await page.locator('#case-actions').getByRole('button', { name: 'Delete', exact: true }).click();
+      await gotoCase(page, caseId)
+      await page
+        .locator("#case-actions")
+        .getByRole("button", { name: "Delete", exact: true })
+        .click()
 
-      const modal = page.locator('#deleteCaseOptionsModal.show, .modal.show').first();
-      await expect(modal).toContainText(/Delete Options for Case/i);
+      const modal = page.locator("#deleteCaseOptionsModal.show, .modal.show").first()
+      await expect(modal).toContainText(/Delete Options for Case/i)
 
-      await modal.getByRole('button', { name: 'Delete Case' }).click();
-      const confirmButton = modal.locator('[data-delete-case-options-core-target="submitButton"]');
-      await expect(confirmButton).toBeEnabled();
-      await confirmButton.click();
+      await modal.getByRole("button", { name: "Delete Case" }).click()
+      const confirmButton = modal.locator('[data-delete-case-options-core-target="submitButton"]')
+      await expect(confirmButton).toBeEnabled()
+      await confirmButton.click()
 
-      await page.waitForURL(/\/cases(\?.*)?$/, { timeout: 15_000 });
-      deletedByUi = true;
-      expect(await caseExists(page, caseId)).toBeFalsy();
+      await page.waitForURL(/\/cases(\?.*)?$/, { timeout: 15_000 })
+      deletedByUi = true
+      expect(await caseExists(page, caseId)).toBeFalsy()
     } finally {
       // Only fall back to API cleanup if the UI flow itself didn't already
       // delete the case -- deleting twice is harmless but this keeps intent
       // clear: the assertion above is what actually proves the feature works.
-      if (!deletedByUi) await deleteCaseViaApi(page, caseId);
+      if (!deletedByUi) await deleteCaseViaApi(page, caseId)
     }
-  });
-});
+  })
+})
 
-test.describe('core case toolbar: clone-case-core', () => {
-  test('cloning a case creates a new case and navigates to it', async ({ page }) => {
-    const sourceCaseId = await createDisposableCase(page, 'Clone-Source');
-    let clonedCaseId: number | null = null;
+test.describe("core case toolbar: clone-case-core", () => {
+  test("cloning a case creates a new case and navigates to it", async ({ page }) => {
+    const sourceCaseId = await createDisposableCase(page, "Clone-Source")
+    let clonedCaseId: number | null = null
 
     try {
-      await addQuery(page, sourceCaseId, 'star wars');
+      await addQuery(page, sourceCaseId, "star wars")
 
-      await gotoCase(page, sourceCaseId);
-      await page.locator('#case-actions').getByRole('button', { name: 'Clone', exact: true }).click();
+      await gotoCase(page, sourceCaseId)
+      await page
+        .locator("#case-actions")
+        .getByRole("button", { name: "Clone", exact: true })
+        .click()
 
-      const modal = page.locator('#cloneCaseModal.show, .modal.show').first();
-      await expect(modal).toContainText(/Clone case/i);
+      const modal = page.locator("#cloneCaseModal.show, .modal.show").first()
+      await expect(modal).toContainText(/Clone case/i)
 
-      const newCaseName = `Playwright Clone Target ${Date.now()}`;
-      await modal.locator('#cloneCaseName').fill(newCaseName);
-      await expect(modal.locator('[data-clone-case-core-target="submitButton"]')).toBeEnabled();
-      await modal.locator('[data-clone-case-core-target="submitButton"]').click();
+      const newCaseName = `Playwright Clone Target ${Date.now()}`
+      await modal.locator("#cloneCaseName").fill(newCaseName)
+      await expect(modal.locator('[data-clone-case-core-target="submitButton"]')).toBeEnabled()
+      await modal.locator('[data-clone-case-core-target="submitButton"]').click()
 
-      await expect(modal.locator('.alert-success')).toContainText('cloned', { timeout: 10_000 });
+      await expect(modal.locator(".alert-success")).toContainText("cloned", { timeout: 10_000 })
 
       // clone-case-core navigates via window.location.href after a short
       // delay rather than a form post -- wait for the real redirect, not
       // just any /case/ URL (we're already on one: the source case).
-      await page.waitForURL((url) => /\/case\/\d+\//.test(url.pathname) && !url.pathname.includes(`/case/${sourceCaseId}/`), {
-        timeout: 15_000
-      });
+      await page.waitForURL(
+        (url) =>
+          /\/case\/\d+\//.test(url.pathname) && !url.pathname.includes(`/case/${sourceCaseId}/`),
+        {
+          timeout: 15_000
+        }
+      )
 
-      const match = page.url().match(/\/case\/(\d+)\//);
-      expect(match).not.toBeNull();
-      clonedCaseId = Number(match![1]);
-      expect(clonedCaseId).toBeGreaterThan(0);
-      expect(await caseExists(page, clonedCaseId)).toBeTruthy();
-      expect(await fetchQueryCount(page, clonedCaseId)).toBe(1);
+      const match = page.url().match(/\/case\/(\d+)\//)
+      expect(match).not.toBeNull()
+      clonedCaseId = Number(match![1])
+      expect(clonedCaseId).toBeGreaterThan(0)
+      expect(await caseExists(page, clonedCaseId)).toBeTruthy()
+      expect(await fetchQueryCount(page, clonedCaseId)).toBe(1)
     } finally {
-      await deleteCaseViaApi(page, sourceCaseId);
-      if (clonedCaseId) await deleteCaseViaApi(page, clonedCaseId);
+      await deleteCaseViaApi(page, sourceCaseId)
+      if (clonedCaseId) await deleteCaseViaApi(page, clonedCaseId)
     }
-  });
-});
+  })
+})

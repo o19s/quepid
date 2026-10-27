@@ -1,17 +1,17 @@
 .graph-explain .progress {
-    height: 7px;
-    margin: 2px 0 5px 0;
+  height: 7px;
+  margin: 2px 0 5px 0;
 }
 
 .graph-explain .progress-bar {
-    transition: none;
+  transition: none;
 }
 
 .graph-explain .graph-label {
-    font-size: 10px;
-    overflow-wrap: break-word;
+  font-size: 10px;
+  overflow-wrap: break-word;
 }
 
 .stacked-chart-container {
-	padding: 15px;
+  padding: 15px;
 }

@@ -29,14 +29,18 @@ export default class extends Controller {
     try {
       const prepared = lifecycle.prepareQueries(queryTexts)
       const caseId = this.caseIdValue || lifecycle.caseId
-      const persisted = queryTexts.length === 1
-        ? await persistQuery(caseId, queryTexts[0])
-        : await persistQueries(caseId, queryTexts)
+      const persisted =
+        queryTexts.length === 1
+          ? await persistQuery(caseId, queryTexts[0])
+          : await persistQueries(caseId, queryTexts)
       const result = await lifecycle.commitQueries(prepared, persisted)
       if (result.searchError) {
-        coreFlash.show("error", queryTexts.length === 1
-          ? "Your new query had an error!"
-          : "One (or many) of your new queries had an error!")
+        coreFlash.show(
+          "error",
+          queryTexts.length === 1
+            ? "Your new query had an error!"
+            : "One (or many) of your new queries had an error!"
+        )
         // A single query's error comes from searchAndScore(), which never
         // touches the query collection store — flash it here. A bulk add's
         // error comes from searchAll(), which already reports through the
@@ -47,12 +51,17 @@ export default class extends Controller {
           // Unlike the generic fallbacks below, preserve the raw rejection text
           // here rather than a fixed message — this channel is meant to show
           // search-engine detail, not just "something went wrong."
-          coreFlash.show("error", flashErrorMessage(result.searchError, String(result.searchError)), "search-error")
+          coreFlash.show(
+            "error",
+            flashErrorMessage(result.searchError, String(result.searchError)),
+            "search-error"
+          )
         }
       } else {
-        coreFlash.show("notice", queryTexts.length === 1
-          ? "Query added successfully."
-          : "Queries added successfully.")
+        coreFlash.show(
+          "notice",
+          queryTexts.length === 1 ? "Query added successfully." : "Queries added successfully."
+        )
       }
       this.complete(true)
     } catch (error) {

@@ -37,9 +37,7 @@ export default class extends withStatusMessages(Controller) {
   // Resolve optional targets only after checking presence: Stimulus throws
   // when reading a missing singular target.
   optionalTarget(name) {
-    return this[`has${name[0].toUpperCase()}${name.slice(1)}Target`]
-      ? this[`${name}Target`]
-      : null
+    return this[`has${name[0].toUpperCase()}${name.slice(1)}Target`] ? this[`${name}Target`] : null
   }
 
   // Pass a target name for optional targets, or an element for required ones.
@@ -74,12 +72,18 @@ export default class extends withStatusMessages(Controller) {
   showError(message) {
     const target = this.optionalTarget("error")
     if (!target) return
-    this.showStatusMessage(target, { message: this.actionErrorMessage(message), className: "text-danger" })
+    this.showStatusMessage(target, {
+      message: this.actionErrorMessage(message),
+      className: "text-danger"
+    })
     target.style.whiteSpace = "pre-line"
   }
 
   clearError() {
-    this.showStatusMessage(this.optionalTarget("error"), { message: "", className: "text-danger d-none" })
+    this.showStatusMessage(this.optionalTarget("error"), {
+      message: "",
+      className: "text-danger d-none"
+    })
   }
 
   open(event) {

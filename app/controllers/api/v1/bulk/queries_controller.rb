@@ -52,8 +52,9 @@ module Api
           # rubocop:enable Rails/SkipsModelValidations
 
           @case.reload
-          @queries        = @case.queries.includes([ :ratings ])
-          @display_order  = @queries.map(&:id)
+          @queries          = @case.queries
+          @display_order    = @queries.map(&:id)
+          @ratings_by_query = Rating.rows_by_query(@display_order)
 
           respond_with @queries, @display_order
         end

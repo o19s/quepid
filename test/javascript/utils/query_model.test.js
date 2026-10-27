@@ -25,11 +25,18 @@ function buildModel(query) {
     scoreQuery,
     getFieldSpec: () => ({ id: "id" }),
     getQueryState: () => ({ state: "loaded" }),
-    buildRatingsFilter: filter => filter,
+    buildRatingsFilter: (filter) => filter,
     ratedDocIds: () => ["first"],
     publish
   })
-  return { model, scoreQuery, publish, setDefaultScorer: scorer => { defaultScorer = scorer } }
+  return {
+    model,
+    scoreQuery,
+    publish,
+    setDefaultScorer: (scorer) => {
+      defaultScorer = scorer
+    }
+  }
 }
 
 describe("query model", () => {

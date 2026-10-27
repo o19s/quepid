@@ -7,14 +7,18 @@ import { pAll } from "utils/query_service"
 describe("pAll properties", () => {
   it("returns results in input order however completion is scheduled", async () => {
     await fc.assert(
-      fc.asyncProperty(fc.scheduler(), fc.array(fc.integer(), { maxLength: 40 }), async (s, values) => {
-        const queue = values.map((value) => () => s.schedule(Promise.resolve(value)))
+      fc.asyncProperty(
+        fc.scheduler(),
+        fc.array(fc.integer(), { maxLength: 40 }),
+        async (s, values) => {
+          const queue = values.map((value) => () => s.schedule(Promise.resolve(value)))
 
-        const done = pAll(queue)
-        await s.waitAll()
+          const done = pAll(queue)
+          await s.waitAll()
 
-        expect(await done).toEqual(values)
-      })
+          expect(await done).toEqual(values)
+        }
+      )
     )
   })
 

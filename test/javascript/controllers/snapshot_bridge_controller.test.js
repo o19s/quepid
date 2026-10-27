@@ -9,7 +9,9 @@ vi.mock("utils/core_store_access", () => ({ getCoreStores: () => testStores || {
 
 let testCapabilities
 
-vi.mock("utils/core_capability_access", () => ({ getCoreCapabilities: () => testCapabilities || {} }))
+vi.mock("utils/core_capability_access", () => ({
+  getCoreCapabilities: () => testCapabilities || {}
+}))
 
 const api = vi.hoisted(() => ({ apiFetch: vi.fn() }))
 
@@ -102,10 +104,12 @@ describe("SnapshotBridgeController", () => {
     await controller.apply({ selections: ["7"], snapshotsUrl: "api/cases/1/snapshots" })
 
     expect(snapshotApi.fetchSnapshot).toHaveBeenCalledWith("api/cases/1/snapshots/7")
-    expect(snapshotHydration.registerAndHydrateSnapshots).toHaveBeenCalledWith(expect.objectContaining({
-      snapshots: [{ id: 7 }],
-      registry: testCapabilities?.snapshotRegistry
-    }))
+    expect(snapshotHydration.registerAndHydrateSnapshots).toHaveBeenCalledWith(
+      expect.objectContaining({
+        snapshots: [{ id: 7 }],
+        registry: testCapabilities?.snapshotRegistry
+      })
+    )
     expect(testStores.diff.enable).toHaveBeenCalledWith(["7"])
     expect(services.queries.refreshAllDiffs).toHaveBeenCalledOnce()
   })
@@ -124,7 +128,9 @@ describe("SnapshotBridgeController", () => {
   })
 
   it.each(["apply", "delete"])("rejects %s without a snapshots URL", async (command) => {
-    await expect(controller[command]({ selections: ["7"], snapshotId: "7" })).rejects.toThrow("Snapshot comparison services are not available")
+    await expect(controller[command]({ selections: ["7"], snapshotId: "7" })).rejects.toThrow(
+      "Snapshot comparison services are not available"
+    )
     expect(services.queries.refreshAllDiffs).not.toHaveBeenCalled()
   })
 
@@ -181,10 +187,15 @@ describe("SnapshotBridgeController", () => {
 
     await controller.bootstrapSnapshots()
 
-    expect(api.apiFetch).toHaveBeenCalledWith("api/cases/1/snapshots?shallow=true", { method: "GET", headers: { Accept: "application/json" } })
-    expect(snapshotHydration.registerAndHydrateSnapshots).toHaveBeenCalledWith(expect.objectContaining({
-      snapshots: [{ id: 8 }]
-    }))
+    expect(api.apiFetch).toHaveBeenCalledWith("api/cases/1/snapshots?shallow=true", {
+      method: "GET",
+      headers: { Accept: "application/json" }
+    })
+    expect(snapshotHydration.registerAndHydrateSnapshots).toHaveBeenCalledWith(
+      expect.objectContaining({
+        snapshots: [{ id: 8 }]
+      })
+    )
   })
 
   it("skips bootstrapping on a page without a case", async () => {
@@ -213,17 +224,21 @@ describe("SnapshotBridgeController", () => {
         docCache: services.docCache
       }
     }
-    services.queries.queryArray.mockReturnValue([{
-      queryId: 1,
-      docs: [{
-        id: "doc",
-        title: "Doc",
-        titleField: "title",
-        thumb: "/poster.jpg",
-        hasThumb: () => true,
-        explain: () => ({ rawStr: () => "" })
-      }]
-    }])
+    services.queries.queryArray.mockReturnValue([
+      {
+        queryId: 1,
+        docs: [
+          {
+            id: "doc",
+            title: "Doc",
+            titleField: "title",
+            thumb: "/poster.jpg",
+            hasThumb: () => true,
+            explain: () => ({ rawStr: () => "" })
+          }
+        ]
+      }
+    ])
     api.apiFetch.mockResolvedValue({
       async text() {
         return JSON.stringify(await this.json()) || ""
@@ -235,13 +250,18 @@ describe("SnapshotBridgeController", () => {
     controller.snapshotsUrlValue = "api/cases/1/snapshots"
     await controller.create({ caseId: 1, name: "new snapshot", recordDocumentFields: true })
 
-    expect(api.apiFetch).toHaveBeenCalledWith("api/cases/1/snapshots", expect.objectContaining({
-      method: "POST",
-      headers: { "Content-Type": "application/json", Accept: "application/json" },
-      body: expect.stringContaining('"name":"new snapshot"')
-    }))
-    expect(JSON.parse(api.apiFetch.mock.calls[0][1].body).snapshot.docs[1][0].fields)
-      .toEqual({ title: "Doc", poster_path: "/poster.jpg" })
+    expect(api.apiFetch).toHaveBeenCalledWith(
+      "api/cases/1/snapshots",
+      expect.objectContaining({
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: expect.stringContaining('"name":"new snapshot"')
+      })
+    )
+    expect(JSON.parse(api.apiFetch.mock.calls[0][1].body).snapshot.docs[1][0].fields).toEqual({
+      title: "Doc",
+      poster_path: "/poster.jpg"
+    })
     expect(services.queries.queryArray).toHaveBeenCalledOnce()
   })
 
@@ -253,7 +273,9 @@ describe("SnapshotBridgeController", () => {
       }
     }
 
-    await expect(controller.create({ caseId: 2, name: "other", recordDocumentFields: false })).rejects.toThrow("case mismatch")
+    await expect(
+      controller.create({ caseId: 2, name: "other", recordDocumentFields: false })
+    ).rejects.toThrow("case mismatch")
     expect(api.apiFetch).not.toHaveBeenCalled()
   })
 })

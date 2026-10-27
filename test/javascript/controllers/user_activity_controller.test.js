@@ -36,7 +36,7 @@ describe("UserActivityController", () => {
         { date: "2026-03-02", value: 5 }
       ])
 
-      expect(rows.map(r => [r.date, r.value])).toEqual([
+      expect(rows.map((r) => [r.date, r.value])).toEqual([
         ["2026-03-01", 0],
         ["2026-03-02", 5],
         ["2026-03-03", 0]
@@ -48,7 +48,7 @@ describe("UserActivityController", () => {
       const rows = buildController().fillDateRange(new Date(2026, 2, 1), new Date(2026, 2, 3), [
         { date: "2025-01-01", value: 9 }
       ])
-      expect(rows.every(r => r.value === 0)).toBe(true)
+      expect(rows.every((r) => r.value === 0)).toBe(true)
     })
   })
 
@@ -85,10 +85,13 @@ describe("UserActivityController", () => {
 
       const data = await buildController().fetchData(new Date(2026, 0, 1), new Date(2026, 0, 31))
 
-      expect(fetchMock).toHaveBeenCalledWith(`${window.location.origin}/admin/users/1/pulse?data=scores&start=2026-01-01&end=2026-01-31`, {
-        method: "GET",
-        headers: { Accept: "application/json", "X-CSRF-Token": "" }
-      })
+      expect(fetchMock).toHaveBeenCalledWith(
+        `${window.location.origin}/admin/users/1/pulse?data=scores&start=2026-01-01&end=2026-01-31`,
+        {
+          method: "GET",
+          headers: { Accept: "application/json", "X-CSRF-Token": "" }
+        }
+      )
       expect(data).toEqual([{ date: "2026-03-02", value: 4 }])
     })
 
@@ -102,12 +105,23 @@ describe("UserActivityController", () => {
     })
 
     it("returns an empty list for a successful response with no activity", async () => {
-      vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, status: 200, text: async () => "{}" }))
+      vi.stubGlobal(
+        "fetch",
+        vi.fn().mockResolvedValue({ ok: true, status: 200, text: async () => "{}" })
+      )
       expect(await buildController().fetchData(new Date(), new Date())).toEqual([])
     })
 
     it("returns null when the server responds with an error status", async () => {
-      vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ text: async () => "", json: async () => null,  ok: false, status: 500 }))
+      vi.stubGlobal(
+        "fetch",
+        vi.fn().mockResolvedValue({
+          text: async () => "",
+          json: async () => null,
+          ok: false,
+          status: 500
+        })
+      )
       expect(await buildController().fetchData(new Date(), new Date())).toBe(null)
     })
 
@@ -132,7 +146,10 @@ describe("UserActivityController", () => {
     it("does not render a fetch that finishes after disconnect", async () => {
       let finish
       const controller = buildController()
-      controller.fetchData = () => new Promise(resolve => { finish = resolve })
+      controller.fetchData = () =>
+        new Promise((resolve) => {
+          finish = resolve
+        })
       const embed = vi.fn()
       vi.stubGlobal("vegaEmbed", embed)
       const pending = controller.initializeHeatmap()
@@ -147,8 +164,14 @@ describe("UserActivityController", () => {
       let finish
       const oldView = { finalize: vi.fn() }
       const newView = { finalize: vi.fn() }
-      const embed = vi.fn()
-        .mockImplementationOnce(() => new Promise(resolve => { finish = resolve }))
+      const embed = vi
+        .fn()
+        .mockImplementationOnce(
+          () =>
+            new Promise((resolve) => {
+              finish = resolve
+            })
+        )
         .mockResolvedValueOnce({ view: newView })
       vi.stubGlobal("vegaEmbed", embed)
       const controller = buildController()
@@ -167,7 +190,16 @@ describe("UserActivityController", () => {
     it("renders the heatmap with vegaEmbed into the element", async () => {
       const vegaEmbed = vi.fn().mockResolvedValue({})
       vi.stubGlobal("vegaEmbed", vegaEmbed)
-      vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ text: async function () { return JSON.stringify(await this.json()) || "" },  ok: true, json: async () => ({}) }))
+      vi.stubGlobal(
+        "fetch",
+        vi.fn().mockResolvedValue({
+          text: async function () {
+            return JSON.stringify(await this.json()) || ""
+          },
+          ok: true,
+          json: async () => ({})
+        })
+      )
       const controller = buildController()
 
       await controller.initializeHeatmap()
@@ -192,12 +224,18 @@ describe("UserActivityController", () => {
     })
 
     it("logs render errors without throwing", async () => {
-      vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, status: 200, text: async () => "{}" }))
+      vi.stubGlobal(
+        "fetch",
+        vi.fn().mockResolvedValue({ ok: true, status: 200, text: async () => "{}" })
+      )
       vi.stubGlobal("vegaEmbed", vi.fn().mockRejectedValue(new Error("vega broke")))
       const controller = buildController()
 
       await expect(controller.initializeHeatmap()).resolves.toBeUndefined()
-      expect(console.error).toHaveBeenCalledWith("Error rendering activity heatmap:", expect.any(Error))
+      expect(console.error).toHaveBeenCalledWith(
+        "Error rendering activity heatmap:",
+        expect.any(Error)
+      )
     })
   })
 })

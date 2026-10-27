@@ -41,9 +41,13 @@ describe("core workspace construction", () => {
     expect(wizard.capability.navigation.caseNo()).toBe(7)
     expect(snapshots.capability.navigation.caseNo()).toBe(7)
     expect(tuneRelevance.capability.navigation.currentCaseNo()).toBe(7)
-    bootstrap.core.settings.setCaseTries([{ try_number: 1, search_engine: "solr", field_spec: "id,title" }])
+    bootstrap.core.settings.setCaseTries([
+      { try_number: 1, search_engine: "solr", field_spec: "id,title" }
+    ])
     bootstrap.core.settings.setCurrentTry(1)
-    expect(wizard.capability.settings.editable().selectedTry).toBe(bootstrap.core.settings.editable().selectedTry)
+    expect(wizard.capability.settings.editable().selectedTry).toBe(
+      bootstrap.core.settings.editable().selectedTry
+    )
     const draft = tuneRelevance.capability.settings.editable()
     draft.queryParams = "q=shared"
     expect(snapshots.capability.settings.editable().selectedTry.queryParams).toBe("q=shared")
@@ -94,7 +98,9 @@ describe("core workspace construction", () => {
     const { bootstrap, wizard, tuneRelevance } = workspace.caseRuntime
     expect(tuneRelevance.capability.settings.editable()).toBeNull()
     expect(wizard.capability.settings.editable()).toEqual({})
-    bootstrap.core.settings.setCaseTries([{ try_number: 1, search_engine: "solr", query_params: "q=original" }])
+    bootstrap.core.settings.setCaseTries([
+      { try_number: 1, search_engine: "solr", query_params: "q=original" }
+    ])
     bootstrap.core.settings.setCurrentTry(1)
     const wizardSettings = { ...wizard.capability.settings.editable() }
     const draft = tuneRelevance.capability.settings.editable()
@@ -123,7 +129,11 @@ describe("core workspace construction", () => {
     function stubBrowser() {
       const assign = vi.fn()
       vi.stubGlobal("window", { location: { assign } })
-      vi.stubGlobal("location", { href: "http://quepid.test/case/7/try/2", search: "", protocol: "http:" })
+      vi.stubGlobal("location", {
+        href: "http://quepid.test/case/7/try/2",
+        search: "",
+        protocol: "http:"
+      })
       const request = vi.fn(() => Promise.resolve(jsonResponse()))
       vi.stubGlobal("fetch", request)
       return { assign, request }
@@ -150,7 +160,10 @@ describe("core workspace construction", () => {
       expect(assign).toHaveBeenLastCalledWith("http://quepid.test/case/7/try/5")
 
       await tuneRelevance.capability.settings.deleteTry(2)
-      expect(request).toHaveBeenCalledWith("api/cases/7/tries/2", expect.objectContaining({ method: "DELETE" }))
+      expect(request).toHaveBeenCalledWith(
+        "api/cases/7/tries/2",
+        expect.objectContaining({ method: "DELETE" })
+      )
       expect(assign).toHaveBeenLastCalledWith("http://quepid.test/case/7/try/1")
     })
 
@@ -162,7 +175,10 @@ describe("core workspace construction", () => {
 
       await settings.update(settings.editable())
 
-      expect(request).toHaveBeenCalledWith("api/cases/7/tries/2", expect.objectContaining({ method: "PUT" }))
+      expect(request).toHaveBeenCalledWith(
+        "api/cases/7/tries/2",
+        expect.objectContaining({ method: "PUT" })
+      )
       expect(assign).toHaveBeenLastCalledWith("http://quepid.test/case/7/try/2")
     })
 
@@ -171,7 +187,9 @@ describe("core workspace construction", () => {
       const { workspace, splainerSearch } = buildWorkspace()
       const bootstrap = openCase(workspace)
 
-      expect(bootstrap.core.settings.editable().selectedTry.createFieldSpec()).toEqual({ fields: "id,body" })
+      expect(bootstrap.core.settings.editable().selectedTry.createFieldSpec()).toEqual({
+        fields: "id,body"
+      })
       expect(splainerSearch.fieldSpecSvc.createFieldSpec).toHaveBeenLastCalledWith("id,body")
     })
 
@@ -187,11 +205,12 @@ describe("core workspace construction", () => {
 
       expect(splainerSearch.docResolverSvc.createResolver).toHaveBeenCalledWith(
         ["a", "b"],
-        expect.objectContaining({ proxyUrl: expect.stringMatching(/\/proxy\/fetch\?search_endpoint_id=3&url=$/) }),
+        expect.objectContaining({
+          proxyUrl: expect.stringMatching(/\/proxy\/fetch\?search_endpoint_id=3&url=$/)
+        }),
         15
       )
       expect(fetchDocs).toHaveBeenCalledOnce()
     })
   })
-
 })

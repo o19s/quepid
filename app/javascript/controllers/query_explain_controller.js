@@ -6,8 +6,16 @@ import { renderJsonExplorer } from "utils/json_explorer"
 
 const TABS = [
   { key: "queryDetails", tabId: "query-explain-tab-params", paneId: "query-explain-pane-params" },
-  { key: "parsedQueryDetails", tabId: "query-explain-tab-parsing", paneId: "query-explain-pane-parsing" },
-  { key: "renderedQueryTemplate", tabId: "query-explain-tab-template", paneId: "query-explain-pane-template" }
+  {
+    key: "parsedQueryDetails",
+    tabId: "query-explain-tab-parsing",
+    paneId: "query-explain-pane-parsing"
+  },
+  {
+    key: "renderedQueryTemplate",
+    tabId: "query-explain-tab-template",
+    paneId: "query-explain-pane-template"
+  }
 ]
 const COPY_FEEDBACK_MS = 2000
 
@@ -22,7 +30,16 @@ const COPY_FEEDBACK_MS = 2000
  * Re-requested every time the tab is shown.
  */
 export default class extends Controller {
-  static targets = ["params", "paramsMessage", "paramsMessageText", "paramsWarningIcon", "parsing", "templatePane", "tab", "copy"]
+  static targets = [
+    "params",
+    "paramsMessage",
+    "paramsMessageText",
+    "paramsWarningIcon",
+    "parsing",
+    "templatePane",
+    "tab",
+    "copy"
+  ]
   static outlets = ["queries-list"]
   static values = { queryId: Number, modalRoot: Boolean }
 
@@ -54,7 +71,8 @@ export default class extends Controller {
     content.dataset.controller = "query-explain"
     content.dataset.queryExplainModalRootValue = "true"
     content.dataset.queryExplainQueryIdValue = String(this.queryIdValue)
-    content.dataset.queryExplainQueriesListOutlet = this.element.dataset.queryExplainQueriesListOutlet
+    content.dataset.queryExplainQueriesListOutlet =
+      this.element.dataset.queryExplainQueriesListOutlet
     content.queryExplainData = data
   }
 
@@ -70,11 +88,11 @@ export default class extends Controller {
   cleanup() {
     this.lifecycle = null
     this.templateRequest = null
-    this.listeners?.forEach(remove => remove())
+    this.listeners?.forEach((remove) => remove())
     this.listeners = []
-    this.feedback?.forEach(cancel => cancel())
+    this.feedback?.forEach((cancel) => cancel())
     this.feedback = []
-    this.tabTargets.forEach(element => {
+    this.tabTargets.forEach((element) => {
       window.bootstrap?.Tab?.getInstance(element)?.dispose()
     })
   }
@@ -86,14 +104,19 @@ export default class extends Controller {
     const paramsMessage = this.paramsMessageTarget
     const paramsMessageText = this.paramsMessageTextTarget
     const hasMessage = Boolean(data.queryDetailsMessage)
-    paramsMessageText.textContent = data.queryDetailsMessage || "These are the query parameters processed by the search engine."
+    paramsMessageText.textContent =
+      data.queryDetailsMessage || "These are the query parameters processed by the search engine."
     this.paramsWarningIconTarget.classList.toggle("d-none", !hasMessage)
     paramsMessage.classList.toggle("bg-warning", hasMessage)
     paramsMessage.classList.toggle("text-warning-emphasis", hasMessage)
     paramsMessage.classList.toggle("p-3", hasMessage)
     renderJsonExplorer(this.parsingTarget, data.parsedQueryDetails, { collapsed: false })
 
-    this.copyValues = { queryDetails: data.queryDetails, parsedQueryDetails: data.parsedQueryDetails, renderedQueryTemplate: null }
+    this.copyValues = {
+      queryDetails: data.queryDetails,
+      parsedQueryDetails: data.parsedQueryDetails,
+      renderedQueryTemplate: null
+    }
 
     this.copyFeedback = new WeakMap()
     this.copyTargets.forEach((button) => {
@@ -101,7 +124,7 @@ export default class extends Controller {
       const feedback = createTemporaryFeedback(COPY_FEEDBACK_MS)
       this.feedback.push(() => {
         feedback.cancel()
-        button.replaceChildren(...label.map(node => node.cloneNode(true)))
+        button.replaceChildren(...label.map((node) => node.cloneNode(true)))
       })
       const showFeedback = (iconClass, text) => {
         const icon = document.createElement("i")
@@ -116,7 +139,9 @@ export default class extends Controller {
     })
 
     this.supportsTemplate = data.supportsTemplate
-    this.templatePaneTarget.replaceChildren(Object.assign(document.createElement("p"), { textContent: "This is not a templated query." }))
+    this.templatePaneTarget.replaceChildren(
+      Object.assign(document.createElement("p"), { textContent: "This is not a templated query." })
+    )
   }
 
   copy(event) {
@@ -127,16 +152,20 @@ export default class extends Controller {
     if (!text) return
     const showFeedback = this.copyFeedback.get(button)
     copyText(text).then(
-      () => { if (lifecycle === this.lifecycle) showFeedback("bi-check-lg", "Copied!") },
-      () => { if (lifecycle === this.lifecycle) showFeedback("bi-exclamation-triangle", "Copy failed") }
+      () => {
+        if (lifecycle === this.lifecycle) showFeedback("bi-check-lg", "Copied!")
+      },
+      () => {
+        if (lifecycle === this.lifecycle) showFeedback("bi-exclamation-triangle", "Copy failed")
+      }
     )
   }
 
   tabShown(event) {
     if (!this.lifecycle) return
-    const tab = TABS.find(tab => tab.tabId === event.currentTarget.id)
+    const tab = TABS.find((tab) => tab.tabId === event.currentTarget.id)
     this.toggledPanel = tab.key
-    this.copyTargets.forEach(button => {
+    this.copyTargets.forEach((button) => {
       button.classList.toggle("d-none", button.dataset.tab !== tab.key)
     })
     if (tab.key === "renderedQueryTemplate" && this.supportsTemplate) {
@@ -149,7 +178,9 @@ export default class extends Controller {
     if (!lifecycle) return
     const request = {}
     this.templateRequest = request
-    templatePane.replaceChildren(Object.assign(document.createElement("p"), { textContent: "Rendering query template…" }))
+    templatePane.replaceChildren(
+      Object.assign(document.createElement("p"), { textContent: "Rendering query template…" })
+    )
 
     let result
     try {

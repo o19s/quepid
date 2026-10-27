@@ -41,11 +41,16 @@ describe("PaneController", () => {
     let resize
     const observe = vi.fn()
     const disconnect = vi.fn()
-    vi.stubGlobal("ResizeObserver", class {
-      constructor(callback) { resize = callback }
-      observe = observe
-      disconnect = disconnect
-    })
+    vi.stubGlobal(
+      "ResizeObserver",
+      class {
+        constructor(callback) {
+          resize = callback
+        }
+        observe = observe
+        disconnect = disconnect
+      }
+    )
     const { controller, element } = buildController()
     controller.connect()
     expect(observe).toHaveBeenCalledWith(flashes)

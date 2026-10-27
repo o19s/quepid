@@ -35,6 +35,8 @@ describe("qgraph", () => {
     ])
 
     expect(scoreData).toHaveLength(2)
-    expect(graphSpec(scoreData, [], 1, 140, 72, { top: 4, right: 6, bottom: 4, left: 4 }).layer).toHaveLength(2)
+    expect(
+      graphSpec(scoreData, [], 1, 140, 72, { top: 4, right: 6, bottom: 4, left: 4 }).layer
+    ).toHaveLength(2)
   })
 })

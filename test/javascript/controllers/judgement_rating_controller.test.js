@@ -10,7 +10,12 @@ function fixture() {
   shortcut.dataset.key = "a"
   const controller = buildControllerFixture(JudgementRatingController, {
     element: form,
-    targets: { rating: document.createElement("input"), submit: button, button: [button], shortcut: [shortcut] }
+    targets: {
+      rating: document.createElement("input"),
+      submit: button,
+      button: [button],
+      shortcut: [shortcut]
+    }
   })
   controller.connect()
   return { controller, form, button, shortcut }

@@ -92,7 +92,7 @@ namespace :test do
     Rake::Task['test:stylelint'].invoke
   end
 
-  desc 'Run ESLint on first-party JavaScript (see eslint.config.mjs)'
+  desc 'Run ESLint, Prettier and the Playwright type check on first-party JavaScript (see eslint.config.mjs)'
   task eslint: :environment do
     puts '-' * 100
     puts 'Starting ESLint (first-party JavaScript)'.yellow
@@ -107,6 +107,7 @@ namespace :test do
     eslint_paths = [
       'app/javascript',
       'test/javascript',
+      'test/playwright',
       'scripts',
       'config/javascript_lint_scope.mjs',
       'eslint.config.mjs',
@@ -130,39 +131,41 @@ namespace :test do
 
     prettier_success = system('node', prettier_script.to_s, 'check', chdir: Rails.root.to_s)
 
-    if eslint_success && prettier_success
-      puts 'ESLint and Prettier checks passed!'.green
+    tsc = Rails.root.join('node_modules/.bin/tsc')
+    tsc_success = system(tsc.to_s, '-p', 'test/playwright/tsconfig.json', chdir: Rails.root.to_s)
+
+    if eslint_success && prettier_success && tsc_success
+      puts 'ESLint, Prettier and Playwright type checks passed!'.green
       puts '-' * 100
     else
-      puts 'ESLint or Prettier failed!'.red
+      puts 'ESLint, Prettier or Playwright type check failed!'.red
       puts '-' * 100
       exit false
     end
   end
 
-  desc 'Run stylelint on app/assets/stylesheets using .stylelintrc.json'
+  desc 'Run stylelint (.stylelintrc.json) and the Prettier check on app/assets/stylesheets'
   task stylelint: :environment do
     puts '-' * 100
-    puts 'Starting Stylelint'.yellow
+    puts 'Starting Stylelint and Prettier on CSS'.yellow
 
     stylelint = Rails.root.join('node_modules/.bin/stylelint')
-    unless stylelint.executable?
-      puts 'Stylelint not found; run: yarn install (or bin/docker r yarn install)'.red
+    prettier = Rails.root.join('node_modules/.bin/prettier')
+    unless stylelint.executable? && prettier.executable?
+      puts 'Stylelint or Prettier not found; run: yarn install (or bin/docker r yarn install)'.red
       puts '-' * 100
       exit false
     end
 
-    success = system(
-      stylelint.to_s,
-      'app/assets/stylesheets/**/*.css',
-      chdir: Rails.root.to_s
-    )
+    css_glob = 'app/assets/stylesheets/**/*.css'
+    stylelint_success = system(stylelint.to_s, css_glob, chdir: Rails.root.to_s)
+    prettier_success = system(prettier.to_s, '--check', css_glob, chdir: Rails.root.to_s)
 
-    if success
-      puts 'Stylelint passed!'.green
+    if stylelint_success && prettier_success
+      puts 'Stylelint and Prettier passed!'.green
       puts '-' * 100
     else
-      puts 'Stylelint failed!'.red
+      puts 'Stylelint or Prettier failed!'.red
       puts '-' * 100
       exit false
     end

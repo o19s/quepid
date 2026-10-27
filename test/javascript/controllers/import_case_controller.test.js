@@ -4,7 +4,7 @@ import { apiFetch } from "api/fetch"
 import ImportCaseController from "controllers/import_case_controller"
 
 vi.mock("api/fetch", () => ({
-  apiFetch: vi.fn(),
+  apiFetch: vi.fn()
 }))
 
 function buildController() {
@@ -39,7 +39,7 @@ describe("ImportCaseController submit redirect", () => {
     delete document.body.dataset.quepidRootUrl
     Object.defineProperty(window, "location", {
       configurable: true,
-      value: originalLocation,
+      value: originalLocation
     })
   })
 
@@ -54,11 +54,11 @@ describe("ImportCaseController submit redirect", () => {
         return JSON.stringify(await this.json()) || ""
       },
       ok: true,
-      json: () => Promise.resolve({ redirect_url: "https://example.com/quepid/case/42" }),
+      json: () => Promise.resolve({ redirect_url: "https://example.com/quepid/case/42" })
     })
 
     const submitPromise = ImportCaseController.prototype.submit.call(controller, {
-      preventDefault: vi.fn(),
+      preventDefault: vi.fn()
     })
     await submitPromise
     await vi.runAllTimersAsync()
@@ -71,12 +71,12 @@ describe("ImportCaseController submit redirect", () => {
     const reload = vi.fn()
     Object.defineProperty(window, "location", {
       configurable: true,
-      value: { href: "http://localhost/cases", reload },
+      value: { href: "http://localhost/cases", reload }
     })
 
     const controller = buildController()
     controller.fileInputTarget.files = [
-      new File(['{"case_name":"test"}'], "case.json", { type: "application/json" }),
+      new File(['{"case_name":"test"}'], "case.json", { type: "application/json" })
     ]
     controller.fileInputTarget.files[0].text = vi.fn().mockResolvedValue('{"case_name":"test"}')
 
@@ -85,11 +85,11 @@ describe("ImportCaseController submit redirect", () => {
         return JSON.stringify(await this.json()) || ""
       },
       ok: true,
-      json: () => Promise.resolve({}),
+      json: () => Promise.resolve({})
     })
 
     await ImportCaseController.prototype.submit.call(controller, {
-      preventDefault: vi.fn(),
+      preventDefault: vi.fn()
     })
     await vi.runAllTimersAsync()
 
@@ -132,7 +132,10 @@ describe("ImportCaseController validation and errors", () => {
     controller.fileInputTarget.files[0].text = vi.fn().mockResolvedValue("{not json")
     await controller.submit({ preventDefault: vi.fn() })
 
-    expect(controller.showAlert).toHaveBeenLastCalledWith("Invalid JSON file. Please check the file format.", "danger")
+    expect(controller.showAlert).toHaveBeenLastCalledWith(
+      "Invalid JSON file. Please check the file format.",
+      "danger"
+    )
     expect(controller.setLoading).toHaveBeenLastCalledWith(false)
     expect(apiFetch).not.toHaveBeenCalled()
   })
@@ -141,26 +144,45 @@ describe("ImportCaseController validation and errors", () => {
     const controller = buildController()
     controller.fileInputTarget.files = [jsonFile()]
     controller.fileInputTarget.files[0].text = vi.fn().mockResolvedValue('{"case_name":"test"}')
-    apiFetch.mockResolvedValue({ text: async function () { return JSON.stringify(await this.json()) || "" },  ok: false, json: () => Promise.resolve({}) })
+    apiFetch.mockResolvedValue({
+      text: async function () {
+        return JSON.stringify(await this.json()) || ""
+      },
+      ok: false,
+      json: () => Promise.resolve({})
+    })
 
     await controller.submit({ preventDefault: vi.fn() })
 
-    expect(apiFetch).toHaveBeenCalledWith("/api/import/cases", expect.objectContaining({
-      method: "POST",
-      body: JSON.stringify({ case: { case_name: "test" } })
-    }))
+    expect(apiFetch).toHaveBeenCalledWith(
+      "/api/import/cases",
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify({ case: { case_name: "test" } })
+      })
+    )
   })
 
   it.each([
     ["the server's error", { error: "Scorer not found" }, "Scorer not found"],
     ["the server's message", { message: "Bad payload" }, "Bad payload"],
-    ["field validation errors", { case_name: ["can't be blank"], queries: ["is invalid", "is empty"] }, "case_name can't be blank. queries is invalid, is empty"],
+    [
+      "field validation errors",
+      { case_name: ["can't be blank"], queries: ["is invalid", "is empty"] },
+      "case_name can't be blank. queries is invalid, is empty"
+    ],
     ["a generic message", {}, "Failed to import case. Please check the file format."]
   ])("reports %s when the import is rejected", async (_label, body, message) => {
     const controller = buildController()
     controller.fileInputTarget.files = [jsonFile()]
     controller.fileInputTarget.files[0].text = vi.fn().mockResolvedValue("{}")
-    apiFetch.mockResolvedValue({ text: async function () { return JSON.stringify(await this.json()) || "" },  ok: false, json: () => Promise.resolve(body) })
+    apiFetch.mockResolvedValue({
+      text: async function () {
+        return JSON.stringify(await this.json()) || ""
+      },
+      ok: false,
+      json: () => Promise.resolve(body)
+    })
 
     await controller.submit({ preventDefault: vi.fn() })
 
@@ -177,7 +199,10 @@ describe("ImportCaseController validation and errors", () => {
 
     await controller.submit({ preventDefault: vi.fn() })
 
-    expect(controller.showAlert).toHaveBeenLastCalledWith("An error occurred while importing the case. Please try again.", "danger")
+    expect(controller.showAlert).toHaveBeenLastCalledWith(
+      "An error occurred while importing the case. Please try again.",
+      "danger"
+    )
     expect(controller.setLoading).toHaveBeenLastCalledWith(false)
   })
 
@@ -201,7 +226,4 @@ describe("ImportCaseController validation and errors", () => {
     expect(controller.submitTextTarget.textContent).toBe("Import")
     expect(controller.spinnerTarget.classList.contains("d-none")).toBe(true)
   })
-
-
 })
-

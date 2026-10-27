@@ -21,7 +21,9 @@ describe("scorer catalog", () => {
     await catalog.bootstrap(42)
 
     expect(getJson).toHaveBeenCalledWith("api/cases/42/scorers")
-    expect(catalog.getDefault()).toEqual(expect.objectContaining({ scorerId: 7, name: "P@10", scale: [0, 1, 2, 3] }))
+    expect(catalog.getDefault()).toEqual(
+      expect.objectContaining({ scorerId: 7, name: "P@10", scale: [0, 1, 2, 3] })
+    )
   })
 
   it("resets to a fresh default when the case has no configured scorer", async () => {

@@ -11,6 +11,9 @@ import { readFileSync } from 'node:fs';
 const stimulusBaseline = JSON.parse(readFileSync(new URL('./config/stimulus_conventions_baseline.json', import.meta.url), 'utf8'));
 import globals from 'globals';
 import eslintConfigPrettier from 'eslint-config-prettier';
+import vitest from '@vitest/eslint-plugin';
+import playwright from 'eslint-plugin-playwright';
+import tseslint from 'typescript-eslint';
 import {
   ESLINT_FILES,
   ESLINT_IGNORES,
@@ -27,7 +30,6 @@ export default [
     files: ESLINT_FILES,
     languageOptions: {
       ...js.configs.recommended.languageOptions,
-      ecmaVersion: 2022,
       sourceType: 'module',
       globals: {
         ...globals.browser,
@@ -71,21 +73,55 @@ export default [
     files: ['test/javascript/**/*.js'],
     languageOptions: {
       ...js.configs.recommended.languageOptions,
-      ecmaVersion: 2022,
       sourceType: 'module',
       globals: {
         ...globals.browser,
         ...globals.node,
       },
     },
+    plugins: { vitest },
     rules: {
       ...recommendedRules,
+      ...vitest.configs.recommended.rules,
+      'vitest/no-focused-tests': 'error',
+      // Shared assertion helpers and property-based checks call expect outside test bodies or in branches.
+      'vitest/no-standalone-expect': 'off',
+      'vitest/no-conditional-expect': 'off',
+      'vitest/prefer-called-exactly-once-with': 'off',
       'no-console': 'off',
+    },
+  },
+  ...tseslint.configs.recommended.map((config) => ({
+    ...config,
+    files: ['test/playwright/**/*.ts'],
+  })),
+  {
+    ...playwright.configs['flat/recommended'],
+    files: ['test/playwright/**/*.ts'],
+    languageOptions: {
+      ...playwright.configs['flat/recommended'].languageOptions,
+      globals: {
+        ...globals.browser,
+        ...globals.node,
+      },
+    },
+    rules: {
+      ...playwright.configs['flat/recommended'].rules,
+      // E2E specs branch on seed data and use force/waitForSelector deliberately; keep the bug-catching rules only.
+      'playwright/no-conditional-in-test': 'off',
+      'playwright/no-conditional-expect': 'off',
+      'playwright/no-force-option': 'off',
+      'playwright/no-wait-for-selector': 'off',
+      // shot() is capture-only: those specs exist to produce screenshots, not to assert.
+      'playwright/expect-expect': ['warn', { assertFunctionNames: ['shot', 'shareThenUnshare'] }],
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
     },
   },
   {
     files: [
       'scripts/**/*.mjs',
+      'test/playwright/**/*.mjs',
       'config/javascript_lint_scope.mjs',
       'eslint.config.mjs',
       'stryker.config.mjs',
@@ -96,7 +132,6 @@ export default [
     ],
     languageOptions: {
       ...js.configs.recommended.languageOptions,
-      ecmaVersion: 2022,
       sourceType: 'module',
       globals: {
         ...globals.node,
@@ -109,13 +144,17 @@ export default [
     },
   },
   {
+    // Capture scripts pass callbacks to page.evaluate, which run in the browser.
+    files: ['test/playwright/**/*.mjs'],
+    languageOptions: { globals: { ...globals.browser } },
+  },
+  {
     files: [
       'lib/**/*.js',
       'db/scorers/**/*.js',
       'db/mapper_based_search_engines/**/*.js',
     ],
     languageOptions: {
-      ecmaVersion: 2022,
       sourceType: 'script',
     },
     rules: {

@@ -15,20 +15,32 @@ import { isSameId } from "utils/record_identity"
  */
 export default class extends Controller {
   static targets = [
-    "content", "results", "diffResults", "notesBox", "scoreAll", "error", "footer", "nextPage",
-    "browseTool", "depthNote", "depthValue", "ratedNote"
+    "content",
+    "results",
+    "diffResults",
+    "notesBox",
+    "scoreAll",
+    "error",
+    "footer",
+    "nextPage",
+    "browseTool",
+    "depthNote",
+    "depthValue",
+    "ratedNote"
   ]
 
   connect() {
     this.store = getCoreStores().documents
-    this.storeChange = event => this.renderFromStore(event.detail)
-    this.unsubscribeStore = subscribeToStore(this.store, { change: this.storeChange, reset: this.storeChange })
+    this.storeChange = (event) => this.renderFromStore(event.detail)
+    this.unsubscribeStore = subscribeToStore(this.store, {
+      change: this.storeChange,
+      reset: this.storeChange
+    })
     this.render()
   }
 
   disconnect() {
     this.unsubscribeStore?.()
-
   }
 
   closeNotes() {
@@ -77,11 +89,16 @@ export default class extends Controller {
 
   isResultsView() {
     const snapshot = this.store.query(this.queryId)
-    return !snapshot?.resultsView || snapshot.resultsView === "results" || snapshot.resultsView === 2
+    return (
+      !snapshot?.resultsView || snapshot.resultsView === "results" || snapshot.resultsView === 2
+    )
   }
 
   renderState(snapshot) {
-    const resultsVisible = snapshot?.resultsView === undefined || snapshot.resultsView === "results" || snapshot.resultsView === 2
+    const resultsVisible =
+      snapshot?.resultsView === undefined ||
+      snapshot.resultsView === "results" ||
+      snapshot.resultsView === 2
     const showOnlyRated = snapshot?.showOnlyRated === true
     const hasError = Boolean(snapshot?.errorText)
 
@@ -96,19 +113,22 @@ export default class extends Controller {
     if (this.hasDepthNoteTarget) {
       const showDepth = resultsVisible && !showOnlyRated && Boolean(snapshot?.depthOfRating)
       this.depthNoteTarget.classList.toggle("d-none", !showDepth)
-      if (showDepth && this.hasDepthValueTarget) this.depthValueTarget.textContent = String(snapshot.depthOfRating)
+      if (showDepth && this.hasDepthValueTarget)
+        this.depthValueTarget.textContent = String(snapshot.depthOfRating)
     }
-    if (this.hasRatedNoteTarget) this.ratedNoteTarget.classList.toggle("d-none", !resultsVisible || !showOnlyRated)
+    if (this.hasRatedNoteTarget)
+      this.ratedNoteTarget.classList.toggle("d-none", !resultsVisible || !showOnlyRated)
   }
 
   renderBrowseTool(snapshot) {
     if (!this.hasBrowseToolTarget) return
     this.browseToolTarget.replaceChildren()
 
-    const supportsBrowse = snapshot?.queryState !== "error" && snapshot?.browseUrl && (
-      snapshot.searchEngine === "solr" ||
-      (snapshot.searchEngine === "searchapi" && snapshot.apiMethod === "GET")
-    )
+    const supportsBrowse =
+      snapshot?.queryState !== "error" &&
+      snapshot?.browseUrl &&
+      (snapshot.searchEngine === "solr" ||
+        (snapshot.searchEngine === "searchapi" && snapshot.apiMethod === "GET"))
     if (!supportsBrowse) return
 
     const button = document.createElement("button")
@@ -174,21 +194,27 @@ export default class extends Controller {
     box.dataset.notesRequested = "true"
     requestAnimationFrame(() => {
       if (!box.isConnected) return
-      box.querySelector('[data-controller~="query-notes"]')?.dispatchEvent(new CustomEvent("query-notes:open"))
+      box
+        .querySelector('[data-controller~="query-notes"]')
+        ?.dispatchEvent(new CustomEvent("query-notes:open"))
     })
   }
 
   // Results are keyed by document id and reused, so a rating or other store change only
   // re-renders the documents that actually changed (keeping an open popover or explain elsewhere).
   renderDocuments(docs, snapshot) {
-    const ids = docs.map(doc => String(doc.id))
+    const ids = docs.map((doc) => String(doc.id))
     if (new Set(ids).size !== ids.length) {
       // Duplicate ids (documents that can't be uniquely identified) can't be keyed.
-      this.resultsTarget.replaceChildren(...docs.map((doc, index) => this.buildSearchResult(doc, snapshot, index + 1)))
+      this.resultsTarget.replaceChildren(
+        ...docs.map((doc, index) => this.buildSearchResult(doc, snapshot, index + 1))
+      )
       return
     }
 
-    const existing = new Map([...this.resultsTarget.children].map(result => [result.dataset.docId, result]))
+    const existing = new Map(
+      [...this.resultsTarget.children].map((result) => [result.dataset.docId, result])
+    )
     docs.forEach((doc, index) => {
       let result = existing.get(ids[index])
       if (result) {
@@ -200,7 +226,7 @@ export default class extends Controller {
       const current = this.resultsTarget.children[index]
       if (current !== result) this.resultsTarget.insertBefore(result, current || null)
     })
-    existing.forEach(result => result.remove())
+    existing.forEach((result) => result.remove())
   }
 
   renderDiffResults(snapshot) {
@@ -211,17 +237,23 @@ export default class extends Controller {
     }
 
     const columns = [
-      { name: "Current Results", docs: this.visibleDocuments(snapshot), maxDocScore: snapshot.maxDocScore }
-    ].concat(diffs.searchers.map(searcher => ({
-      ...searcher,
-      docs: snapshot.showOnlyRated ? searcher.ratedDocs : searcher.docs
-    })))
+      {
+        name: "Current Results",
+        docs: this.visibleDocuments(snapshot),
+        maxDocScore: snapshot.maxDocScore
+      }
+    ].concat(
+      diffs.searchers.map((searcher) => ({
+        ...searcher,
+        docs: snapshot.showOnlyRated ? searcher.ratedDocs : searcher.docs
+      }))
+    )
 
     const container = document.createElement("div")
     container.className = "diff-container"
     const header = document.createElement("div")
     header.className = "diff-header"
-    columns.forEach(column => {
+    columns.forEach((column) => {
       const cell = document.createElement("div")
       cell.className = "diff-column"
       const title = document.createElement("h2")
@@ -231,7 +263,7 @@ export default class extends Controller {
     })
     container.appendChild(header)
 
-    const rowCount = Math.max(10, ...columns.map(column => column.docs.length))
+    const rowCount = Math.max(10, ...columns.map((column) => column.docs.length))
     for (let index = 0; index < rowCount; index += 1) {
       const row = document.createElement("div")
       row.className = "diff-row"
@@ -309,10 +341,18 @@ export default class extends Controller {
     result.dataset.rating = doc.rating == null ? "" : String(doc.rating)
     result.__searchResultDocument = doc
     result.__searchResultQuery = query
-    const fingerprint = JSON.stringify([doc, rank, query.ratingScale, query.depthOfRating, query.maxDocScore])
+    const fingerprint = JSON.stringify([
+      doc,
+      rank,
+      query.ratingScale,
+      query.depthOfRating,
+      query.maxDocScore
+    ])
     if (result.__searchResultFingerprint === fingerprint) return
     result.__searchResultFingerprint = fingerprint
-    result.dataset.searchResultVersionValue = String(Number(result.dataset.searchResultVersionValue || 0) + 1)
+    result.dataset.searchResultVersionValue = String(
+      Number(result.dataset.searchResultVersionValue || 0) + 1
+    )
   }
 
   resultDifferenceClass(currentDoc, diffDoc) {
@@ -348,7 +388,9 @@ export default class extends Controller {
     if (slot.dataset.version === version) return
     slot.dataset.version = version
     const ratingFocused = slot.contains(document.activeElement)
-    slot.replaceChildren(createRatingControl(rating, snapshot.ratingScale || {}, { scoreAll: true }))
+    slot.replaceChildren(
+      createRatingControl(rating, snapshot.ratingScale || {}, { scoreAll: true })
+    )
     if (ratingFocused) slot.querySelector("button")?.focus()
   }
 
@@ -363,7 +405,7 @@ export default class extends Controller {
     event.stopPropagation()
     const docId = event.detail?.docId
     const snapshot = this.store.query(this.queryId)
-    const diffDocuments = (snapshot?.diffs?.searchers || []).flatMap(searcher => [
+    const diffDocuments = (snapshot?.diffs?.searchers || []).flatMap((searcher) => [
       ...(searcher.docs || []),
       ...(searcher.ratedDocs || [])
     ])
@@ -371,8 +413,14 @@ export default class extends Controller {
       ...(snapshot?.docs || []),
       ...(snapshot?.ratedDocs || []),
       ...diffDocuments
-    ].find(item => isSameId(item.id, docId))
+    ].find((item) => isSameId(item.id, docId))
     if (!snapshotDoc) return
-    openDetailedDocumentModal({ doc: snapshotDoc, linkUrl: snapshotDoc.linkUrl, queryText: snapshot.queryText, searchEngine: snapshot.searchEngine, mapperBasedSearchEngineName: snapshot.mapperBasedSearchEngineName })
+    openDetailedDocumentModal({
+      doc: snapshotDoc,
+      linkUrl: snapshotDoc.linkUrl,
+      queryText: snapshot.queryText,
+      searchEngine: snapshot.searchEngine,
+      mapperBasedSearchEngineName: snapshot.mapperBasedSearchEngineName
+    })
   }
 }

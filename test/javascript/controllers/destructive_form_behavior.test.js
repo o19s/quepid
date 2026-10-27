@@ -75,5 +75,4 @@ describe("submitDestructiveForm", () => {
     expect(document.body.querySelectorAll("form")).toHaveLength(1)
     expect(unrelated.isConnected).toBe(true)
   })
-
 })

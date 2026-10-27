@@ -14,7 +14,7 @@ export default class extends Controller {
 
   connect() {
     this.queryCapabilities = getCoreCapabilities().queryCapabilities
-    this.detachPaste = attachTextPaste(this.inputTarget, text => {
+    this.detachPaste = attachTextPaste(this.inputTarget, (text) => {
       this.inputTarget.value = text.split("\n").join(";")
       this.render()
     })
@@ -36,7 +36,7 @@ export default class extends Controller {
 
     const queryTexts = this.inputTarget.value
       .split(";")
-      .map(text => text.trim())
+      .map((text) => text.trim())
       .filter(Boolean)
 
     if (queryTexts.length === 0) return
@@ -44,10 +44,12 @@ export default class extends Controller {
     this.loading = true
     this.inputTarget.value = ""
     this.render()
-    this.element.dispatchEvent(new CustomEvent("add-query:submit", {
-      bubbles: true,
-      detail: { queryTexts }
-    }))
+    this.element.dispatchEvent(
+      new CustomEvent("add-query:submit", {
+        bubbles: true,
+        detail: { queryTexts }
+      })
+    )
   }
 
   input() {
@@ -65,7 +67,10 @@ export default class extends Controller {
     const canAdd = this.canAddQueries()
     this.submitTarget.disabled = !canAdd || empty || this.loading
     this.submitTarget.value = this.inputTarget.value.includes(";") ? "Add queries" : "Add query"
-    this.inputTarget.placeholder = this.queryCapabilities?.getListState?.()?.addQueryMessage || this.placeholderValue || "Add a query to this case"
+    this.inputTarget.placeholder =
+      this.queryCapabilities?.getListState?.()?.addQueryMessage ||
+      this.placeholderValue ||
+      "Add a query to this case"
     this.spinnerTarget.classList.toggle("d-none", !this.loading)
   }
 
