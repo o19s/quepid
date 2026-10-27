@@ -406,6 +406,8 @@ Baseline screenshots live under `test/playwright/baselines/` and **are checked i
 
 Tests run serially (`workers: 1`, `fullyParallel: false` in `playwright.config.ts`) because they share case state in the database (whichever adapter the dev server is running against) and a single authenticated session — don't assume they're safe to parallelize without addressing that first.
 
+**Check a new or changed spec for flakiness before merging.** The suite runs with `retries: 0`, so an intermittent failure blocks everyone's run. Run it repeatedly on its own, e.g. `docker compose exec app yarn test:e2e rate_score_reload.spec.ts --repeat-each=5`, and fix any failure rather than adding retries or longer timeouts.
+
 **Clean up anything a spec creates in the shared dev DB.** Because the suite runs against real shared state rather than a fixture DB, any row a test creates (a user, a team, a case) outlives that single run and every later run adds another one — unlike case/session state, there's no reset between runs. If your spec creates a persistent row, delete it in a `test.afterAll` (see `teams.spec.ts`'s or `signup.spec.ts`'s for the pattern). Restore state a test changes on an existing row (sharing, ratings) in `test.afterEach`, not in the test's last lines, which a failure skips.
 
 **Screenshot only what the static fixture controls.** A `toHaveScreenshot()` must not capture account-wide data that other specs or manual sessions change: header "recent cases/books" dropdowns, the cases index, live-search results. Assert those surfaces behaviorally instead, and stub a catalog (`page.route`) when a test needs a specific empty/non-empty precondition.
@@ -1368,14 +1370,22 @@ Run the broader pass separately before declaring full manual coverage; expand th
 when a failure or a higher-risk behavior change warrants it.
 
 Run `ruby bin/manual_test_status --due-only` to find scenarios needing review.
-Keep `last_run` as the actual test time. Uncommitted files are compared by edit
-time; committed files are due only when both their edit and commit times are
-newer than the test. Editing, testing, then committing the same files therefore
-keeps the verification current. Never-run scenarios and the default 90-day
-expiry still make a scenario due.
+Keep `last_run` as the actual test time, then run
+`ruby bin/manual_test_status --record <ids>` before editing further. That records
+a hash of each scenario file's content in `docs/manual-testing/verified_sources.yml`,
+and from then on a file makes its scenario due only when its content changes,
+ignoring whitespace-only edits. Merges, squash merges, rebases, checkouts and
+reformatting don't. A record older than `last_run` is ignored.
+Never-run scenarios and the default 90-day expiry still make a scenario due.
 
-This is a timestamp heuristic. Fresh clones or rebases can still report due;
-tools that preserve or backdate file timestamps can hide changes.
+Files without a recorded hash (no record yet, or newly added to `paths`) fall back
+to timestamps: uncommitted files by edit time, committed files only when both
+their edit and commit times are newer than the test. This fallback is a heuristic:
+fresh clones or rebases can report due, and tools that preserve or backdate file
+timestamps can hide changes. Records marked `backfilled_from` were seeded once from
+the newest commit on any branch before each `last_run`, a best guess at what was
+tested. `--record` refuses when a scenario's files changed after its `last_run`, so
+verify again rather than recording over unverified edits.
 
 See [the manual testing guide](docs/manual-testing/README.md) for scenarios and
 coverage recording.
