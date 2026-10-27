@@ -131,6 +131,11 @@ class Embedder < ApplicationRecord
     api_key.present? ? MASKED_API_KEY : ''
   end
 
+  # Cases per embedder for list pages, in one grouped query.
+  def self.cases_count_by_embedder_id embedder_ids
+    Case.where(embedder_id: embedder_ids).group(:embedder_id).count
+  end
+
   # A blank or masked submitted key means "keep the saved one" -- the form never shows it.
   def self.keep_existing_key? submitted
     submitted.blank? || MASKED_API_KEY == submitted

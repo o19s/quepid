@@ -417,7 +417,7 @@ class TeamsController < ApplicationController
     @search_endpoint_cases_counts = SearchEndpoint.cases_count_by_search_endpoint_id(@search_endpoints.map(&:id))
     # Embedders are neither filtered nor paged: a team shares only a few.
     @embedders = @team.embedders.includes(:owner).order(:name)
-    @embedder_case_counts = Case.where(embedder_id: @embedders.map(&:id)).group(:embedder_id).count
+    @embedder_case_counts = Embedder.cases_count_by_embedder_id(@embedders.map(&:id))
   end
 
   # The team page's list filters, as params. Each section's filter form carries
