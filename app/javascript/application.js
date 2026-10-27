@@ -14,7 +14,8 @@ Turbo.session.drive = true
 
 // data-turbo-confirm uses the layout's shared modal.
 // The form's data-turbo-confirm-style picks the Confirm button colour.
-Turbo.config.forms.confirm = (message, form) => confirmDialog(message, form?.dataset.turboConfirmStyle)
+Turbo.config.forms.confirm = (message, form) =>
+  confirmDialog(message, form?.dataset.turboConfirmStyle)
 
 import "vega_globals"
 

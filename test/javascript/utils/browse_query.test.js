@@ -7,7 +7,9 @@ describe("browse query utilities", () => {
       url: "http://solr.example.test/select?q=work&fl=id catch_line structure text"
     })
 
-    expect(command).toContain("'http://solr.example.test/select?q=work&fl=id+catch_line+structure+text'")
+    expect(command).toContain(
+      "'http://solr.example.test/select?q=work&fl=id+catch_line+structure+text'"
+    )
     expect(command).toContain("\\\n -X GET")
     expect(command).not.toContain("+ -X GET")
   })
@@ -24,7 +26,9 @@ describe("browse query utilities", () => {
 
   it("matches the legacy engine labels", () => {
     expect(engineDisplayName({ searchEngine: "solr" })).toBe("Solr")
-    expect(engineDisplayName({ searchEngine: "searchapi", mapperBasedSearchEngineName: "Vespa" })).toBe("Vespa")
+    expect(
+      engineDisplayName({ searchEngine: "searchapi", mapperBasedSearchEngineName: "Vespa" })
+    ).toBe("Vespa")
     expect(engineDisplayName({ searchEngine: "searchapi" })).toBe("Search API")
   })
 })

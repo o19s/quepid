@@ -1,21 +1,19 @@
 # After AngularJS removal
 
-Work that waits until the AngularJS-removal branch lands. The branch's
-[scope freeze](todo.md#migration-sign-off-gate-for-landing-the-angularjs-removal)
-takes only parity fixes, so restructuring, consolidation and deliberate departures
-from Legacy go to `main` as ordinary PRs afterwards. `[PREEXISTING]` bugs,
-security and backend fixes are here too, from the
-[pre-existing section](#preexisting-found-during-parity-testing) onwards, since
-they are not part of landing the branch. Migration work and open parity
-decisions stay in [todo.md](todo.md).
+Restructuring, consolidation and deliberate departures from Legacy that were held
+back while the AngularJS-removal branch was under a parity-only scope freeze. The
+branch landed on `main` in `8d4fc1cd` (#1842), so these are now ordinary PRs.
+`[PREEXISTING]` bugs, security and backend fixes are here too, from the
+[pre-existing section](#preexisting-found-during-parity-testing) onwards. Open
+parity decisions stay in [todo.md](todo.md).
 
 Entries use the same provenance markers and `P I C` ratings as
 [todo.md](todo.md). When something is done, remove its entry.
 
 ## Legacy behaviour kept only for parity
 
-The user chose to restore these to Legacy (`8ceb99e9`). Revisit them as product
-decisions once parity no longer gates the branch.
+The user chose to restore these to Legacy (`8ceb99e9`) while parity gated the
+branch. Revisit them as product decisions.
 
 ### [MIGRATION-FOLLOWUP] P3 I1 C1 — Case wizard Search API query pattern
 
@@ -63,26 +61,15 @@ Legacy behaved the same way (its client flashed the text when `caseNo` was 0), s
 this is parity. A better message would point at the Archived filter when
 `cases_involved_with.archived` is not empty.
 
-While there, drop the dead client copy of the text: the `caseNo === 0` branch in
-`core_bootstrap_controller.js` and its unit test cannot run, because the layout
-only attaches `core-bootstrap` when a case exists (`case_page` in
-`application.html.erb`; `core_controller_test.rb` asserts the body has no
-`data-core-bootstrap-case-no-value` for the 404 pages). The `kase&.id || 0` and
-`kase ? … : ''` fallbacks in `layout_body_attributes` are the same leftover.
-
 ## Frontend consolidation
 
 Moved from [todo.md](todo.md) on 2026-10-19. These change or restructure the
-Stimulus frontend, so they wait for the branch to land.
+Stimulus frontend.
 
 ### [MIGRATION-FOLLOWUP] P3 I2 C3 — Server-rendered modal lists
 
 See [Persisted case UI](../app_structure.md#persisted-case-ui) for the accepted
 HTML-endpoint boundary.
-
-The [case-workspace follow-ups](rails_stimulus_json_workspace_plan.md) record
-modal regression evidence, focused fixes and remaining browser coverage while
-retaining the existing JSON mutation APIs.
 
 `diff_core` (snapshot selects) and `export_case_core` still build lists from JSON
 in JS. They could become partials loaded through lazy
@@ -116,16 +103,18 @@ most of the rules are written out somewhere else:
 
 - **"Store document fields in the snapshot"** (`static || !supportsLookupById`)
   is written three times: `snapshot_bridge_controller.js:57`,
-  `snapshot_hydration.js:11` and `snapshot_hydration.js:75`.
-- **`["solr", "es", "os"]`** is hardcoded four times, with different meanings:
-  `rated_docs.js:9`, `query_runtime.js:344`, `settings_catalog_runtime.js:182`
-  (`supportsEscapeQuery`) and `live_query_runtime_owner.js:683`.
-- **`usesJsonQueryParams`** lives in `search_endpoint_runtime.js:41`, and
-  `tune_relevance_controller.js:319` adds its own Search API "starts with `{`"
+  `snapshot_hydration.js:11` and `snapshot_hydration.js:80`.
+- **`["solr", "es", "os"]`** is still hardcoded three times, with different
+  meanings: `query_runtime.js:363`, `settings_catalog_runtime.js:182`
+  (`supportsEscapeQuery`) and `live_query_runtime_owner.js:689` (with
+  `"searchapi"` added).
+- **`usesJsonQueryParams`** lives in `search_endpoint_runtime.js:40`, and
+  `tune_relevance_controller.js:405` adds its own Search API "starts with `{`"
   exception on top.
 - **Too many layers:** pure checks pass through two or three runtime layers.
   `isEsLikeEngine` becomes `isEsOrOsEngine` and then `isEsOrOs`, which is wired
-  up twice in `core_capabilities_runtime.js` (lines 182 and 225).
+  up twice in `core_workspace_runtime.js` (lines 176 and 228) and once more in
+  `live_query_runtime_owner.js:400`.
 - **Engine names:** `browse_query.js:1` has its own engine display name instead
   of using `searchEngineLabel`.
 
@@ -159,8 +148,8 @@ policy is a behavior change.
 
 ### [MIGRATION-FOLLOWUP] P3 I1 C2 — Server-owned URLs and template replacement
 
-Fourteen controllers fill server-passed URL templates with
-`.replaceAll("__CASE_ID__", …)`. Some wrap the value in `String()`, none
+Eleven controllers fill server-passed URL templates with
+`.replaceAll("__CASE_ID__", …)` and similar placeholders. Some wrap the value in `String()`, none
 encode it, and nothing catches a placeholder that was never filled. Separately,
 about 80 call sites build `api/...` paths on the client, which the
 DEVELOPER_GUIDE discourages.
@@ -202,13 +191,14 @@ transitions alone.
 
 ### [MIGRATION-FOLLOWUP] P2 I1 C2 — Choose explicit error-message policies
 
-`utils/error_message.js:8` provides `errorMessage`; `:32` provides
+`utils/error_message.js:8` provides `errorMessage`; `:27` provides
 `serverMessage`. `query_lifecycle_controller.js:60` uses the former, whereas
-`share_case_core_controller.js:317,357`, `judgements_core_controller.js:307`,
-and `import_ratings_core_controller.js:201` use `error.message || fallback`.
+`share_case_core_controller.js:295,336`, `judgements_core_controller.js:295`,
+and `import_ratings_core_controller.js:220` use `error.message || fallback`.
 Mapper Wizard interpolates `error.message` directly in several catch blocks
 (`mapper_wizard_controller.js:149,205,366,431`). Frog Report additionally
-rewrites an `HttpError`'s message before displaying it (`:164`).
+rewrites an `HttpError`'s message before displaying it
+(`frog_report_controller.js:206`).
 
 **Fix direction:** apply the [Error-message policies](../../DEVELOPER_GUIDE.md#error-message-policies)
 explicitly at each boundary, with focused tests for intentional changes. Preserve
@@ -235,8 +225,7 @@ and persistence decisions first.
 
 ## Developer experience
 
-Moved from the [Developer Experience Review](todo.md#migration-followup-developer-experience-review)
-in todo.md on 2026-10-19.
+Moved from todo.md's Developer Experience Review on 2026-10-19.
 
 ### [MIGRATION-FOLLOWUP] P3 I2 C3 — 5. Clarify frontend ownership and delivery boundaries
 
@@ -270,7 +259,7 @@ same config.
 ## [PREEXISTING] Found during parity testing
 
 Moved from [todo.md](todo.md) on 2026-10-19, with every other `[PREEXISTING]`
-entry below. These predate the AngularJS removal and don't gate landing it.
+entry below. These predate the AngularJS removal.
 
 ### [PREEXISTING] P2 I1 C2 — splainer-search 3.x copies every result doc's text several times
 
@@ -294,7 +283,7 @@ Route the refreshes through `pAll`.
 
 ### [PREEXISTING] P2 I0 C2 — One failed search skips scoring the whole case
 
-`pAll` (`query_service.js`) runs the rest of the queue after a failure, then
+`pAll` (`utils/query_service.js`) runs the rest of the queue after a failure, then
 rejects, so `runSearchAll` skips `scoreAll` and book sync: a single 429 near the
 end of a large run loses the case score. Legacy's `queriesSvc.pAll` did the
 same. Score the queries that succeeded and report the failures.
@@ -310,6 +299,36 @@ built for every query although few use it. Batch runs could also request
 `debug=results` without `echoParams`, re-running with full debug only when the
 query-details modal opens, but that changes what users see in dev tools, so it
 needs a product decision.
+
+**Garbage per animation frame.** Compared on 2026-10-24 with main's Angular page
+(`a31569e4`, :3003) using two interleaved 5000-query runs each, from one host
+Chromium, with a temporary copy of `large_case.perf.spec.ts` whose expand and
+explain selectors match both pages (the committed spec can't run on main's page).
+The branch matched main on load time (~20 s) and retained heap (~533 MB against
+~536 MB) and used a quarter of its script time (~3 s against ~12 s). It peaked at
+~975 MB against main's ~630 MB, but at 622 MB in the dev container, so the raw
+peak depends on when Chromium collects. A temporary diagnostic that forced GC
+before each sample, as `PERF_LIVE_PEAK=1` now does, found both peak at their
+retained size (520 MB against 536 MB), so the extra peak is uncollected garbage,
+not held data. Main allocates
+~32 GB during the load, mostly tiny digest objects (`getComparisonObject`) that
+die young. The branch allocates ~4 GB, but as 5000-element arrays and per-query
+snapshots that survive into the old generation until a major GC. Each query-list
+render, scheduled every frame while results arrive, makes them:
+
+- `renderQueryCollection` calls `orderedLiveQueries` twice, and each call builds a
+  `querySnapshot` for every query through `store.query()` (~890 MB). Only one page
+  is shown, and the first call is used only for its length. Snapshot just the
+  visible page when no filter or sort needs every query, and count with
+  `store.size`.
+- `orderedQueryIds` (`query_collection_store.js`) builds a new `Set` of every key
+  and a filtered copy of the display order on each call (~885 MB). Cache it until
+  queries are added, removed or moved.
+- `getListState` (`live_query_runtime_owner.js`) runs `hasPendingQueries`,
+  `settledQueryCount` and `queryCount`, each turning the whole query map into an
+  object and then an array through `liveQueries()` (~500 MB).
+  `add_query_controller` calls it too. Iterate the store's map directly, or keep
+  the counts as queries settle.
 
 ### [PREEXISTING] P1 I0 C2 — Align RRE export and import formats
 
@@ -339,7 +358,7 @@ mapper migration. Define a compatible input contract and verify both stored
 string-based and object-based mappers; an adaptive mapper workaround does not
 resolve existing saved mapper failures.
 
-### [PREEXISTING] P1 I0 C3 — ç
+### [PREEXISTING] P1 I0 C3 — Scorer sandboxing - LATER
 
 **Decision needed:** Agree on the trust model for shared scorer code and the isolation guarantees required while preserving supported scorer behavior.
 
@@ -363,7 +382,7 @@ a blank credential: hidden-credential deployments rely on it.
 
 **Decision needed:** Confirm whether cross-user lookup is an intended directory contract, who may use it, and which fields it may expose; the existing test explicitly permits it.
 
-**Location:** `app/controllers/api/v1/users_controller.rb:24-48`, `test/controllers/api/v1/users_controller_test.rb:30-39`
+**Location:** `app/controllers/api/v1/users_controller.rb:24-51`, `test/controllers/api/v1/users_controller_test.rb:30-39`
 
 `set_user` looks up any user by email or numeric ID without scoping to `current_user`, and `update` permits `company`, `completed_case_wizard`, and `default_scorer_id`. The existing test codifies one signed-in user fetching another's record. Unless this is an intentional admin directory, it exposes account metadata and allows cross-account changes.
 
@@ -419,7 +438,7 @@ From `e52cec3a` (#1642, on `main`). A full email address matches any registered 
 
 ### [PREEXISTING] P1 I0 C3 — Static Active Record encryption keys committed as production fallbacks
 
-**Location:** `config/application.rb:55-61`
+**Location:** `config/application.rb:58-60`
 
 Deployments that omit the env vars use publicly known keys, so encrypted fields are recoverable by anyone with the database.
 
@@ -473,21 +492,11 @@ MiniRacer contexts have no execution timeout or memory limit. User-authored and 
 
 **Compatibility gate:** Existing scorer and mapper fixtures must produce identical successful outputs. Exercise legitimate large cases before choosing limits: previously successful slow evaluations may now fail. Termination must report an explicit error without persisting partial results or substituting zero scores. Limits reduce resource-exhaustion risk; they do not establish complete isolation.
 
-#### [PREEXISTING] P2 I0 C2 — Sanitize announcement HTML
-
-**Location:** `app/views/layouts/_header.html.erb`, `app/views/admin/announcements/index.html.erb`
-
-Both displays render administrator-authored announcement text with `html_safe`. Administrator-only editing lowers exposure but still permits stored scripts and event handlers.
-
-**Fix direction:** Apply a consistent HTML allowlist to both displays, preserving supported formatting and links.
-
-**Compatibility gate:** Inspect existing announcement HTML before choosing allowed tags and attributes. Sanitization may remove formatting, embedded content or links; verify retained formatting and rejection of executable markup. Search results, ratings and scores should be unaffected.
-
 #### [PREEXISTING] P2 I0 C2 — Allowlist ratings-export templates
 
 **Location:** `app/controllers/api/v1/export/ratings_controller.rb`
 
-Two warnings cover template names derived from `file_format`. No traversal exploit was established.
+One warning (the JSON template) still covers template names derived from `file_format`. No traversal exploit was established.
 
 **Fix direction:** Map supported formats to literal template names and define the unsupported-format response.
 
@@ -573,7 +582,7 @@ that rely on any non-empty value enabling detailed errors will change behavior.
 **Cause:** No model-level validation ties `Judgement#rating` to `query_doc_pair.book.scale`.
 
 **Audit result (done):** Two call sites *legitimately* write ratings outside the discrete scale, both gated on `book.support_implicit_judgements?`:
-- `[PREEXISTING]` `BooksController#combine` (`app/controllers/books_controller.rb:277`) averages two existing ratings — `(judgement.rating + j.rating) / 2` — and explicitly skips rounding when `support_implicit_judgements` is true (e.g. `(0+3)/2 = 1.5` on a `[0,1,2,3]` scale).
+- `[PREEXISTING]` `BookCombiner#merge_judgement` (`app/services/book_combiner.rb:41`, called by `BooksController#combine`) averages two existing ratings — `(judgement.rating + j.rating) / 2` — and explicitly skips rounding when `support_implicit_judgements` is true (e.g. `(0+3)/2 = 1.5` on a `[0,1,2,3]` scale).
 - `[PREEXISTING]` `JudgementFromRatingJob#perform` (`app/jobs/judgement_from_rating_job.rb:24`) copies a case-level `Rating#rating` straight into `judgement.rating` via `judgement.save!` (raises on failure) — that value comes from the case's scorer scale, which has no guaranteed relationship to the book's judgement scale.
 
 `BookImporter`/`RatingsImporter` are fine: `RatingsImporter` writes the unrelated `Rating` model, and `BookImporter#import_judgement` already silently no-ops on failed saves.
@@ -606,15 +615,15 @@ snapshot name and API reason in the alert, and distinguish partial success.
 
 #### `BooksController#combine` collapses anonymous judgements into one averaged row
 
-**Location:** `app/controllers/books_controller.rb:275` — `combine`
+**Location:** `app/services/book_combiner.rb:41` — `BookCombiner#merge_judgement`
 
-The merge loop upserts each source judgement with `query_doc_pair.judgements.find_or_initialize_by(user: j.user)`. `Judgement` deliberately permits several nil-user rows per pair (`validates :user_id, uniqueness: { scope: :query_doc_pair_id }, unless: -> { user_id.nil? }`), so *every* anonymous judgement in the source book matches the same target row. N anonymous judgements collapse to 1 — and because the same loop averages (`(judgement.rating + j.rating) / 2`), the surviving rating is an order-dependent running mean, not a true average.
+The merge loop upserts each source judgement with `pair.judgements.find_or_initialize_by(user: source.user)`. `Judgement` deliberately permits several nil-user rows per pair (`validates :user_id, uniqueness: { scope: :query_doc_pair_id }, unless: -> { user_id.nil? }`), so *every* anonymous judgement in the source book matches the same target row. N anonymous judgements collapse to 1 — and because the same loop averages (`(judgement.rating + source.rating) / 2`), the surviving rating is an order-dependent running mean, not a true average.
 
 **Reproduced** by running the verbatim inner loop against the test DB (a script, not a Playwright pass): a source pair carrying anonymous `[1.0, 3.0, 3.0]` produced **one** target row rating `2.5`, where the true mean is 2.33.
 
 **Cause:** Same root cause as the import bug fixed in `BookImporter#import_judgement` on 2026-09-10 — `find_or_initialize_by(user: nil)` treats "no judge" as an identity.
 
-**Fix direction:** Needs a product call first: should anonymous judgements copy across as separate rows (mirroring the importer, no averaging), or keep collapsing into one averaged row? If separate, skip the find when `j.user.nil?` and `build` unconditionally. Note the averaging is order-dependent even for identified users once you merge 3+ books; the same `combine` line is already documented under the [judgement-scale validation item](#preexisting-p2-i1-c3--judgement-rating-not-validated-against-books-scale-outside-ai-judging) for a different reason.
+**Fix direction:** Needs a product call first: should anonymous judgements copy across as separate rows (mirroring the importer, no averaging), or keep collapsing into one averaged row? If separate, skip the find when `source.user.nil?` and `build` unconditionally. Note the averaging is order-dependent even for identified users once you merge 3+ books; the same `combine` line is already documented under the [judgement-scale validation item](#preexisting-p2-i1-c3--judgement-rating-not-validated-against-books-scale-outside-ai-judging) for a different reason.
 
 #### Re-importing anonymous judgements is not idempotent, and it moves computed case ratings
 
@@ -633,9 +642,9 @@ An anonymous judgement has no identity to upsert on, so as of the 2026-09-10 fix
 **Decision needed:** Choose the rounding and aggregation rules across rating writers before centralizing them. Scale validation remains in the [separate validation item](#preexisting-p2-i1-c3--judgement-rating-not-validated-against-books-scale-outside-ai-judging).
 
 Also audit coercion and aggregation across rating writers (former DRY #15).
-`BooksController#combine` and `RatingsManager` round unless the book supports
+`BookCombiner` (behind `BooksController#combine`) and `RatingsManager` round unless the book supports
 implicit judgements; bulk judging, the judgements API, `JudgementFromRatingJob`
-and `LlmService` do not all apply that rule. `combine` uses a pairwise mean,
+and `LlmService` do not all apply that rule. `BookCombiner` uses a pairwise mean,
 while `RatingsManager#calculate_rating_from_judgements` uses a different
 aggregation rule. Decide intended semantics before centralizing coercion in
 `Judgement`; check bulk writers that bypass callbacks and preserve legitimate
@@ -713,7 +722,7 @@ and snapshot retention still apply. No live search or full suite verification.
 
 ### [PREEXISTING] P2 I0 C3 — Mapper wizard function extraction is not lexical-aware
 
-**Location:** `app/services/mapper_wizard_service.rb:265-296`
+**Location:** `app/services/mapper_wizard_service.rb:302` (`extract_single_function`)
 
 `extract_single_function` counts every brace, including braces inside strings,
 comments, and regular expressions. Generated mapper code containing one of
@@ -749,7 +758,7 @@ no full suite or live provider verification performed.
 
 ### [PREEXISTING] P2 I0 C1 — Whitespace-prefixed JSON takes the bare-query path
 
-**Location:** `app/models/try.rb:207-218`
+**Location:** `app/models/try.rb:188` (`json_query_params?`)
 
 `json_query_params?` checks only whether the raw value starts with `{`.
 Whitespace-prefixed JSON is accepted by `JSON.parse` but is classified as bare
@@ -760,7 +769,7 @@ the original payload), and add tests for leading/trailing whitespace.
 
 ### [PREEXISTING] P2 I0 C1 — Core search-endpoint lookup can never match a stored credential
 
-**Location:** `app/controllers/core_controller.rb:47-70` (`populate_from_params`)
+**Location:** `app/controllers/core_controller.rb:54-85` (`populate_from_params`)
 
 `populate_from_params` calls `SearchEndpoint.find_or_create_by` including `basic_auth_credential`. Since `dc2f46af` (on `main`) that column is encrypted non-deterministically, so a query on it never matches a stored value. Every load of `/case/:id` with `searchEngine` and a `basicAuthCredential` parameter creates another ownerless endpoint and attaches it to the try. An empty value is encrypted too, so it never matches either; the wizard's http↔https reload always sends `basicAuthCredential=`, so each reload of that URL adds an endpoint (confirmed in the browser on 2026-10-19). `SearchEndpoint.find_or_initialize_for_user` already excludes the credential from its lookup for this reason. Related to the global-lookup entry above; fix them together.
 
@@ -768,7 +777,7 @@ the original payload), and add tests for leading/trailing whitespace.
 
 ### [PREEXISTING] P3 I0 C1 — Rating remap returns 500 for out-of-range values
 
-**Location:** `app/controllers/books_controller.rb:441-481` (`remap_judgement_ratings`)
+**Location:** `app/controllers/books_controller.rb:440` (`remap_judgement_ratings`)
 
 From `e77dcfb8` (#1751, on `main`). Submitted values pass through `to_f` and are interpolated into a SQL `CASE`. A value such as `1e400` becomes `Infinity`, the SQL is invalid and the request fails with a 500. Non-numeric text silently becomes `0.0`.
 
@@ -780,7 +789,7 @@ From `e77dcfb8` (#1751, on `main`). Submitted values pass through `to_f` and are
 
 ### [PREEXISTING] P3 I0 C1 — Unsafe integer coercion in snapshot search
 
-**Location:** `app/controllers/api/v1/snapshots/search_controller.rb:45-46`
+**Location:** `app/controllers/api/v1/snapshots/search_controller.rb:59-60`
 
 `params[:rows].to_i` / `params[:start].to_i` without validation; non-numeric strings coerce to `0`.
 
@@ -872,7 +881,7 @@ for `rubocop:disable` and check `.rubocop.yml` for the full current lint scope.
 
 ### [PREEXISTING] P3 I1 C2 — Metrics/ParameterLists
 
-- `[PREEXISTING]` P3 I1 C2 — `Case#clone_case` — `app/models/case.rb:130`
+- `[PREEXISTING]` P3 I1 C2 — `Case#clone_case` — `app/models/case.rb:144`
 - `[PREEXISTING]` P3 I1 C2 — `HttpClientService#initialize` — `app/services/http_client_service.rb:32`
 
 ### [PREEXISTING] P3 I2 C3 — Complex methods (Metrics/*)
@@ -881,7 +890,7 @@ Candidates for extraction into smaller methods or services:
 
 - `[PREEXISTING]` P3 I2 C3 — `FetchService` — `app/services/fetch_service.rb`
 
-`FetchService` is 522 lines and `BooksController` is 510. Inspect the 95
+`FetchService` is 522 lines and `BooksController` is 607. Inspect the 73
 `rubocop:disable` occurrences across `app/` individually; they include non-Metrics
 exclusions and do not all represent complexity debt. Extract concrete
 responsibilities when the relevant behavior is being changed and can be tested
@@ -982,7 +991,7 @@ hosts in `script-src`, or a per-request allow-list. Either remove
 
 - [PREEXISTING] P3 I1 C2 — **`Case` initialization.** `Case` uses `after_initialize` to default
   `archived` and to call `set_scorer`
-  (`app/models/case.rb:101,105`). `set_scorer` can query the database for
+  (`app/models/case.rb:95,99`). `set_scorer` can query the database for
   every instantiated record whose `scorer_id` is nil. Move the `archived`
   default into the migration (as a column default) or into an `attribute`
   default, and set the scorer `before_validation on: :create` instead.

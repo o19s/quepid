@@ -27,7 +27,8 @@ const choose = (controller, element, value) => {
   radio.checked = true
   controller.updateScale({ target: radio })
 }
-const labelInputs = controller => [...controller.scaleLabelsTarget.querySelectorAll("input")].map(i => i.name)
+const labelInputs = (controller) =>
+  [...controller.scaleLabelsTarget.querySelectorAll("input")].map((i) => i.name)
 
 describe("ScorerScaleController", () => {
   it("preserves labels for retained values when adding a value or selecting a preset", () => {
@@ -37,17 +38,22 @@ describe("ScorerScaleController", () => {
     inputs[0].value = "Bad"
     inputs[1].value = "Good"
     choose(controller, element, "graded")
-    expect([...controller.scaleLabelsTarget.querySelectorAll("input")].map(input => input.value))
-      .toEqual(["Bad", "Good", "", ""])
+    expect(
+      [...controller.scaleLabelsTarget.querySelectorAll("input")].map((input) => input.value)
+    ).toEqual(["Bad", "Good", "", ""])
     controller.handleScaleListInput({ target: { value: "1,3,4" } })
-    expect([...controller.scaleLabelsTarget.querySelectorAll("input")].map(input => input.value))
-      .toEqual(["Good", "", ""])
+    expect(
+      [...controller.scaleLabelsTarget.querySelectorAll("input")].map((input) => input.value)
+    ).toEqual(["Good", "", ""])
   })
   it("fills a binary scale and builds a label input per value", () => {
     const { controller, element } = mount()
     choose(controller, element, "binary")
     expect(controller.scaleListTarget.value).toBe("0,1")
-    expect(labelInputs(controller)).toEqual(["scorer[scale_with_labels][0]", "scorer[scale_with_labels][1]"])
+    expect(labelInputs(controller)).toEqual([
+      "scorer[scale_with_labels][0]",
+      "scorer[scale_with_labels][1]"
+    ])
   })
 
   it("fills a graded scale", () => {
@@ -104,6 +110,8 @@ describe("ScorerScaleController", () => {
     controller.scaleListTarget.value = "<img src=x onerror=alert(1)>,2"
     controller.handleScaleListInput({ target: controller.scaleListTarget })
     expect(controller.scaleLabelsTarget.querySelector("img")).toBeNull()
-    expect(labelInputs(controller)).toContain("scorer[scale_with_labels][<img src=x onerror=alert(1)>]")
+    expect(labelInputs(controller)).toContain(
+      "scorer[scale_with_labels][<img src=x onerror=alert(1)>]"
+    )
   })
 })

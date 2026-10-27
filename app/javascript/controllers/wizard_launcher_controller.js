@@ -32,7 +32,8 @@ export default class extends Controller {
   openAutomatically() {
     const query = new URLSearchParams(window.location.search)
     const deepLinked = query.get("showWizard") === "true"
-    const firstCase = !this.completedCaseWizardValue &&
+    const firstCase =
+      !this.completedCaseWizardValue &&
       this.casesInvolvedWithCountValue === 1 &&
       this.teamsInvolvedWithCountValue === 0
 

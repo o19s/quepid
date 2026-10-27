@@ -35,12 +35,15 @@ describe("CoreModalControllerBase triggerValue", () => {
     }
   )
 
-  it.each([null, undefined, {}, { dataset: {} }])("returns undefined for missing data on %j", (trigger) => {
-    const controller = buildController()
-    controller.identifier = "take-snapshot-core"
+  it.each([null, undefined, {}, { dataset: {} }])(
+    "returns undefined for missing data on %j",
+    (trigger) => {
+      const controller = buildController()
+      controller.identifier = "take-snapshot-core"
 
-    expect(controller.triggerValue(trigger, "fieldSpec")).toBeUndefined()
-  })
+      expect(controller.triggerValue(trigger, "fieldSpec")).toBeUndefined()
+    }
+  )
 })
 
 describe("CoreModalControllerBase alert helpers", () => {
@@ -108,7 +111,10 @@ describe("CoreModalControllerBase open", () => {
   it("ignores show events bubbling up from a nested modal", () => {
     const controller = buildModal()
 
-    controller.open({ target: document.createElement("div"), relatedTarget: document.createElement("a") })
+    controller.open({
+      target: document.createElement("div"),
+      relatedTarget: document.createElement("a")
+    })
 
     expect(controller.openFor).not.toHaveBeenCalled()
   })
@@ -118,7 +124,9 @@ describe("CoreModalControllerBase modal state", () => {
   it("does not read missing Stimulus targets", () => {
     const controller = buildControllerFixture(CoreModalControllerBase)
     Object.defineProperty(controller, "progressTarget", {
-      get() { throw new Error("Missing target") }
+      get() {
+        throw new Error("Missing target")
+      }
     })
 
     expect(() => controller.setProgress(true)).not.toThrow()
@@ -176,7 +184,10 @@ describe("CoreModalControllerBase modal state", () => {
       const trigger = { dataset: { caseId: "6" } }
       controller.show(trigger)
       controller.hide()
-      expect(window.bootstrap.Modal.getOrCreateInstance).toHaveBeenCalledWith(controller.element, undefined)
+      expect(window.bootstrap.Modal.getOrCreateInstance).toHaveBeenCalledWith(
+        controller.element,
+        undefined
+      )
       expect(modal.show).toHaveBeenCalledWith(trigger)
       expect(modal.hide).toHaveBeenCalledOnce()
     } finally {

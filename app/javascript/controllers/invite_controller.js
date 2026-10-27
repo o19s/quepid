@@ -36,8 +36,12 @@ export default class extends Controller {
     this.originalLabel ??= btn.innerHTML
     this.feedback ??= createTemporaryFeedback(FEEDBACK_MS)
     this.feedback.show(
-      () => { btn.textContent = text },
-      () => { btn.innerHTML = this.originalLabel }
+      () => {
+        btn.textContent = text
+      },
+      () => {
+        btn.innerHTML = this.originalLabel
+      }
     )
   }
 }

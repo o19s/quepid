@@ -14,14 +14,14 @@ export default class extends Controller {
     this.settle(false)
     this.messageTarget.textContent = message
     const accepted = STYLES.includes(style) ? style : "danger"
-    STYLES.forEach(name => this.acceptTarget.classList.toggle(`btn-${name}`, name === accepted))
+    STYLES.forEach((name) => this.acceptTarget.classList.toggle(`btn-${name}`, name === accepted))
     this.modal = getOrCreateBsModal(this.element)
     if (!this.modal) return Promise.resolve(window.confirm(message))
     // Opened from code, so Bootstrap won't return focus on close; remember the
     // opener ourselves. A re-ask while open keeps the original opener.
     const active = document.activeElement
     if (!this.element.contains(active)) this.opener = active
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       this.resolve = resolve
       this.modal.show()
     })
@@ -70,7 +70,8 @@ export default class extends Controller {
       if (detached) this.element.remove()
     }
     // Bootstrap's queued animation callbacks still need the instance intact.
-    if (this.transitionEnd) this.element.addEventListener(this.transitionEnd, dispose, { once: true })
+    if (this.transitionEnd)
+      this.element.addEventListener(this.transitionEnd, dispose, { once: true })
     else dispose()
     this.modal = null
   }

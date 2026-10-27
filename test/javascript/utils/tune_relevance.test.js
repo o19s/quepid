@@ -17,7 +17,10 @@ describe("tune relevance utilities", () => {
   })
 
   it("reports common Solr parameter typos", () => {
-    expect(queryParamsWarning("deftype=edismax")).toEqual({ typo: "deftype", correction: "defType" })
+    expect(queryParamsWarning("deftype=edismax")).toEqual({
+      typo: "deftype",
+      correction: "defType"
+    })
     expect(queryParamsWarning("q=law&timeallowed=5&omitheader=true")).toEqual({
       typo: "omitheader",
       correction: "omitHeader"
@@ -45,20 +48,33 @@ describe("tune relevance utilities", () => {
   })
 
   it("titles a history row with its search URL and one name=value line per knob", () => {
-    expect(historyTitle({ searchUrl: "http://s/select", curatorVars: [{ name: "boost", value: 2 }, { name: "tie", value: 0.1 }] }))
-      .toBe("http://s/select\nboost=2\ntie=0.1\n")
+    expect(
+      historyTitle({
+        searchUrl: "http://s/select",
+        curatorVars: [
+          { name: "boost", value: 2 },
+          { name: "tie", value: 0.1 }
+        ]
+      })
+    ).toBe("http://s/select\nboost=2\ntie=0.1\n")
     expect(historyTitle({ searchUrl: "http://s/select" })).toBe("http://s/select\n")
     expect(historyTitle({})).toBe("\n")
   })
 
   it("keeps original indexes for filtered curator variables", () => {
-    const variables = [{ name: "unused", inQueryParams: false }, { name: "boost", inQueryParams: true }]
+    const variables = [
+      { name: "unused", inQueryParams: false },
+      { name: "boost", inQueryParams: true }
+    ]
     expect(curatorVariableEntries(variables)).toEqual([{ item: variables[1], index: 1 }])
   })
 })
 
 it("keeps repeated JSON field types together instead of splitting/deduplicating their fragments", () => {
-  const fields = ['{"type":"thumb","name":"poster_path"}', '{"type":"thumb","name":"backdrop_path"}']
+  const fields = [
+    '{"type":"thumb","name":"poster_path"}',
+    '{"type":"thumb","name":"backdrop_path"}'
+  ]
   expect(fieldSpecTokens(`id:id ${fields.join(" ")}`)).toEqual(["id:id", ...fields])
 })
 

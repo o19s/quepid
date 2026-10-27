@@ -23,7 +23,8 @@ describe("caseNameFromHeader", () => {
     expect(caseNameFromHeader()).toBe("Old Name")
 
     // What case-toolbar does when the case name changes.
-    frame.querySelector("[data-case-header-case-name]")
+    frame
+      .querySelector("[data-case-header-case-name]")
       .setAttribute("data-case-header-case-name", "New Name")
 
     expect(caseNameFromHeader()).toBe("New Name")

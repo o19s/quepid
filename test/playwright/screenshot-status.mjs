@@ -17,18 +17,21 @@ while (args.length) {
   else if (flag === "--source-changed") sourceChanged = true
   else throw new Error(`Unknown option: ${flag}`)
 }
-const rows = linkedScreenshotStatus(root).filter((row) =>
-  (!scenario || row.scenario === scenario) &&
-  (!dueOnly || ["missing", "corrupt"].includes(row.current.status)) &&
-  (!sourceChanged || row.current.status === "stale")
+const rows = linkedScreenshotStatus(root).filter(
+  (row) =>
+    (!scenario || row.scenario === scenario) &&
+    (!dueOnly || ["missing", "corrupt"].includes(row.current.status)) &&
+    (!sourceChanged || row.current.status === "stale")
 )
 if (json) console.log(JSON.stringify(rows, null, 2))
 else {
   for (const row of rows) {
-    const describe = status => status === "stale" ? "source_changed (advisory)" : status
+    const describe = (status) => (status === "stale" ? "source_changed (advisory)" : status)
     console.log(`${row.scenario} / ${row.state} → ${row.id}: ${describe(row.current.status)}`)
     for (const side of ["current", "previous", "legacy"]) {
-      console.log(`  ${side}: ${describe(row[side].status)}${row[side].image ? ` — ${row[side].image}` : ""}`)
+      console.log(
+        `  ${side}: ${describe(row[side].status)}${row[side].image ? ` — ${row[side].image}` : ""}`
+      )
     }
   }
   if (!rows.length) console.log("No linked screenshots match this filter.")

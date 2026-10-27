@@ -6,10 +6,10 @@ describe("live query events runtime", () => {
     const eventTarget = new EventTarget()
     const scoringStore = new EventTarget()
     const query = { queryId: 1, options: {}, setDirty: vi.fn() }
-    const getQuery = vi.fn().mockImplementation(id => id === 1 ? query : null)
+    const getQuery = vi.fn().mockImplementation((id) => (id === 1 ? query : null))
     const scoreAll = vi.fn().mockResolvedValue(undefined)
     const invalidateRatedDocs = vi.fn()
-    const schedule = vi.fn(callback => callback())
+    const schedule = vi.fn((callback) => callback())
     const setScorer = vi.fn().mockResolvedValue(undefined)
     const reloadQueries = vi.fn().mockResolvedValue(undefined)
     const configureBook = vi.fn()
@@ -34,7 +34,18 @@ describe("live query events runtime", () => {
       onError
     })
     runtime.connect()
-    return { runtime, eventTarget, scoringStore, query, scoreAll, schedule, setScorer, reloadQueries, configureBook, invalidateRatedDocs }
+    return {
+      runtime,
+      eventTarget,
+      scoringStore,
+      query,
+      scoreAll,
+      schedule,
+      setScorer,
+      reloadQueries,
+      configureBook,
+      invalidateRatedDocs
+    }
   }
 
   it("invalidates and rescoring on rating changes", () => {
@@ -55,9 +66,11 @@ describe("live query events runtime", () => {
   it("applies query options only for the active case", () => {
     const { eventTarget, query } = setup()
 
-    eventTarget.dispatchEvent(new CustomEvent("query-options:saved", {
-      detail: { caseId: 7, queryId: 1, options: { field: "title" } }
-    }))
+    eventTarget.dispatchEvent(
+      new CustomEvent("query-options:saved", {
+        detail: { caseId: 7, queryId: 1, options: { field: "title" } }
+      })
+    )
 
     expect(query.options).toEqual({ field: "title" })
     expect(query.setDirty).toHaveBeenCalledOnce()
@@ -66,9 +79,11 @@ describe("live query events runtime", () => {
   it("applies a selected scorer and rescoring", async () => {
     const { eventTarget, setScorer, scoreAll, schedule } = setup()
 
-    eventTarget.dispatchEvent(new CustomEvent("pick-scorer:selected", {
-      detail: { caseId: 7, scorer: { id: 3 } }
-    }))
+    eventTarget.dispatchEvent(
+      new CustomEvent("pick-scorer:selected", {
+        detail: { caseId: 7, scorer: { id: 3 } }
+      })
+    )
     await Promise.resolve()
 
     expect(schedule).toHaveBeenCalledOnce()
@@ -79,8 +94,12 @@ describe("live query events runtime", () => {
   it("reloads queries for judgement and import events", () => {
     const { eventTarget, reloadQueries } = setup()
 
-    eventTarget.dispatchEvent(new CustomEvent("judgements:queries-need-reload", { detail: { caseId: 7 } }))
-    eventTarget.dispatchEvent(new CustomEvent("imports:queries-need-reload", { detail: { caseId: 7 } }))
+    eventTarget.dispatchEvent(
+      new CustomEvent("judgements:queries-need-reload", { detail: { caseId: 7 } })
+    )
+    eventTarget.dispatchEvent(
+      new CustomEvent("imports:queries-need-reload", { detail: { caseId: 7 } })
+    )
 
     expect(reloadQueries).toHaveBeenNthCalledWith(1, 7)
     expect(reloadQueries).toHaveBeenNthCalledWith(2, 7)
@@ -89,12 +108,16 @@ describe("live query events runtime", () => {
   it("reconfigures book sync when the active case's book settings are saved", () => {
     const { eventTarget, configureBook } = setup()
 
-    eventTarget.dispatchEvent(new CustomEvent("quepid:case-book-updated", {
-      detail: { caseId: 7, bookId: 4, bookName: "Catalog", autoPopulateBookPairs: true }
-    }))
-    eventTarget.dispatchEvent(new CustomEvent("quepid:case-book-updated", {
-      detail: { caseId: 7, bookId: null, autoPopulateBookPairs: false }
-    }))
+    eventTarget.dispatchEvent(
+      new CustomEvent("quepid:case-book-updated", {
+        detail: { caseId: 7, bookId: 4, bookName: "Catalog", autoPopulateBookPairs: true }
+      })
+    )
+    eventTarget.dispatchEvent(
+      new CustomEvent("quepid:case-book-updated", {
+        detail: { caseId: 7, bookId: null, autoPopulateBookPairs: false }
+      })
+    )
 
     expect(configureBook).toHaveBeenNthCalledWith(1, { bookId: 4, autoPopulate: true })
     expect(configureBook).toHaveBeenNthCalledWith(2, { bookId: null, autoPopulate: false })
@@ -103,9 +126,11 @@ describe("live query events runtime", () => {
   it("ignores book settings saved for another case", () => {
     const { eventTarget, configureBook } = setup()
 
-    eventTarget.dispatchEvent(new CustomEvent("quepid:case-book-updated", {
-      detail: { caseId: 8, bookId: 4, autoPopulateBookPairs: true }
-    }))
+    eventTarget.dispatchEvent(
+      new CustomEvent("quepid:case-book-updated", {
+        detail: { caseId: 8, bookId: 4, autoPopulateBookPairs: true }
+      })
+    )
 
     expect(configureBook).not.toHaveBeenCalled()
   })
@@ -114,7 +139,9 @@ describe("live query events runtime", () => {
     const { runtime, eventTarget, reloadQueries } = setup()
 
     runtime.connect()
-    eventTarget.dispatchEvent(new CustomEvent("judgements:queries-need-reload", { detail: { caseId: 7 } }))
+    eventTarget.dispatchEvent(
+      new CustomEvent("judgements:queries-need-reload", { detail: { caseId: 7 } })
+    )
 
     expect(reloadQueries).toHaveBeenCalledOnce()
   })
@@ -125,8 +152,12 @@ describe("live query events runtime", () => {
     const failure = new Error("boom")
     reloadQueries.mockRejectedValueOnce(failure)
 
-    eventTarget.dispatchEvent(new CustomEvent("judgements:queries-need-reload", { detail: { caseId: 7 } }))
-    await vi.waitFor(() => expect(onError).toHaveBeenCalledWith("Could not reload queries", failure))
+    eventTarget.dispatchEvent(
+      new CustomEvent("judgements:queries-need-reload", { detail: { caseId: 7 } })
+    )
+    await vi.waitFor(() =>
+      expect(onError).toHaveBeenCalledWith("Could not reload queries", failure)
+    )
   })
 
   it("reports a failed scorer change without rescoring", async () => {
@@ -135,8 +166,12 @@ describe("live query events runtime", () => {
     const failure = new Error("nope")
     setScorer.mockRejectedValueOnce(failure)
 
-    eventTarget.dispatchEvent(new CustomEvent("pick-scorer:selected", { detail: { caseId: 7, scorer: { id: 3 } } }))
-    await vi.waitFor(() => expect(onError).toHaveBeenCalledWith("Could not apply the selected scorer", failure))
+    eventTarget.dispatchEvent(
+      new CustomEvent("pick-scorer:selected", { detail: { caseId: 7, scorer: { id: 3 } } })
+    )
+    await vi.waitFor(() =>
+      expect(onError).toHaveBeenCalledWith("Could not apply the selected scorer", failure)
+    )
     expect(scoreAll).not.toHaveBeenCalled()
   })
 
@@ -145,8 +180,15 @@ describe("live query events runtime", () => {
     const { eventTarget, reloadQueries } = setup()
     reloadQueries.mockRejectedValueOnce(new Error("boom"))
 
-    eventTarget.dispatchEvent(new CustomEvent("imports:queries-need-reload", { detail: { caseId: 7 } }))
-    await vi.waitFor(() => expect(error).toHaveBeenCalledWith("live-query-events: Could not reload queries", expect.any(Error)))
+    eventTarget.dispatchEvent(
+      new CustomEvent("imports:queries-need-reload", { detail: { caseId: 7 } })
+    )
+    await vi.waitFor(() =>
+      expect(error).toHaveBeenCalledWith(
+        "live-query-events: Could not reload queries",
+        expect.any(Error)
+      )
+    )
     error.mockRestore()
   })
 })

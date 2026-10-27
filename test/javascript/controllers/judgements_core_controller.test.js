@@ -71,7 +71,10 @@ async function responseText() {
 async function openWithBooks(controller, books, bookId = null) {
   apiFetch.mockImplementation(async (url) => ({
     ok: true,
-    text: async () => url === "/api/cases/42" ? JSON.stringify({ teams: [{ id: 1 }], book_id: bookId }) : bookCatalogHtml(books)
+    text: async () =>
+      url === "/api/cases/42"
+        ? JSON.stringify({ teams: [{ id: 1 }], book_id: bookId })
+        : bookCatalogHtml(books)
   }))
   await controller.openFor({ dataset: { judgementsCoreIdValue: "42" } })
 }
@@ -90,7 +93,9 @@ describe("JudgementsCoreController", () => {
     expect(row.dataset.action).toBe("click->judgements-core#selectBook")
     expect(row.querySelector("a").getAttribute("href")).toBe("books/2")
     expect(row.classList.contains("active")).toBe(true)
-    expect(controller.itemTargets[0].querySelector("em").textContent).toBe("None (disconnect from any book)")
+    expect(controller.itemTargets[0].querySelector("em").textContent).toBe(
+      "None (disconnect from any book)"
+    )
   })
 
   it("shows the selection hint only with available books and no active book", async () => {
@@ -137,14 +142,27 @@ describe("JudgementsCoreController", () => {
   it("highlights only the selected book target, including None", async () => {
     const controller = buildModalController()
     await openWithBooks(controller, [{ id: 8, name: "Book" }], 8)
-    expect(controller.itemTargets.map(item => item.classList.contains("active"))).toEqual([false, true])
+    expect(controller.itemTargets.map((item) => item.classList.contains("active"))).toEqual([
+      false,
+      true
+    ])
     controller.selectBook({ params: { bookId: "" } })
-    expect(controller.itemTargets.map(item => item.classList.contains("active"))).toEqual([true, false])
+    expect(controller.itemTargets.map((item) => item.classList.contains("active"))).toEqual([
+      true,
+      false
+    ])
   })
 
   it("points Judge Documents at the selected book, even one missing from the catalog", async () => {
     const controller = buildModalController()
-    await openWithBooks(controller, [{ id: 8, name: "Eight" }, { id: 9, name: "Nine" }], 8)
+    await openWithBooks(
+      controller,
+      [
+        { id: 8, name: "Eight" },
+        { id: 9, name: "Nine" }
+      ],
+      8
+    )
     expect(controller.judgeLinkTarget.getAttribute("href")).toBe("books/8/judge")
     expect(controller.judgeLinkTarget.classList.contains("d-none")).toBe(false)
     controller.selectBook({ params: { bookId: 9 } })
@@ -161,14 +179,21 @@ describe("JudgementsCoreController", () => {
     const openWithNewBookUrl = async (newBookUrl) => {
       apiFetch.mockImplementation(async (url) => ({
         ok: true,
-        text: async () => url === "/api/cases/42" ? JSON.stringify({ teams: [{ id: 1 }], book_id: null }) : bookCatalogHtml([], { newBookUrl })
+        text: async () =>
+          url === "/api/cases/42"
+            ? JSON.stringify({ teams: [{ id: 1 }], book_id: null })
+            : bookCatalogHtml([], { newBookUrl })
       }))
       await controller.openFor({ dataset: { judgementsCoreIdValue: "42" } })
     }
     await openWithNewBookUrl("books/new?scorer_id=7&origin_case_id=42")
     await openWithNewBookUrl("books/new?scorer_id=11&origin_case_id=42")
-    expect(controller.createBookLinkTarget.getAttribute("href")).toBe("books/new?scorer_id=11&origin_case_id=42")
-    expect(controller.createBookEmptyLinkTarget.getAttribute("href")).toBe("books/new?scorer_id=11&origin_case_id=42")
+    expect(controller.createBookLinkTarget.getAttribute("href")).toBe(
+      "books/new?scorer_id=11&origin_case_id=42"
+    )
+    expect(controller.createBookEmptyLinkTarget.getAttribute("href")).toBe(
+      "books/new?scorer_id=11&origin_case_id=42"
+    )
   })
 
   beforeEach(() => {
@@ -181,11 +206,12 @@ describe("JudgementsCoreController", () => {
   })
 
   it("shows the no-teams empty state when the case has no teams", async () => {
-    apiFetch.mockResolvedValueOnce({
-      text: responseText,
-      ok: true,
-      json: () => Promise.resolve({ teams: [], book_id: null, scorer_id: 7, queries_count: 0 })
-    })
+    apiFetch
+      .mockResolvedValueOnce({
+        text: responseText,
+        ok: true,
+        json: () => Promise.resolve({ teams: [], book_id: null, scorer_id: 7, queries_count: 0 })
+      })
       .mockResolvedValueOnce({ ok: true, text: async () => bookCatalogHtml() })
 
     const controller = buildModalController()
@@ -195,27 +221,40 @@ describe("JudgementsCoreController", () => {
     await controller.openFor(trigger)
 
     expect(controller.noTeamsTarget.classList.contains("d-none")).toBe(false)
-    expect(controller.createBookLinkTarget.href).toContain("books/new?scorer_id=7&origin_case_id=42")
+    expect(controller.createBookLinkTarget.href).toContain(
+      "books/new?scorer_id=7&origin_case_id=42"
+    )
   })
 
   it("mounts the consolidated owned/team catalog without additional team requests", async () => {
     apiFetch.mockImplementation(async (url) => ({
       ok: true,
-      text: async () => url === "/api/cases/42" ? JSON.stringify({ teams: [{ id: 1 }], book_id: null }) :
-        bookCatalogHtml([{ id: 7, name: "Owned" }, { id: 8, name: "Shared" }, { id: 9, name: "Team" }])
+      text: async () =>
+        url === "/api/cases/42"
+          ? JSON.stringify({ teams: [{ id: 1 }], book_id: null })
+          : bookCatalogHtml([
+              { id: 7, name: "Owned" },
+              { id: 8, name: "Shared" },
+              { id: 9, name: "Team" }
+            ])
     }))
     const controller = buildModalController()
     await controller.openFor({ dataset: { judgementsCoreIdValue: "42" } })
-    expect(controller.books.map(book => book.id)).toEqual([7, 8, 9])
+    expect(controller.books.map((book) => book.id)).toEqual([7, 8, 9])
     expect(controller.noTeamsTarget.classList.contains("d-none")).toBe(true)
-    expect(apiFetch.mock.calls.map(([url]) => url)).toEqual(["/api/cases/42", "/cases/42/modal_catalogs/books"])
+    expect(apiFetch.mock.calls.map(([url]) => url)).toEqual([
+      "/api/cases/42",
+      "/cases/42/modal_catalogs/books"
+    ])
   })
 
   it("offers owned books when the case has no team", async () => {
     apiFetch.mockImplementation(async (url) => ({
       ok: true,
-      text: async () => url === "/api/cases/42" ? JSON.stringify({ teams: [], book_id: null }) :
-        bookCatalogHtml([{ id: 7, name: "Owned" }])
+      text: async () =>
+        url === "/api/cases/42"
+          ? JSON.stringify({ teams: [], book_id: null })
+          : bookCatalogHtml([{ id: 7, name: "Owned" }])
     }))
     const controller = buildModalController()
     await controller.openFor({ dataset: { judgementsCoreIdValue: "42" } })
@@ -271,17 +310,18 @@ describe("JudgementsCoreController", () => {
   })
 
   it("prefers the API book_id over a stale trigger attribute", async () => {
-    apiFetch.mockResolvedValueOnce({
-      text: responseText,
-      ok: true,
-      json: () =>
-        Promise.resolve({
-          teams: [],
-          book_id: 7,
-          scorer_id: 1,
-          queries_count: 0
-        })
-    })
+    apiFetch
+      .mockResolvedValueOnce({
+        text: responseText,
+        ok: true,
+        json: () =>
+          Promise.resolve({
+            teams: [],
+            book_id: 7,
+            scorer_id: 1,
+            queries_count: 0
+          })
+      })
       .mockResolvedValueOnce({ ok: true, text: async () => bookCatalogHtml() })
 
     const controller = buildModalController()
@@ -330,7 +370,10 @@ describe("JudgementsCoreController", () => {
     await controller.manualPopulateBook({ preventDefault() {} })
     expect(controller.errorTarget.textContent).toBe("")
 
-    expect(apiFetch).toHaveBeenLastCalledWith("api/books/2/populate", expect.objectContaining({ method: "PUT" }))
+    expect(apiFetch).toHaveBeenLastCalledWith(
+      "api/books/2/populate",
+      expect.objectContaining({ method: "PUT" })
+    )
   })
 
   it("disables Cancel while a save is in flight, re-enables on completion", async () => {
@@ -380,16 +423,20 @@ describe("JudgementsCoreController", () => {
     const ok = (data = {}) => ({ text: responseText, ok: true, json: () => Promise.resolve(data) })
 
     function linkedController(state = {}) {
-      return Object.assign(buildModalController(), {
-        currentCaseId: "42",
-        activeBookId: 2,
-        savedBookId: 2,
-        autoPopulateBookPairs: true,
-        savedAutoPopulateBookPairs: true,
-        autoPopulateCaseJudgements: false,
-        savedAutoPopulateCaseJudgements: false,
-        queriesCount: 3
-      }, state)
+      return Object.assign(
+        buildModalController(),
+        {
+          currentCaseId: "42",
+          activeBookId: 2,
+          savedBookId: 2,
+          autoPopulateBookPairs: true,
+          savedAutoPopulateBookPairs: true,
+          autoPopulateCaseJudgements: false,
+          savedAutoPopulateCaseJudgements: false,
+          queriesCount: 3
+        },
+        state
+      )
     }
 
     it("does nothing when there are no unsaved changes", async () => {
@@ -409,9 +456,17 @@ describe("JudgementsCoreController", () => {
       const [url, init] = apiFetch.mock.calls[0]
       expect(url).toBe("/api/cases/42")
       expect(init.method).toBe("PUT")
-      expect(JSON.parse(init.body)).toEqual({ book_id: 2, auto_populate_book_pairs: true, auto_populate_case_judgements: true })
+      expect(JSON.parse(init.body)).toEqual({
+        book_id: 2,
+        auto_populate_book_pairs: true,
+        auto_populate_case_judgements: true
+      })
       expect(saved.mock.calls[0][0].detail).toEqual({
-        caseId: 42, bookId: 2, bookName: "Catalog", autoPopulateBookPairs: true, autoPopulateCaseJudgements: true
+        caseId: 42,
+        bookId: 2,
+        bookName: "Catalog",
+        autoPopulateBookPairs: true,
+        autoPopulateCaseJudgements: true
       })
       expect(controller.hasUnsavedChanges()).toBe(false)
       expect(coreFlash.show).toHaveBeenCalledWith("notice", "Settings saved.")
@@ -425,7 +480,9 @@ describe("JudgementsCoreController", () => {
       await controller.save({ preventDefault() {} })
 
       expect(JSON.parse(apiFetch.mock.calls[0][1].body)).toEqual({
-        book_id: null, auto_populate_book_pairs: false, auto_populate_case_judgements: false
+        book_id: null,
+        auto_populate_book_pairs: false,
+        auto_populate_case_judgements: false
       })
     })
 
@@ -433,18 +490,32 @@ describe("JudgementsCoreController", () => {
       apiFetch.mockResolvedValueOnce(ok()).mockResolvedValueOnce(ok())
       const reload = vi.fn()
       document.addEventListener("judgements:queries-need-reload", reload)
-      const controller = linkedController({ activeBookId: 5, savedBookId: 2, autoPopulateCaseJudgements: true })
+      const controller = linkedController({
+        activeBookId: 5,
+        savedBookId: 2,
+        autoPopulateCaseJudgements: true
+      })
 
       await controller.save({ preventDefault() {} })
 
-      expect(apiFetch.mock.calls[1][0]).toBe("/api/books/5/cases/42/refresh?create_missing_queries=false&process_in_background=false")
-      expect(coreFlash.show).toHaveBeenCalledWith("notice", "Settings saved. Ratings have been refreshed.")
+      expect(apiFetch.mock.calls[1][0]).toBe(
+        "/api/books/5/cases/42/refresh?create_missing_queries=false&process_in_background=false"
+      )
+      expect(coreFlash.show).toHaveBeenCalledWith(
+        "notice",
+        "Settings saved. Ratings have been refreshed."
+      )
       expect(reload).toHaveBeenCalledOnce()
       document.removeEventListener("judgements:queries-need-reload", reload)
     })
 
     it("shows the server's message when saving fails", async () => {
-      apiFetch.mockResolvedValueOnce({ text: responseText, ok: false, status: 422, json: () => Promise.resolve({ error: "Book not found" }) })
+      apiFetch.mockResolvedValueOnce({
+        text: responseText,
+        ok: false,
+        status: 422,
+        json: () => Promise.resolve({ error: "Book not found" })
+      })
       vi.spyOn(console, "error").mockImplementation(() => {})
       const controller = linkedController({ activeBookId: 9 })
 
@@ -458,18 +529,23 @@ describe("JudgementsCoreController", () => {
     it.each([
       ["manualRefreshRatings", "false", "Case ratings refreshed from book."],
       ["manualSyncQueries", "true", "Missing queries synced from book."]
-    ])("%s refreshes from the book (create missing queries: %s) and reloads the queries", async (action, createMissing, message) => {
-      apiFetch.mockResolvedValueOnce(ok())
-      const reload = vi.fn()
-      document.addEventListener("judgements:queries-need-reload", reload)
+    ])(
+      "%s refreshes from the book (create missing queries: %s) and reloads the queries",
+      async (action, createMissing, message) => {
+        apiFetch.mockResolvedValueOnce(ok())
+        const reload = vi.fn()
+        document.addEventListener("judgements:queries-need-reload", reload)
 
-      await linkedController()[action]({ preventDefault() {} })
+        await linkedController()[action]({ preventDefault() {} })
 
-      expect(apiFetch.mock.calls[0][0]).toBe(`/api/books/2/cases/42/refresh?create_missing_queries=${createMissing}&process_in_background=false`)
-      expect(coreFlash.show).toHaveBeenCalledWith("notice", message)
-      expect(reload.mock.calls[0][0].detail).toEqual({ caseId: 42 })
-      document.removeEventListener("judgements:queries-need-reload", reload)
-    })
+        expect(apiFetch.mock.calls[0][0]).toBe(
+          `/api/books/2/cases/42/refresh?create_missing_queries=${createMissing}&process_in_background=false`
+        )
+        expect(coreFlash.show).toHaveBeenCalledWith("notice", message)
+        expect(reload.mock.calls[0][0].detail).toEqual({ caseId: 42 })
+        document.removeEventListener("judgements:queries-need-reload", reload)
+      }
+    )
 
     it("refreshes a case with 50+ queries in the background and sends the user home with a notice", async () => {
       const originalHref = window.location.href
@@ -488,7 +564,9 @@ describe("JudgementsCoreController", () => {
         expect(coreFlash.show).toHaveBeenCalledWith("notice", background)
         expect(reload).not.toHaveBeenCalled()
         vi.advanceTimersByTime(500)
-        expect(window.location.href).toBe(`https://quepid.test/?notice=${encodeURIComponent(background)}`)
+        expect(window.location.href).toBe(
+          `https://quepid.test/?notice=${encodeURIComponent(background)}`
+        )
         document.removeEventListener("judgements:queries-need-reload", reload)
       } finally {
         vi.useRealTimers()
@@ -499,12 +577,21 @@ describe("JudgementsCoreController", () => {
 
     it("ignores a refresh result once the modal has moved on to another case", async () => {
       let resolveRefresh
-      apiFetch.mockReturnValueOnce(new Promise((resolve) => { resolveRefresh = resolve }))
+      apiFetch.mockReturnValueOnce(
+        new Promise((resolve) => {
+          resolveRefresh = resolve
+        })
+      )
       const controller = linkedController()
 
       const pending = controller.manualRefreshRatings({ preventDefault() {} })
       controller.currentCaseId = "43"
-      resolveRefresh({ text: responseText, ok: false, status: 500, json: () => Promise.resolve({ error: "stale" }) })
+      resolveRefresh({
+        text: responseText,
+        ok: false,
+        status: 500,
+        json: () => Promise.resolve({ error: "stale" })
+      })
       await pending
 
       expect(coreFlash.show).not.toHaveBeenCalled()
@@ -512,12 +599,19 @@ describe("JudgementsCoreController", () => {
     })
 
     it("reports a failed refresh and skips the action without a book", async () => {
-      apiFetch.mockResolvedValueOnce({ text: responseText, ok: false, status: 500, json: () => Promise.resolve({}) })
+      apiFetch.mockResolvedValueOnce({
+        text: responseText,
+        ok: false,
+        status: 500,
+        json: () => Promise.resolve({})
+      })
       vi.spyOn(console, "error").mockImplementation(() => {})
       const controller = linkedController()
 
       await controller.manualRefreshRatings({ preventDefault() {} })
-      expect(controller.errorTarget.textContent).toContain("An error (Refresh failed (500)) occurred")
+      expect(controller.errorTarget.textContent).toContain(
+        "An error (Refresh failed (500)) occurred"
+      )
 
       apiFetch.mockClear()
       await linkedController({ activeBookId: null }).manualSyncQueries({ preventDefault() {} })

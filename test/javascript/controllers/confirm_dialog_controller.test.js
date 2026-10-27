@@ -65,20 +65,24 @@ describe("ConfirmDialogController", () => {
     await expect(answer).resolves.toBe(false)
   })
 
-  it.each(["show", "hide"])("waits for an in-flight %s transition before disposing", phase => {
+  it.each(["show", "hide"])("waits for an in-flight %s transition before disposing", (phase) => {
     const controller = buildController()
     controller.ask(message)
     controller.transition({ type: `${phase}.bs.modal` })
     controller.disconnect()
     expect(modal.dispose).not.toHaveBeenCalled()
     document.body.appendChild(controller.element)
-    controller.element.dispatchEvent(new Event(phase === "show" ? "shown.bs.modal" : "hidden.bs.modal"))
+    controller.element.dispatchEvent(
+      new Event(phase === "show" ? "shown.bs.modal" : "hidden.bs.modal")
+    )
     expect(modal.dispose).toHaveBeenCalledOnce()
     expect(controller.element.isConnected).toBe(false)
   })
 
   describe("focus return", () => {
-    afterEach(() => { document.body.innerHTML = "" })
+    afterEach(() => {
+      document.body.innerHTML = ""
+    })
 
     function focusedButton() {
       const button = document.body.appendChild(document.createElement("button"))
@@ -122,11 +126,13 @@ describe("ConfirmDialogController", () => {
     const controller = buildController()
     controller.ask(message, "primary")
     controller.ask(message, style)
-    const classes = [...controller.acceptTarget.classList].filter(name => /^btn-(danger|primary)$/.test(name))
+    const classes = [...controller.acceptTarget.classList].filter((name) =>
+      /^btn-(danger|primary)$/.test(name)
+    )
     expect(classes).toEqual([expected])
   })
 
-  it.each([true, false])("falls back to native confirmation when accepted=%s", async accepted => {
+  it.each([true, false])("falls back to native confirmation when accepted=%s", async (accepted) => {
     getOrCreateBsModal.mockReturnValue(null)
     window.confirm.mockReturnValue(accepted)
     const controller = buildController()

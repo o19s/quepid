@@ -31,9 +31,9 @@ const TARGETS = {
 // The modal: every target present unless listed in `without`.
 function buildModal({ without = [] } = {}) {
   const controller = buildControllerFixture(ShareWidgetController, {
-    targets: Object.fromEntries(Object.entries(TARGETS).map(([name, make]) => [
-      name, without.includes(name) ? null : make()
-    ])),
+    targets: Object.fromEntries(
+      Object.entries(TARGETS).map(([name, make]) => [name, without.includes(name) ? null : make()])
+    ),
     overrides: {
       identifier: "share-widget"
     }
@@ -45,7 +45,8 @@ function buildModal({ without = [] } = {}) {
 // What ShareModalsController renders into the frame for a record shared with `teams`.
 function loadFrame(controller, teams) {
   const select = document.createElement("select")
-  select.innerHTML = '<option value="">Select a team...</option><option value="3">Relevance</option>'
+  select.innerHTML =
+    '<option value="">Select a team...</option><option value="3">Relevance</option>'
   const list = document.createElement("div")
   for (const team of teams) {
     const row = document.createElement("button")
@@ -136,8 +137,9 @@ describe("ShareEntityControllerBase", () => {
     controller.loadFailed(event)
 
     expect(event.preventDefault).toHaveBeenCalled()
-    expect(controller.frameTarget.querySelector("[role=alert]").textContent)
-      .toBe("Unable to load teams. Please try again.")
+    expect(controller.frameTarget.querySelector("[role=alert]").textContent).toBe(
+      "Unable to load teams. Please try again."
+    )
     expect(controller.frameTarget.querySelector("[role=status]")).toBe(null)
   })
 

@@ -8,7 +8,9 @@ import {
 
 describe("snapshot hydration", () => {
   it("maps the reserved snapshot id field", () => {
-    expect(mapFieldSpecToSolrFormat("title:title id:_id body:body")).toBe("title:title id:id body:body")
+    expect(mapFieldSpecToSolrFormat("title:title id:_id body:body")).toBe(
+      "title:title id:id body:body"
+    )
   })
 
   it("builds Solr lookup settings for static and unsupported engines", () => {
@@ -46,16 +48,18 @@ describe("snapshot hydration", () => {
 
   it("keeps normal lookup settings unchanged", () => {
     const settings = { searchEngine: "solr", fieldSpec: "id:id" }
-    expect(buildSnapshotLookupSettings({
-      settings,
-      supportsLookupById: () => true,
-      createFieldSpec: () => {
-        throw new Error("should not create a replacement field spec")
-      },
-      rootUrl: "",
-      caseNo: 1,
-      snapshotId: 2
-    })).toBe(settings)
+    expect(
+      buildSnapshotLookupSettings({
+        settings,
+        supportsLookupById: () => true,
+        createFieldSpec: () => {
+          throw new Error("should not create a replacement field spec")
+        },
+        rootUrl: "",
+        caseNo: 1,
+        snapshotId: 2
+      })
+    ).toBe(settings)
   })
 
   it("registers models and adds their document ids to the cache", () => {
@@ -141,8 +145,20 @@ describe("snapshot hydration", () => {
     it("returns blank or missing settings untouched", () => {
       const createFieldSpec = vi.fn()
       const blank = {}
-      expect(buildSnapshotLookupSettings({ settings: blank, supportsLookupById: () => false, createFieldSpec })).toBe(blank)
-      expect(buildSnapshotLookupSettings({ settings: undefined, supportsLookupById: () => false, createFieldSpec })).toBeUndefined()
+      expect(
+        buildSnapshotLookupSettings({
+          settings: blank,
+          supportsLookupById: () => false,
+          createFieldSpec
+        })
+      ).toBe(blank)
+      expect(
+        buildSnapshotLookupSettings({
+          settings: undefined,
+          supportsLookupById: () => false,
+          createFieldSpec
+        })
+      ).toBeUndefined()
       expect(createFieldSpec).not.toHaveBeenCalled()
     })
 

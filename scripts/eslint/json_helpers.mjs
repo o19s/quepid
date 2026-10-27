@@ -7,7 +7,8 @@ export default {
     type: "suggestion",
     schema: [],
     messages: {
-      method: "Don't pass `method` to {{helper}}; use the api/json helper named for the verb (getJson, postJson, putJson, patchJson, deleteJson)."
+      method:
+        "Don't pass `method` to {{helper}}; use the api/json helper named for the verb (getJson, postJson, putJson, patchJson, deleteJson)."
     }
   },
   create(context) {
@@ -18,7 +19,9 @@ export default {
         const options = index === undefined ? null : node.arguments[index]
         if (options?.type !== "ObjectExpression") return
         const method = options.properties.find(
-          (property) => property.type === "Property" && !property.computed &&
+          (property) =>
+            property.type === "Property" &&
+            !property.computed &&
             (property.key.name === "method" || property.key.value === "method")
         )
         if (method) context.report({ node: method, messageId: "method", data: { helper } })

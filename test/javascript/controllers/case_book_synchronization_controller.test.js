@@ -5,10 +5,20 @@ import { buildControllerFixture } from "../support/controller_fixture"
 describe("case book synchronization", () => {
   it("disables synchronization without losing choices and restores them on relinking", () => {
     const link = { checked: false }
-    const options = [{ name: "pairs", checked: true }, { name: "judgements", checked: false }]
-    const fallbacks = [{ name: "pairs", value: "0" }, { name: "judgements", value: "0" }]
+    const options = [
+      { name: "pairs", checked: true },
+      { name: "judgements", checked: false }
+    ]
+    const fallbacks = [
+      { name: "pairs", value: "0" },
+      { name: "judgements", value: "0" }
+    ]
     const controller = buildControllerFixture(CaseBookSynchronizationController, {
-      targets: { linkTheCase: link, synchronizationOption: options, synchronizationFallback: fallbacks }
+      targets: {
+        linkTheCase: link,
+        synchronizationOption: options,
+        synchronizationFallback: fallbacks
+      }
     })
     controller.connect()
     expect(options.map((option) => option.disabled)).toEqual([true, true])
@@ -37,7 +47,11 @@ describe("case book synchronization", () => {
     const options = [...form.querySelectorAll('input[type="checkbox"]')].slice(1)
     const fallbacks = [...form.querySelectorAll('input[type="hidden"]')]
     const controller = buildControllerFixture(CaseBookSynchronizationController, {
-      targets: { linkTheCase: link, synchronizationOption: options, synchronizationFallback: fallbacks }
+      targets: {
+        linkTheCase: link,
+        synchronizationOption: options,
+        synchronizationFallback: fallbacks
+      }
     })
     controller.connect()
     link.checked = false

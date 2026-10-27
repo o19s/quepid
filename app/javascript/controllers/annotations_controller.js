@@ -23,7 +23,8 @@ export default class extends Controller {
     this.onScoreChange = () => this.updateCreateState()
     this.onEditSubmit = (event) => this.saveEdit(event)
     this.scoringStore = getCoreStores().scoring
-    this.unsubscribeScoringStore = this.scoringStore && subscribeToStore(this.scoringStore, { change: this.onScoreChange })
+    this.unsubscribeScoringStore =
+      this.scoringStore && subscribeToStore(this.scoringStore, { change: this.onScoreChange })
     this.updateCreateState()
   }
 
@@ -38,7 +39,10 @@ export default class extends Controller {
     const score = this.scorePayload()
 
     if (!score) {
-      coreFlash.show("error", "Can't create a new annotation until searches have been run! Please rerun your searches.")
+      coreFlash.show(
+        "error",
+        "Can't create a new annotation until searches have been run! Please rerun your searches."
+      )
       return
     }
 
@@ -87,7 +91,9 @@ export default class extends Controller {
     const editSave = this.editSaveElement || this.editSaveTarget
     editSave.disabled = true
     try {
-      await this.stream(this.annotationUrl(annotationId), "PUT", { annotation: { message: editMessage.value } })
+      await this.stream(this.annotationUrl(annotationId), "PUT", {
+        annotation: { message: editMessage.value }
+      })
       this.editModalInstance?.hide()
       this.notifyScoreConsumers()
       coreFlash.show("notice", "Annotation updated successfully!")
@@ -139,10 +145,12 @@ export default class extends Controller {
   }
 
   notifyScoreConsumers() {
-    document.dispatchEvent(new CustomEvent(CORE_EVENTS.ANNOTATIONS_CHANGED, {
-      bubbles: true,
-      detail: { caseId: this.caseIdValue }
-    }))
+    document.dispatchEvent(
+      new CustomEvent(CORE_EVENTS.ANNOTATIONS_CHANGED, {
+        bubbles: true,
+        detail: { caseId: this.caseIdValue }
+      })
+    )
   }
 
   rows() {
@@ -164,7 +172,11 @@ export default class extends Controller {
       options.body = JSON.stringify(body)
     }
     const response = await apiFetch(url, options)
-    if (!response.ok || response.redirected || !response.headers.get("Content-Type")?.startsWith(STREAM_TYPE)) {
+    if (
+      !response.ok ||
+      response.redirected ||
+      !response.headers.get("Content-Type")?.startsWith(STREAM_TYPE)
+    ) {
       throw new Error("Unable to save annotation")
     }
     Turbo.renderStreamMessage(await response.text())

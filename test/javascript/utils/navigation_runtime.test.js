@@ -5,11 +5,15 @@ describe("navigation runtime", () => {
   it("does not carry the tour flag when it is false", () => {
     const assign = vi.fn()
     const runtime = createNavigationRuntime({
-      location: new URL("https://example.test/quepid/case/1/try/1?sort=score&reverse=false&showWizard=true"),
+      location: new URL(
+        "https://example.test/quepid/case/1/try/1?sort=score&reverse=false&showWizard=true"
+      ),
       window: { location: { assign } }
     })
     runtime.navigateTo({ caseNo: 1, tryNo: 1, startTour: false })
-    expect(assign).toHaveBeenCalledWith("https://example.test/quepid/case/1/try/1?sort=score&reverse=false")
+    expect(assign).toHaveBeenCalledWith(
+      "https://example.test/quepid/case/1/try/1?sort=score&reverse=false"
+    )
   })
   it("carries a first-time tour request without reopening the wizard", () => {
     const assign = vi.fn()
@@ -18,12 +22,17 @@ describe("navigation runtime", () => {
       window: { location: { assign } }
     })
     runtime.navigateTo({ caseNo: 1, tryNo: 1, startTour: true })
-    expect(assign).toHaveBeenCalledWith("https://example.test/quepid/case/1/try/1?sort=score&startTour=true")
+    expect(assign).toHaveBeenCalledWith(
+      "https://example.test/quepid/case/1/try/1?sort=score&startTour=true"
+    )
   })
   it("tracks the current case and try and preserves query sorting", () => {
     const assign = vi.fn()
     const runtime = createNavigationRuntime({
-      location: { href: "https://quepid.example.test/case/5/try/1?sort=score&reverse=true", search: "?sort=score&reverse=true" },
+      location: {
+        href: "https://quepid.example.test/case/5/try/1?sort=score&reverse=true",
+        search: "?sort=score&reverse=true"
+      },
       window: { location: { assign } }
     })
 
@@ -32,7 +41,9 @@ describe("navigation runtime", () => {
 
     expect(runtime.getCaseNo()).toBe(5)
     expect(runtime.getTryNo()).toBe(1)
-    expect(assign).toHaveBeenCalledWith("https://quepid.example.test/case/5/try/2?sort=score&reverse=true")
+    expect(assign).toHaveBeenCalledWith(
+      "https://quepid.example.test/case/5/try/2?sort=score&reverse=true"
+    )
   })
 
   it("starts at try 1 when navigating to a different case", () => {
@@ -50,10 +61,14 @@ describe("navigation runtime", () => {
   it("builds the reload link that swaps Quepid to the search engine's protocol", () => {
     const at = (href) => createNavigationRuntime({ location: { href }, window: {} })
 
-    expect(at("http://localhost:3000/case/5/try/1?sort=name").swapQuepidUrlTLS())
-      .toEqual(["https://localhost/case/5/try/1?protocolToSwitchTo=https", "https"])
-    expect(at("https://quepid.example.test/case/5/try/1").swapQuepidUrlTLS())
-      .toEqual(["http://quepid.example.test/case/5/try/1?protocolToSwitchTo=http", "http"])
+    expect(at("http://localhost:3000/case/5/try/1?sort=name").swapQuepidUrlTLS()).toEqual([
+      "https://localhost/case/5/try/1?protocolToSwitchTo=https",
+      "https"
+    ])
+    expect(at("https://quepid.example.test/case/5/try/1").swapQuepidUrlTLS()).toEqual([
+      "http://quepid.example.test/case/5/try/1?protocolToSwitchTo=http",
+      "http"
+    ])
     expect(at("https://quepid.example.test/case/5").getQuepidProtocol()).toBe("http")
     expect(at("http://quepid.example.test/case/5").getQuepidProtocol()).toBe("https")
 
@@ -61,7 +76,9 @@ describe("navigation runtime", () => {
     expect(runtime.appendQueryParams("/a", "x=1")).toBe("/a?x=1")
     expect(runtime.appendQueryParams("/a?y=2", "x=1")).toBe("/a?y=2&x=1")
     expect(runtime.needToRedirectQuepidProtocol("")).toBe(false)
-    expect(runtime.createSearchEndpointLink(7)).toBe("https://quepid.example.test/search_endpoints/7")
+    expect(runtime.createSearchEndpointLink(7)).toBe(
+      "https://quepid.example.test/search_endpoints/7"
+    )
   })
 
   it("keeps protocol and proxy URL behavior framework-free", () => {
@@ -72,7 +89,9 @@ describe("navigation runtime", () => {
 
     expect(runtime.getQuepidRootUrl()).toBe("https://quepid.example.test")
     expect(runtime.needToRedirectQuepidProtocol("http://search.example.test/select")).toBe(true)
-    expect(runtime.getQuepidProxyUrl(7)).toBe("https://quepid.example.test/proxy/fetch?search_endpoint_id=7&url=")
+    expect(runtime.getQuepidProxyUrl(7)).toBe(
+      "https://quepid.example.test/proxy/fetch?search_endpoint_id=7&url="
+    )
   })
 })
 
@@ -91,7 +110,9 @@ describe("navigation runtime protocol and url helpers", () => {
   })
 
   it("finds the root url whether or not the location ends in a slash", () => {
-    expect(runtimeAt("https://q.test/sub/case/1/try/2", "https:").getQuepidRootUrl()).toBe("https://q.test/sub")
+    expect(runtimeAt("https://q.test/sub/case/1/try/2", "https:").getQuepidRootUrl()).toBe(
+      "https://q.test/sub"
+    )
     expect(runtimeAt("https://q.test/case/", "https:").getQuepidRootUrl()).toBe("https://q.test")
     expect(runtimeAt("https://q.test", "https:").getQuepidRootUrl()).toBe("https://q.test")
   })

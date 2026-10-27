@@ -7,7 +7,18 @@ import { isImageUrl, queryStateClass } from "utils/query_state"
  * intent so the row can be migrated incrementally.
  */
 export default class extends Controller {
-  static targets = ["query", "text", "image", "resultCount", "resultLabel", "querqy", "header", "toggle", "expanded", "diffScores"]
+  static targets = [
+    "query",
+    "text",
+    "image",
+    "resultCount",
+    "resultLabel",
+    "querqy",
+    "header",
+    "toggle",
+    "expanded",
+    "diffScores"
+  ]
   static values = {
     queryId: Number,
     rank: Number,
@@ -69,7 +80,10 @@ export default class extends Controller {
     this.element.id = `query-${this.queryTextValue}`
     this.element.setAttribute("rank", String(this.rankValue))
     if (this.hasQueryTarget) {
-      this.queryTarget.setAttribute("data-bs-tooltip-title-value", `Info Need: ${this.informationNeedValue}`)
+      this.queryTarget.setAttribute(
+        "data-bs-tooltip-title-value",
+        `Info Need: ${this.informationNeedValue}`
+      )
     }
     if (this.hasTextTarget) this.textTarget.textContent = `${this.queryTextValue}\u00a0`
     const imageUrl = isImageUrl(this.queryTextValue)
@@ -80,13 +94,18 @@ export default class extends Controller {
     }
     if (this.hasTextTarget) this.textTarget.classList.toggle("d-none", imageUrl)
     if (this.hasResultCountTarget) {
-      this.resultCountTarget.setAttribute("data-count-up-number-value", String(this.numFoundValue || 0))
+      this.resultCountTarget.setAttribute(
+        "data-count-up-number-value",
+        String(this.numFoundValue || 0)
+      )
     }
     if (this.hasResultLabelTarget) {
       this.resultLabelTarget.textContent = this.numFoundValue === 1 ? "Result" : "Results"
     }
-    if (this.hasQuerqyTarget) this.querqyTarget.classList.toggle("d-none", !this.querqyTriggeredValue)
-    if (this.hasHeaderTarget) this.headerTarget.classList.toggle("diff-query-display", this.diffValue)
+    if (this.hasQuerqyTarget)
+      this.querqyTarget.classList.toggle("d-none", !this.querqyTriggeredValue)
+    if (this.hasHeaderTarget)
+      this.headerTarget.classList.toggle("diff-query-display", this.diffValue)
     if (this.hasToggleTarget) {
       this.toggleTarget.classList.toggle("bi-caret-up-fill", this.toggledValue)
       this.toggleTarget.classList.toggle("bi-caret-down-fill", !this.toggledValue)

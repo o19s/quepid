@@ -200,7 +200,9 @@ export default class extends CoreModalControllerBase {
     const token = Symbol()
     this.catalogToken = token
     const openToken = this.openToken
-    const current = () => token === this.catalogToken && openToken === this.openToken &&
+    const current = () =>
+      token === this.catalogToken &&
+      openToken === this.openToken &&
       isSameId(caseId, this.currentCaseId)
     this.setLoading(true)
     try {
@@ -241,13 +243,15 @@ export default class extends CoreModalControllerBase {
       [this.shareableListTarget, shareable, false],
       [this.sharedListTarget, this.sharedRows, true]
     ]) {
-      target.replaceChildren(...rows.map((row) => {
-        const copy = row.cloneNode(true)
-        copy.classList.remove("active")
-        copy.classList.toggle("list-group-item-success", shared)
-        copy.dataset.action = `click->share-case-core#${shared ? "selectSharedTeam" : "selectShareTeam"}`
-        return copy
-      }))
+      target.replaceChildren(
+        ...rows.map((row) => {
+          const copy = row.cloneNode(true)
+          copy.classList.remove("active")
+          copy.classList.toggle("list-group-item-success", shared)
+          copy.dataset.action = `click->share-case-core#${shared ? "selectSharedTeam" : "selectShareTeam"}`
+          return copy
+        })
+      )
     }
     this.refreshSections()
     this.updateUnshareFooter()
@@ -257,11 +261,8 @@ export default class extends CoreModalControllerBase {
     event.preventDefault()
 
     const teamId =
-      this.selectedShareTeamId ||
-      (this.hasTeamIdTarget ? this.teamIdTarget.value : null)
-    const caseId =
-      this.currentCaseId ||
-      (this.hasCaseIdTarget ? this.caseIdTarget.value : null)
+      this.selectedShareTeamId || (this.hasTeamIdTarget ? this.teamIdTarget.value : null)
+    const caseId = this.currentCaseId || (this.hasCaseIdTarget ? this.caseIdTarget.value : null)
     if (!teamId || !caseId) return
 
     const submittedRow = this.shareableListTarget.querySelector(`[data-team-id="${teamId}"]`)
@@ -275,9 +276,12 @@ export default class extends CoreModalControllerBase {
       await postJson(url, { id: Number(caseId) })
 
       const row = this.teamRows.find((item) => isSameId(item.dataset.teamId, teamId))
-      const team = row ? this.teamFor(row) : {
-        id: Number(teamId), name: selectedName || `Team ${teamId}`
-      }
+      const team = row
+        ? this.teamFor(row)
+        : {
+            id: Number(teamId),
+            name: selectedName || `Team ${teamId}`
+          }
       if (openToken !== this.openToken) return this.finishLateMutation("added", caseId, team)
       // Preserve append order without duplicating membership from a fresh catalog.
       const sharedRow = row || submittedRow?.cloneNode(true)
@@ -305,8 +309,7 @@ export default class extends CoreModalControllerBase {
       this.selectedSharedTeamId ||
       (this.hasUnshareTeamIdTarget ? this.unshareTeamIdTarget.value : null)
     const caseId =
-      this.currentCaseId ||
-      (this.hasUnshareCaseIdTarget ? this.unshareCaseIdTarget.value : null)
+      this.currentCaseId || (this.hasUnshareCaseIdTarget ? this.unshareCaseIdTarget.value : null)
     if (!teamId || !caseId) return
 
     const openToken = this.openToken
@@ -321,9 +324,12 @@ export default class extends CoreModalControllerBase {
       await deleteJson(url)
 
       const row = this.sharedRows.find((item) => isSameId(item.dataset.teamId, teamId))
-      const team = row ? this.teamFor(row) : {
-        id: Number(teamId), name: selectedName || `Team ${teamId}`
-      }
+      const team = row
+        ? this.teamFor(row)
+        : {
+            id: Number(teamId),
+            name: selectedName || `Team ${teamId}`
+          }
       if (openToken !== this.openToken) return this.finishLateMutation("removed", caseId, team)
       this.sharedRows = this.sharedRows.filter((item) => !isSameId(item.dataset.teamId, teamId))
       this.clearSharedSelection()

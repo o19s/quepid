@@ -12,7 +12,9 @@ export default class extends Controller {
     this.synchronizationOptionTargets.forEach((option) => {
       option.disabled = !enabled
       // Disabled checkboxes submit only their hidden fallback; retain their current choices.
-      const fallback = this.synchronizationFallbackTargets.find((field) => field.name === option.name)
+      const fallback = this.synchronizationFallbackTargets.find(
+        (field) => field.name === option.name
+      )
       fallback.value = !enabled && option.checked ? "1" : "0"
     })
   }

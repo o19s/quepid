@@ -2,7 +2,10 @@ import { buildControllerFixture } from "../support/controller_fixture"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import FlashController from "controllers/flash_controller"
 
-function buildController({ channel = "main", duration = FlashController.values.duration.default } = {}) {
+function buildController({
+  channel = "main",
+  duration = FlashController.values.duration.default
+} = {}) {
   const controller = buildControllerFixture(FlashController, {
     element: document.createElement("div"),
     targets: {
@@ -113,7 +116,12 @@ describe("FlashController", () => {
     const controller = buildController({ channel: "search-error" })
     disconnect = connect(controller)
 
-    show(controller, { type: "error", message: "swap to <code>https</code>", target: "search-error", html: true })
+    show(controller, {
+      type: "error",
+      message: "swap to <code>https</code>",
+      target: "search-error",
+      html: true
+    })
 
     expect(controller.messageTarget.innerHTML).toBe("swap to <code>https</code>")
     expect(controller.messageTarget.querySelector("code").textContent).toBe("https")
@@ -150,10 +158,10 @@ describe("FlashController", () => {
     const controller = buildController({ channel: "search-error" })
     disconnect = connect(controller)
 
-    show(controller, { type: "error", message: "bad <a href=\"x\">link</a>", target: "search-error" })
+    show(controller, { type: "error", message: 'bad <a href="x">link</a>', target: "search-error" })
 
     expect(controller.messageTarget.querySelector("a")).toBeNull()
-    expect(controller.messageTarget.textContent).toBe("bad <a href=\"x\">link</a>")
+    expect(controller.messageTarget.textContent).toBe('bad <a href="x">link</a>')
   })
 
   it("hides on a flash:hide event for its channel", () => {

@@ -46,29 +46,6 @@
       "note": "Unresolved dynamic template selection from file_format; retained baseline pending the ratings-export template allowlist in docs/todo/todo.md. Preserve supported formats, casing, defaults and snapshot output when fixing."
     },
     {
-      "warning_type": "Dynamic Render Path",
-      "warning_code": 15,
-      "fingerprint": "c909a488adcbe98fe011a6b88fd141093bce2bd00dd40661ac551523118fdb27",
-      "check_name": "Render",
-      "message": "Render path contains parameter value",
-      "file": "app/controllers/api/v1/export/ratings_controller.rb",
-      "line": 29,
-      "link": "https://brakemanscanner.org/docs/warning_types/dynamic_render_path/",
-      "code": "render(action => (\"show\" or \"show_#{params[:file_format].downcase}\"), { :formats => :txt })",
-      "render_path": null,
-      "location": {
-        "type": "method",
-        "class": "Api::V1::Export::RatingsController",
-        "method": "show"
-      },
-      "user_input": "params[:file_format].downcase",
-      "confidence": "High",
-      "cwe_id": [
-        22
-      ],
-      "note": "Unresolved dynamic template selection from file_format; retained baseline pending the ratings-export template allowlist in docs/todo/todo.md. Preserve supported formats, casing, defaults and snapshot output when fixing."
-    },
-    {
       "warning_type": "Mass Assignment",
       "warning_code": 70,
       "fingerprint": "bd2436d4efee8dbec73ea4bce8313cb9e809ec970336f3c3e31522813535b70e",
@@ -297,50 +274,6 @@
         470
       ],
       "note": "LlmProvider.find resolves a key in the code-defined provider registry; adapter class names and the fallback are repository-controlled. A request-supplied provider key cannot supply an arbitrary constant name."
-    },
-    {
-      "warning_type": "Cross-Site Scripting",
-      "warning_code": 2,
-      "fingerprint": "525155ce709e79c19f67fe428348f0431d94ccdec070cac1d0bfb94f064567b8",
-      "check_name": "CrossSiteScripting",
-      "message": "Unescaped model attribute",
-      "file": "app/views/layouts/_header.html.erb",
-      "line": 33,
-      "link": "https://brakemanscanner.org/docs/warning_types/cross_site_scripting",
-      "code": "Announcement.find(params.expect(:id)).text",
-      "render_path": [
-        {
-          "type": "controller",
-          "class": "Admin::AnnouncementsController",
-          "method": "edit",
-          "line": 23,
-          "file": "app/controllers/admin/announcements_controller.rb",
-          "rendered": {
-            "name": "layouts/application",
-            "file": "app/views/layouts/application.html.erb"
-          }
-        },
-        {
-          "type": "template",
-          "name": "layouts/application",
-          "line": 96,
-          "file": "app/views/layouts/application.html.erb",
-          "rendered": {
-            "name": "layouts/_header",
-            "file": "app/views/layouts/_header.html.erb"
-          }
-        }
-      ],
-      "location": {
-        "type": "template",
-        "template": "layouts/_header"
-      },
-      "user_input": null,
-      "confidence": "High",
-      "cwe_id": [
-        79
-      ],
-      "note": "Unresolved administrator-authored announcement HTML rendered with html_safe; retained baseline pending a consistent HTML allowlist for both announcement displays in docs/todo/todo.md. Administrator-only editing does not eliminate stored-script risk."
     },
     {
       "warning_type": "Dangerous Eval",

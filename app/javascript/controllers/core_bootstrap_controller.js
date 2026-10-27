@@ -36,28 +36,24 @@ export default class extends Controller {
       const { user, case: caseCapability, settings, navigation } = this.capabilities.core
       const { docCache } = this.capabilities
       const comparisonStore = stores.diff
-      const caseNo = this.caseNoValue || 0
+      const caseNo = this.caseNoValue
       let tryNo = Number.isFinite(this.tryNoValue) ? this.tryNoValue : Number.NaN
 
       user.initialize(this.initialValue.user)
       const initialCaseNo = navigation.currentCaseNo()
 
       const caseChanged = () => !isSameId(initialCaseNo, caseNo)
-      const getSearchEngine = selectedTryNo => {
+      const getSearchEngine = (selectedTryNo) => {
         const currentSettings = settings.editable()
         const aTry = currentSettings?.getTry?.(selectedTryNo)
         return aTry?.searchUrl || null
       }
-      const searchEngineChanged = () => getSearchEngine(navigation.currentTryNo()) !== getSearchEngine(tryNo)
+      const searchEngineChanged = () =>
+        getSearchEngine(navigation.currentTryNo()) !== getSearchEngine(tryNo)
 
       if (caseChanged()) runtime.queryCapabilities.resetQueryState()
 
       navigation.complete({ caseNo, tryNo })
-
-      if (caseNo === 0) {
-        coreFlash.show("error", "You don't have any Cases created in Quepid. Click 'Create a Case' from the Relevancy Cases dropdown to get started.")
-        return this.fail(new Error("No case selected"))
-      }
 
       runtime.queryCapabilities.resetSearchPromise()
       if (!isSameId(this.initialValue.case?.case_id, caseNo)) {
@@ -69,7 +65,10 @@ export default class extends Controller {
       settings.setCurrentTry(tryNo)
 
       if (!settings.isTrySelected()) throw new Error(`try number ${tryNo} not existing`)
-      if (settings.editable().proxyRequests !== true && navigation.needToRedirectQuepidProtocol(settings.editable().searchUrl)) {
+      if (
+        settings.editable().proxyRequests !== true &&
+        navigation.needToRedirectQuepidProtocol(settings.editable().searchUrl)
+      ) {
         const currentSettings = settings.editable()
         const message = `You have specified a search engine url that is on a different protocol ( <code>${navigation.getQuepidProtocol()}</code> ) than Quepid is running on. Please either <a href="${navigation.createSearchEndpointLink(currentSettings.searchEndpointId)}/edit" target="_self">swap to the proxied connection</a>, or make sure search endpoint is on the same HTTP protocol.`
         throw new Error(`Blocked Request: mixed-content. ${message}`)
@@ -94,7 +93,7 @@ export default class extends Controller {
 
       runtime.queryCommands.searchAll().then(
         () => coreFlash.show("notice", "All queries finished successfully!"),
-        error => {
+        (error) => {
           coreFlash.show("error", "Some queries failed to resolve!")
           coreFlash.show("error", flashErrorMessage(error, String(error)), "search-error")
         }
@@ -116,11 +115,19 @@ export default class extends Controller {
   handleBootstrapError(error) {
     const message = error?.message || String(error)
     if (message.startsWith("Blocked Request")) {
-        coreFlash.show("error", message, "search-error", { html: true })
+      coreFlash.show("error", message, "search-error", { html: true })
     } else if (message.startsWith("try number")) {
-        coreFlash.show("error", `Could not load case ${this.caseNoValue} due to ${message}`, "search-error")
-    } else if (message !== "No case selected") {
-        coreFlash.show("error", `Could not load the case ${this.caseNoValue} due to: ${message}`, "search-error")
+      coreFlash.show(
+        "error",
+        `Could not load case ${this.caseNoValue} due to ${message}`,
+        "search-error"
+      )
+    } else {
+      coreFlash.show(
+        "error",
+        `Could not load the case ${this.caseNoValue} due to: ${message}`,
+        "search-error"
+      )
     }
   }
 
@@ -140,6 +147,8 @@ export default class extends Controller {
   }
 
   fail(error) {
-    document.dispatchEvent(new CustomEvent(CORE_EVENTS.CORE_BOOTSTRAP_FAILED, { detail: { error } }))
+    document.dispatchEvent(
+      new CustomEvent(CORE_EVENTS.CORE_BOOTSTRAP_FAILED, { detail: { error } })
+    )
   }
 }

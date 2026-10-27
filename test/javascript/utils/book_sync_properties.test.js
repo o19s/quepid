@@ -71,13 +71,17 @@ describe("buildQueryDocPairsPayload properties", () => {
     const positioned = fc.record({
       queryText: text,
       docs: fc.array(doc, { minLength: 1, maxLength: 6 }),
-      docPositions: fc.array(fc.option(fc.integer({ min: 1, max: 500 }), { nil: undefined }), { maxLength: 6 })
+      docPositions: fc.array(fc.option(fc.integer({ min: 1, max: 500 }), { nil: undefined }), {
+        maxLength: 6
+      })
     })
 
     fc.assert(
       fc.property(fc.array(positioned, { maxLength: 4 }), (input) => {
         const positions = buildQueryDocPairsPayload(input).map((pair) => pair.position)
-        const expected = input.flatMap((q) => q.docs.map((_, index) => q.docPositions[index] ?? index + 1))
+        const expected = input.flatMap((q) =>
+          q.docs.map((_, index) => q.docPositions[index] ?? index + 1)
+        )
 
         expect(positions).toEqual(expected)
       })
@@ -107,8 +111,12 @@ describe("buildQueryDocPairsPayload properties", () => {
 
         payload.forEach((pair, index) => {
           const d = docs[index]
-          expect(pair.document_fields.thumb).toBe(expectedMedia(d.hasThumb, d.thumb, d.thumb_options))
-          expect(pair.document_fields.image).toBe(expectedMedia(d.hasImage, d.image, d.image_options))
+          expect(pair.document_fields.thumb).toBe(
+            expectedMedia(d.hasThumb, d.thumb, d.thumb_options)
+          )
+          expect(pair.document_fields.image).toBe(
+            expectedMedia(d.hasImage, d.image, d.image_options)
+          )
         })
       })
     )

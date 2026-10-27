@@ -222,6 +222,22 @@ module Api
           assert_equal(acase.queries.map(&:id), queries.map { |query| query['query_id'] })
           assert(queries.none? { |query| query.key?('arranged_at') || query.key?('arranged_next') })
         end
+
+        test 'includes ratings, with the newest rating as modified_at' do
+          query = acase.queries.first
+          later = query.updated_at + 1.day
+          query.ratings.create!(doc_id: 'doc-a', rating: 3, updated_at: later)
+          query.ratings.create!(doc_id: 'doc-b', rating: nil)
+
+          get :index, params: { case_id: acase.id }
+
+          assert_response :ok
+
+          json = response.parsed_body['queries'].find { |q| q['query_id'] == query.id }
+
+          assert_equal({ 'doc-a' => 3.0, 'doc-b' => nil }, json['ratings'])
+          assert_equal later.to_i, Time.zone.parse(json['modified_at']).to_i
+        end
       end
 
       describe 'Deletes query' do

@@ -89,7 +89,9 @@ describe("WizardLauncherController", () => {
     vi.useFakeTimers()
     try {
       const manual = buildController({ auto: false })
-      const openAutomatically = vi.spyOn(WizardLauncherController.prototype, "openAutomatically").mockImplementation(() => {})
+      const openAutomatically = vi
+        .spyOn(WizardLauncherController.prototype, "openAutomatically")
+        .mockImplementation(() => {})
       manual.connect()
       vi.runAllTimers()
       expect(openAutomatically).not.toHaveBeenCalled()

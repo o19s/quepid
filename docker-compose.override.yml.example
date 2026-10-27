@@ -10,8 +10,8 @@
 # Vendor CSS for the core layout is refreshed separately via:
 #   bin/docker r yarn build:css
 #
-# splainer-search is consumed as plain ESM - Quepid's adapter imports
-# 'splainer-search/wired.js' directly (app/javascript/splainer_search_adapter.js), which in
+# splainer-search is consumed as plain ESM - Quepid imports
+# 'splainer-search/wired.js' directly (app/javascript/utils/splainer_search_runtime.js), which in
 # turn imports from splainer-search's factories/, services/, and values/ directories via
 # relative paths.
 

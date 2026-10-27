@@ -15,7 +15,7 @@ describe("downloadBlob", () => {
 
   it("clicks a temporary anchor pointing at the blob, then cleans up", () => {
     const clickSpy = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {})
-    const blob = new Blob([ "a,b,c" ], { type: "text/csv" })
+    const blob = new Blob(["a,b,c"], { type: "text/csv" })
 
     downloadBlob(blob, "case_general.csv")
 
@@ -27,7 +27,7 @@ describe("downloadBlob", () => {
 
   it("defers revoking the object URL instead of doing it in the same tick as click()", () => {
     vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {})
-    const blob = new Blob([ "a,b,c" ], { type: "text/csv" })
+    const blob = new Blob(["a,b,c"], { type: "text/csv" })
 
     downloadBlob(blob, "case_general.csv")
     expect(URL.revokeObjectURL).not.toHaveBeenCalled()

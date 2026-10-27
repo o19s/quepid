@@ -22,11 +22,11 @@ module ApplicationHelper
     { data: {
       controller:                          'snapshot-bridge core-bootstrap query-command-bridge',
       core_bootstrap_case_toolbar_outlet:  '#case-actions',
-      core_bootstrap_case_no_value:        kase&.id || 0,
+      core_bootstrap_case_no_value:        kase.id,
       # String.new drops html_safe so the JSON is attribute-escaped.
       core_bootstrap_initial_value:        String.new(render(partial: 'core/bootstrap', formats: [ :json ],
                                                              locals: { kase: kase })),
-      snapshot_bridge_snapshots_url_value: kase ? api_case_snapshots_path(kase) : '',
+      snapshot_bridge_snapshots_url_value: api_case_snapshots_path(kase),
       # Preserve an explicitly requested missing try so core-bootstrap can report it.
       core_bootstrap_try_no_value:         params[:try_number].presence || try&.try_number || '',
       quepid_root_url:                     quepid_root_url,

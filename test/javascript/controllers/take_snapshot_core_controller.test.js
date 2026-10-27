@@ -41,7 +41,9 @@ describe("TakeSnapshotCoreController", () => {
   })
 
   it("names the engine from the server's engine labels, preferring a mapper engine's own name", () => {
-    const controller = buildModalController({ engineLabelsValue: { vectara: "Vectara", searchapi: "Search API" } })
+    const controller = buildModalController({
+      engineLabelsValue: { vectara: "Vectara", searchapi: "Search API" }
+    })
     const trigger = document.createElement("a")
     trigger.dataset.takeSnapshotCoreSearchEngineValue = "vectara"
 
@@ -100,7 +102,11 @@ describe("TakeSnapshotCoreController", () => {
     controller.openFor(trigger)
 
     let finish
-    controller.snapshotBridgeOutlet.create.mockReturnValue(new Promise((resolve) => { finish = resolve }))
+    controller.snapshotBridgeOutlet.create.mockReturnValue(
+      new Promise((resolve) => {
+        finish = resolve
+      })
+    )
     controller.hide = vi.fn()
 
     controller.nameInputTarget.value = "Solr snap"

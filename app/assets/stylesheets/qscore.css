@@ -21,11 +21,11 @@
 .case-score {
   display: block;
   padding: 0;
-  margin: var(--qscore-spacing-xl) 0px calc(-1 * var(--qscore-spacing-md)) 0px;
+  margin: var(--qscore-spacing-xl) 0 calc(-1 * var(--qscore-spacing-md)) 0;
 }
 
 .case-score:last-child {
-  margin: var(--qscore-spacing-xl) var(--qscore-spacing-lg) calc(-1 * var(--qscore-spacing-md)) 0px;
+  margin: var(--qscore-spacing-xl) var(--qscore-spacing-lg) calc(-1 * var(--qscore-spacing-md)) 0;
 }
 
 .query-score-label {
@@ -54,7 +54,8 @@
   align-self: stretch;
   flex-shrink: 0;
   width: 90px;
-  margin: calc(-1 * var(--qscore-spacing-md)) var(--qscore-spacing-lg) calc(-1 * var(--qscore-spacing-md)) calc(-1 * var(--qscore-spacing-xl));
+  margin: calc(-1 * var(--qscore-spacing-md)) var(--qscore-spacing-lg)
+    calc(-1 * var(--qscore-spacing-md)) calc(-1 * var(--qscore-spacing-xl));
   padding: var(--qscore-spacing-md) 0;
   color: #fff;
   font-family: Aller, sans-serif;
@@ -69,7 +70,8 @@
 /* Per-query diff badge: a .qscore-query-badge (so it sits beside the primary badge) that butts
    against its neighbor on the left and is rounded on the right. */
 .qscore-query-badge.diff-score {
-  margin: calc(-1 * var(--qscore-spacing-md)) var(--qscore-spacing-xl) calc(-1 * var(--qscore-spacing-md)) 0px;
+  margin: calc(-1 * var(--qscore-spacing-md)) var(--qscore-spacing-xl)
+    calc(-1 * var(--qscore-spacing-md)) 0;
   border-radius: 0;
   border-top-right-radius: var(--qscore-border-radius);
   border-bottom-right-radius: var(--qscore-border-radius);
@@ -91,12 +93,12 @@
 .case-score .qgraph {
   display: inline-block;
   height: 80px;
-  margin: 0px calc(-1 * var(--qscore-spacing-md)) 0px 0px;
+  margin: 0 calc(-1 * var(--qscore-spacing-md)) 0 0;
   width: 150px;
 }
 
 .case-score .qgraph svg {
-  border: var(--qscore-border-width-thick) solid grey;
+  border: var(--qscore-border-width-thick) solid var(--q-gray);
   border-right-style: none;
   border-radius: var(--qscore-border-radius);
 }
@@ -151,7 +153,7 @@
 }
 
 /* Responsive design */
-@media (max-width: 768px) {
+@media (width <= 768px) {
   .diff-header,
   .diff-row {
     flex-direction: column;

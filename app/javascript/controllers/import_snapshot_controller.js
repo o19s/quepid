@@ -5,7 +5,16 @@ import { parseCsv } from "utils/csv"
 import { buildSnapshotImportGroups, SNAPSHOT_CSV_HEADERS } from "utils/snapshot_import"
 
 export default class extends ImportFormControllerBase {
-  static targets = ["form", "fileInput", "alert", "submitButton", "submitText", "spinner", "preview", "previewContent"]
+  static targets = [
+    "form",
+    "fileInput",
+    "alert",
+    "submitButton",
+    "submitText",
+    "spinner",
+    "preview",
+    "previewContent"
+  ]
   static values = { importsUrlTemplate: String }
 
   async fileSelected(event) {
@@ -17,8 +26,8 @@ export default class extends ImportFormControllerBase {
     }
 
     // Validate it's a CSV file
-    if (!file.type.match('text/csv') && !file.name.endsWith('.csv')) {
-      this.showAlert('Please select a valid CSV file.', 'danger')
+    if (!file.type.match("text/csv") && !file.name.endsWith(".csv")) {
+      this.showAlert("Please select a valid CSV file.", "danger")
       this.submitButtonTarget.disabled = true
       this.hidePreview()
       return
@@ -28,9 +37,9 @@ export default class extends ImportFormControllerBase {
       // Read and validate the file
       const fileContent = await file.text()
       const validation = this.validateCSV(fileContent)
-      
+
       if (!validation.valid) {
-        this.showAlert(validation.error, 'danger')
+        this.showAlert(validation.error, "danger")
         this.submitButtonTarget.disabled = true
         this.hidePreview()
       } else {
@@ -39,7 +48,7 @@ export default class extends ImportFormControllerBase {
         this.submitButtonTarget.disabled = false
       }
     } catch {
-      this.showAlert('Error reading file. Please try again.', 'danger')
+      this.showAlert("Error reading file. Please try again.", "danger")
       this.submitButtonTarget.disabled = true
       this.hidePreview()
     }
@@ -48,22 +57,22 @@ export default class extends ImportFormControllerBase {
   validateCSV(content) {
     const { headers, rows, errors } = parseCsv(content.trim())
     if (rows.length === 0) {
-      return { valid: false, error: 'CSV file is empty or has no data rows.' }
+      return { valid: false, error: "CSV file is empty or has no data rows." }
     }
 
-    const missingHeaders = SNAPSHOT_CSV_HEADERS.filter(header => !headers.includes(header))
-    
+    const missingHeaders = SNAPSHOT_CSV_HEADERS.filter((header) => !headers.includes(header))
+
     if (missingHeaders.length > 0) {
       return {
         valid: false,
-        error: `Missing required headers: ${missingHeaders.join(', ')}. Please check spelling and capitalization.`
+        error: `Missing required headers: ${missingHeaders.join(", ")}. Please check spelling and capitalization.`
       }
     }
 
     // Report malformed rows instead of dropping them, so a partial import
     // never looks like a successful one.
     if (errors.length > 0) {
-      return { valid: false, error: `CSV format error: ${errors.join(' ')}` }
+      return { valid: false, error: `CSV format error: ${errors.join(" ")}` }
     }
 
     return { valid: true }
@@ -71,10 +80,10 @@ export default class extends ImportFormControllerBase {
 
   async submit(event) {
     event.preventDefault()
-    
+
     const file = this.fileInputTarget.files[0]
     if (!file) {
-      this.showAlert('Please select a file to import.', 'warning')
+      this.showAlert("Please select a file to import.", "warning")
       return
     }
 
@@ -85,11 +94,11 @@ export default class extends ImportFormControllerBase {
     try {
       // Read the file content
       const fileContent = await file.text()
-      
+
       // The file may have changed since it was selected, so re-check it here.
       const validation = this.validateCSV(fileContent)
       if (!validation.valid) {
-        this.showAlert(validation.error, 'danger')
+        this.showAlert(validation.error, "danger")
         this.setLoading(false)
         return
       }
@@ -100,14 +109,15 @@ export default class extends ImportFormControllerBase {
       // Group data by case and send to API
       await this.importSnapshots(snapshotData)
 
-      this.showAlert('Snapshots imported successfully! Refreshing...', 'success')
+      this.showAlert("Snapshots imported successfully! Refreshing...", "success")
       setTimeout(() => {
         window.location.reload()
       }, 1500)
     } catch (error) {
-      console.error('Import error:', error)
-      const errorMessage = error.message || 'An error occurred while importing snapshots. Please try again.'
-      this.showAlert(errorMessage, 'danger')
+      console.error("Import error:", error)
+      const errorMessage =
+        error.message || "An error occurred while importing snapshots. Please try again."
+      this.showAlert(errorMessage, "danger")
       this.setLoading(false)
     }
   }
@@ -126,18 +136,22 @@ export default class extends ImportFormControllerBase {
 
     for (const [caseId, caseData] of Object.entries(cases)) {
       for (const [snapshotName, snapshot] of Object.entries(caseData.snapshots)) {
-
         try {
           await this.sendSnapshotToAPI(caseId, snapshot)
         } catch (error) {
-          console.error(`Snapshot import failed for case ${caseId}, snapshot "${snapshotName}":`, error)
+          console.error(
+            `Snapshot import failed for case ${caseId}, snapshot "${snapshotName}":`,
+            error
+          )
           failureCount += 1
         }
       }
     }
 
     if (failureCount > 0) {
-      throw new Error(`${failureCount} snapshot(s) failed to import. Some may have been imported successfully.`)
+      throw new Error(
+        `${failureCount} snapshot(s) failed to import. Some may have been imported successfully.`
+      )
     }
   }
 
@@ -156,18 +170,18 @@ export default class extends ImportFormControllerBase {
   }
 
   showPreview(content) {
-    const lines = content.split('\n')
-    const preview = lines.slice(0, 10).join('\n')
+    const lines = content.split("\n")
+    const preview = lines.slice(0, 10).join("\n")
     const remaining = lines.length - 10
-    
+
     this.previewContentTarget.textContent = preview
     if (remaining > 0) {
       this.previewContentTarget.textContent += `\n... (${remaining} more lines)`
     }
-    this.previewTarget.classList.remove('d-none')
+    this.previewTarget.classList.remove("d-none")
   }
 
   hidePreview() {
-    this.previewTarget.classList.add('d-none')
+    this.previewTarget.classList.add("d-none")
   }
 }

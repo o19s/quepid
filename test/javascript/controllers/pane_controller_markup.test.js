@@ -4,7 +4,10 @@ import { Application } from "@hotwired/stimulus"
 import PaneController from "controllers/pane_controller"
 
 // Override the unit-test alias for this file, including the controller's import.
-vi.mock("@hotwired/stimulus", () => import("../../../node_modules/@hotwired/stimulus/dist/stimulus.js"))
+vi.mock(
+  "@hotwired/stimulus",
+  () => import("../../../node_modules/@hotwired/stimulus/dist/stimulus.js")
+)
 
 // Matches the opening tag's line; action descriptors contain ">" so a [^>] match would stop early.
 function actionFor(source, tagPattern) {
@@ -51,7 +54,8 @@ describe("pane ERB action wiring with real Stimulus", () => {
   })
 
   it("drags the divider only while the slider holds the pointer", () => {
-    const pointer = (type, init = {}) => new PointerEvent(type, { bubbles: true, cancelable: true, pointerId: 1, ...init })
+    const pointer = (type, init = {}) =>
+      new PointerEvent(type, { bubbles: true, cancelable: true, pointerId: 1, ...init })
 
     slider.dispatchEvent(pointer("pointermove", { clientX: 300 }))
     expect(main.style.width).toBe("550px")
@@ -70,9 +74,13 @@ describe("pane ERB action wiring with real Stimulus", () => {
   })
 
   it("ends the drag when the slider loses the pointer", () => {
-    slider.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, cancelable: true, pointerId: 1 }))
+    slider.dispatchEvent(
+      new PointerEvent("pointerdown", { bubbles: true, cancelable: true, pointerId: 1 })
+    )
     slider.dispatchEvent(new PointerEvent("lostpointercapture", { bubbles: true, pointerId: 1 }))
-    slider.dispatchEvent(new PointerEvent("pointermove", { bubbles: true, clientX: 300, pointerId: 1 }))
+    slider.dispatchEvent(
+      new PointerEvent("pointermove", { bubbles: true, clientX: 300, pointerId: 1 })
+    )
     expect(main.style.width).toBe("550px")
   })
 })

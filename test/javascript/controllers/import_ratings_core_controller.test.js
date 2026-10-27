@@ -49,8 +49,16 @@ function modalController() {
   document.body.appendChild(element)
 
   const targetNames = [
-    "title", "alert", "warning", "clearQueries", "createQueries", "csvPreview",
-    "informationNeedsPreview", "snapshotsPreview", "loading", "importButton"
+    "title",
+    "alert",
+    "warning",
+    "clearQueries",
+    "createQueries",
+    "csvPreview",
+    "informationNeedsPreview",
+    "snapshotsPreview",
+    "loading",
+    "importButton"
   ]
   const instance = buildControllerFixture(ImportRatingsCoreController, {
     element,
@@ -61,7 +69,9 @@ function modalController() {
       snapshotsUrl: "/api/cases/6/snapshots/imports"
     },
     targets: {
-      ...Object.fromEntries(targetNames.map(name => [name, element.querySelector(`[data-target="${name}"]`)])),
+      ...Object.fromEntries(
+        targetNames.map((name) => [name, element.querySelector(`[data-target="${name}"]`)])
+      ),
       file: [...element.querySelectorAll("input[type=file]")],
       format: [...element.querySelectorAll("input[type=radio]")],
       content: [...element.querySelectorAll('[data-target="content"]')]
@@ -86,11 +96,23 @@ async function chooseFile(instance, type, content) {
 }
 
 function respond(body, { ok = true, status = 200, statusText = "OK" } = {}) {
-  apiFetch.mockResolvedValue({ text: async function () { return JSON.stringify(await this.json()) || "" },  ok, status, statusText, json: () => Promise.resolve(body) })
+  apiFetch.mockResolvedValue({
+    text: async function () {
+      return JSON.stringify(await this.json()) || ""
+    },
+    ok,
+    status,
+    statusText,
+    json: () => Promise.resolve(body)
+  })
 }
 
 function postedRequests() {
-  return apiFetch.mock.calls.map(([url, options]) => ({ url, ...options, body: JSON.parse(options.body) }))
+  return apiFetch.mock.calls.map(([url, options]) => ({
+    url,
+    ...options,
+    body: JSON.parse(options.body)
+  }))
 }
 
 const RATINGS_CSV = 'query,docid,rating\n"shoes, red",doc-1,3\nboots,doc-2,0\n'
@@ -129,7 +151,9 @@ describe("ImportRatingsCoreController", () => {
   })
 
   it("rejects a CSV with headers but no data rows", () => {
-    expect(controller().validate("csv", "query,docid,rating\n")).toBe("The selected file has no data rows.")
+    expect(controller().validate("csv", "query,docid,rating\n")).toBe(
+      "The selected file has no data rows."
+    )
   })
 
   it("rejects malformed rows with line-specific errors", () => {
@@ -240,7 +264,9 @@ describe("ImportRatingsCoreController", () => {
     instance.selectType({ target: { value: "csv" } })
     expect(instance.warningTextTarget.textContent).toContain("override your existing ratings")
     instance.selectType({ target: { value: "information_needs" } })
-    expect(instance.warningTextTarget.textContent).toContain("override your existing information needs")
+    expect(instance.warningTextTarget.textContent).toContain(
+      "override your existing information needs"
+    )
     instance.selectType({ target: { value: "snapshots" } })
     expect(instance.warningTextTarget.textContent).toContain("same Snapshot Name")
   })
@@ -259,7 +285,11 @@ describe("ImportRatingsCoreController", () => {
   })
 
   it.each([
-    ["information_needs", "informationNeedsPreviewTarget", "query,information_need\nshoes,red ones\n"],
+    [
+      "information_needs",
+      "informationNeedsPreviewTarget",
+      "query,information_need\nshoes,red ones\n"
+    ],
     ["snapshots", "snapshotsPreviewTarget", `${SNAPSHOTS_HEADER}\nBase,2026-09-01,6,dog,doc-1,1\n`]
   ])("previews a %s file in its own pane", async (type, preview, content) => {
     const instance = modalController()
@@ -275,7 +305,9 @@ describe("ImportRatingsCoreController", () => {
 
     const input = await chooseFile(instance, "ltr", "3 qid:1 # doc-1")
 
-    expect(input.parentElement.querySelector('[data-target="content"]').textContent).toBe("3 qid:1 # doc-1")
+    expect(input.parentElement.querySelector('[data-target="content"]').textContent).toBe(
+      "3 qid:1 # doc-1"
+    )
     expect(instance.contentTargets[0].textContent).toBe("")
   })
 
@@ -367,7 +399,10 @@ describe("ImportRatingsCoreController", () => {
         body: { csv_text: content, case_id: 6, create_queries: true }
       }
     ])
-    expect(coreFlash.show).toHaveBeenCalledWith("notice", "Successfully imported information needs from CSV.")
+    expect(coreFlash.show).toHaveBeenCalledWith(
+      "notice",
+      "Successfully imported information needs from CSV."
+    )
   })
 
   it("posts each snapshot separately, grouping docs by query in file order", async () => {
@@ -409,7 +444,10 @@ describe("ImportRatingsCoreController", () => {
         }
       ]
     })
-    expect(requests[1].body.snapshots[0]).toMatchObject({ name: "Tuned", queries: { "shoes, red": {} } })
+    expect(requests[1].body.snapshots[0]).toMatchObject({
+      name: "Tuned",
+      queries: { "shoes, red": {} }
+    })
     expect(coreFlash.show).toHaveBeenCalledWith("notice", "Snapshots imported successfully!")
   })
 
@@ -430,7 +468,9 @@ describe("ImportRatingsCoreController", () => {
         snapshots: [
           expect.objectContaining({
             name: "Baseline",
-            queries: { dog: { docs: [{ id: "doc-1", position: "1", fields: { Title: "Good dog" } }] } }
+            queries: {
+              dog: { docs: [{ id: "doc-1", position: "1", fields: { Title: "Good dog" } }] }
+            }
           })
         ]
       })
@@ -462,7 +502,10 @@ describe("ImportRatingsCoreController", () => {
 
     await instance.submit({ preventDefault: vi.fn() })
 
-    expect(coreFlash.show).toHaveBeenCalledWith("error", "Unable to import ratings from CSV: Unknown case")
+    expect(coreFlash.show).toHaveBeenCalledWith(
+      "error",
+      "Unable to import ratings from CSV: Unknown case"
+    )
     expect(instance.alertTarget.textContent).toBe("Unable to import ratings from CSV: Unknown case")
     expect(instance.alertTarget.classList.contains("d-none")).toBe(false)
     expect(hideBsModal).not.toHaveBeenCalled()
@@ -553,7 +596,9 @@ describe("ImportRatingsCoreController", () => {
   it("uses a generic message for errors without one", () => {
     const instance = controller()
     instance.selectedType = "csv"
-    expect(instance.errorMessage(new Error(""))).toBe("Unable to import ratings from CSV: Import failed. Please try again.")
+    expect(instance.errorMessage(new Error(""))).toBe(
+      "Unable to import ratings from CSV: Import failed. Please try again."
+    )
   })
 
   it.each([
@@ -571,8 +616,14 @@ describe("ImportRatingsCoreController", () => {
 
   it.each([
     ["nothing is selected", {}],
-    ["the selected file is invalid", { selectedType: "csv", contents: { csv: "x" }, errors: { csv: "bad" } }],
-    ["an import is already running", { selectedType: "csv", contents: { csv: RATINGS_CSV }, busy: true }]
+    [
+      "the selected file is invalid",
+      { selectedType: "csv", contents: { csv: "x" }, errors: { csv: "bad" } }
+    ],
+    [
+      "an import is already running",
+      { selectedType: "csv", contents: { csv: RATINGS_CSV }, busy: true }
+    ]
   ])("does not import when %s", async (_label, state) => {
     const instance = Object.assign(controller(), state)
     const event = { preventDefault: vi.fn() }

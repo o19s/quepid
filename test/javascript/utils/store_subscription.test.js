@@ -5,7 +5,9 @@ describe("subscribeToStore", () => {
   it("delivers the original event synchronously with native listener context", () => {
     const store = new EventTarget()
     const calls = []
-    const handler = function (event) { calls.push({ event, context: this }) }
+    const handler = function (event) {
+      calls.push({ event, context: this })
+    }
     const unsubscribe = subscribeToStore(store, { change: handler, reset: handler })
     const event = new CustomEvent("change", { detail: { queryId: 7 } })
     store.dispatchEvent(event)

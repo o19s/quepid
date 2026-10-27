@@ -15,21 +15,30 @@ export function teamCatalogHtml(allTeams, sharedTeams = []) {
     list.dataset.catalogList = shared ? "shared" : "shareable"
     allTeams.forEach((team, index) => {
       if (sharedTeams.some((item) => item.id === team.id) !== shared) return
-      list.append(row("button", {
-        type: "button",
-        class: `list-group-item list-group-item-action${shared ? " list-group-item-success" : ""}`,
-        "data-team-id": team.id,
-        "data-team-order": index,
-        "data-share-case-core-team-id-param": team.id,
-        "data-action": `click->share-case-core#${shared ? "selectSharedTeam" : "selectShareTeam"}`
-      }, team.name || `Team ${team.id}`))
+      list.append(
+        row(
+          "button",
+          {
+            type: "button",
+            class: `list-group-item list-group-item-action${shared ? " list-group-item-success" : ""}`,
+            "data-team-id": team.id,
+            "data-team-order": index,
+            "data-share-case-core-team-id-param": team.id,
+            "data-action": `click->share-case-core#${shared ? "selectSharedTeam" : "selectShareTeam"}`
+          },
+          team.name || `Team ${team.id}`
+        )
+      )
     })
     catalog.append(list)
   }
   return catalog.outerHTML
 }
 
-export function bookCatalogHtml(books = [], { newBookUrl = "books/new?scorer_id=7&origin_case_id=42" } = {}) {
+export function bookCatalogHtml(
+  books = [],
+  { newBookUrl = "books/new?scorer_id=7&origin_case_id=42" } = {}
+) {
   const catalog = document.createElement("ul")
   catalog.setAttribute("data-book-catalog", "")
   catalog.dataset.newBookUrl = newBookUrl
@@ -44,11 +53,17 @@ export function bookCatalogHtml(books = [], { newBookUrl = "books/new?scorer_id=
   for (const book of books) {
     const item = row("li", { ...attributes, "data-judgements-core-book-id-param": book.id }, "")
     item.append(row("span", { "data-slot": "name" }, book.name))
-    item.append(row("a", {
-      href: `books/${book.id}`,
-      "data-slot": "view",
-      "data-action": "click->judgements-core#viewBook"
-    }, "View"))
+    item.append(
+      row(
+        "a",
+        {
+          href: `books/${book.id}`,
+          "data-slot": "view",
+          "data-action": "click->judgements-core#viewBook"
+        },
+        "View"
+      )
+    )
     catalog.append(item)
   }
   return catalog.outerHTML
@@ -57,17 +72,26 @@ export function bookCatalogHtml(books = [], { newBookUrl = "books/new?scorer_id=
 export function scorerCatalogHtml({ communal_scorers = [], user_scorers = [] } = {}) {
   const catalog = document.createElement("div")
   catalog.setAttribute("data-scorer-catalog", "")
-  for (const [kind, scorers] of [["communal", communal_scorers], ["custom", user_scorers]]) {
+  for (const [kind, scorers] of [
+    ["communal", communal_scorers],
+    ["custom", user_scorers]
+  ]) {
     const list = document.createElement("ul")
     list.dataset.catalogList = kind
     for (const scorer of scorers) {
-      list.append(row("li", {
-        class: "list-group-item",
-        "data-pick-scorer-core-target": "item",
-        "data-pick-scorer-core-scorer-id-param": scorer.scorer_id,
-        "data-scorer-json": JSON.stringify(scorer),
-        "data-action": "click->pick-scorer-core#selectScorer"
-      }, scorer.name))
+      list.append(
+        row(
+          "li",
+          {
+            class: "list-group-item",
+            "data-pick-scorer-core-target": "item",
+            "data-pick-scorer-core-scorer-id-param": scorer.scorer_id,
+            "data-scorer-json": JSON.stringify(scorer),
+            "data-action": "click->pick-scorer-core#selectScorer"
+          },
+          scorer.name
+        )
+      )
     }
     catalog.append(list)
   }

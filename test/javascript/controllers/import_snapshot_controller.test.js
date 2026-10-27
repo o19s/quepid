@@ -5,7 +5,7 @@ import ImportSnapshotController from "controllers/import_snapshot_controller"
 import { buildSnapshotCsv } from "utils/case_csv"
 
 vi.mock("api/fetch", () => ({
-  apiFetch: vi.fn(),
+  apiFetch: vi.fn()
 }))
 
 describe("ImportSnapshotController sendSnapshotToAPI", () => {
@@ -24,10 +24,12 @@ describe("ImportSnapshotController sendSnapshotToAPI", () => {
         return JSON.stringify(await this.json()) || ""
       },
       ok: true,
-      json: () => Promise.resolve({}),
+      json: () => Promise.resolve({})
     })
 
-    await ImportSnapshotController.prototype.sendSnapshotToAPI.call(controller, "4", { name: "Snap A" })
+    await ImportSnapshotController.prototype.sendSnapshotToAPI.call(controller, "4", {
+      name: "Snap A"
+    })
 
     expect(apiFetch).toHaveBeenCalledWith(
       "/quepid/api/cases/4/snapshots/imports",
@@ -45,9 +47,30 @@ describe("ImportSnapshotController importSnapshots", () => {
     })
 
     const rows = [
-      { "Case ID": "4", "Snapshot Name": "Snap A", "Snapshot Time": "2026-09-01T12:00:00Z", "Query Text": "dog", "Doc ID": "doc1", "Doc Position": "1" },
-      { "Case ID": "4", "Snapshot Name": "Snap A", "Snapshot Time": "2026-09-01T12:00:00Z", "Query Text": "dog", "Doc ID": "doc2", "Doc Position": "2" },
-      { "Case ID": "4", "Snapshot Name": "Snap A", "Snapshot Time": "2026-09-01T12:00:00Z", "Query Text": "cat", "Doc ID": "doc3", "Doc Position": "1" }
+      {
+        "Case ID": "4",
+        "Snapshot Name": "Snap A",
+        "Snapshot Time": "2026-09-01T12:00:00Z",
+        "Query Text": "dog",
+        "Doc ID": "doc1",
+        "Doc Position": "1"
+      },
+      {
+        "Case ID": "4",
+        "Snapshot Name": "Snap A",
+        "Snapshot Time": "2026-09-01T12:00:00Z",
+        "Query Text": "dog",
+        "Doc ID": "doc2",
+        "Doc Position": "2"
+      },
+      {
+        "Case ID": "4",
+        "Snapshot Name": "Snap A",
+        "Snapshot Time": "2026-09-01T12:00:00Z",
+        "Query Text": "cat",
+        "Doc ID": "doc3",
+        "Doc Position": "1"
+      }
     ]
 
     await ImportSnapshotController.prototype.importSnapshots.call(controller, rows)
@@ -62,7 +85,7 @@ describe("ImportSnapshotController importSnapshots", () => {
       { id: "doc1", position: "1" },
       { id: "doc2", position: "2" }
     ])
-    expect(payload.queries.cat.docs).toEqual([ { id: "doc3", position: "1" } ])
+    expect(payload.queries.cat.docs).toEqual([{ id: "doc3", position: "1" }])
   })
 
   it("sends multiple snapshots for the same case sequentially, not concurrently", async () => {
@@ -73,14 +96,28 @@ describe("ImportSnapshotController importSnapshots", () => {
     controller.sendSnapshotToAPI = vi.fn().mockImplementation(async () => {
       inFlight += 1
       if (inFlight > 1) concurrentCallsSeen += 1
-      await new Promise(resolve => setTimeout(resolve, 0))
+      await new Promise((resolve) => setTimeout(resolve, 0))
       inFlight -= 1
       return {}
     })
 
     const rows = [
-      { "Case ID": "4", "Snapshot Name": "Snap A", "Snapshot Time": "2026-09-01T12:00:00Z", "Query Text": "dog", "Doc ID": "doc1", "Doc Position": "1" },
-      { "Case ID": "4", "Snapshot Name": "Snap B", "Snapshot Time": "2026-09-01T13:00:00Z", "Query Text": "dog", "Doc ID": "doc2", "Doc Position": "1" }
+      {
+        "Case ID": "4",
+        "Snapshot Name": "Snap A",
+        "Snapshot Time": "2026-09-01T12:00:00Z",
+        "Query Text": "dog",
+        "Doc ID": "doc1",
+        "Doc Position": "1"
+      },
+      {
+        "Case ID": "4",
+        "Snapshot Name": "Snap B",
+        "Snapshot Time": "2026-09-01T13:00:00Z",
+        "Query Text": "dog",
+        "Doc ID": "doc2",
+        "Doc Position": "1"
+      }
     ]
 
     await ImportSnapshotController.prototype.importSnapshots.call(controller, rows)
@@ -92,15 +129,30 @@ describe("ImportSnapshotController importSnapshots", () => {
   it("counts failures without aborting remaining snapshots, and still throws", async () => {
     const controller = buildControllerFixture(ImportSnapshotController, {
       overrides: {
-        sendSnapshotToAPI: vi.fn()
-      .mockRejectedValueOnce(new Error("boom"))
-      .mockResolvedValueOnce({})
+        sendSnapshotToAPI: vi
+          .fn()
+          .mockRejectedValueOnce(new Error("boom"))
+          .mockResolvedValueOnce({})
       }
     })
 
     const rows = [
-      { "Case ID": "4", "Snapshot Name": "Snap A", "Snapshot Time": "2026-09-01T12:00:00Z", "Query Text": "dog", "Doc ID": "doc1", "Doc Position": "1" },
-      { "Case ID": "4", "Snapshot Name": "Snap B", "Snapshot Time": "2026-09-01T13:00:00Z", "Query Text": "dog", "Doc ID": "doc2", "Doc Position": "1" }
+      {
+        "Case ID": "4",
+        "Snapshot Name": "Snap A",
+        "Snapshot Time": "2026-09-01T12:00:00Z",
+        "Query Text": "dog",
+        "Doc ID": "doc1",
+        "Doc Position": "1"
+      },
+      {
+        "Case ID": "4",
+        "Snapshot Name": "Snap B",
+        "Snapshot Time": "2026-09-01T13:00:00Z",
+        "Query Text": "dog",
+        "Doc ID": "doc2",
+        "Doc Position": "1"
+      }
     ]
 
     await expect(
@@ -129,7 +181,8 @@ function uiController() {
   return controller
 }
 
-const csvFile = (content, name = "snap.csv", type = "text/csv") => new File([content], name, { type })
+const csvFile = (content, name = "snap.csv", type = "text/csv") =>
+  new File([content], name, { type })
 
 describe("ImportSnapshotController file selection", () => {
   afterEach(() => vi.restoreAllMocks())
@@ -162,9 +215,13 @@ describe("ImportSnapshotController file selection", () => {
     const controller = uiController()
     controller.previewTarget.classList.remove("d-none")
 
-    await controller.fileSelected({ target: { files: [csvFile("Snapshot Name,Case ID\nBaseline,4")] } })
+    await controller.fileSelected({
+      target: { files: [csvFile("Snapshot Name,Case ID\nBaseline,4")] }
+    })
 
-    expect(controller.alertTarget.textContent).toContain("Missing required headers: Snapshot Time, Query Text, Doc ID, Doc Position.")
+    expect(controller.alertTarget.textContent).toContain(
+      "Missing required headers: Snapshot Time, Query Text, Doc ID, Doc Position."
+    )
     expect(controller.submitButtonTarget.disabled).toBe(true)
     expect(controller.previewTarget.classList.contains("d-none")).toBe(true)
   })
@@ -185,7 +242,10 @@ describe("ImportSnapshotController file selection", () => {
   it("requires the header plus at least one data row", () => {
     const controller = uiController()
 
-    expect(controller.validateCSV(`${HEADER}\n`)).toEqual({ valid: false, error: "CSV file is empty or has no data rows." })
+    expect(controller.validateCSV(`${HEADER}\n`)).toEqual({
+      valid: false,
+      error: "CSV file is empty or has no data rows."
+    })
     expect(controller.validateCSV(` ${HEADER} \nBaseline,t,4,q,a,1`)).toEqual({ valid: true })
   })
 
@@ -195,7 +255,9 @@ describe("ImportSnapshotController file selection", () => {
 
     controller.showPreview(lines.join("\n"))
 
-    expect(controller.previewContentTarget.textContent).toBe(`${lines.slice(0, 10).join("\n")}\n... (3 more lines)`)
+    expect(controller.previewContentTarget.textContent).toBe(
+      `${lines.slice(0, 10).join("\n")}\n... (3 more lines)`
+    )
   })
 })
 
@@ -222,7 +284,9 @@ describe("ImportSnapshotController submit", () => {
     await controller.submit({ preventDefault: vi.fn() })
 
     expect(controller.importSnapshots).not.toHaveBeenCalled()
-    expect(controller.alertTarget.textContent).toBe("CSV format error: line 3: expected 6 columns but found 3.")
+    expect(controller.alertTarget.textContent).toBe(
+      "CSV format error: line 3: expected 6 columns but found 3."
+    )
     expect(controller.submitButtonTarget.disabled).toBe(false)
   })
 
@@ -232,17 +296,28 @@ describe("ImportSnapshotController submit", () => {
     vi.spyOn(window, "location", "get").mockReturnValue({ reload })
     const controller = uiController()
     controller.importSnapshots = vi.fn(() => Promise.resolve())
-    controller.fileInputTarget.files = [csvFile(`${HEADER}\n Baseline , 2026-09-28 ,4,star wars,a,1`)]
+    controller.fileInputTarget.files = [
+      csvFile(`${HEADER}\n Baseline , 2026-09-28 ,4,star wars,a,1`)
+    ]
 
     const submitting = controller.submit({ preventDefault: vi.fn() })
     expect(controller.submitTextTarget.textContent).toBe("Importing...")
     expect(controller.spinnerTarget.classList.contains("d-none")).toBe(false)
     await submitting
 
-    expect(controller.importSnapshots).toHaveBeenCalledWith([{
-      "Snapshot Name": "Baseline", "Snapshot Time": "2026-09-28", "Case ID": "4", "Query Text": "star wars", "Doc ID": "a", "Doc Position": "1"
-    }])
-    expect(controller.alertTarget.textContent).toBe("Snapshots imported successfully! Refreshing...")
+    expect(controller.importSnapshots).toHaveBeenCalledWith([
+      {
+        "Snapshot Name": "Baseline",
+        "Snapshot Time": "2026-09-28",
+        "Case ID": "4",
+        "Query Text": "star wars",
+        "Doc ID": "a",
+        "Doc Position": "1"
+      }
+    ])
+    expect(controller.alertTarget.textContent).toBe(
+      "Snapshots imported successfully! Refreshing..."
+    )
     vi.advanceTimersByTime(1500)
     expect(reload).toHaveBeenCalledOnce()
   })
@@ -250,7 +325,9 @@ describe("ImportSnapshotController submit", () => {
   it("shows the import error and restores the button", async () => {
     vi.spyOn(console, "error").mockImplementation(() => {})
     const controller = uiController()
-    controller.importSnapshots = vi.fn(() => Promise.reject(new Error("2 snapshot(s) failed to import.")))
+    controller.importSnapshots = vi.fn(() =>
+      Promise.reject(new Error("2 snapshot(s) failed to import."))
+    )
     controller.fileInputTarget.files = [csvFile(`${HEADER}\nBaseline,t,4,q,a,1`)]
 
     await controller.submit({ preventDefault: vi.fn() })
@@ -262,13 +339,28 @@ describe("ImportSnapshotController submit", () => {
   })
 
   it("surfaces the server's message when a snapshot import is rejected", async () => {
-    apiFetch.mockResolvedValueOnce({ text: async function () { return JSON.stringify(await this.json()) || "" },  ok: false, json: () => Promise.resolve({ message: "Case 4 not found" }) })
-      .mockResolvedValueOnce({ text: async function () { return JSON.stringify(await this.json()) || "" },  ok: false, json: () => Promise.resolve({}) })
+    apiFetch
+      .mockResolvedValueOnce({
+        text: async function () {
+          return JSON.stringify(await this.json()) || ""
+        },
+        ok: false,
+        json: () => Promise.resolve({ message: "Case 4 not found" })
+      })
+      .mockResolvedValueOnce({
+        text: async function () {
+          return JSON.stringify(await this.json()) || ""
+        },
+        ok: false,
+        json: () => Promise.resolve({})
+      })
     const controller = uiController()
     controller.importsUrlTemplateValue = "/api/cases/__CASE_ID__/snapshots/imports"
 
     await expect(controller.sendSnapshotToAPI("4", {})).rejects.toThrow("Case 4 not found")
-    await expect(controller.sendSnapshotToAPI("5", {})).rejects.toThrow("Failed to import snapshot for case 5")
+    await expect(controller.sendSnapshotToAPI("5", {})).rejects.toThrow(
+      "Failed to import snapshot for case 5"
+    )
     expect(JSON.parse(apiFetch.mock.calls[0][1].body)).toEqual({ snapshots: [{}] })
   })
 })
@@ -278,9 +370,15 @@ describe("ImportSnapshotController round trip with the snapshot export", () => {
     const csv = buildSnapshotCsv(4, {
       name: "Baseline",
       time: "2026-09-28T12:00:00Z",
-      queries: [{ query_id: 1, query_text: "star wars" }, { query_id: 2, query_text: "shoes, red" }],
+      queries: [
+        { query_id: 1, query_text: "star wars" },
+        { query_id: 2, query_text: "shoes, red" }
+      ],
       docs: {
-        1: [{ id: "a", fields: { title: "A New Hope" } }, { id: "b", fields: { title: 'Episode IV, "A New Hope"' } }],
+        1: [
+          { id: "a", fields: { title: "A New Hope" } },
+          { id: "b", fields: { title: 'Episode IV, "A New Hope"' } }
+        ],
         2: [{ id: "c", fields: { title: "Red shoe" } }]
       }
     })
@@ -289,7 +387,9 @@ describe("ImportSnapshotController round trip with the snapshot export", () => {
     expect(controller.validateCSV(csv)).toEqual({ valid: true })
     const rows = controller.parseCSV(csv)
 
-    expect(rows.map((row) => [row["Query Text"], row["Doc ID"], row["Doc Position"], row.title])).toEqual([
+    expect(
+      rows.map((row) => [row["Query Text"], row["Doc ID"], row["Doc Position"], row.title])
+    ).toEqual([
       ["star wars", "a", "1", "A New Hope"],
       ["star wars", "b", "2", 'Episode IV, "A New Hope"'],
       ["shoes, red", "c", "1", "Red shoe"]
@@ -323,4 +423,3 @@ describe("ImportSnapshotController round trip with the snapshot export", () => {
     })
   })
 })
-

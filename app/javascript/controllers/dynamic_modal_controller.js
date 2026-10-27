@@ -8,12 +8,12 @@ export default class extends Controller {
     if (this.modal) return
     this.returnFocus = document.activeElement
     this.onClose = () => this.close()
-    this.onShown = event => {
+    this.onShown = (event) => {
       if (event.target !== this.element) return
       this.showing = false
       if (this.element.dynamicModalCloseRequested) this.close()
     }
-    this.onHidden = event => {
+    this.onHidden = (event) => {
       if (event.target === this.element) this.teardown()
     }
     this.element.addEventListener("dynamic-modal:close", this.onClose)
@@ -49,7 +49,11 @@ export default class extends Controller {
     this.element.remove()
     restoreModalBodyLock()
     const outer = [...document.querySelectorAll(".modal.show")].at(-1)
-    if (this.returnFocus?.isConnected && !this.returnFocus.disabled &&
-        (!outer || outer.contains(this.returnFocus))) this.returnFocus.focus()
+    if (
+      this.returnFocus?.isConnected &&
+      !this.returnFocus.disabled &&
+      (!outer || outer.contains(this.returnFocus))
+    )
+      this.returnFocus.focus()
   }
 }

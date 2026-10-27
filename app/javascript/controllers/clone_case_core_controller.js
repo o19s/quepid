@@ -132,7 +132,7 @@ export default class extends CoreModalControllerBase {
         preserve_history: this.history,
         try_number: this.tryNumber,
         case_name: this.newCaseName
-        })
+      })
 
       this.showAlert("Case cloned successfully! Redirecting…", "success")
       window.setTimeout(() => {

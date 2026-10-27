@@ -25,7 +25,9 @@ async function shareThenUnshare(page: import("@playwright/test").Page, teamId: n
   await page.getByText("Share case", { exact: true }).click()
   const modal = page.locator("#shareCaseModal.show, .modal.show").first()
   await expect(modal).toBeVisible()
-  await expect(modal.locator("[data-share-case-core-target='loading']")).toBeHidden({ timeout: 15_000 })
+  await expect(modal.locator("[data-share-case-core-target='loading']")).toBeHidden({
+    timeout: 15_000
+  })
 
   const shareable = modal.locator(`#share-case-shareable-list [data-team-id='${teamId}']`)
   const shared = modal.locator(`#share-case-shared-list [data-team-id='${teamId}']`)

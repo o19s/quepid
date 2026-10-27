@@ -28,7 +28,9 @@ export default class extends Controller {
     this.renderedDocument = this.documentSnapshot
     this.renderedVersion = this.versionValue
     // A rating change rebuilds the trigger; keep keyboard focus on it.
-    const ratingFocused = this.contentTarget.querySelector(".single-rating")?.contains(document.activeElement)
+    const ratingFocused = this.contentTarget
+      .querySelector(".single-rating")
+      ?.contains(document.activeElement)
     this.contentTarget.replaceChildren(this.renderResult(this.documentSnapshot, this.querySnapshot))
     if (ratingFocused) this.contentTarget.querySelector(".single-rating button")?.focus()
   }
@@ -44,12 +46,15 @@ export default class extends Controller {
   renderResult(doc, query) {
     // The row skeleton is the ERB `<template id="search-result-template">` in
     // core/_query_list_templates.html.erb.
-    const row = document.getElementById("search-result-template").content.firstElementChild.cloneNode(true)
-    const slot = name => row.querySelector(`[data-slot="${name}"]`)
+    const row = document
+      .getElementById("search-result-template")
+      .content.firstElementChild.cloneNode(true)
+    const slot = (name) => row.querySelector(`[data-slot="${name}"]`)
     const showExplain = this.explainViewValue === "full" && doc.matchExplain
     if (!showExplain) slot("matchExplainColumn").remove()
 
-    if (doc.error === undefined) slot("ratings").appendChild(this.ratingControl(doc, query.ratingScale || {}))
+    if (doc.error === undefined)
+      slot("ratings").appendChild(this.ratingControl(doc, query.ratingScale || {}))
 
     this.renderImage(slot("thumbColumn"), slot("thumb"), doc.thumb, doc.thumb_options, doc.hasThumb)
     this.renderImage(slot("imageColumn"), slot("image"), doc.image, doc.image_options, doc.hasImage)
@@ -67,7 +72,8 @@ export default class extends Controller {
 
     if (doc.error) {
       const error = document.createElement("li")
-      error.innerHTML = '<div class="alert alert-danger"><i class="bi bi-exclamation-triangle-fill"></i> This document can\'t be uniquely identified, so Quepid can\'t store ratings for this document. <br><span></span>.</div>'
+      error.innerHTML =
+        '<div class="alert alert-danger"><i class="bi bi-exclamation-triangle-fill"></i> This document can\'t be uniquely identified, so Quepid can\'t store ratings for this document. <br><span></span>.</div>'
       this.appendSanitized(error.querySelector("span"), doc.error)
       fields.appendChild(error)
     }
@@ -83,7 +89,11 @@ export default class extends Controller {
     rank.textContent = `Rank: #${this.element.getAttribute("rank") || ""}`
     fields.appendChild(rank)
 
-    if (showExplain) slot("matchExplain").setAttribute("data-match-explain-data-value", JSON.stringify(doc.matchExplain))
+    if (showExplain)
+      slot("matchExplain").setAttribute(
+        "data-match-explain-data-value",
+        JSON.stringify(doc.matchExplain)
+      )
 
     const footer = document.createElement("div")
     if (query.depthOfRating === Number(this.element.getAttribute("rank"))) {
@@ -98,10 +108,12 @@ export default class extends Controller {
 
   showDocument(event) {
     event.preventDefault()
-    this.element.dispatchEvent(new CustomEvent("search-result:show-document", {
-      bubbles: true,
-      detail: { docId: this.renderedDocument.id }
-    }))
+    this.element.dispatchEvent(
+      new CustomEvent("search-result:show-document", {
+        bubbles: true,
+        detail: { docId: this.renderedDocument.id }
+      })
+    )
   }
 
   ratingControl(doc, scale) {
@@ -117,7 +129,9 @@ export default class extends Controller {
   }
 
   appendFields(parent, values, renderer) {
-    Object.entries(values || {}).forEach(([name, value]) => parent.appendChild(renderer(name, value)))
+    Object.entries(values || {}).forEach(([name, value]) =>
+      parent.appendChild(renderer(name, value))
+    )
   }
 
   fieldLabel(name) {
@@ -168,7 +182,13 @@ export default class extends Controller {
       link.href = `https://translate.google.com/?sl=auto&tl=en&text=${encodeURIComponent(value ?? "")}`
       link.target = "_blank"
       link.rel = "noopener noreferrer"
-      link.appendChild(Object.assign(document.createElement("img"), { src: "images/google-translate.png", width: 16, height: 16 }))
+      link.appendChild(
+        Object.assign(document.createElement("img"), {
+          src: "images/google-translate.png",
+          width: 16,
+          height: 16
+        })
+      )
       item.appendChild(link)
     }
     return item
@@ -197,7 +217,9 @@ export default class extends Controller {
 
   resolveFieldValue(raw, fieldName) {
     if (Object.prototype.hasOwnProperty.call(raw || {}, fieldName)) return raw[fieldName]
-    return fieldName.split(".").reduce((value, key) => (value && typeof value === "object" ? value[key] : undefined), raw)
+    return fieldName
+      .split(".")
+      .reduce((value, key) => (value && typeof value === "object" ? value[key] : undefined), raw)
   }
 
   appendSanitized(element, value, prefix = "") {

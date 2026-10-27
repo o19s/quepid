@@ -17,7 +17,14 @@ vi.mock("utils/core_capabilities_runtime", () => ({
 let flash
 
 function makeTry(overrides = {}) {
-  return { tryNo: 1, name: "Try 1", queryParams: "q=#$query##", searchUrl: "http://a", endpointName: "A", ...overrides }
+  return {
+    tryNo: 1,
+    name: "Try 1",
+    queryParams: "q=#$query##",
+    searchUrl: "http://a",
+    endpointName: "A",
+    ...overrides
+  }
 }
 
 function makeCapability(settingsOverrides = {}) {
@@ -41,17 +48,19 @@ function makeCapability(settingsOverrides = {}) {
   settings.tryNo = settings.selectedTry.tryNo
   settings.curatorVars = settings.selectedTry.curatorVars
   settings.updateVars = () => settings.selectedTry.updateVars?.()
-  settings.applyEndpoint = values => {
+  settings.applyEndpoint = (values) => {
     Object.assign(settings, values)
     Object.assign(settings.selectedTry, values)
   }
   Object.defineProperty(settings, "queryParams", {
     get: () => settings.selectedTry.queryParams,
-    set: value => { settings.selectedTry.queryParams = value }
+    set: (value) => {
+      settings.selectedTry.queryParams = value
+    }
   })
   const capability = {
     settings: {
-      editable: vi.fn(() => settings.selectedTry ? settings : null),
+      editable: vi.fn(() => (settings.selectedTry ? settings : null)),
       tries: vi.fn(() => settings.tries),
       save: vi.fn(),
       duplicateTry: vi.fn(() => Promise.resolve({ name: "Try 3" })),
@@ -123,8 +132,18 @@ function mount(settingsOverrides) {
   target("historyList", document.createElement("ul"))
   target("queryWarning", document.createElement("div"))
   target("curatorVars", document.createElement("div"))
-  target("curatorVarTemplate", template('<div class="slider-wrap"><label class="mb-0"></label><input type="text" class="slider-val form-control form-control-sm" data-action="input->tune-relevance#updateCuratorVariable"></div>'))
-  target("historyItemTemplate", template('<li class="try-history-item" data-action="click->tune-relevance#navigateToTry"><button type="button" class="btn btn-circle try-details" data-try-details data-action="click->tune-relevance#openTryDetails">...</button><span data-try-name></span> <span data-try-query></span>... <span data-try-endpoint></span></li>'))
+  target(
+    "curatorVarTemplate",
+    template(
+      '<div class="slider-wrap"><label class="mb-0"></label><input type="text" class="slider-val form-control form-control-sm" data-action="input->tune-relevance#updateCuratorVariable"></div>'
+    )
+  )
+  target(
+    "historyItemTemplate",
+    template(
+      '<li class="try-history-item" data-action="click->tune-relevance#navigateToTry"><button type="button" class="btn btn-circle try-details" data-try-details data-action="click->tune-relevance#openTryDetails">...</button><span data-try-name></span> <span data-try-query></span>... <span data-try-endpoint></span></li>'
+    )
+  )
   target("tlsWarning", document.createElement("div"))
   target("tlsProtocol", document.createElement("span"))
   target("endpointSelect", document.createElement("select"))
@@ -152,8 +171,9 @@ function mount(settingsOverrides) {
   return { controller, capability, settings, element }
 }
 
-const errorFlash = () => flash.show.mock.calls.filter(([kind]) => kind === "error").map(([, msg]) => msg)
-const flush = () => new Promise(resolve => setTimeout(resolve, 0))
+const errorFlash = () =>
+  flash.show.mock.calls.filter(([kind]) => kind === "error").map(([, msg]) => msg)
+const flush = () => new Promise((resolve) => setTimeout(resolve, 0))
 
 describe("TuneRelevanceController", () => {
   beforeEach(() => {
@@ -163,7 +183,9 @@ describe("TuneRelevanceController", () => {
     vi.stubGlobal("Option", function Option(text, value) {
       return Object.assign(document.createElement("option"), { textContent: text, value })
     })
-    window.bootstrap = { Modal: { getOrCreateInstance: vi.fn(() => ({ show: vi.fn(), hide: vi.fn() })) } }
+    window.bootstrap = {
+      Modal: { getOrCreateInstance: vi.fn(() => ({ show: vi.fn(), hide: vi.fn() })) }
+    }
   })
   afterEach(() => {
     delete window.bootstrap
@@ -228,24 +250,27 @@ describe("TuneRelevanceController", () => {
       ["q=star\n&tie=1", "q=star\n&tie=1"],
       ['{"query":{"query_string":{"query":"a&b"}}}', '{"query":{"query_string":{"query":"a&b"}}}'],
       ['{"query":"a&b"', '{"query":"a&b"']
-    ])("formats URL parameters for display without changing saved input: %s", (value, displayed) => {
-      const { controller, settings } = mount()
-      settings.selectedTry.queryParams = value
-      const textarea = document.createElement("textarea")
-      controller.element.append(textarea)
-      controller.hasQueryEditorTarget = true
-      controller.queryEditorTarget = textarea
-      controller.mountEditor()
-      try {
-        controller.refreshQueryEditor()
-        expect(controller.editor.getValue()).toBe(displayed)
-        expect(settings.selectedTry.queryParams).toBe(value)
-        controller.refreshQueryEditor()
-        expect(controller.editor.getValue()).toBe(displayed)
-      } finally {
-        controller.editor.view.destroy()
+    ])(
+      "formats URL parameters for display without changing saved input: %s",
+      (value, displayed) => {
+        const { controller, settings } = mount()
+        settings.selectedTry.queryParams = value
+        const textarea = document.createElement("textarea")
+        controller.element.append(textarea)
+        controller.hasQueryEditorTarget = true
+        controller.queryEditorTarget = textarea
+        controller.mountEditor()
+        try {
+          controller.refreshQueryEditor()
+          expect(controller.editor.getValue()).toBe(displayed)
+          expect(settings.selectedTry.queryParams).toBe(value)
+          controller.refreshQueryEditor()
+          expect(controller.editor.getValue()).toBe(displayed)
+        } finally {
+          controller.editor.view.destroy()
+        }
       }
-    })
+    )
 
     it("keeps CodeMirror edits in the selected try when extracting knobs and switching tabs", () => {
       const { controller, settings } = mount()
@@ -271,24 +296,32 @@ describe("TuneRelevanceController", () => {
   })
 
   describe("curator variables", () => {
-    it.each(["8", "1.12", "true", "-0.5"])("retains knob text %s at its original variable index", (value) => {
-      const variables = [{ name: "unused", value: "query", inQueryParams: false }, { name: "boost", value: "2", inQueryParams: true }]
-      const { controller, settings } = mount({ selectedTry: makeTry({ curatorVars: variables }) })
-      controller.refreshCuratorVars()
-      const input = controller.curatorVarsTarget.querySelector("input")
-      expect(input.dataset.tuneRelevanceIndexParam).toBe("1")
-      input.value = value
-      controller.updateCuratorVariable({ currentTarget: input, params: { index: 1 } })
-      expect(settings.selectedTry.curatorVars[1].value).toBe(value)
-      expect(settings.selectedTry.curatorVars[0].value).toBe("query")
-      controller.refreshCuratorVars()
-      expect(controller.curatorVarsTarget.querySelector("input").value).toBe(value)
-    })
+    it.each(["8", "1.12", "true", "-0.5"])(
+      "retains knob text %s at its original variable index",
+      (value) => {
+        const variables = [
+          { name: "unused", value: "query", inQueryParams: false },
+          { name: "boost", value: "2", inQueryParams: true }
+        ]
+        const { controller, settings } = mount({ selectedTry: makeTry({ curatorVars: variables }) })
+        controller.refreshCuratorVars()
+        const input = controller.curatorVarsTarget.querySelector("input")
+        expect(input.dataset.tuneRelevanceIndexParam).toBe("1")
+        input.value = value
+        controller.updateCuratorVariable({ currentTarget: input, params: { index: 1 } })
+        expect(settings.selectedTry.curatorVars[1].value).toBe(value)
+        expect(settings.selectedTry.curatorVars[0].value).toBe("query")
+        controller.refreshCuratorVars()
+        expect(controller.curatorVarsTarget.querySelector("input").value).toBe(value)
+      }
+    )
   })
 
   describe("displayed field selections", () => {
     it("preserves unchanged syntax, supports modifiers and custom values, refreshes, and cleans up", () => {
-      const { controller, settings } = mount({ fieldSpec: "id:movie_id, title:title overview thumb:poster_path" })
+      const { controller, settings } = mount({
+        fieldSpec: "id:movie_id, title:title overview thumb:poster_path"
+      })
       controller.refreshSettings()
       const select = controller.displayedFieldsSelect
       expect(select.items).toEqual(["id:movie_id", "title:title", "overview", "thumb:poster_path"])
@@ -297,7 +330,9 @@ describe("TuneRelevanceController", () => {
       select.addOption({ value: "cast", text: "cast" })
       select.addItem("cast")
       select.createItem("image:backdrop_path")
-      expect(controller.displayedFieldsValue()).toBe("id:movie_id, title:title, thumb:poster_path, cast, image:backdrop_path")
+      expect(controller.displayedFieldsValue()).toBe(
+        "id:movie_id, title:title, thumb:poster_path, cast, image:backdrop_path"
+      )
       settings.fieldSpec = "id:id title:name"
       controller.refreshSettings()
       expect(select.items).toEqual(["id:id", "title:name"])
@@ -314,7 +349,9 @@ describe("TuneRelevanceController", () => {
     controller.refreshSettings()
     expect(controller.displayedFieldsSelect.items).toEqual(["id:id", first, second, "overview"])
     expect(controller.displayedFieldsValue()).toBe(fieldSpec)
-    const item = [...controller.displayedFieldsSelect.control.children].find((element) => element.dataset.value === first)
+    const item = [...controller.displayedFieldsSelect.control.children].find(
+      (element) => element.dataset.value === first
+    )
     controller.displayedFieldsSelect.removeItem(item)
     expect(controller.displayedFieldsValue()).toBe(`id:id, ${second}, overview`)
     settings.fieldSpec = controller.displayedFieldsValue()
@@ -325,13 +362,22 @@ describe("TuneRelevanceController", () => {
 
   describe("displayed field discovery", () => {
     it("uses the wizard validator with proxy/auth settings and discovers fields without editing selections", async () => {
-      const { controller, capability } = mount({ fieldSpec: "id:id title:title", proxyRequests: true, customHeaders: '{"X-Test":"value"}' })
+      const { controller, capability } = mount({
+        fieldSpec: "id:id title:title",
+        proxyRequests: true,
+        customHeaders: '{"X-Test":"value"}'
+      })
       capability.settings.proxyUrlFor = vi.fn(() => "http://proxy/")
-      const validator = { fields: ["id", "title", "title_bidirect", "poster_path"], validateUrl: vi.fn().mockResolvedValue() }
+      const validator = {
+        fields: ["id", "title", "title_bidirect", "poster_path"],
+        validateUrl: vi.fn().mockResolvedValue()
+      }
       capability.search.createValidator = vi.fn(() => validator)
       controller.refreshSettings()
       await controller.discoverDisplayedFields()
-      expect(capability.search.createValidator).toHaveBeenCalledWith(expect.objectContaining({ proxyUrl: "http://proxy/", customHeaders: { "X-Test": "value" } }))
+      expect(capability.search.createValidator).toHaveBeenCalledWith(
+        expect.objectContaining({ proxyUrl: "http://proxy/", customHeaders: { "X-Test": "value" } })
+      )
       expect(controller.displayedFieldsSelect.options.title_bidirect).toBeDefined()
       controller.addDiscoveredFieldOptions("thumb:pos")
       expect(controller.displayedFieldsSelect.options["thumb:poster_path"]).toBeDefined()
@@ -344,7 +390,15 @@ describe("TuneRelevanceController", () => {
     it("ignores stale endpoint responses and retries failures without losing edits", async () => {
       const { controller, capability, settings } = mount({ fieldSpec: "id:id title:title" })
       let resolve
-      const validator = { fields: ["old_field"], validateUrl: vi.fn(() => new Promise(done => { resolve = done })) }
+      const validator = {
+        fields: ["old_field"],
+        validateUrl: vi.fn(
+          () =>
+            new Promise((done) => {
+              resolve = done
+            })
+        )
+      }
       capability.search.createValidator = vi.fn(() => validator)
       controller.refreshSettings()
       const pending = controller.discoverDisplayedFields()
@@ -372,7 +426,9 @@ describe("TuneRelevanceController", () => {
 
       controller.keepDrawerOpen()
 
-      expect(controller.paneOutlet.keepOpenAcrossNavigation).toHaveBeenCalledWith({ tab: "curator" })
+      expect(controller.paneOutlet.keepOpenAcrossNavigation).toHaveBeenCalledWith({
+        tab: "curator"
+      })
     })
 
     it("hands off the drawer and navigates only after the new try is saved", async () => {
@@ -381,7 +437,11 @@ describe("TuneRelevanceController", () => {
       controller.paneOutlet = { keepOpenAcrossNavigation: vi.fn() }
       controller.showTab("curator")
       let resolve
-      capability.settings.save.mockReturnValue(new Promise(done => { resolve = done }))
+      capability.settings.save.mockReturnValue(
+        new Promise((done) => {
+          resolve = done
+        })
+      )
 
       const pending = controller.save()
       expect(controller.paneOutlet.keepOpenAcrossNavigation).not.toHaveBeenCalled()
@@ -389,10 +449,13 @@ describe("TuneRelevanceController", () => {
       resolve({ tryNo: 4 })
       await pending
 
-      expect(controller.paneOutlet.keepOpenAcrossNavigation).toHaveBeenCalledWith({ tab: "curator" })
+      expect(controller.paneOutlet.keepOpenAcrossNavigation).toHaveBeenCalledWith({
+        tab: "curator"
+      })
       expect(capability.navigation.goToTry).toHaveBeenCalledWith(4)
-      expect(controller.paneOutlet.keepOpenAcrossNavigation.mock.invocationCallOrder[0])
-        .toBeLessThan(capability.navigation.goToTry.mock.invocationCallOrder[0])
+      expect(
+        controller.paneOutlet.keepOpenAcrossNavigation.mock.invocationCallOrder[0]
+      ).toBeLessThan(capability.navigation.goToTry.mock.invocationCallOrder[0])
     })
 
     it("rejects a non-numeric number of results", () => {
@@ -412,7 +475,9 @@ describe("TuneRelevanceController", () => {
       controller.save()
 
       expect(capability.settings.save).not.toHaveBeenCalled()
-      expect(errorFlash()).toEqual(["Please provide a valid formatted JSON object for the query DSL."])
+      expect(errorFlash()).toEqual([
+        "Please provide a valid formatted JSON object for the query DSL."
+      ])
     })
 
     it("pretty-prints valid JSON before saving", () => {
@@ -422,7 +487,9 @@ describe("TuneRelevanceController", () => {
 
       controller.save()
 
-      expect(settings.selectedTry.queryParams).toBe(JSON.stringify({ query: { match_all: {} } }, null, 2))
+      expect(settings.selectedTry.queryParams).toBe(
+        JSON.stringify({ query: { match_all: {} } }, null, 2)
+      )
       expect(capability.settings.save).toHaveBeenCalledWith(settings)
     })
 
@@ -444,7 +511,12 @@ describe("TuneRelevanceController", () => {
     it("blocks repeat submissions while a save is pending", async () => {
       const { controller, capability } = mount()
       let resolve
-      capability.settings.save.mockImplementationOnce(() => new Promise(resolveSave => { resolve = resolveSave }))
+      capability.settings.save.mockImplementationOnce(
+        () =>
+          new Promise((resolveSave) => {
+            resolve = resolveSave
+          })
+      )
       const pending = controller.save()
       await controller.save()
 
@@ -454,11 +526,18 @@ describe("TuneRelevanceController", () => {
       await pending
       expect(controller.saveButtonTarget.disabled).toBe(false)
     })
-
   })
 
   describe("endpoints", () => {
-    const endpoint = { id: 9, name: "Prod", searchEngine: "es", endpointUrl: "http://es", apiMethod: "POST", customHeaders: { a: 1 }, proxyRequests: true }
+    const endpoint = {
+      id: 9,
+      name: "Prod",
+      searchEngine: "es",
+      endpointUrl: "http://es",
+      apiMethod: "POST",
+      customHeaders: { a: 1 },
+      proxyRequests: true
+    }
 
     it("copies the chosen endpoint into settings and the selected try", () => {
       const { controller, settings } = mount()
@@ -470,21 +549,30 @@ describe("TuneRelevanceController", () => {
       expect(settings.searchEndpointId).toBe(9)
       expect(settings.searchUrl).toBe("http://es")
       expect(settings.customHeaders).toBe(JSON.stringify({ a: 1 }, null, 2))
-      expect(settings.selectedTry).toMatchObject({ searchEngine: "es", endpointName: "Prod", proxyRequests: true })
+      expect(settings.selectedTry).toMatchObject({
+        searchEngine: "es",
+        endpointName: "Prod",
+        proxyRequests: true
+      })
     })
 
-    it.each([undefined, null, ""])("copies absent endpoint method %s without wizard defaults", apiMethod => {
-      const { controller, settings } = mount()
-      controller.searchEndpoints = [{ id: 9, apiMethod, customHeaders: null, mapperBasedSearchEngineId: "vespa" }]
-      const queryParams = settings.selectedTry.queryParams
-      vi.spyOn(controller, "refresh").mockImplementation(() => {})
-      controller.updateEndpoint({ target: { value: "9" } })
-      expect(settings.apiMethod).toBe(apiMethod)
-      expect(settings.selectedTry.apiMethod).toBe(apiMethod)
-      expect(settings.selectedTry.customHeaders).toBeNull()
-      expect(settings.selectedTry.mapperBasedSearchEngineId).toBe("vespa")
-      expect(settings.selectedTry.queryParams).toBe(queryParams)
-    })
+    it.each([undefined, null, ""])(
+      "copies absent endpoint method %s without wizard defaults",
+      (apiMethod) => {
+        const { controller, settings } = mount()
+        controller.searchEndpoints = [
+          { id: 9, apiMethod, customHeaders: null, mapperBasedSearchEngineId: "vespa" }
+        ]
+        const queryParams = settings.selectedTry.queryParams
+        vi.spyOn(controller, "refresh").mockImplementation(() => {})
+        controller.updateEndpoint({ target: { value: "9" } })
+        expect(settings.apiMethod).toBe(apiMethod)
+        expect(settings.selectedTry.apiMethod).toBe(apiMethod)
+        expect(settings.selectedTry.customHeaders).toBeNull()
+        expect(settings.selectedTry.mapperBasedSearchEngineId).toBe("vespa")
+        expect(settings.selectedTry.queryParams).toBe(queryParams)
+      }
+    )
 
     it("ignores a selection that matches no endpoint", () => {
       const { controller, settings } = mount()
@@ -496,7 +584,6 @@ describe("TuneRelevanceController", () => {
       expect(settings.searchEndpointId).toBeUndefined()
       expect(refresh).not.toHaveBeenCalled()
     })
-
   })
 
   describe("try management", () => {
@@ -510,7 +597,6 @@ describe("TuneRelevanceController", () => {
       expect(capability.settings.duplicateTry).not.toHaveBeenCalled()
       expect(capability.settings.deleteTry).not.toHaveBeenCalled()
     })
-
   })
 
   describe("nightly and evaluation", () => {
@@ -522,6 +608,5 @@ describe("TuneRelevanceController", () => {
 
       expect(capability.case.updateNightly).not.toHaveBeenCalled()
     })
-
   })
 })

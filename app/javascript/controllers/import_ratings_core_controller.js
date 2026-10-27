@@ -17,10 +17,25 @@ const REQUIRED_HEADERS = {
 /** Core case import modal. Keeps the established core import formats and wording. */
 export default class extends CoreModalControllerBase {
   static targets = [
-    "title", "alert", "content", "warning", "warningText", "loading", "importButton",
-    "clearQueries", "createQueries", "csvFile", "rreFile", "ltrFile",
-    "informationNeedsFile", "snapshotsFile", "csvPreview", "informationNeedsPreview",
-    "snapshotsPreview", "file", "format"
+    "title",
+    "alert",
+    "content",
+    "warning",
+    "warningText",
+    "loading",
+    "importButton",
+    "clearQueries",
+    "createQueries",
+    "csvFile",
+    "rreFile",
+    "ltrFile",
+    "informationNeedsFile",
+    "snapshotsFile",
+    "csvPreview",
+    "informationNeedsPreview",
+    "snapshotsPreview",
+    "file",
+    "format"
   ]
 
   static values = {
@@ -42,7 +57,8 @@ export default class extends CoreModalControllerBase {
 
   openFor() {
     this.reset()
-    if (this.hasTitleTarget) this.titleTarget.textContent = `Import into Case: ${caseNameFromHeader()}`
+    if (this.hasTitleTarget)
+      this.titleTarget.textContent = `Import into Case: ${caseNameFromHeader()}`
   }
 
   reset() {
@@ -51,12 +67,18 @@ export default class extends CoreModalControllerBase {
     this.contents = {}
     this.errors = {}
     this.importFailure = null
-    this.contentTargets.forEach((target) => { target.textContent = "" })
+    this.contentTargets.forEach((target) => {
+      target.textContent = ""
+    })
     this.setError(this.hasAlertTarget ? this.alertTarget : null, "")
     if (this.hasClearQueriesTarget) this.clearQueriesTarget.checked = false
     if (this.hasCreateQueriesTarget) this.createQueriesTarget.checked = false
-    this.fileTargets.forEach((input) => { input.value = "" })
-    this.formatTargets.forEach((input) => { input.checked = false })
+    this.fileTargets.forEach((input) => {
+      input.value = ""
+    })
+    this.formatTargets.forEach((input) => {
+      input.checked = false
+    })
     this.setBusy(false) // also hides the "Importing…" row left over from a previous successful import
   }
 
@@ -137,7 +159,11 @@ export default class extends CoreModalControllerBase {
       body = { ltr_text: content, case_id: this.caseIdValue, clear_queries: this.clearQueries() }
       url = `${this.ratingsUrlValue}?file_format=ltr`
     } else {
-      body = { csv_text: content, case_id: this.caseIdValue, create_queries: this.hasCreateQueriesTarget && this.createQueriesTarget.checked }
+      body = {
+        csv_text: content,
+        case_id: this.caseIdValue,
+        create_queries: this.hasCreateQueriesTarget && this.createQueriesTarget.checked
+      }
       url = this.informationNeedsUrlValue
     }
     await this.post(url, body)
@@ -156,7 +182,8 @@ export default class extends CoreModalControllerBase {
       return await postJson(url, body)
     } catch (error) {
       if (error instanceof HttpError) {
-        error.message = error.data?.message || serverMessage(error, error.statusText || "Import failed.")
+        error.message =
+          error.data?.message || serverMessage(error, error.statusText || "Import failed.")
       }
       throw error
     }
@@ -164,7 +191,11 @@ export default class extends CoreModalControllerBase {
 
   validate(type, content) {
     if (type === "rre") {
-      try { JSON.parse(content) } catch { return "Invalid RRE JSON file." }
+      try {
+        JSON.parse(content)
+      } catch {
+        return "Invalid RRE JSON file."
+      }
       return ""
     }
     if (type === "ltr") {
@@ -179,7 +210,10 @@ export default class extends CoreModalControllerBase {
     }
     if (errors.length) {
       // Legacy's hint: an unquoted comma in a query is the usual cause of an extra column.
-      const hint = type === "snapshots" ? "" : `every line needs ${headers.length} columns, like the header. Wrap queries that contain commas in double quotes. `
+      const hint =
+        type === "snapshots"
+          ? ""
+          : `every line needs ${headers.length} columns, like the header. Wrap queries that contain commas in double quotes. `
       return `CSV format error: ${hint}${errors.join(" ")}`
     }
     if (rows.length === 0) return "The selected file has no data rows."
@@ -191,8 +225,13 @@ export default class extends CoreModalControllerBase {
   }
 
   renderPreview(type, content, sourceInput) {
-    const target = { csv: this.csvPreviewTarget, information_needs: this.informationNeedsPreviewTarget, snapshots: this.snapshotsPreviewTarget }[type]
-      || sourceInput?.parentElement?.querySelector("[data-import-ratings-core-target='content']")
+    const target =
+      {
+        csv: this.csvPreviewTarget,
+        information_needs: this.informationNeedsPreviewTarget,
+        snapshots: this.snapshotsPreviewTarget
+      }[type] ||
+      sourceInput?.parentElement?.querySelector("[data-import-ratings-core-target='content']")
     if (target) target.textContent = content
   }
 
@@ -201,38 +240,70 @@ export default class extends CoreModalControllerBase {
     const activeError = this.errors[this.selectedType] || failure
     this.setError(this.hasAlertTarget ? this.alertTarget : null, activeError)
     this.toggleVisible("warning", this.selectedType)
-    if (this.hasWarningTextTarget && this.selectedType) this.warningTextTarget.textContent = this.warningMessage()
-    if (this.hasImportButtonTarget) this.importButtonTarget.disabled = !this.canImport() || this.busy
+    if (this.hasWarningTextTarget && this.selectedType)
+      this.warningTextTarget.textContent = this.warningMessage()
+    if (this.hasImportButtonTarget)
+      this.importButtonTarget.disabled = !this.canImport() || this.busy
   }
 
   warningMessage() {
-    if (this.selectedType === "snapshots") return "This operation WILL replace any snapshots you have created that have the same Snapshot Name in the csv."
-    if (this.selectedType === "information_needs") return "This operation WILL override your existing information needs. Proceed with caution!"
+    if (this.selectedType === "snapshots")
+      return "This operation WILL replace any snapshots you have created that have the same Snapshot Name in the csv."
+    if (this.selectedType === "information_needs")
+      return "This operation WILL override your existing information needs. Proceed with caution!"
     return "This operation WILL override your existing ratings. Proceed with caution!"
   }
 
-  canImport() { return Boolean(this.selectedType && this.contents[this.selectedType] && !this.errors[this.selectedType]) }
-  clearQueries() { return this.hasClearQueriesTarget && this.clearQueriesTarget.checked }
+  canImport() {
+    return Boolean(
+      this.selectedType && this.contents[this.selectedType] && !this.errors[this.selectedType]
+    )
+  }
+  clearQueries() {
+    return this.hasClearQueriesTarget && this.clearQueriesTarget.checked
+  }
   successMessage() {
-    return this.selectedType === "snapshots" ? "Snapshots imported successfully!" : this.selectedType === "information_needs" ? "Successfully imported information needs from CSV." : `Successfully imported ${this.selectedType === "csv" ? "ratings from CSV" : `ratings from ${this.selectedType.toUpperCase()}`}.`
+    return this.selectedType === "snapshots"
+      ? "Snapshots imported successfully!"
+      : this.selectedType === "information_needs"
+        ? "Successfully imported information needs from CSV."
+        : `Successfully imported ${this.selectedType === "csv" ? "ratings from CSV" : `ratings from ${this.selectedType.toUpperCase()}`}.`
   }
   errorMessage(error) {
     const detail = error.message || "Import failed. Please try again."
     switch (this.selectedType) {
-      case "csv": return `Unable to import ratings from CSV: ${detail}`
-      case "rre": return `Unable to import ratings from RRE: ${detail}`
-      case "ltr": return `Unable to import ratings from LTR: ${detail}`
-      case "information_needs": return `Unable to import information needs from CSV. ${detail}`
-      case "snapshots": return "Could not import snapshots successfully! Please try again."
-      default: return detail
+      case "csv":
+        return `Unable to import ratings from CSV: ${detail}`
+      case "rre":
+        return `Unable to import ratings from RRE: ${detail}`
+      case "ltr":
+        return `Unable to import ratings from LTR: ${detail}`
+      case "information_needs":
+        return `Unable to import information needs from CSV. ${detail}`
+      case "snapshots":
+        return "Could not import snapshots successfully! Please try again."
+      default:
+        return detail
     }
   }
-  dispatchReload() { document.dispatchEvent(new CustomEvent(CORE_EVENTS.IMPORTS_QUERIES_NEED_RELOAD, { detail: { caseId: this.caseIdValue } })) }
-  flash(type, message) { coreFlash.show(type, message) }
+  dispatchReload() {
+    document.dispatchEvent(
+      new CustomEvent(CORE_EVENTS.IMPORTS_QUERIES_NEED_RELOAD, {
+        detail: { caseId: this.caseIdValue }
+      })
+    )
+  }
+  flash(type, message) {
+    coreFlash.show(type, message)
+  }
   setBusy(busy) {
     this.busy = busy
     this.setLoading(busy)
     this.refreshUi()
   }
-  setError(target, message) { if (!target) return; target.textContent = message; target.classList.toggle("d-none", !message) }
+  setError(target, message) {
+    if (!target) return
+    target.textContent = message
+    target.classList.toggle("d-none", !message)
+  }
 }

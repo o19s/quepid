@@ -14,13 +14,24 @@ function fixture(Controller, kind) {
   })
   document.body.append(instance.element)
   if (kind === "missing documents") {
-    instance.element.append(loadDynamicModalTemplate("missing-documents-modal-template").content.cloneNode(true))
+    instance.element.append(
+      loadDynamicModalTemplate("missing-documents-modal-template").content.cloneNode(true)
+    )
     instance.modalRootValue = true
     instance.hasQueryParamsTarget = true
     Object.defineProperty(instance, "queryParamsTarget", {
       get: () => instance.element.querySelector("textarea")
     })
-    for (const target of ["spinner", "status", "searchButton", "resetButton", "next", "supported", "unsupported", "engineName"]) {
+    for (const target of [
+      "spinner",
+      "status",
+      "searchButton",
+      "resetButton",
+      "next",
+      "supported",
+      "unsupported",
+      "engineName"
+    ]) {
       Object.defineProperty(instance, `${target}Target`, {
         get: () => instance.element.querySelector(`[data-missing-documents-target="${target}"]`)
       })
@@ -28,12 +39,14 @@ function fixture(Controller, kind) {
         get: () => Boolean(instance[`${target}Target`])
       })
     }
-    getCoreCapabilities.mockReturnValue({ targetedSearch: () => ({
-      usesQueryParamsEditor: true,
-      settings: { searchEngine: "es" },
-      initialQueryParams: () => '{"size":3}',
-      resetToRated: () => Promise.resolve()
-    }) })
+    getCoreCapabilities.mockReturnValue({
+      targetedSearch: () => ({
+        usesQueryParamsEditor: true,
+        settings: { searchEngine: "es" },
+        initialQueryParams: () => '{"size":3}',
+        resetToRated: () => Promise.resolve()
+      })
+    })
     instance.render = vi.fn()
   } else {
     instance.element.innerHTML = '<form><textarea>{"size":3}</textarea></form>'

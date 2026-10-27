@@ -120,11 +120,17 @@ export default class extends CoreModalControllerBase {
     )
     if (!applied) return
     this.closeModal()
-    coreFlash.show("notice", `Snapshot${selections.length === 1 ? "" : "s"} loaded successfully for comparison.`)
+    coreFlash.show(
+      "notice",
+      `Snapshot${selections.length === 1 ? "" : "s"} loaded successfully for comparison.`
+    )
   }
 
   async clear() {
-    const cleared = await this.callBridge(() => this.snapshotBridgeOutlet.clear(), "Could not fetch one or more snapshots!")
+    const cleared = await this.callBridge(
+      () => this.snapshotBridgeOutlet.clear(),
+      "Could not fetch one or more snapshots!"
+    )
     if (!cleared) return
     this.closeModal()
     coreFlash.show("notice", "Comparison view has been cleared.")
@@ -184,7 +190,12 @@ export default class extends CoreModalControllerBase {
       label.htmlFor = select.id
       select.dataset.diffCoreIndexParam = String(index)
       this.snapshots.forEach((snapshot) => {
-        this.addOption(select, String(snapshot.id), this.snapshotName(snapshot), isSameId(selected, snapshot.id))
+        this.addOption(
+          select,
+          String(snapshot.id),
+          this.snapshotName(snapshot),
+          isSameId(selected, snapshot.id)
+        )
       })
 
       const remove = row.querySelector("[data-slot='remove']")
@@ -202,7 +213,8 @@ export default class extends CoreModalControllerBase {
 
   updateSelectionButtons(row, selected) {
     const remove = row.querySelector("[data-slot='remove']")
-    remove.title = this.selectionValues.length > 1 ? "Remove this snapshot selection" : "Clear this selection"
+    remove.title =
+      this.selectionValues.length > 1 ? "Remove this snapshot selection" : "Clear this selection"
     remove.setAttribute("aria-label", remove.title)
     for (const button of [remove, row.querySelector("[data-slot='delete']")]) {
       button.classList.toggle("d-none", !selected)

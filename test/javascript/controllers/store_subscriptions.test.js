@@ -15,7 +15,12 @@ vi.mock("utils/core_store_access", () => ({ getCoreStores: () => stores }))
 vi.mock("utils/core_capability_access", () => ({ getCoreCapabilities: () => ({}) }))
 
 const cases = [
-  ["queries list", QueriesList, ["queries", "documents"], ["change", "reset", "search-failed", "search-started"]],
+  [
+    "queries list",
+    QueriesList,
+    ["queries", "documents"],
+    ["change", "reset", "search-failed", "search-started"]
+  ],
   ["diff score", DiffScore, ["documents"], ["change"]],
   ["case score", QscoreCase, ["scoring"], ["change", "scoring-complete", "rating-changed"]],
   ["query score", QscoreQuery, ["scoring"], ["change"]],
@@ -66,42 +71,77 @@ describe("controller store subscription lifecycles", () => {
     expect(controller.render).not.toHaveBeenCalled()
   })
 
-  it.each(cases)("%s preserves event lists and cleans up across reconnects", (_, Controller, storeNames, events) => {
-    const controller = buildControllerFixture(Controller, {
-      element: document.createElement("div"),
-      values: {
-        modalRoot: true
+  it.each(cases)(
+    "%s preserves event lists and cleans up across reconnects",
+    (_, Controller, storeNames, events) => {
+      const controller = buildControllerFixture(Controller, {
+        element: document.createElement("div"),
+        values: {
+          modalRoot: true
+        }
+      })
+      for (const method of [
+        "render",
+        "renderScore",
+        "renderLabel",
+        "scheduleRender",
+        "syncSortFromUrl",
+        "setupSortable",
+        "updateCreateState",
+        "renderFromStore",
+        "handleSearchFailed",
+        "handleSearchSettled",
+        "persistScore",
+        "refreshCaseDiffScores"
+      ]) {
+        controller[method] = vi.fn()
       }
-    })
-    for (const method of ["render", "renderScore", "renderLabel", "scheduleRender", "syncSortFromUrl", "setupSortable", "updateCreateState", "renderFromStore", "handleSearchFailed", "handleSearchSettled", "persistScore", "refreshCaseDiffScores"]) {
-      controller[method] = vi.fn()
+      controller.initialize?.()
+      controller.connect()
+      const store = stores[storeNames[0]]
+      expect(store.addEventListener.mock.calls.map(([event]) => event)).toEqual(events)
+      if (storeNames.length > 1) {
+        expect(stores.documents.addEventListener.mock.calls.map(([event]) => event)).toEqual([
+          "change",
+          "reset"
+        ])
+      }
+      // Initial work is owned by each controller, not by the subscription helper.
+      const initial =
+        Controller === QscoreCase
+          ? controller.renderScore
+          : Controller === Annotations
+            ? controller.updateCreateState
+            : controller.render
+      expect(initial).toHaveBeenCalledTimes(1)
+      const observer =
+        Controller === QueriesList
+          ? controller.scheduleRender
+          : Controller === QscoreCase
+            ? controller.renderScore
+            : Controller === Annotations
+              ? controller.updateCreateState
+              : Controller === SearchResults
+                ? controller.renderFromStore
+                : controller.render
+      observer.mockClear()
+      // Case diff scores only change with case-wide events, so that controller ignores one query's change.
+      const event = new CustomEvent("change", {
+        detail: { queryId: Controller === DiffCaseScores ? null : 7 }
+      })
+      store.dispatchEvent(event)
+      expect(observer).toHaveBeenCalledTimes(1)
+      if (Controller === SearchResults) expect(observer).toHaveBeenCalledWith(event.detail)
+      controller.disconnect()
+      expect(store.removeEventListener.mock.calls).toEqual(store.addEventListener.mock.calls)
+      observer.mockClear()
+      store.dispatchEvent(event)
+      expect(observer).not.toHaveBeenCalled()
+      controller.connect()
+      observer.mockClear()
+      store.dispatchEvent(event)
+      expect(observer).toHaveBeenCalledTimes(1)
+      controller.disconnect()
     }
-    controller.initialize?.()
-    controller.connect()
-    const store = stores[storeNames[0]]
-    expect(store.addEventListener.mock.calls.map(([event]) => event)).toEqual(events)
-    if (storeNames.length > 1) {
-      expect(stores.documents.addEventListener.mock.calls.map(([event]) => event)).toEqual(["change", "reset"])
-    }
-    // Initial work is owned by each controller, not by the subscription helper.
-    const initial = Controller === QscoreCase ? controller.renderScore : Controller === Annotations ? controller.updateCreateState : controller.render
-    expect(initial).toHaveBeenCalledTimes(1)
-    const observer = Controller === QueriesList ? controller.scheduleRender : Controller === QscoreCase ? controller.renderScore : Controller === Annotations ? controller.updateCreateState : Controller === SearchResults ? controller.renderFromStore : controller.render
-    observer.mockClear()
-    // Case diff scores only change with case-wide events, so that controller ignores one query's change.
-    const event = new CustomEvent("change", { detail: { queryId: Controller === DiffCaseScores ? null : 7 } })
-    store.dispatchEvent(event)
-    expect(observer).toHaveBeenCalledTimes(1)
-    if (Controller === SearchResults) expect(observer).toHaveBeenCalledWith(event.detail)
-    controller.disconnect()
-    expect(store.removeEventListener.mock.calls).toEqual(store.addEventListener.mock.calls)
-    observer.mockClear()
-    store.dispatchEvent(event)
-    expect(observer).not.toHaveBeenCalled()
-    controller.connect()
-    observer.mockClear()
-    store.dispatchEvent(event)
-    expect(observer).toHaveBeenCalledTimes(1)
-    controller.disconnect()
-  })
+  )
 })

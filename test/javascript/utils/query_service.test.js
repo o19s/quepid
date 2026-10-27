@@ -91,7 +91,11 @@ describe("query service helpers", () => {
       mapperFunctions: {}
     })
 
-    expect(result.args).toEqual({ q: "#$query##", fq: ["type:movie", "{!terms f=id}42"], echoParams: "all" })
+    expect(result.args).toEqual({
+      q: "#$query##",
+      fq: ["type:movie", "{!terms f=id}42"],
+      echoParams: "all"
+    })
     expect(result.searchEngine).toBe("solr")
     expect(result.searcherOptions).toMatchObject({
       customHeaders: '{"X-Test":"yes"}',
@@ -156,7 +160,10 @@ describe("query service helpers", () => {
 
   it("normalizes static settings to the Solr request shape", () => {
     const result = buildSearcherRequest({
-      settings: { searchEngine: "static", selectedTry: { args: { q: "test" }, jsonQueryParams: false } },
+      settings: {
+        searchEngine: "static",
+        selectedTry: { args: { q: "test" }, jsonQueryParams: false }
+      },
       queryText: "test"
     })
 
@@ -168,7 +175,10 @@ describe("query service helpers", () => {
     const settings = { selectedTry: { searchEngine: "solr", args: { q: "old" } }, numberOfRows: 10 }
     const result = settingsWithTryOverrides(settings, { args: { q: "new" } })
 
-    expect(result).toEqual({ selectedTry: { searchEngine: "solr", args: { q: "new" } }, numberOfRows: 10 })
+    expect(result).toEqual({
+      selectedTry: { searchEngine: "solr", args: { q: "new" } },
+      numberOfRows: 10
+    })
     expect(settings.selectedTry.args.q).toBe("old")
   })
 
@@ -186,7 +196,9 @@ describe("query service helpers", () => {
   })
 
   it("builds the synthetic match-feature explain tree", () => {
-    expect(matchFeaturesExplain({ fields: { score: 4 }, matchfeatures: { title: 3, body: 1 } })).toEqual({
+    expect(
+      matchFeaturesExplain({ fields: { score: 4 }, matchfeatures: { title: 3, body: 1 } })
+    ).toEqual({
       description: "sum of matched fields:",
       value: 4,
       details: [
@@ -255,11 +267,7 @@ describe("query service helpers", () => {
       const calls = []
       // 60 requests per minute: one task every 1000 ms.
       const promise = pAll(
-        [
-          async () => calls.push(1),
-          async () => calls.push(2),
-          async () => calls.push(3)
-        ],
+        [async () => calls.push(1), async () => calls.push(2), async () => calls.push(3)],
         60
       )
 
@@ -312,7 +320,17 @@ describe("query service helpers", () => {
   it("continues past synchronous throws and reports the failure after draining", async () => {
     const error = new Error("invalid search")
     const next = vi.fn(() => 2)
-    await expect(pAll([() => { throw error }, next], 0)).rejects.toBe(error)
+    await expect(
+      pAll(
+        [
+          () => {
+            throw error
+          },
+          next
+        ],
+        0
+      )
+    ).rejects.toBe(error)
     expect(next).toHaveBeenCalledOnce()
   })
 
@@ -321,11 +339,18 @@ describe("query service helpers", () => {
     try {
       const error = new Error("search failed")
       const calls = []
-      const batch = pAll([
-        async () => { calls.push(Date.now()); throw error },
-        async () => calls.push(Date.now()),
-        async () => calls.push(Date.now())
-      ], 60)
+      const batch = pAll(
+        [
+          async () => {
+            calls.push(Date.now())
+            throw error
+          },
+          async () => calls.push(Date.now()),
+          async () => calls.push(Date.now())
+        ],
+        60
+      )
+      // eslint-disable-next-line vitest/valid-expect -- awaited after the timers advance
       const result = expect(batch).rejects.toBe(error)
 
       await vi.advanceTimersByTimeAsync(999)
@@ -384,25 +409,29 @@ describe("query service helpers", () => {
     const onSearchFailed = vi.fn()
     const error = new Error("search failed")
 
-    await expect(runSearchAll({
-      queries: { first: { id: 1 } },
-      search: vi.fn().mockRejectedValue(error),
-      score: vi.fn(),
-      requestsPerMinute: 0,
-      scoreAll: vi.fn(),
-      syncToBook: vi.fn(),
-      onSearchStarted: () => 3,
-      onSearchCompleted: vi.fn(),
-      onSearchFailed,
-      logger: { info: vi.fn() }
-    })).rejects.toBe(error)
+    await expect(
+      runSearchAll({
+        queries: { first: { id: 1 } },
+        search: vi.fn().mockRejectedValue(error),
+        score: vi.fn(),
+        requestsPerMinute: 0,
+        scoreAll: vi.fn(),
+        syncToBook: vi.fn(),
+        onSearchStarted: () => 3,
+        onSearchCompleted: vi.fn(),
+        onSearchFailed,
+        logger: { info: vi.fn() }
+      })
+    ).rejects.toBe(error)
 
     expect(onSearchFailed).toHaveBeenCalledWith(error, 3)
     expect(onSearchFailed).toHaveBeenCalledOnce()
   })
   it("waits for book submission and reports its asynchronous failure before completing", async () => {
     let rejectSync
-    const submission = new Promise((_, reject) => { rejectSync = reject })
+    const submission = new Promise((_, reject) => {
+      rejectSync = reject
+    })
     const onSearchCompleted = vi.fn()
     const onSearchFailed = vi.fn()
     const syncToBook = vi.fn(() => submission)
@@ -417,6 +446,7 @@ describe("query service helpers", () => {
       onSearchFailed
     })
     const error = new Error("Book auto-sync failed")
+    // eslint-disable-next-line vitest/valid-expect -- awaited once the sync has run
     const failure = expect(result).rejects.toBe(error)
     await vi.waitFor(() => expect(syncToBook).toHaveBeenCalledOnce())
     expect(onSearchCompleted).not.toHaveBeenCalled()
@@ -428,7 +458,9 @@ describe("query service helpers", () => {
 
   it("returns scores only after the book submission is acknowledged", async () => {
     let acknowledge
-    const submission = new Promise((resolve) => { acknowledge = resolve })
+    const submission = new Promise((resolve) => {
+      acknowledge = resolve
+    })
     const syncToBook = vi.fn(() => submission)
     const onSearchCompleted = vi.fn()
     const scores = { score: 0.5 }
@@ -463,12 +495,19 @@ describe("query service helpers", () => {
     it("passes apiMethod only when the settings define one", () => {
       expect(build({ apiMethod: "POST" }).searcherOptions.apiMethod).toBe("POST")
       expect(build().searcherOptions).not.toHaveProperty("apiMethod")
-      expect(build({ apiMethod: "POST" }, { options: { forceApiMethod: "GET" } }).searcherOptions.apiMethod).toBe("GET")
+      expect(
+        build({ apiMethod: "POST" }, { options: { forceApiMethod: "GET" } }).searcherOptions
+          .apiMethod
+      ).toBe("GET")
     })
 
     it("sets the proxy url only when proxyRequests is exactly true", () => {
-      expect(build({ proxyRequests: true }, { proxyUrl: "/proxy" }).searcherOptions.proxyUrl).toBe("/proxy")
-      expect(build({ proxyRequests: false }, { proxyUrl: "/proxy" }).searcherOptions).not.toHaveProperty("proxyUrl")
+      expect(build({ proxyRequests: true }, { proxyUrl: "/proxy" }).searcherOptions.proxyUrl).toBe(
+        "/proxy"
+      )
+      expect(
+        build({ proxyRequests: false }, { proxyUrl: "/proxy" }).searcherOptions
+      ).not.toHaveProperty("proxyUrl")
       expect(build({}, { proxyUrl: "/proxy" }).searcherOptions).not.toHaveProperty("proxyUrl")
     })
 
@@ -479,12 +518,14 @@ describe("query service helpers", () => {
     })
 
     it("infers JSON query params for Solr from the shape of args when not explicit", () => {
-      const infer = (args) =>
-        build({ selectedTry: { args } }).solrQueryParamsIsJson
+      const infer = (args) => build({ selectedTry: { args } }).solrQueryParamsIsJson
       expect(infer({ q: ["a"], fq: ["b"] })).toBe(false)
       expect(infer({ q: ["a"], fq: "b" })).toBe(true)
       expect(infer({ query: "a" })).toBe(true)
-      expect(build({ selectedTry: { args: { query: "a" }, jsonQueryParams: false } }).solrQueryParamsIsJson).toBe(false)
+      expect(
+        build({ selectedTry: { args: { query: "a" }, jsonQueryParams: false } })
+          .solrQueryParamsIsJson
+      ).toBe(false)
     })
 
     it("adds the rating filter only when filterToRated and a filter are both present", () => {
@@ -509,14 +550,24 @@ describe("query service helpers", () => {
       const docsMapper = vi.fn()
       const evaluateMapper = vi.fn(() => ({ docsMapper }))
       const createSearcher = vi.fn()
-      createSearcherFromSettings({ settings: settings("searchapi"), query, evaluateMapper, createSearcher })
+      createSearcherFromSettings({
+        settings: settings("searchapi"),
+        query,
+        evaluateMapper,
+        createSearcher
+      })
       expect(evaluateMapper).toHaveBeenCalledWith("code")
       expect(createSearcher.mock.calls[0][4].docsMapper).toBe(docsMapper)
     })
 
     it("does not evaluate mapper code for other engines", () => {
       const evaluateMapper = vi.fn(() => ({}))
-      createSearcherFromSettings({ settings: settings("solr"), query, evaluateMapper, createSearcher: vi.fn() })
+      createSearcherFromSettings({
+        settings: settings("solr"),
+        query,
+        evaluateMapper,
+        createSearcher: vi.fn()
+      })
       expect(evaluateMapper).not.toHaveBeenCalled()
     })
   })
@@ -571,14 +622,24 @@ describe("createSearcherFromSettings mapper evaluation", () => {
     const docsMapper = vi.fn()
     const evaluateMapper = vi.fn(() => ({ docsMapper }))
     const createSearcher = vi.fn()
-    createSearcherFromSettings({ settings: settings("searchapi"), query, evaluateMapper, createSearcher })
+    createSearcherFromSettings({
+      settings: settings("searchapi"),
+      query,
+      evaluateMapper,
+      createSearcher
+    })
     expect(evaluateMapper).toHaveBeenCalledWith("code")
     expect(createSearcher.mock.calls[0][4].docsMapper).toBe(docsMapper)
   })
 
   it("does not evaluate mapper code for other engines", () => {
     const evaluateMapper = vi.fn(() => ({}))
-    createSearcherFromSettings({ settings: settings("solr"), query, evaluateMapper, createSearcher: vi.fn() })
+    createSearcherFromSettings({
+      settings: settings("solr"),
+      query,
+      evaluateMapper,
+      createSearcher: vi.fn()
+    })
     expect(evaluateMapper).not.toHaveBeenCalled()
   })
 })
@@ -655,6 +716,7 @@ describe("pAll error reporting and Solr filter wrapping", () => {
     await expect(pAll([failing("first"), failing("second")], 0)).rejects.toThrow("first")
     vi.useFakeTimers()
     const promise = pAll([failing("first"), failing("second")], 60000)
+    // eslint-disable-next-line vitest/valid-expect -- awaited after the timers advance
     const assertion = expect(promise).rejects.toThrow("first")
     await vi.runAllTimersAsync()
     await assertion
@@ -663,14 +725,20 @@ describe("pAll error reporting and Solr filter wrapping", () => {
 
   it("wraps an existing single Solr fq value before appending the rating filter", () => {
     const request = buildSearcherRequest({
-      settings: { searchEngine: "solr", selectedTry: { args: { q: ["a"], fq: "x" }, jsonQueryParams: false } },
+      settings: {
+        searchEngine: "solr",
+        selectedTry: { args: { q: ["a"], fq: "x" }, jsonQueryParams: false }
+      },
       queryText: "a",
       options: { filterToRated: true },
       ratingsFilter: "id:1"
     })
     expect(request.args.fq).toEqual(["x", "id:1"])
     const array = buildSearcherRequest({
-      settings: { searchEngine: "solr", selectedTry: { args: { q: ["a"], fq: ["x"] }, jsonQueryParams: false } },
+      settings: {
+        searchEngine: "solr",
+        selectedTry: { args: { q: ["a"], fq: ["x"] }, jsonQueryParams: false }
+      },
       queryText: "a",
       options: { filterToRated: true },
       ratingsFilter: "id:1"
@@ -686,6 +754,8 @@ describe("pAll error reporting and Solr filter wrapping", () => {
       ratingsFilter: { ids: [1] },
       isEsOrOs: true
     })
-    expect(request.args.query).toEqual({ bool: { should: { match_all: {} }, filter: { ids: [1] } } })
+    expect(request.args.query).toEqual({
+      bool: { should: { match_all: {} }, filter: { ids: [1] } }
+    })
   })
 })

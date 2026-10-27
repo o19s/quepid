@@ -14,11 +14,13 @@ beforeEach(() => {
 vi.mock("api/fetch", () => ({ apiFetch: vi.fn() }))
 vi.mock("modules/editor", () => ({
   fromTextArea: vi.fn(() => ({
-    getValue: vi.fn(() => "{\"boost\": 2}"),
+    getValue: vi.fn(() => '{"boost": 2}'),
     setValue: vi.fn()
   }))
 }))
-vi.mock("utils/core_capability_access", () => ({ getCoreCapabilities: vi.fn(() => ({ queryCapabilities: { getQuery: liveQuery } })) }))
+vi.mock("utils/core_capability_access", () => ({
+  getCoreCapabilities: vi.fn(() => ({ queryCapabilities: { getQuery: liveQuery } }))
+}))
 const liveQuery = vi.fn()
 vi.mock("utils/bs_modal", () => ({
   getOrCreateBsModal: vi.fn(() => ({ hide: vi.fn() })),
@@ -66,13 +68,18 @@ describe("QueryOptionsCoreController", () => {
 
     await instance.save({ preventDefault: vi.fn() })
 
-    expect(apiFetch).toHaveBeenCalledWith(instance.saveUrl, expect.objectContaining({
-      method: "PUT",
-      body: JSON.stringify({ query: { options: { boost: 2 } } })
-    }))
-    expect(saved).toHaveBeenCalledWith(expect.objectContaining({
-      detail: { queryId: "2", options: { boost: 2 } }
-    }))
+    expect(apiFetch).toHaveBeenCalledWith(
+      instance.saveUrl,
+      expect.objectContaining({
+        method: "PUT",
+        body: JSON.stringify({ query: { options: { boost: 2 } } })
+      })
+    )
+    expect(saved).toHaveBeenCalledWith(
+      expect.objectContaining({
+        detail: { queryId: "2", options: { boost: 2 } }
+      })
+    )
     expect(coreFlash.show).toHaveBeenCalledWith("notice", "Query options saved successfully.")
     expect(getOrCreateBsModal).toHaveBeenCalledWith(instance.element)
     document.removeEventListener("query-options:saved", saved)
@@ -132,37 +139,52 @@ describe("QueryOptionsCoreController", () => {
     expect(apiFetch).not.toHaveBeenCalled()
   })
 
-  it.each([200, 500])("keeps a reopened query untouched when the original save returns %s", async (status) => {
-    const instance = controller()
-    instance.saveUrlTemplateValue = "api/cases/1/queries/__QUERY_ID__/options"
-    let finish
-    apiFetch.mockImplementation(() => new Promise(resolve => { finish = resolve }))
-    const saved = vi.fn()
-    document.addEventListener("query-options:saved", saved)
-    const pending = instance.save({ preventDefault: vi.fn() })
-    const row = document.createElement("div")
-    row.dataset.queryId = "3"
-    instance.openFor(row.appendChild(document.createElement("button")))
-    instance.saveButtonTarget.disabled = true // B may have its own pending save.
+  it.each([200, 500])(
+    "keeps a reopened query untouched when the original save returns %s",
+    async (status) => {
+      const instance = controller()
+      instance.saveUrlTemplateValue = "api/cases/1/queries/__QUERY_ID__/options"
+      let finish
+      apiFetch.mockImplementation(
+        () =>
+          new Promise((resolve) => {
+            finish = resolve
+          })
+      )
+      const saved = vi.fn()
+      document.addEventListener("query-options:saved", saved)
+      const pending = instance.save({ preventDefault: vi.fn() })
+      const row = document.createElement("div")
+      row.dataset.queryId = "3"
+      instance.openFor(row.appendChild(document.createElement("button")))
+      instance.saveButtonTarget.disabled = true // B may have its own pending save.
 
-    finish(new Response("{}", { status }))
-    await pending
+      finish(new Response("{}", { status }))
+      await pending
 
-    if (status === 200) {
-      expect(saved).toHaveBeenCalledWith(expect.objectContaining({ detail: { queryId: "2", options: { boost: 2 } } }))
-    } else {
-      expect(saved).not.toHaveBeenCalled()
+      if (status === 200) {
+        expect(saved).toHaveBeenCalledWith(
+          expect.objectContaining({ detail: { queryId: "2", options: { boost: 2 } } })
+        )
+      } else {
+        expect(saved).not.toHaveBeenCalled()
+      }
+      expect(getOrCreateBsModal).not.toHaveBeenCalled()
+      expect(coreFlash.show).not.toHaveBeenCalled()
+      expect(instance.saveButtonTarget.disabled).toBe(true)
+      document.removeEventListener("query-options:saved", saved)
     }
-    expect(getOrCreateBsModal).not.toHaveBeenCalled()
-    expect(coreFlash.show).not.toHaveBeenCalled()
-    expect(instance.saveButtonTarget.disabled).toBe(true)
-    document.removeEventListener("query-options:saved", saved)
-  })
+  )
 
   it("does not submit the same opening twice while pending", async () => {
     const instance = controller()
     let finish
-    apiFetch.mockImplementation(() => new Promise(resolve => { finish = resolve }))
+    apiFetch.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          finish = resolve
+        })
+    )
     const pending = instance.save({ preventDefault: vi.fn() })
     await instance.save({ preventDefault: vi.fn() })
     expect(apiFetch).toHaveBeenCalledTimes(1)

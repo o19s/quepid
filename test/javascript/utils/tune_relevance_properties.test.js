@@ -7,7 +7,13 @@ it("preserves whole JSON definitions and their order across separator round trip
     fc.constantFrom("id:id", "title:title", "overview", "thumb:poster_path"),
     fc.jsonValue().map((options) => JSON.stringify({ type: "thumb", name: "poster_path", options }))
   )
-  fc.assert(fc.property(fc.array(field, { maxLength: 20 }), fc.constantFrom(" ", ", ", "\n", "+"), (fields, separator) => {
-    expect(fieldSpecTokens(fields.join(separator))).toEqual(fields)
-  }))
+  fc.assert(
+    fc.property(
+      fc.array(field, { maxLength: 20 }),
+      fc.constantFrom(" ", ", ", "\n", "+"),
+      (fields, separator) => {
+        expect(fieldSpecTokens(fields.join(separator))).toEqual(fields)
+      }
+    )
+  )
 })

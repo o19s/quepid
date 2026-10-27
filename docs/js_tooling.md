@@ -4,10 +4,12 @@ Quepid's first-party JavaScript is linted and tested as follows:
 
 | Tree | Role | Lint | Unit tests |
 |------|------|------|------------|
-| `app/javascript/` | Importmap + Stimulus + Turbo (`application.js`, controllers) | **ESLint** (full modern tree); **Prettier** (`api/`, `utils/` only) | **Vitest** (`test/javascript/**/*.test.js`, `vitest.config.js`) |
-| `test/javascript/`, `scripts/`, `lib/`, `db/scorers/`, `db/mapper_based_search_engines/` | Vitest specs, build/config tooling, and server-side JavaScript sandboxes | **ESLint** | Vitest specs where applicable |
+| `app/javascript/` | Importmap + Stimulus + Turbo (`application.js`, controllers) | **ESLint** (full modern tree); **Prettier** (same scope) | **Vitest** (`test/javascript/**/*.test.js`, `vitest.config.js`) |
+| `test/javascript/` | Vitest specs | **ESLint** (+ `@vitest/eslint-plugin`); **Prettier** | — |
+| `test/playwright/` | Playwright E2E specs (TypeScript) | **ESLint** (`typescript-eslint` + `eslint-plugin-playwright`); **Prettier**; **`tsc`** (`yarn typecheck:e2e`) | — |
+| `scripts/`, `lib/`, `db/scorers/`, `db/mapper_based_search_engines/` | Build/config tooling and server-side JavaScript sandboxes | **ESLint**; **Prettier** (`scripts/` only) | Vitest specs where applicable |
 
-Playwright E2E (`test/playwright/`) covers full-browser flows for both stacks; it is not a substitute for fast unit tests. Specs are TypeScript; `test/playwright/tsconfig.json` enables Node typings (`@types/node`) for `node:fs` / `node:path` imports.
+Playwright E2E (`test/playwright/`) covers full-browser flows for both stacks; it is not a substitute for fast unit tests. Specs are TypeScript; `test/playwright/tsconfig.json` (`strict`) enables Node typings (`@types/node`) for `node:fs` / `node:path` imports. Playwright strips types without checking them, so `yarn typecheck:e2e` (`tsc --noEmit`) is the type check. `typescript` stays on 6.0.x until `typescript-eslint` supports 7.
 
 ## ESLint + Prettier
 
@@ -16,7 +18,7 @@ Playwright E2E (`test/playwright/`) covers full-browser flows for both stacks; i
 Lint/format scope is defined once in **`config/javascript_lint_scope.mjs`** and used by:
 
 - `eslint.config.mjs` (ignores + file globs) — **all** first-party JavaScript
-- `scripts/javascript_lint.mjs` + `scripts/filter_javascript_prettier_paths.mjs` — **Prettier only on `api/` and `utils/`** for now (avoids a mass reformat of controllers/modules in one PR)
+- `scripts/javascript_lint.mjs` + `scripts/filter_javascript_prettier_paths.mjs` — **Prettier** on the `app/javascript/` ESLint scope plus `test/javascript/`, `test/playwright/` and `scripts/`
 - `scripts/filter_javascript_lint_paths.mjs` (ESLint pre-commit)
 - `bin/eslint-staged` / `bin/prettier-staged`
 
@@ -25,48 +27,45 @@ That tree includes:
 - `app/javascript/controllers/`, `api/`, `utils/`, `modules/`
 - Entry bundles: `application.js`, `core_stimulus.js`, `bootstrap_globals.js`, `vega_globals.js`
 
-**Excluded** (esbuild bridges / vendor — not importmap Stimulus):
-
-- `app/javascript/vendor/**`
-- `app/javascript/core_vendor.js`, `app/javascript/utils/splainer_search_runtime.js`
-
 Importmap bare imports (`api/fetch`, `utils/quepid_root`, npm pins) are not Node-resolvable; we do not use `eslint-plugin-import`.
 
 ESLint `no-unused-vars` is enforced throughout the linted `app/javascript/` tree, JavaScript tests, and build/config scripts. It remains off in server-side sandboxes, where declarations may be consumed outside the file. Use optional catch binding (`catch { ... }`) when the error is unused. `no-console` remains off. The server-side scorer and mapper files also disable rules that assume ordinary module scope because MiniRacer supplies their globals and evaluates user code in the same sandbox. Those files are still parsed and checked for standard syntax errors.
 
 ### Formatting conventions
 
-Quepid's `app/javascript/` style is **double quotes**, **no semicolons**, **no trailing commas** (`trailingComma: "none"` in `.prettierrc.json`), 2-space indent. Write **new** code to these conventions; do not reformat older lines or unrelated sections just to normalize style.
+Quepid's `app/javascript/` style is **double quotes**, **no semicolons**, **no trailing commas** (`trailingComma: "none"` in `.prettierrc.json`), 2-space indent. Prettier enforces these across the lint scope.
 
 **Trailing commas:** unlike many JS projects, Quepid does **not** use them in modern JS. Ruby is the opposite — RuboCop **requires** trailing commas on multiline hashes. See `CLAUDE.md` § Agent checklist.
 
-**Prettier** is enforced on **`api/` and `utils/`** only (via pre-commit and `yarn format:js*`). Do **not** run Prettier on `controllers/`, `modules/`, or entry bundles for now — whole-file Prettier would churn older single-quote files. Hand-apply modern style to **new** lines you add there.
+**Prettier** is enforced on the whole lint scope under `app/javascript/` plus `test/javascript/`, `test/playwright/` and `scripts/` (`config/javascript_lint_scope.mjs`) via pre-commit and `yarn format:js*`. Stylesheets under `app/assets/stylesheets/` are Prettier-formatted too, via `yarn format:css*`, `rails test:stylelint` and the `stylelint-staged` hook. Stylelint has no formatting rules, so the two never contradict, but run `stylelint --fix` before Prettier (`yarn fix:css` does both): a Stylelint fix such as quoting a font name can change how Prettier wraps the value. GitHub blame skips bulk reformat commits listed in `.git-blame-ignore-revs`.
 
-**ESLint** covers the full modern tree under `app/javascript/`, Vitest JavaScript specs, build/config scripts, `lib/`, and DB scorer/mapper sources. Pre-commit runs ESLint on staged `controllers/`, `modules/`, etc.; run the full `yarn lint:js` command before finishing. Specs follow formatting conventions manually.
+**ESLint** covers the full modern tree under `app/javascript/`, Vitest JavaScript specs, build/config scripts, `lib/`, and DB scorer/mapper sources. Pre-commit runs ESLint on staged `app/javascript/` files; run the full `yarn lint:js` command before finishing.
 
-**Mixed-style files** (e.g. an older controller with single quotes): modern conventions on **new** code; when changing an existing line, match its surrounding style.
+Spec rule sets: Vitest specs use `@vitest/eslint-plugin` recommended plus `no-focused-tests`; Playwright specs use `typescript-eslint` recommended and `eslint-plugin-playwright` recommended. Opinionated rules that clash with existing patterns (shared assertion helpers, data-dependent branches in E2E) are turned off in `eslint.config.mjs` with a comment; deliberate one-off exceptions use `eslint-disable-next-line <rule> -- <reason>`.
 
 `.editorconfig` still applies (e.g. final newline).
 
-`eslint-config-prettier` disables ESLint rules that conflict with Prettier; in `api/`/`utils/` run both (`lint:js` + `format:js:check`) — formatting is not enforced through ESLint plugins.
+`eslint-config-prettier` disables ESLint rules that conflict with Prettier; run both (`lint:js` + `format:js:check`) — formatting is not enforced through ESLint plugins.
 
 ### Commands
 
 ```bash
 bin/docker r yarn lint:js              # ESLint — first-party JavaScript scope
-bin/docker r yarn format:js:check      # Prettier check — api/, utils/
-bin/docker r yarn format:js            # Prettier write — api/, utils/
-bin/docker r rails test:eslint         # ESLint + Prettier check (CI-style)
-bin/docker r rails test:frontend       # Vitest + ESLint + Stylelint
+bin/docker r yarn format:js:check      # Prettier check — app/javascript/, test/javascript/, test/playwright/, scripts/
+bin/docker r yarn format:js            # Prettier write — same scope
+bin/docker r yarn format:css:check     # Prettier check — app/assets/stylesheets/
+bin/docker r yarn format:css           # Prettier write — app/assets/stylesheets/
+bin/docker r yarn fix:css              # stylelint --fix, then Prettier write (that order; see below)
+bin/docker r yarn typecheck:e2e        # tsc --noEmit on test/playwright/
+bin/docker r rails test:eslint         # ESLint + Prettier + Playwright tsc (CI-style)
+bin/docker r rails test:frontend       # Vitest + ESLint + Stylelint (each with its Prettier check)
 ```
 
-Per-file ESLint (e.g. a controller outside the Prettier scope):
+Per-file ESLint:
 
 ```bash
 bin/docker r npx eslint app/javascript/controllers/foo_controller.js
 ```
-
-Do not run `prettier --write` on paths outside `api/`/`utils/` unless you deliberately want a whole-file reformat.
 
 After pulling these dependencies, run `bin/docker r yarn install` once.
 
@@ -77,9 +76,10 @@ Run Vitest and Stryker inside the container, not on the host. `node_modules/` is
 `.githooks/pre-commit` (via `bin/install-git-hooks`) runs on staged files:
 
 - `app/javascript/**/*.js` (lint scope) → **ESLint** via `eslint-staged` + `filter_javascript_lint_paths.mjs`
-- `app/javascript/api/**` and `app/javascript/utils/**` → **Prettier** via `prettier-staged` + `filter_javascript_prettier_paths.mjs` (other modern paths are ESLint-only for now)
+- `app/javascript/**/*.js`, `test/javascript/**/*.js`, and `.js`/`.mjs`/`.ts` under `test/playwright/` and `scripts/` → **Prettier** via `prettier-staged` + `filter_javascript_prettier_paths.mjs`
+- `app/assets/stylesheets/*.css` → **Stylelint** + **Prettier** check via `stylelint-staged`
 
-[pre-commit.com](https://pre-commit.com) hooks: `eslint-staged`, `prettier-staged`, `stylelint-staged`.
+[pre-commit.com](https://pre-commit.com) hooks: `eslint-staged`, `prettier-staged`, `stylelint-staged` (Stylelint + Prettier check on CSS).
 
 ### Editor
 

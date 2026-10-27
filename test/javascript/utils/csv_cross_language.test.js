@@ -27,7 +27,8 @@ describe("CSV contract between the Ruby exporter and the JS importer", () => {
   // CsvExport keeps surrounding whitespace and quotes a blank as "". Both parse
   // to the same row, so those cases are compared after parsing; every other
   // case must match byte for byte.
-  const whitespaceSensitive = ({ values }) => values.some((value) => value === "" || value !== value.trim())
+  const whitespaceSensitive = ({ values }) =>
+    values.some((value) => value === "" || value !== value.trim())
 
   // parseCsv trims fields, so comparing parsed rows would let a leading-space
   // divergence such as " -1" vs "-1" through.

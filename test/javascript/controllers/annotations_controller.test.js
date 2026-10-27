@@ -5,7 +5,9 @@ import { apiFetch } from "api/fetch"
 import coreFlash from "utils/core_flash"
 
 vi.mock("api/fetch", () => ({ apiFetch: vi.fn() }))
-vi.mock("utils/bs_modal", () => ({ getOrCreateBsModal: vi.fn(() => ({ show: vi.fn(), hide: vi.fn() })) }))
+vi.mock("utils/bs_modal", () => ({
+  getOrCreateBsModal: vi.fn(() => ({ show: vi.fn(), hide: vi.fn() }))
+}))
 vi.mock("utils/core_flash", () => ({ default: { show: vi.fn(), hide: vi.fn() } }))
 
 const STREAM_TYPE = "text/vnd.turbo-stream.html"
@@ -36,7 +38,7 @@ function buildController() {
   })
   controller.scoringStore = {
     caseScore: { score: 0.8, allRated: true },
-    snapshot: () => ({ queryScores: { "11": { score: 1, maxScore: 1 } } }),
+    snapshot: () => ({ queryScores: { 11: { score: 1, maxScore: 1 } } }),
     addEventListener: vi.fn(),
     removeEventListener: vi.fn()
   }
@@ -53,7 +55,12 @@ function stream(action, target, html = "") {
 }
 
 function streamResponse(body) {
-  return { ok: true, status: 200, headers: new Headers({ "Content-Type": `${STREAM_TYPE}; charset=utf-8` }), text: async () => body }
+  return {
+    ok: true,
+    status: 200,
+    headers: new Headers({ "Content-Type": `${STREAM_TYPE}; charset=utf-8` }),
+    text: async () => body
+  }
 }
 
 // Turbo applies stream actions after the next repaint.
@@ -84,20 +91,25 @@ describe("AnnotationsController", () => {
   it("creates an annotation from the current case score and prepends it", async () => {
     const controller = buildController()
     renderRows(controller, rowHtml(8, "Earlier"))
-    apiFetch.mockResolvedValueOnce(streamResponse(stream("prepend", "case-annotations", rowHtml(9, "Tokenizer changed"))))
+    apiFetch.mockResolvedValueOnce(
+      streamResponse(stream("prepend", "case-annotations", rowHtml(9, "Tokenizer changed")))
+    )
     controller.messageTarget.value = "Tokenizer changed"
 
     await controller.create({ preventDefault: vi.fn() })
     await rendered()
 
-    expect(apiFetch).toHaveBeenCalledWith("/cases/7/annotations", expect.objectContaining({ method: "POST" }))
+    expect(apiFetch).toHaveBeenCalledWith(
+      "/cases/7/annotations",
+      expect.objectContaining({ method: "POST" })
+    )
     expect(JSON.parse(apiFetch.mock.calls[0][1].body)).toEqual({
       annotation: { message: "Tokenizer changed" },
       score: {
         all_rated: true,
         score: 0.8,
         try_id: 3,
-        queries: { "11": { score: 1, maxScore: 1 } }
+        queries: { 11: { score: 1, maxScore: 1 } }
       }
     })
     expect(rowIds(controller)).toEqual(["9", "8"])
@@ -163,8 +175,15 @@ describe("AnnotationsController", () => {
     const controller = buildController()
     controller.scoringStore.caseScore = { score: "--", allRated: true }
     controller.scoringStore.snapshot = () => ({ queryScores: {} })
-    controller.lastScoreValue = { all_rated: false, score: 0.4, try_id: 2, queries: { "11": { score: 0.4 } } }
-    apiFetch.mockResolvedValueOnce(streamResponse(stream("prepend", "case-annotations", rowHtml(9, "Endpoint down"))))
+    controller.lastScoreValue = {
+      all_rated: false,
+      score: 0.4,
+      try_id: 2,
+      queries: { 11: { score: 0.4 } }
+    }
+    apiFetch.mockResolvedValueOnce(
+      streamResponse(stream("prepend", "case-annotations", rowHtml(9, "Endpoint down")))
+    )
     controller.messageTarget.value = "Endpoint down"
 
     controller.updateCreateState()
@@ -204,7 +223,10 @@ describe("AnnotationsController", () => {
     await deleting
     await rendered()
 
-    expect(apiFetch).toHaveBeenCalledWith("/cases/7/annotations/9", { method: "DELETE", headers: { Accept: STREAM_TYPE } })
+    expect(apiFetch).toHaveBeenCalledWith("/cases/7/annotations/9", {
+      method: "DELETE",
+      headers: { Accept: STREAM_TYPE }
+    })
     expect(controller.rows()).toEqual([])
     expect(changed).toHaveBeenCalled()
   })
@@ -214,7 +236,9 @@ describe("AnnotationsController", () => {
     renderRows(controller, rowHtml(8, "First") + rowHtml(9, "Old"))
     controller.editingId = "9"
     controller.editMessageTarget.value = "Edited"
-    apiFetch.mockResolvedValueOnce(streamResponse(stream("replace", "annotation_9", rowHtml(9, "Edited"))))
+    apiFetch.mockResolvedValueOnce(
+      streamResponse(stream("replace", "annotation_9", rowHtml(9, "Edited")))
+    )
     const changed = vi.fn()
     document.addEventListener("annotations:changed", changed, { once: true })
     await controller.saveEdit({ preventDefault: vi.fn() })
@@ -229,9 +253,22 @@ describe("AnnotationsController", () => {
     renderRows(controller, rowHtml(8, "First") + rowHtml(9, "Old"))
     let finishDelete
     let finishEdit
-    apiFetch.mockImplementationOnce(() => new Promise(resolve => { finishDelete = resolve }))
-    apiFetch.mockImplementationOnce(() => new Promise(resolve => { finishEdit = resolve }))
-    const deleting = controller.delete({ preventDefault: vi.fn(), currentTarget: { dataset: { annotationId: "8" } } })
+    apiFetch.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          finishDelete = resolve
+        })
+    )
+    apiFetch.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          finishEdit = resolve
+        })
+    )
+    const deleting = controller.delete({
+      preventDefault: vi.fn(),
+      currentTarget: { dataset: { annotationId: "8" } }
+    })
     controller.editingId = "9"
     controller.editMessageTarget.value = "Edited"
     const saving = controller.saveEdit({ preventDefault: vi.fn() })
@@ -241,7 +278,9 @@ describe("AnnotationsController", () => {
     await saving
     await rendered()
     expect(rowIds(controller)).toEqual(["9"])
-    expect(controller.findAnnotation(9).querySelector(".annotation-message").textContent).toBe("Edited")
+    expect(controller.findAnnotation(9).querySelector(".annotation-message").textContent).toBe(
+      "Edited"
+    )
   })
 
   it("retains the draft and saved row when an edit fails", async () => {
@@ -260,8 +299,16 @@ describe("AnnotationsController", () => {
   it("rejects a successful response that is not a stream", async () => {
     const controller = buildController()
     renderRows(controller, rowHtml(9, "Saved"))
-    apiFetch.mockResolvedValueOnce({ ok: true, status: 200, headers: new Headers({ "Content-Type": "text/html" }), text: async () => "<html></html>" })
-    await controller.delete({ preventDefault: vi.fn(), currentTarget: { dataset: { annotationId: "9" } } })
+    apiFetch.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      headers: new Headers({ "Content-Type": "text/html" }),
+      text: async () => "<html></html>"
+    })
+    await controller.delete({
+      preventDefault: vi.fn(),
+      currentTarget: { dataset: { annotationId: "9" } }
+    })
     await rendered()
     expect(rowIds(controller)).toEqual(["9"])
     expect(coreFlash.show).toHaveBeenCalledWith("error", "Unable to delete Annotation.")

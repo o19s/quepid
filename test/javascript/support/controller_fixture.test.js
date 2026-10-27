@@ -3,7 +3,9 @@ import { buildControllerFixture } from "./controller_fixture"
 
 class ExampleController {
   connect() {}
-  readTitle() { return this.titleTarget.textContent }
+  readTitle() {
+    return this.titleTarget.textContent
+  }
 }
 
 describe("buildControllerFixture", () => {
@@ -38,7 +40,9 @@ describe("buildControllerFixture", () => {
 
   it("exposes outlets by camelCase name", () => {
     const bridge = { apply: vi.fn() }
-    const controller = buildControllerFixture(ExampleController, { outlets: { snapshotBridge: bridge, pane: null } })
+    const controller = buildControllerFixture(ExampleController, {
+      outlets: { snapshotBridge: bridge, pane: null }
+    })
 
     expect(controller.snapshotBridgeOutlet).toBe(bridge)
     expect(controller.snapshotBridgeOutlets).toEqual([bridge])

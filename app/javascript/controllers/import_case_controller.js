@@ -9,8 +9,8 @@ export default class extends ImportFormControllerBase {
     const file = event.target.files[0]
     if (file) {
       // Validate it's a JSON file
-      if (!file.type.match('application/json') && !file.name.endsWith('.json')) {
-        this.showAlert('Please select a valid JSON file.', 'danger')
+      if (!file.type.match("application/json") && !file.name.endsWith(".json")) {
+        this.showAlert("Please select a valid JSON file.", "danger")
         this.submitButtonTarget.disabled = true
       } else {
         this.hideAlert()
@@ -21,10 +21,10 @@ export default class extends ImportFormControllerBase {
 
   async submit(event) {
     event.preventDefault()
-    
+
     const file = this.fileInputTarget.files[0]
     if (!file) {
-      this.showAlert('Please select a file to import.', 'warning')
+      this.showAlert("Please select a file to import.", "warning")
       return
     }
 
@@ -36,11 +36,11 @@ export default class extends ImportFormControllerBase {
       // Read the file content
       const fileContent = await file.text()
       let caseData
-      
+
       try {
         caseData = JSON.parse(fileContent)
       } catch {
-        this.showAlert('Invalid JSON file. Please check the file format.', 'danger')
+        this.showAlert("Invalid JSON file. Please check the file format.", "danger")
         this.setLoading(false)
         return
       }
@@ -56,18 +56,23 @@ export default class extends ImportFormControllerBase {
         }
       }, 1500)
     } catch (error) {
-      console.error('Import error:', error)
+      console.error("Import error:", error)
       if (error instanceof HttpError) {
         const result = error.data || {}
         const validationMessages = Object.entries(result)
           .filter(([, value]) => Array.isArray(value))
           .map(([field, messages]) => `${field} ${messages.join(", ")}`)
-        this.showAlert(result.error || result.message || validationMessages.join(". ") || "Failed to import case. Please check the file format.", "danger")
+        this.showAlert(
+          result.error ||
+            result.message ||
+            validationMessages.join(". ") ||
+            "Failed to import case. Please check the file format.",
+          "danger"
+        )
       } else {
         this.showAlert("An error occurred while importing the case. Please try again.", "danger")
       }
       this.setLoading(false)
     }
   }
-
 }

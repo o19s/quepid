@@ -1,10 +1,40 @@
 import { Controller } from "@hotwired/stimulus"
 
-const normalizePrompt = text => (text || "").replace(/\r\n?/g, "\n").trim()
+const normalizePrompt = (text) => (text || "").replace(/\r\n?/g, "\n").trim()
 
 export default class extends Controller {
-  static targets = ["structured", "json", "jsonTab", "provider", "preset", "help", "url", "version", "model", "images", "imagesHidden", "imagesNotice", "imagesNoticeProvider", "providerOptionField", "systemPrompt", "systemPromptLabel", "systemPromptHint", "systemPromptWarning", "defaultPromptProvider", "criteriaTable", "criteriaProse", "runPromptButton", "needsScaleNotice"]
-  static values = { presets: Object, stockPrompts: Array, hasScale: Boolean, optionDefaults: Object, book: Boolean }
+  static targets = [
+    "structured",
+    "json",
+    "jsonTab",
+    "provider",
+    "preset",
+    "help",
+    "url",
+    "version",
+    "model",
+    "images",
+    "imagesHidden",
+    "imagesNotice",
+    "imagesNoticeProvider",
+    "providerOptionField",
+    "systemPrompt",
+    "systemPromptLabel",
+    "systemPromptHint",
+    "systemPromptWarning",
+    "defaultPromptProvider",
+    "criteriaTable",
+    "criteriaProse",
+    "runPromptButton",
+    "needsScaleNotice"
+  ]
+  static values = {
+    presets: Object,
+    stockPrompts: Array,
+    hasScale: Boolean,
+    optionDefaults: Object,
+    book: Boolean
+  }
 
   connect() {
     this.syncTab()
@@ -19,30 +49,44 @@ export default class extends Controller {
     }
     this.jsonActive = json
     this.jsonTarget.disabled = !json
-    this.structuredTargets.forEach(field => { field.disabled = json })
+    this.structuredTargets.forEach((field) => {
+      field.disabled = json
+    })
     this.updateProviderPanels()
   }
 
   showFieldsAsJson() {
     let stored
-    try { stored = JSON.parse(this.jsonTarget.value || "{}") } catch { return }
+    try {
+      stored = JSON.parse(this.jsonTarget.value || "{}")
+    } catch {
+      return
+    }
     if (!stored || typeof stored !== "object" || Array.isArray(stored)) return
     const options = { ...stored.judge_options }
-    this.structuredTargets.forEach(field => {
+    this.structuredTargets.forEach((field) => {
       if (!field.id.startsWith("judge_options_")) return
-      options[field.id.replace("judge_options_", "")] = field.type === "checkbox" ?
-        (field.dataset.unsupported === "true" ? field.dataset.wanted : String(field.checked)) : field.value
+      options[field.id.replace("judge_options_", "")] =
+        field.type === "checkbox"
+          ? field.dataset.unsupported === "true"
+            ? field.dataset.wanted
+            : String(field.checked)
+          : field.value
     })
     this.jsonTarget.value = JSON.stringify({ ...stored, judge_options: options }, null, 2)
   }
 
   applyJsonToFields() {
     let parsed
-    try { parsed = JSON.parse(this.jsonTarget.value) } catch { return }
+    try {
+      parsed = JSON.parse(this.jsonTarget.value)
+    } catch {
+      return
+    }
     if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return
     const options = parsed.judge_options ?? {}
     if (typeof options !== "object" || Array.isArray(options)) return
-    this.structuredTargets.forEach(field => {
+    this.structuredTargets.forEach((field) => {
       if (!field.id.startsWith("judge_options_")) return
       const key = field.id.replace("judge_options_", "")
       const value = Object.hasOwn(options, key) ? options[key] : this.optionDefaultsValue?.[key]
@@ -106,7 +150,8 @@ export default class extends Controller {
     const showNotice = this.bookValue ? missingScale : needsScale
 
     if (this.hasRunPromptButtonTarget) this.runPromptButtonTarget.disabled = missingScale
-    if (this.hasNeedsScaleNoticeTarget) this.needsScaleNoticeTarget.style.display = showNotice ? "" : "none"
+    if (this.hasNeedsScaleNoticeTarget)
+      this.needsScaleNoticeTarget.style.display = showNotice ? "" : "none"
   }
 
   syncImages() {
@@ -117,13 +162,17 @@ export default class extends Controller {
     field.checked = supported && field.dataset.wanted !== "false"
     field.disabled = !supported || this.jsonTabTarget.classList.contains("active")
     field.dataset.unsupported = String(!supported)
-    if (this.hasImagesHiddenTarget) this.imagesHiddenTarget.value = supported ? "false" : field.dataset.wanted
-    if (this.hasImagesNoticeProviderTarget) this.imagesNoticeProviderTarget.textContent = this.currentPreset()?.label || ""
+    if (this.hasImagesHiddenTarget)
+      this.imagesHiddenTarget.value = supported ? "false" : field.dataset.wanted
+    if (this.hasImagesNoticeProviderTarget)
+      this.imagesNoticeProviderTarget.textContent = this.currentPreset()?.label || ""
     if (this.hasImagesNoticeTarget) this.imagesNoticeTarget.style.display = supported ? "none" : ""
   }
 
   showHelp() {
-    const template = this.hasProviderTarget && this.presetTargets.find(preset => preset.dataset.provider === this.providerTarget.value)
+    const template =
+      this.hasProviderTarget &&
+      this.presetTargets.find((preset) => preset.dataset.provider === this.providerTarget.value)
     this.helpTarget.replaceChildren(...(template ? [template.content.cloneNode(true)] : []))
     this.helpTarget.style.display = template ? "block" : "none"
   }
@@ -151,7 +200,9 @@ export default class extends Controller {
       const mine = row.dataset.provider === provider
 
       row.style.display = mine ? "" : "none"
-      row.querySelectorAll("input").forEach((input) => { input.disabled = !mine || this.jsonTabTarget.classList.contains("active") })
+      row.querySelectorAll("input").forEach((input) => {
+        input.disabled = !mine || this.jsonTabTarget.classList.contains("active")
+      })
     })
   }
 
@@ -160,8 +211,10 @@ export default class extends Controller {
   showCriteria(preset) {
     const asCriteria = Boolean(preset?.scale_as_criteria)
 
-    if (this.hasCriteriaTableTarget) this.criteriaTableTarget.style.display = asCriteria ? "" : "none"
-    if (this.hasCriteriaProseTarget) this.criteriaProseTarget.style.display = asCriteria ? "none" : ""
+    if (this.hasCriteriaTableTarget)
+      this.criteriaTableTarget.style.display = asCriteria ? "" : "none"
+    if (this.hasCriteriaProseTarget)
+      this.criteriaProseTarget.style.display = asCriteria ? "none" : ""
   }
 
   isStockPrompt(text) {
@@ -199,7 +252,8 @@ export default class extends Controller {
     // old one, which is worse than useless: the stock chat prompt dictates a
     // 0-3 scale this book may not use, and an output format Jev cannot follow.
     const current = this.hasSystemPromptTarget ? this.systemPromptTarget.value : ""
-    const foreign = Boolean(preset?.system_prompt) &&
+    const foreign =
+      Boolean(preset?.system_prompt) &&
       this.isStockPrompt(current) &&
       normalizePrompt(preset.system_prompt) !== normalizePrompt(current)
 
@@ -220,5 +274,4 @@ export default class extends Controller {
     this.systemPromptTarget.value = preset.system_prompt
     this.describePromptField(preset)
   }
-
 }

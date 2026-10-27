@@ -42,12 +42,12 @@ describe("bulk action queries", () => {
     10: liveQuery(10, [], { missing: 0, allRated: true }),
     7: liveQuery(7, [liveDoc("c", { rating: 0 })], { missing: 0, allRated: true })
   }
-  const allDocs = Object.values(live).flatMap(query => query.docs)
+  const allDocs = Object.values(live).flatMap((query) => query.docs)
 
   // What the bulk actions read before: every query's docs published into the documents store.
   function storeQueries() {
     const store = new QueryDocumentsStore()
-    Object.values(live).forEach(query => {
+    Object.values(live).forEach((query) => {
       store.collection.upsert(query)
       store.replaceQuery(query.queryId, buildQueryDocumentsState({ query }))
     })
@@ -56,14 +56,25 @@ describe("bulk action queries", () => {
 
   it("gives the detailed CSV and the frog report what the documents store did", () => {
     const before = storeQueries()
-    allDocs.forEach(doc => [doc.explain, doc.hotMatchesOutOf, doc.score, doc.subSnippets].forEach(spy => spy.mockClear()))
+    allDocs.forEach((doc) =>
+      [doc.explain, doc.hotMatchesOutOf, doc.score, doc.subSnippets].forEach((spy) =>
+        spy.mockClear()
+      )
+    )
     const after = bulkActionQueries(live)
-    const caseData = { case_name: "Case", case_id: 1, last_score: { case_id: 1 }, teams: [{ name: "Team" }] }
+    const caseData = {
+      case_name: "Case",
+      case_id: 1,
+      last_score: { case_id: 1 },
+      teams: [{ name: "Team" }]
+    }
 
     expect(buildDetailedCaseCsv(caseData, after)).toBe(buildDetailedCaseCsv(caseData, before))
-    expect(buildFrogReportStats(bulkActionQueries(live, { withDocs: false }))).toEqual(buildFrogReportStats(before))
-    expect(after.map(query => query.queryId)).toEqual(before.map(query => query.queryId))
-    allDocs.forEach(doc => {
+    expect(buildFrogReportStats(bulkActionQueries(live, { withDocs: false }))).toEqual(
+      buildFrogReportStats(before)
+    )
+    expect(after.map((query) => query.queryId)).toEqual(before.map((query) => query.queryId))
+    allDocs.forEach((doc) => {
       expect(doc.explain).not.toHaveBeenCalled()
       expect(doc.score).not.toHaveBeenCalled()
       expect(doc.subSnippets).not.toHaveBeenCalled()
@@ -75,26 +86,51 @@ describe("bulk action queries", () => {
     expect(bulkActionQueries({ 1: { queryId: 1 } }, { withDocs: false })[0].docs).toEqual([])
     expect(bulkActionQueries(undefined)).toEqual([])
     const fields = ["title"]
-    expect(bulkActionQueries({ 1: { queryId: 1, fieldSpec: () => ({ fields }) } })[0].fieldSpec.fields).not.toBe(fields)
+    expect(
+      bulkActionQueries({ 1: { queryId: 1, fieldSpec: () => ({ fields }) } })[0].fieldSpec.fields
+    ).not.toBe(fields)
     expect(bulkActionQueries({ 1: { queryId: 1 } })[0]).toMatchObject({
-      fieldSpec: { fields: [] }, docs: [], allRated: false, missingRatings: null
+      fieldSpec: { fields: [] },
+      docs: [],
+      allRated: false,
+      missingRatings: null
     })
   })
 
   it("copies a doc's plain fields without its explain, score or snippets", () => {
     const doc = liveDoc("a", { rating: 3, thumb: true })
     expect(plainDocument(doc)).toEqual({
-      id: "a", title: "Title a", subs: { text: "text of a" }, thumb: "a.png", thumb_options: { prefix: "http://img/" },
-      image: undefined, image_options: undefined, hasThumb: true, hasImage: false, embeds: {}, translations: {},
-      unabridgeds: {}, rawFields: { id: "a", title: "Raw a", text: "text of a", year: 1999 }, error: undefined, rating: 3
+      id: "a",
+      title: "Title a",
+      subs: { text: "text of a" },
+      thumb: "a.png",
+      thumb_options: { prefix: "http://img/" },
+      image: undefined,
+      image_options: undefined,
+      hasThumb: true,
+      hasImage: false,
+      embeds: {},
+      translations: {},
+      unabridgeds: {},
+      rawFields: { id: "a", title: "Raw a", text: "text of a", year: 1999 },
+      error: undefined,
+      rating: 3
     })
-    expect(plainDocument({ id: "x" })).toMatchObject({ title: "", rawFields: {}, rating: null, hasThumb: false })
-    expect(plainDocument({ id: "y", doc: {}, hasRating: () => true })).toMatchObject({ rawFields: {}, rating: undefined })
+    expect(plainDocument({ id: "x" })).toMatchObject({
+      title: "",
+      rawFields: {},
+      rating: null,
+      hasThumb: false
+    })
+    expect(plainDocument({ id: "y", doc: {}, hasRating: () => true })).toMatchObject({
+      rawFields: {},
+      rating: undefined
+    })
 
     const extras = { embeds: { video: "v" }, translations: { fr: "t" }, unabridgeds: { body: "u" } }
     const copied = plainDocument({ id: "z", ...extras })
     expect(copied).toMatchObject(extras)
-    Object.keys(extras).forEach(key => expect(copied[key]).not.toBe(extras[key]))
+    Object.keys(extras).forEach((key) => expect(copied[key]).not.toBe(extras[key]))
     expect(doc.explain).not.toHaveBeenCalled()
     expect(doc.score).not.toHaveBeenCalled()
   })
@@ -150,7 +186,9 @@ describe("query document read model", () => {
 
     expect(buildQueryDocumentsState({ query }).resultsView).toBe(2)
     expect(buildQueryDocumentsState({ query, diffs: { searchers: [] } }).resultsView).toBe(2)
-    expect(buildQueryDocumentsState({ query, diffs: { searchers: [{ name: "Baseline" }] } }).resultsView).toBe(3)
+    expect(
+      buildQueryDocumentsState({ query, diffs: { searchers: [{ name: "Baseline" }] } }).resultsView
+    ).toBe(3)
   })
 
   it("disables pagination for Search API mapper engines", () => {

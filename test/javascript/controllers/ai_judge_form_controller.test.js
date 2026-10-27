@@ -5,7 +5,12 @@ import { buildControllerFixture } from "../support/controller_fixture"
 it("restores the active tab and only overwrites provider fields on a provider change", () => {
   const preset = document.createElement("template")
   preset.innerHTML = "<strong>Provider help</strong>"
-  Object.assign(preset.dataset, { provider: "ollama", url: "http://ollama:11434", version: "", model: "qwen" })
+  Object.assign(preset.dataset, {
+    provider: "ollama",
+    url: "http://ollama:11434",
+    version: "",
+    model: "qwen"
+  })
   const provider = document.createElement("select")
   provider.innerHTML = '<option value="ollama">Ollama</option>'
   const jsonTab = document.createElement("button")
@@ -13,8 +18,30 @@ it("restores the active tab and only overwrites provider fields on a provider ch
   const url = document.createElement("input")
   url.value = "custom URL"
   const controller = buildControllerFixture(AiJudgeFormController, {
-    values: { presets: { ollama: { llm_service_url: "http://ollama:11434", llm_api_version: "", llm_model: "qwen", supports_images: false }, openai: { supports_images: true } }, stockPrompts: [] },
-    targets: { providerOptionField: [], provider, preset: [preset], help: document.createElement("div"), structured: [url], json: document.createElement("textarea"), jsonTab, url, version: null, model: null }
+    values: {
+      presets: {
+        ollama: {
+          llm_service_url: "http://ollama:11434",
+          llm_api_version: "",
+          llm_model: "qwen",
+          supports_images: false
+        },
+        openai: { supports_images: true }
+      },
+      stockPrompts: []
+    },
+    targets: {
+      providerOptionField: [],
+      provider,
+      preset: [preset],
+      help: document.createElement("div"),
+      structured: [url],
+      json: document.createElement("textarea"),
+      jsonTab,
+      url,
+      version: null,
+      model: null
+    }
   })
   controller.connect()
   expect(url.disabled).toBe(true)
@@ -34,11 +61,32 @@ it("keeps image options disabled for Ollama and JSON editing and restores the sa
   images.type = "checkbox"
   images.checked = false
   const provider = document.createElement("select")
-  provider.innerHTML = '<option value="ollama">Ollama</option><option value="openai">OpenAI</option>'
+  provider.innerHTML =
+    '<option value="ollama">Ollama</option><option value="openai">OpenAI</option>'
   const jsonTab = document.createElement("button")
   const controller = buildControllerFixture(AiJudgeFormController, {
-    values: { presets: { ollama: { llm_service_url: "http://ollama:11434", llm_api_version: "", llm_model: "qwen", supports_images: false }, openai: { supports_images: true } }, stockPrompts: [] },
-    targets: { providerOptionField: [], provider, preset: [], help: document.createElement("div"), structured: [images], images, json: document.createElement("textarea"), jsonTab }
+    values: {
+      presets: {
+        ollama: {
+          llm_service_url: "http://ollama:11434",
+          llm_api_version: "",
+          llm_model: "qwen",
+          supports_images: false
+        },
+        openai: { supports_images: true }
+      },
+      stockPrompts: []
+    },
+    targets: {
+      providerOptionField: [],
+      provider,
+      preset: [],
+      help: document.createElement("div"),
+      structured: [images],
+      images,
+      json: document.createElement("textarea"),
+      jsonTab
+    }
   })
   controller.connect()
   expect(images.disabled).toBe(true)
@@ -53,19 +101,30 @@ it("keeps image options disabled for Ollama and JSON editing and restores the sa
 
 function buildController(overrides = {}) {
   const controller = Object.create(AiJudgeFormController.prototype)
-  Object.assign(controller, {
-    hasProviderTarget: true,
-    hasSystemPromptTarget: true, systemPromptTarget: { value: "" },
-    providerOptionFieldTargets: [], stockPromptsValue: [], presetsValue: {},
-    runPromptButtonTarget: document.createElement("button")
-  }, overrides)
+  Object.assign(
+    controller,
+    {
+      hasProviderTarget: true,
+      hasSystemPromptTarget: true,
+      systemPromptTarget: { value: "" },
+      providerOptionFieldTargets: [],
+      stockPromptsValue: [],
+      presetsValue: {},
+      runPromptButtonTarget: document.createElement("button")
+    },
+    overrides
+  )
   return controller
 }
 
 describe("AiJudgeFormController provider switching", () => {
   const presets = {
     openai: { system_prompt: "Chat prompt", prompt_label: "System prompt" },
-    typesafe_jev: { system_prompt: "Jev instructions", prompt_label: "Judging instructions", read_only: ["llm_model"] }
+    typesafe_jev: {
+      system_prompt: "Jev instructions",
+      prompt_label: "Judging instructions",
+      read_only: ["llm_model"]
+    }
   }
 
   it("swaps in the new provider's default over an untouched stock prompt", () => {
@@ -117,7 +176,11 @@ describe("AiJudgeFormController provider switching", () => {
 
   it("disables Run Judgement for a provider that needs a scale when there is none", () => {
     const notice = document.createElement("div")
-    const controller = buildController({ hasScaleValue: false, hasNeedsScaleNoticeTarget: true, needsScaleNoticeTarget: notice })
+    const controller = buildController({
+      hasScaleValue: false,
+      hasNeedsScaleNoticeTarget: true,
+      needsScaleNoticeTarget: notice
+    })
     controller.hasRunPromptButtonTarget = true
 
     AiJudgeFormController.prototype.updateRunAvailability.call(controller, { needs_scale: true })
@@ -138,7 +201,6 @@ describe("AiJudgeFormController provider switching", () => {
   })
 })
 
-
 it("keeps the wanted image choice across unsupported providers and JSON edits", () => {
   const images = document.createElement("input")
   images.id = "judge_options_llm_include_images"
@@ -146,14 +208,27 @@ it("keeps the wanted image choice across unsupported providers and JSON edits", 
   images.checked = true
   const hidden = document.createElement("input")
   const provider = document.createElement("select")
-  provider.innerHTML = '<option value="openai">OpenAI</option><option value="typesafe_jev">Jev</option>'
+  provider.innerHTML =
+    '<option value="openai">OpenAI</option><option value="typesafe_jev">Jev</option>'
   const jsonTab = document.createElement("button")
   const json = document.createElement("textarea")
   json.value = '{"other":{"retained":true},"judge_options":{"custom":"retained"}}'
   const controller = buildControllerFixture(AiJudgeFormController, {
-    values: { presets: { openai: { supports_images: true }, typesafe_jev: { supports_images: false } }, stockPrompts: [] },
-    targets: { providerOptionField: [], provider, preset: [], help: document.createElement("div"),
-      structured: [images], images, imagesHidden: hidden, json, jsonTab }
+    values: {
+      presets: { openai: { supports_images: true }, typesafe_jev: { supports_images: false } },
+      stockPrompts: []
+    },
+    targets: {
+      providerOptionField: [],
+      provider,
+      preset: [],
+      help: document.createElement("div"),
+      structured: [images],
+      images,
+      imagesHidden: hidden,
+      json,
+      jsonTab
+    }
   })
   controller.connect()
   provider.value = "typesafe_jev"
@@ -162,7 +237,10 @@ it("keeps the wanted image choice across unsupported providers and JSON edits", 
   expect(hidden.value).toBe("true")
   jsonTab.classList.add("active")
   controller.syncTab()
-  expect(JSON.parse(json.value)).toEqual({ other: { retained: true }, judge_options: { custom: "retained", llm_include_images: "true" } })
+  expect(JSON.parse(json.value)).toEqual({
+    other: { retained: true },
+    judge_options: { custom: "retained", llm_include_images: "true" }
+  })
   json.value = '{"judge_options":{"llm_include_images":false}}'
   jsonTab.classList.remove("active")
   controller.syncTab()
@@ -188,8 +266,14 @@ it("clears a removed confidence floor across JSON and structured tab switches", 
   const jsonTab = document.createElement("button")
   const controller = buildControllerFixture(AiJudgeFormController, {
     values: { presets: {}, stockPrompts: [] },
-    targets: { providerOptionField: [], preset: [], help: document.createElement("div"),
-      structured: [confidence], json, jsonTab }
+    targets: {
+      providerOptionField: [],
+      preset: [],
+      help: document.createElement("div"),
+      structured: [confidence],
+      json,
+      jsonTab
+    }
   })
   controller.connect()
   jsonTab.classList.add("active")
@@ -212,10 +296,22 @@ it("gates the active JSON provider and allows malformed JSON errors to be retrie
   const run = document.createElement("button")
   const notice = document.createElement("div")
   const controller = buildControllerFixture(AiJudgeFormController, {
-    values: { presets: { typesafe_jev: { needs_scale: true }, openai: { needs_scale: false } },
-      stockPrompts: [], hasScale: false },
-    targets: { providerOptionField: [], preset: [], provider, help: document.createElement("div"),
-      structured: [], json, jsonTab, runPromptButton: run, needsScaleNotice: notice }
+    values: {
+      presets: { typesafe_jev: { needs_scale: true }, openai: { needs_scale: false } },
+      stockPrompts: [],
+      hasScale: false
+    },
+    targets: {
+      providerOptionField: [],
+      preset: [],
+      provider,
+      help: document.createElement("div"),
+      structured: [],
+      json,
+      jsonTab,
+      runPromptButton: run,
+      needsScaleNotice: notice
+    }
   })
   json.value = '{"judge_options":{"llm_provider":"typesafe_jev"}}'
   controller.connect()
@@ -227,7 +323,7 @@ it("gates the active JSON provider and allows malformed JSON errors to be retrie
   json.value = '{"judge_options":{"llm_provider":"typesafe_jev"}}'
   controller.jsonChanged()
   expect(run.disabled).toBe(true)
-  json.value = '{'
+  json.value = "{"
   controller.jsonChanged()
   expect(run.disabled).toBe(false)
   json.value = '{"judge_options":{"llm_provider":"typesafe_jev"}}'
@@ -237,30 +333,44 @@ it("gates the active JSON provider and allows malformed JSON errors to be retrie
 })
 
 it("restores effective connection defaults for omitted keys without restoring a deleted confidence floor", () => {
-  const defaults = { llm_provider: "openai", llm_service_url: "https://api.openai.com", llm_model: "gpt-4o", llm_timeout: 30 }
-  const fields = Object.keys(defaults).concat("jev_min_confidence").map(key => {
-    const input = document.createElement("input")
-    input.id = `judge_options_${key}`
-    input.value = "old value"
-    return input
-  })
+  const defaults = {
+    llm_provider: "openai",
+    llm_service_url: "https://api.openai.com",
+    llm_model: "gpt-4o",
+    llm_timeout: 30
+  }
+  const fields = Object.keys(defaults)
+    .concat("jev_min_confidence")
+    .map((key) => {
+      const input = document.createElement("input")
+      input.id = `judge_options_${key}`
+      input.value = "old value"
+      return input
+    })
   const json = document.createElement("textarea")
   const controller = buildControllerFixture(AiJudgeFormController, {
-    values: { optionDefaults: defaults }, targets: { structured: fields, json }
+    values: { optionDefaults: defaults },
+    targets: { structured: fields, json }
   })
   for (const config of [{ judge_options: {} }, {}]) {
     json.value = JSON.stringify(config)
     controller.applyJsonToFields()
     controller.showFieldsAsJson()
     expect(JSON.parse(json.value).judge_options).toEqual({
-      ...defaults, llm_timeout: "30", jev_min_confidence: ""
+      ...defaults,
+      llm_timeout: "30",
+      jev_min_confidence: ""
     })
   }
-  json.value = '{"judge_options":{"llm_service_url":"https://custom.example","llm_model":"","llm_timeout":null}}'
+  json.value =
+    '{"judge_options":{"llm_service_url":"https://custom.example","llm_model":"","llm_timeout":null}}'
   controller.applyJsonToFields()
   controller.showFieldsAsJson()
   expect(JSON.parse(json.value).judge_options).toEqual({
-    llm_provider: "openai", llm_service_url: "https://custom.example", llm_model: "",
-    llm_timeout: "", jev_min_confidence: ""
+    llm_provider: "openai",
+    llm_service_url: "https://custom.example",
+    llm_model: "",
+    llm_timeout: "",
+    jev_min_confidence: ""
   })
 })

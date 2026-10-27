@@ -30,8 +30,18 @@ describe("CaseScoreStore", () => {
     })
 
     expect(store.caseScore).toEqual({ score: 0.75, allRated: false, maxScore: 1 })
-    expect(store.queryScore(1)).toEqual({ score: 0.5, maxScore: 1, text: "star wars", numFound: 8516 })
-    expect(store.queryScore("2")).toEqual({ score: 1, maxScore: 1, text: "star trek", numFound: 42 })
+    expect(store.queryScore(1)).toEqual({
+      score: 0.5,
+      maxScore: 1,
+      text: "star wars",
+      numFound: 8516
+    })
+    expect(store.queryScore("2")).toEqual({
+      score: 1,
+      maxScore: 1,
+      text: "star trek",
+      numFound: 42
+    })
   })
 
   it("derives caseScore.maxScore as the average of each query's own maxScore", () => {

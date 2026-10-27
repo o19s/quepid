@@ -17,8 +17,8 @@ describe("DiffScoreController", () => {
       },
       overrides: {
         store: {
-      query: () => ({ diffs: { searchers: [{ score: { score: 0.5 } }] } })
-    }
+          query: () => ({ diffs: { searchers: [{ score: { score: 0.5 } }] } })
+        }
       }
     })
 

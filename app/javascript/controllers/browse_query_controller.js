@@ -5,7 +5,15 @@ import { openDynamicModal } from "utils/dynamic_modal"
 import { createTemporaryFeedback } from "utils/temporary_feedback"
 
 export default class extends Controller {
-  static targets = ["engineName", "curl", "headersNotice", "noHeadersNotice", "directLink", "copyIcon", "copyLabel"]
+  static targets = [
+    "engineName",
+    "curl",
+    "headersNotice",
+    "noHeadersNotice",
+    "directLink",
+    "copyIcon",
+    "copyLabel"
+  ]
   static values = {
     url: String,
     engineName: String,
@@ -16,7 +24,9 @@ export default class extends Controller {
 
   connect() {
     if (!this.modalRootValue) return
-    this.engineNameTargets.forEach(node => { node.textContent = this.engineNameValue })
+    this.engineNameTargets.forEach((node) => {
+      node.textContent = this.engineNameValue
+    })
     this.curlTarget.textContent = this.commandValue
     const hasHeaders = Object.keys(this.headersValue || {}).length > 0
     this.headersNoticeTarget.classList.toggle("d-none", !hasHeaders)
@@ -56,10 +66,13 @@ export default class extends Controller {
   }
 
   showCopyFeedback(icon, label) {
-    this.copyFeedback.show(() => {
-      this.copyIconTarget.className = icon
-      this.copyLabelTarget.textContent = label
-    }, () => this.restoreCopyFeedback())
+    this.copyFeedback.show(
+      () => {
+        this.copyIconTarget.className = icon
+        this.copyLabelTarget.textContent = label
+      },
+      () => this.restoreCopyFeedback()
+    )
   }
 
   restoreCopyFeedback() {
