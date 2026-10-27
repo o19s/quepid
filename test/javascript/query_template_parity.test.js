@@ -16,7 +16,7 @@ const svc = new queryTemplateSvcConstructor({ deepClone: (value) => structuredCl
 
 describe("splainer-search query templates match test/fixtures/files/query_template_cases.json", () => {
   fixture.cases.forEach((testCase) => {
-    it(testCase.name, () => {
+    it(`${testCase.name}`, () => {
       const hydrated = svc.hydrate(testCase.template, testCase.query_text, {
         encodeURI: false,
         qOption: testCase.q_option
