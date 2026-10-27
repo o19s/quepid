@@ -4,13 +4,10 @@ module Embedders
   # Backs the embedder form's Check connection button: embeds a sample text with the *current* form
   # values, saved or not, and reports what came back. Never writes to the database.
   #
-  # embedder_id is a real id or the literal 'new'. For a saved embedder a blank key means
+  # Without an embedder_id the check runs on the unsaved form. With one, a blank key means
   # "use the saved one", since the form never shows it.
   class ConnectionChecksController < ApplicationController
     SAMPLE_TEXT = 'star wars'
-
-    # How many leading components to echo back -- enough to see it's a real vector.
-    PREVIEW_SIZE = 5
 
     def create
       embedder = build_embedder
@@ -19,17 +16,7 @@ module Embedders
         return
       end
 
-      text = params[:text].presence || SAMPLE_TEXT
-      started = Process.clock_gettime(Process::CLOCK_MONOTONIC)
-      vector = embedder.embed([ text ]).first
-      elapsed_ms = ((Process.clock_gettime(Process::CLOCK_MONOTONIC) - started) * 1000).round
-
-      render json: {
-        input:      embedder.render_input(text),
-        dimensions: vector.size,
-        preview:    vector.first(PREVIEW_SIZE),
-        elapsed_ms: elapsed_ms,
-      }
+      render json: embedder.check(params[:text].presence || SAMPLE_TEXT).to_h
     rescue EmbedderAdapters::Error => e
       render json: { error: e.message }, status: :bad_gateway
     end
@@ -37,7 +24,7 @@ module Embedders
     private
 
     def build_embedder
-      saved = current_user.embedders_involved_with.find_by(id: params[:embedder_id]) if 'new' != params[:embedder_id]
+      saved = current_user.embedders_involved_with.find(params.expect(:embedder_id)) if params.key?(:embedder_id)
       attributes = embedder_params
       attributes = attributes.except(:api_key) if saved && Embedder.keep_existing_key?(attributes[:api_key])
 

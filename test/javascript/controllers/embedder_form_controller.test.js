@@ -51,7 +51,7 @@ function select(values, selected) {
 function buildController({ provider = "openai", truncation = "none" } = {}) {
   const controller = Object.create(EmbedderFormController.prototype)
   controller.presetsValue = PRESETS
-  controller.checkUrlValue = "embedders/new/connection_check"
+  controller.checkUrlValue = "embedders/connection_check"
   controller.providerTarget = select(Object.keys(PRESETS), provider)
   controller.serviceUrlTarget = document.createElement("input")
   controller.modelTarget = document.createElement("input")
@@ -148,7 +148,7 @@ describe("EmbedderFormController", () => {
     await controller.check({ preventDefault: () => {} })
 
     const [url, init] = apiFetch.mock.calls[0]
-    expect(url).toBe("embedders/new/connection_check")
+    expect(url).toBe("embedders/connection_check")
     expect(init.method).toBe("POST")
     expect(init.body.has("_method")).toBe(false)
     expect(init.body.get("text")).toBe("star wars")

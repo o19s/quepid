@@ -21,7 +21,7 @@ module Embedders
     test 'embeds a sample with unsaved form values' do
       stub = stub_openai('sk-typed')
 
-      post embedder_connection_check_url('new'), params: {
+      post connection_check_embedders_url, params: {
         text:     'star wars',
         embedder: { provider: 'openai', service_url: 'https://api.openai.com', model: 'text-embedding-3-small',
                     api_key: 'sk-typed', truncation: 'native', dimensions: '512', timeout: '30' },
@@ -47,8 +47,16 @@ module Embedders
       assert_requested stub
     end
 
+    test 'an embedder the user cannot see is not found' do
+      post embedder_connection_check_url(embedders(:private_ollama)), params: {
+        embedder: { provider: 'ollama', service_url: 'http://ollama:11434', model: 'all-minilm' },
+      }
+
+      assert_response :not_found
+    end
+
     test 'a new OpenAI embedder without a key is refused before calling out' do
-      post embedder_connection_check_url('new'), params: {
+      post connection_check_embedders_url, params: {
         embedder: { provider: 'openai', service_url: 'https://api.openai.com', model: 'm', timeout: '30' },
       }
 
@@ -57,7 +65,7 @@ module Embedders
     end
 
     test 'reports invalid settings without calling out' do
-      post embedder_connection_check_url('new'), params: { embedder: { provider: 'openai', service_url: '', model: '' } }
+      post connection_check_embedders_url, params: { embedder: { provider: 'openai', service_url: '', model: '' } }
 
       assert_response :unprocessable_content
       assert_match(/Service url/, response.parsed_body['error'])
@@ -67,7 +75,7 @@ module Embedders
       stub_request(:post, 'https://api.openai.com/v1/embeddings')
         .to_return(status: 500, body: 'boom')
 
-      post embedder_connection_check_url('new'), params: {
+      post connection_check_embedders_url, params: {
         embedder: { provider: 'openai', service_url: 'https://api.openai.com', model: 'm', api_key: 'sk-x', timeout: '30' },
       }
 

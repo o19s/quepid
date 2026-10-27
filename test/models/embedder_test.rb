@@ -100,6 +100,31 @@ class EmbedderTest < ActiveSupport::TestCase
     end
   end
 
+  describe '#check' do
+    def stub_embeddings response
+      stub_request(:post, 'https://api.openai.com/v1/embeddings').to_return(response.merge(headers: { 'Content-Type' => 'application/json' }))
+    end
+
+    test 'reports the text sent, the vector size, a preview and the time taken' do
+      vector = Array.new(8) { |i| i / 10.0 }
+      stub_embeddings(status: 200, body: { data: [ { index: 0, embedding: vector } ] }.to_json)
+      embedder = build_embedder(instruction: 'Find films')
+
+      result = embedder.check('star wars')
+
+      assert_equal "Instruct: Find films\nQuery: star wars", result.input
+      assert_equal 8, result.dimensions
+      assert_equal vector.first(Embedder::CHECK_PREVIEW_SIZE), result.preview
+      assert_kind_of Integer, result.elapsed_ms
+    end
+
+    test 'lets a provider error through' do
+      stub_embeddings(status: 401, body: { error: { message: 'bad key' } }.to_json)
+
+      assert_raises(EmbedderAdapters::Error) { build_embedder.check('star wars') }
+    end
+  end
+
   describe '#render_input' do
     test 'sends the text as is without an instruction or template' do
       assert_equal 'star wars', build_embedder.render_input('star wars')

@@ -107,16 +107,16 @@ Rails.application.routes.draw do
 
   resources :ai_judges
 
-  # embedder_id is a real id or the literal 'new', like ai_judge_id above: a test
-  # runs the form's current values in memory and needs no saved embedder.
-  scope 'embedders' do
-    post ':embedder_id/connection_check', to: 'embedders/connection_checks#create', as: :embedder_connection_check
-  end
-
   resources :embedders do
     member do
       get 'clone'
     end
+    # A check runs the form's current values in memory: a collection route serves the
+    # unsaved form, a member route one that is saved (and can fall back on its saved key).
+    collection do
+      post 'connection_check', to: 'embedders/connection_checks#create', as: :connection_check
+    end
+    resource :connection_check, only: :create, module: :embedders
   end
 
   resources :teams, only: [] do

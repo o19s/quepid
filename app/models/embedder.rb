@@ -40,6 +40,13 @@ class Embedder < ApplicationRecord
   # Shown in the form and the API instead of the key itself.
   MASKED_API_KEY = '******'
 
+  # How many leading vector components a check echoes back -- enough to see it's a real vector.
+  CHECK_PREVIEW_SIZE = 5
+
+  # What a check found: the string sent, the vector's size, its first components and how
+  # long the provider took, in milliseconds.
+  CheckResult = Data.define(:input, :dimensions, :preview, :elapsed_ms)
+
   # Fields the embedder form and API accept; controllers permit this plus their own extras
   # (e.g. :archived, :team_ids).
   PERMITTED_PARAMS = [ :name, :provider, :service_url, :model, :api_key, :dimensions, :truncation, :instruction, :input_template, :timeout ].freeze
@@ -88,6 +95,15 @@ class Embedder < ApplicationRecord
   # Vectors for these texts, in order. See EmbedderAdapters::Base#embed.
   def embed texts, timeout: nil
     adapter.embed(Array(texts), timeout: timeout)
+  end
+
+  # Embeds one text to see whether the provider, URL, model and key work. Nothing is saved.
+  # Raises EmbedderAdapters::Error when the provider can't be reached or refuses.
+  def check text
+    vector = nil
+    elapsed_ms = ActiveSupport::Benchmark.realtime(:float_millisecond) { vector = embed(text).first }
+
+    CheckResult.new(input: render_input(text), dimensions: vector.size, preview: vector.first(CHECK_PREVIEW_SIZE), elapsed_ms: elapsed_ms.round)
   end
 
   # The string actually sent for a query: wrapped in the input template when there is one,
