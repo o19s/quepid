@@ -1,12 +1,12 @@
 <%# locals: (embedder:, form:, clone_of: nil) %>
-<%# A saved embedder (or the one being cloned) is tested with its saved key when the key
-    field is left blank -- see Embedders::TestsController. %>
+<%# A saved embedder (or the one being cloned) is checked with its saved key when the key
+    field is left blank -- see Embedders::ConnectionChecksController. %>
 <% key_source = embedder.persisted? ? embedder : clone_of %>
 <% provider = embedder.provider_definition %>
 <div class="card"
      data-controller="embedder-form"
      data-embedder-form-presets-value="<%= EmbedderProvider.presets.to_json %>"
-     data-embedder-form-test-url-value="<%= embedder_test_path(key_source&.id || 'new') %>">
+     data-embedder-form-check-url-value="<%= embedder_connection_check_path(key_source&.id || 'new') %>">
   <div class="card-header">
     <h5 class="mb-0"><%= render 'embedders/icon' %> Embedder<%= render 'embedders/beta' %></h5>
   </div>
@@ -153,19 +153,19 @@
 
     <hr>
 
-    <h5>Test</h5>
+    <h5>Check connection</h5>
     <p class="text-muted small">Embeds a sample query with the settings above, saved or not.</p>
     <div class="row g-2 align-items-center mb-3">
       <div class="col-sm-6">
         <input type="text" class="form-control" value="star wars" aria-label="Sample query"
-               data-embedder-form-target="testText">
+               data-embedder-form-target="checkText">
       </div>
       <div class="col-auto">
-        <button type="button" class="btn btn-primary" data-embedder-form-target="testButton"
-                data-action="click->embedder-form#test">Test</button>
+        <button type="button" class="btn btn-primary" data-embedder-form-target="checkButton"
+                data-action="click->embedder-form#check">Check connection</button>
       </div>
     </div>
-    <div data-embedder-form-target="testResult" aria-live="polite"></div>
+    <div data-embedder-form-target="checkResult" aria-live="polite"></div>
   </div>
 
   <div class="card-footer">

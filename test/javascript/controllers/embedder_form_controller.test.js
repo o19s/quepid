@@ -51,7 +51,7 @@ function select(values, selected) {
 function buildController({ provider = "openai", truncation = "none" } = {}) {
   const controller = Object.create(EmbedderFormController.prototype)
   controller.presetsValue = PRESETS
-  controller.testUrlValue = "embedders/new/test"
+  controller.checkUrlValue = "embedders/new/connection_check"
   controller.providerTarget = select(Object.keys(PRESETS), provider)
   controller.serviceUrlTarget = document.createElement("input")
   controller.modelTarget = document.createElement("input")
@@ -69,9 +69,9 @@ function buildController({ provider = "openai", truncation = "none" } = {}) {
     help.dataset.provider = key
     return help
   })
-  controller.testTextTarget = document.createElement("input")
-  controller.testButtonTarget = document.createElement("button")
-  controller.testResultTarget = document.createElement("div")
+  controller.checkTextTarget = document.createElement("input")
+  controller.checkButtonTarget = document.createElement("button")
+  controller.checkResultTarget = document.createElement("div")
   return controller
 }
 
@@ -128,12 +128,12 @@ describe("EmbedderFormController", () => {
     expect(controller.truncationTarget.value).toBe("none")
   })
 
-  it("test posts the form as a POST and shows the vector size", async () => {
+  it("check posts the form as a POST and shows the vector size", async () => {
     const controller = buildController()
     const form = document.createElement("form")
     form.innerHTML = '<input name="_method" value="patch"><input name="embedder[model]" value="m">'
     form.appendChild((controller.element = document.createElement("div")))
-    controller.testTextTarget.value = "star wars"
+    controller.checkTextTarget.value = "star wars"
     apiFetch.mockResolvedValue({
       ok: true,
       json: () =>
@@ -145,17 +145,17 @@ describe("EmbedderFormController", () => {
         })
     })
 
-    await controller.test({ preventDefault: () => {} })
+    await controller.check({ preventDefault: () => {} })
 
     const [url, init] = apiFetch.mock.calls[0]
-    expect(url).toBe("embedders/new/test")
+    expect(url).toBe("embedders/new/connection_check")
     expect(init.method).toBe("POST")
     expect(init.body.has("_method")).toBe(false)
     expect(init.body.get("text")).toBe("star wars")
-    expect(controller.testResultTarget.textContent).toContain("3 dimensions")
+    expect(controller.checkResultTarget.textContent).toContain("3 dimensions")
   })
 
-  it("test shows the server's error", async () => {
+  it("check shows the server's error", async () => {
     const controller = buildController()
     const form = document.createElement("form")
     form.appendChild((controller.element = document.createElement("div")))
@@ -165,9 +165,9 @@ describe("EmbedderFormController", () => {
       json: () => Promise.resolve({ error: "Ollama API error: 404" })
     })
 
-    await controller.test({ preventDefault: () => {} })
+    await controller.check({ preventDefault: () => {} })
 
-    expect(controller.testResultTarget.querySelector(".alert-danger").textContent).toBe(
+    expect(controller.checkResultTarget.querySelector(".alert-danger").textContent).toBe(
       "Ollama API error: 404"
     )
   })

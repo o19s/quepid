@@ -3,7 +3,7 @@
 require 'test_helper'
 
 module Embedders
-  class TestsControllerTest < ActionDispatch::IntegrationTest
+  class ConnectionChecksControllerTest < ActionDispatch::IntegrationTest
     let(:user) { users(:random) }
     let(:embedder) { embedders(:openai_small) }
 
@@ -21,7 +21,7 @@ module Embedders
     test 'embeds a sample with unsaved form values' do
       stub = stub_openai('sk-typed')
 
-      post embedder_test_url('new'), params: {
+      post embedder_connection_check_url('new'), params: {
         text:     'star wars',
         embedder: { provider: 'openai', service_url: 'https://api.openai.com', model: 'text-embedding-3-small',
                     api_key: 'sk-typed', truncation: 'native', dimensions: '512', timeout: '30' },
@@ -38,7 +38,7 @@ module Embedders
     test 'a saved embedder with a blank key is tested with its saved key' do
       stub = stub_openai('sk-test-openai')
 
-      post embedder_test_url(embedder), params: {
+      post embedder_connection_check_url(embedder), params: {
         embedder: { provider: 'openai', service_url: embedder.service_url, model: embedder.model, api_key: '',
                     truncation: 'native', dimensions: '512', timeout: '30' },
       }
@@ -48,7 +48,7 @@ module Embedders
     end
 
     test 'a new OpenAI embedder without a key is refused before calling out' do
-      post embedder_test_url('new'), params: {
+      post embedder_connection_check_url('new'), params: {
         embedder: { provider: 'openai', service_url: 'https://api.openai.com', model: 'm', timeout: '30' },
       }
 
@@ -57,7 +57,7 @@ module Embedders
     end
 
     test 'reports invalid settings without calling out' do
-      post embedder_test_url('new'), params: { embedder: { provider: 'openai', service_url: '', model: '' } }
+      post embedder_connection_check_url('new'), params: { embedder: { provider: 'openai', service_url: '', model: '' } }
 
       assert_response :unprocessable_content
       assert_match(/Service url/, response.parsed_body['error'])
@@ -67,7 +67,7 @@ module Embedders
       stub_request(:post, 'https://api.openai.com/v1/embeddings')
         .to_return(status: 500, body: 'boom')
 
-      post embedder_test_url('new'), params: {
+      post embedder_connection_check_url('new'), params: {
         embedder: { provider: 'openai', service_url: 'https://api.openai.com', model: 'm', api_key: 'sk-x', timeout: '30' },
       }
 

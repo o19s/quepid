@@ -2,12 +2,12 @@ import { Controller } from "@hotwired/stimulus"
 import { apiFetch } from "api/fetch"
 
 // Embedder form (app/views/embedders/_form.html.erb): shows only the fields the chosen
-// provider can use, fills in its defaults when the provider changes, and runs the Test
-// button against Embedders::TestsController with the form's current values.
+// provider can use, fills in its defaults when the provider changes, and runs the Check connection
+// button against Embedders::ConnectionChecksController with the form's current values.
 //
 // presets come from EmbedderProvider.presets, keyed by provider.
 export default class extends Controller {
-  static values = { presets: Object, testUrl: String }
+  static values = { presets: Object, checkUrl: String }
 
   static targets = [
     "provider",
@@ -22,9 +22,9 @@ export default class extends Controller {
     "dimensionsHint",
     "instructionFields",
     "help",
-    "testText",
-    "testButton",
-    "testResult"
+    "checkText",
+    "checkButton",
+    "checkResult"
   ]
 
   connect() {
@@ -78,20 +78,20 @@ export default class extends Controller {
         : ""
   }
 
-  async test(event) {
+  async check(event) {
     event.preventDefault()
 
     const form = this.element.closest("form")
     const data = new FormData(form)
-    // The edit form overrides its method to PATCH; the test endpoint is a POST.
+    // The edit form overrides its method to PATCH; the connection check endpoint is a POST.
     data.delete("_method")
-    data.set("text", this.testTextTarget.value)
+    data.set("text", this.checkTextTarget.value)
 
-    this.setButtonLoading(this.testButtonTarget, true)
-    this.testResultTarget.replaceChildren()
+    this.setButtonLoading(this.checkButtonTarget, true)
+    this.checkResultTarget.replaceChildren()
 
     try {
-      const response = await apiFetch(this.testUrlValue, {
+      const response = await apiFetch(this.checkUrlValue, {
         method: "POST",
         headers: { Accept: "application/json" },
         body: data
@@ -102,7 +102,7 @@ export default class extends Controller {
       const preview = result.preview.map((value) => value.toFixed(5)).join(", ")
       const sent = element("code", { className: "text-break", text: result.input })
       sent.style.whiteSpace = "pre-wrap"
-      this.testResultTarget.replaceChildren(
+      this.checkResultTarget.replaceChildren(
         element("div", { className: "alert alert-success small mb-0" }, [
           element("div", {}, [
             element("strong", { text: `${result.dimensions} dimensions` }),
@@ -113,11 +113,11 @@ export default class extends Controller {
         ])
       )
     } catch (error) {
-      this.testResultTarget.replaceChildren(
+      this.checkResultTarget.replaceChildren(
         element("div", { className: "alert alert-danger small mb-0", text: error.message })
       )
     } finally {
-      this.setButtonLoading(this.testButtonTarget, false)
+      this.setButtonLoading(this.checkButtonTarget, false)
     }
   }
 

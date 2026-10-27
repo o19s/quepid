@@ -1,12 +1,12 @@
 # frozen_string_literal: true
 
 module Embedders
-  # Backs the embedder form's Test button: embeds a sample text with the *current* form
+  # Backs the embedder form's Check connection button: embeds a sample text with the *current* form
   # values, saved or not, and reports what came back. Never writes to the database.
   #
   # embedder_id is a real id or the literal 'new'. For a saved embedder a blank key means
   # "use the saved one", since the form never shows it.
-  class TestsController < ApplicationController
+  class ConnectionChecksController < ApplicationController
     SAMPLE_TEXT = 'star wars'
 
     # How many leading components to echo back -- enough to see it's a real vector.

@@ -15,19 +15,19 @@ For a local run, the Ollama container needs an embedding model: `docker exec oll
   2. Cycle the **Provider** dropdown through OpenAI, Voyage AI, Cohere, Ollama and OpenAI-compatible.
   3. For each, confirm URL and Model fill with that provider's defaults and the **Provider notes** panel updates. OpenAI, Voyage and Cohere show the API key (marked required) and hide Instruction/Input template; Ollama hides the API key and shows Instruction/Input template; OpenAI-compatible shows both.
   4. Pick Ollama, set Model to an installed embedding model, Truncation **Native**, Dimensions `128`, and an Instruction.
-  5. Click **Test**.
+  5. Click **Check connection**.
   6. Save.
-- **Expected:** Test shows the dimension count, the exact text sent (the instruction wrapped in `Instruct: … / Query: …`) and the first few vector values. Saving redirects to the embedder's edit page with "Embedder was successfully created."
+- **Expected:** Check connection shows the dimension count, the exact text sent (the instruction wrapped in `Instruct: … / Query: …`) and the first few vector values. Saving redirects to the embedder's edit page with "Embedder was successfully created."
 - **Edge cases:**
   - [ ] Voyage AI with Native truncation and Dimensions `300` — Save shows "Dimensions must be one of 256, 512, 1024 or 2048 for Voyage AI".
   - [ ] Truncation **Client-side** shows the Matryoshka warning; the Native option is disabled for a provider without a dimensions parameter.
-  - [ ] A wrong key or unreachable URL — Test shows the provider's error in red rather than failing silently.
+  - [ ] A wrong key or unreachable URL — Check connection shows the provider's error in red rather than failing silently.
 
 ### 19.2 Edit, clone, share and delete an embedder
 
 - [ ] **Steps:**
   1. Open a saved embedder. Confirm the API key field is empty, with the placeholder "Saved — leave blank to keep it".
-  2. Click **Test** without typing a key — it should use the saved key.
+  2. Click **Check connection** without typing a key — it should use the saved key.
   3. Change the name, check a team under **Teams to Share this Embedder With**, save.
   4. From the list, **Clone** it and save the clone without typing a key.
   5. Sign in as a member of the shared team and confirm the embedder appears in their list.
