@@ -57,7 +57,8 @@ bin/docker r bin/rake db:migrate
 echo -e "\n== Removing old logs and tempfiles =="
 bin/docker r rails log:clear tmp:clear
 
-echo -e "\n== Setting up stupid simple model to power LLM as a Judge for Development =="
+echo -e "\n== Setting up stupid simple models in Ollama for development needs =="
+docker exec ollama ollama pull all-minilm
 docker exec ollama ollama pull qwen3:0.6b
 
 echo -e "\n== Setting up Seed Data for Development =="
