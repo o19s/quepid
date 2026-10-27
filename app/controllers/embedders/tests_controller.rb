@@ -39,7 +39,7 @@ module Embedders
     def build_embedder
       saved = current_user.embedders_involved_with.find_by(id: params[:embedder_id]) if 'new' != params[:embedder_id]
       attributes = embedder_params
-      attributes = attributes.except(:api_key) if saved && (attributes[:api_key].blank? || Embedder::MASKED_API_KEY == attributes[:api_key])
+      attributes = attributes.except(:api_key) if saved && Embedder.keep_existing_key?(attributes[:api_key])
 
       embedder = saved ? saved.dup : Embedder.new
       embedder.assign_attributes(attributes)
@@ -49,8 +49,7 @@ module Embedders
     end
 
     def embedder_params
-      params.expect(embedder: [ :name, :provider, :service_url, :model, :api_key, :dimensions,
-                                :truncation, :instruction, :input_template, :timeout ])
+      params.expect(embedder: Embedder::PERMITTED_PARAMS)
     end
   end
 end

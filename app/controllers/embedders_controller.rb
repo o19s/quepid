@@ -91,13 +91,12 @@ class EmbeddersController < ApplicationController
 
   # The form never shows the saved key, so a blank or masked key means "keep it".
   def embedder_params
-    permitted = params.expect(embedder: [ :name, :provider, :service_url, :model, :api_key, :dimensions,
-                                          :truncation, :instruction, :input_template, :timeout ])
+    permitted = params.expect(embedder: Embedder::PERMITTED_PARAMS)
     permitted = permitted.except(:api_key) if keep_api_key?(permitted[:api_key])
     permitted
   end
 
   def keep_api_key? submitted
-    @embedder&.persisted? && (submitted.blank? || Embedder::MASKED_API_KEY == submitted)
+    @embedder&.persisted? && Embedder.keep_existing_key?(submitted)
   end
 end

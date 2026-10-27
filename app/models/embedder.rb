@@ -40,6 +40,10 @@ class Embedder < ApplicationRecord
   # Shown in the form and the API instead of the key itself.
   MASKED_API_KEY = '******'
 
+  # Fields the embedder form and API accept; controllers permit this plus their own extras
+  # (e.g. :archived, :team_ids).
+  PERMITTED_PARAMS = [ :name, :provider, :service_url, :model, :api_key, :dimensions, :truncation, :instruction, :input_template, :timeout ].freeze
+
   # too late now!
   # rubocop:disable-next Rails/HasAndBelongsToMany
   has_and_belongs_to_many :teams,
@@ -74,7 +78,7 @@ class Embedder < ApplicationRecord
   validate :input_template_has_query
 
   def provider_definition
-    EmbedderProvider.find(provider)
+    @provider_definition ||= EmbedderProvider.find(provider)
   end
 
   def adapter
@@ -109,6 +113,11 @@ class Embedder < ApplicationRecord
 
   def masked_api_key
     api_key.present? ? MASKED_API_KEY : ''
+  end
+
+  # A blank or masked submitted key means "keep the saved one" -- the form never shows it.
+  def self.keep_existing_key? submitted
+    submitted.blank? || MASKED_API_KEY == submitted
   end
 
   def mark_archived!

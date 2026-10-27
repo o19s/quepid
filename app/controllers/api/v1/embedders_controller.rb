@@ -67,7 +67,7 @@ module Api
       # @request_body_example rename [JSON{ "embedder": { "name": "Renamed" }}]
       def update
         update_params = embedder_params.except(:team_ids)
-        update_params = update_params.except(:api_key) if update_params[:api_key].blank? || Embedder::MASKED_API_KEY == update_params[:api_key]
+        update_params = update_params.except(:api_key) if Embedder.keep_existing_key?(update_params[:api_key])
 
         if @embedder.update(update_params)
           apply_team_ids(@embedder, embedder_params[:team_ids]) if embedder_params.key?(:team_ids)
@@ -99,8 +99,7 @@ module Api
       end
 
       def embedder_params
-        params.expect(embedder: [ :name, :provider, :service_url, :model, :api_key, :dimensions, :truncation,
-                                  :instruction, :input_template, :timeout, :archived, { team_ids: [] } ])
+        params.expect(embedder: [ *Embedder::PERMITTED_PARAMS, :archived, { team_ids: [] } ])
       end
     end
   end
