@@ -2,6 +2,31 @@
 
 require 'test_helper'
 
+# == Schema Information
+#
+# Table name: embedders
+#
+#  id             :bigint           not null, primary key
+#  api_key        :string(4000)
+#  archived       :boolean          default(FALSE), not null
+#  dimensions     :integer
+#  input_template :text(65535)
+#  instruction    :text(65535)
+#  model          :string(255)      not null
+#  name           :string(255)      not null
+#  options        :json
+#  provider       :string(50)       not null
+#  service_url    :string(500)
+#  timeout        :integer          default(30), not null
+#  truncation     :string(20)       default("none"), not null
+#  created_at     :datetime         not null
+#  updated_at     :datetime         not null
+#  owner_id       :integer
+#
+# Indexes
+#
+#  index_embedders_on_owner_id_and_id  (owner_id,id)
+#
 class EmbedderTest < ActiveSupport::TestCase
   def build_embedder attributes = {}
     Embedder.new({
