@@ -8,9 +8,6 @@
           <%= link_to 'See all embedders', embedders_path, class: 'text-decoration-none' %>
         </small>
       </h5>
-      <%= link_to new_embedder_path(team_id: team.id), class: 'btn btn-primary btn-sm' do %>
-        <i class="bi bi-plus-lg" aria-hidden="true"></i> Create Embedder
-      <% end %>
     </div>
 
     <% if embedders.any? %>
