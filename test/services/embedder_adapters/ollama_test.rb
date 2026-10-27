@@ -40,5 +40,14 @@ module EmbedderAdapters
 
       assert_raises(EmbedderAdapters::Error) { embedder.embed([ 'star wars' ]) }
     end
+
+    test 'reports a missing-model error, whose "error" is a plain string rather than a nested object' do
+      stub_request(:post, 'http://ollama:11434/api/embed')
+        .to_return(status: 404, headers: { 'Content-Type' => 'application/json' },
+                   body: { error: 'model "qwen3-embedding:0.6b" not found, try pulling it first' }.to_json)
+
+      error = assert_raises(EmbedderAdapters::Error) { embedder.embed([ 'star wars' ]) }
+      assert_equal 'Ollama API error: 404 - model "qwen3-embedding:0.6b" not found, try pulling it first', error.message
+    end
   end
 end

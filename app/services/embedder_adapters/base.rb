@@ -91,8 +91,14 @@ module EmbedderAdapters
       { 'Authorization' => "Bearer #{embedder.api_key}" }
     end
 
+    # `error` itself isn't always a nested object -- Ollama's is a plain string
+    # (`{"error": "model ... not found"}`), unlike OpenAI/Cohere's `{"error": {"message": ...}}`.
     def error_detail body
-      body.is_a?(Hash) ? (body.dig('error', 'message') || body['error'] || body['message'] || body['detail'] || body).to_s : body.to_s
+      return body.to_s unless body.is_a?(Hash)
+
+      error = body['error']
+      message = error.is_a?(Hash) ? error['message'] : error
+      (message || body['message'] || body['detail'] || body).to_s
     end
 
     # Matryoshka-style truncation: keep the leading components, then rescale to unit length
