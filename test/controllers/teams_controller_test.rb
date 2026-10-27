@@ -602,24 +602,38 @@ class TeamsControllerTest < ActionDispatch::IntegrationTest
       assert_select 'span.badge', text: '1 Case'
       assert_select 'a[href=?]', new_embedder_path(team_id: shared_team.id)
     end
+  end
 
-    it 'stops sharing an embedder with the team, leaving the cases that use it alone' do
+  describe 'unshare_embedder' do
+    let(:shared_team) { teams(:shared) }
+    let(:embedder)    { embedders(:openai_small) }
+
+    it 'unshares an embedder from the team, leaving the cases that use it alone' do
       acase = cases(:shared_with_team)
       acase.update!(embedder: embedder)
+      assert shared_team.embedders.exists?(embedder.id)
 
-      delete embedder_team_path(shared_team, embedder_id: embedder.id)
+      post unshare_embedder_teams_path, params: { team_id: shared_team.id, embedder_id: embedder.id }
 
-      assert_redirected_to team_path(shared_team)
+      assert_redirected_to teams_path
       assert_not shared_team.reload.embedders.exists?(embedder.id)
       assert_equal embedder.id, acase.reload.embedder_id
-      assert_match(/no longer shared/, flash[:notice])
+      assert_match(/unshared from/, flash[:notice])
     end
 
-    it 'says so when the embedder is not shared with the team' do
-      delete embedder_team_path(@team, embedder_id: embedder.id)
+    it 'sets an alert when the embedder is not shared with the team' do
+      assert_not @team.embedders.exists?(embedder.id)
 
-      assert_redirected_to team_path(@team)
-      assert_match(/not shared with this team/, flash[:alert])
+      post unshare_embedder_teams_path, params: { team_id: @team.id, embedder_id: embedder.id }
+
+      assert_redirected_to teams_path
+      assert_match(/is not shared with/, flash[:alert])
+    end
+
+    it 'denies an embedder the user has no access to' do
+      post unshare_embedder_teams_path, params: { team_id: shared_team.id, embedder_id: embedders(:private_ollama).id }
+
+      assert_match(/do not have access/, flash[:alert])
     end
   end
 

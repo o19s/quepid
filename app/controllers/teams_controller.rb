@@ -11,7 +11,7 @@ class TeamsController < ApplicationController
 
   helper_method :team_filters
 
-  before_action :set_team, only: [ :show, :add_member, :remove_member, :rename, :remove_case, :archive_case, :unarchive_case, :archive_search_endpoint, :unarchive_search_endpoint, :remove_embedder, :suggest_members ]
+  before_action :set_team, only: [ :show, :add_member, :remove_member, :rename, :remove_case, :archive_case, :unarchive_case, :archive_search_endpoint, :unarchive_search_endpoint, :suggest_members ]
 
   # Remove a case from the team
   def remove_case
@@ -64,22 +64,14 @@ class TeamsController < ApplicationController
     unshare_with_team(record, record.fullname, team)
   end
 
-  # Archive a search endpoint
-  # Stops sharing an embedder with the team. Its owner keeps it, and cases that already
-  # use it keep using it -- the same as unsharing a search endpoint.
-  def remove_embedder
-    embedder = @team.embedders.find_by(id: params.expect(:embedder_id))
-
-    if embedder
-      @team.embedders.delete(embedder)
-      flash[:notice] = "Embedder #{embedder.name} is no longer shared with #{@team.name}."
-    else
-      flash[:alert] = 'That embedder is not shared with this team.'
-    end
-
-    redirect_to team_path(@team), status: :see_other
+  # Unsharing leaves the embedder with its owner, and cases that already use it keep using it.
+  def unshare_embedder
+    team = current_user.teams.find(params.expect(:team_id))
+    record = Embedder.find(params.expect(:embedder_id))
+    unshare_with_team(record, record.name, team)
   end
 
+  # Archive a search endpoint
   def archive_search_endpoint
     search_endpoint = SearchEndpoint.find(params.expect(:search_endpoint_id))
 

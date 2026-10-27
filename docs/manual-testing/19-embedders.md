@@ -34,7 +34,7 @@ For a local run, the Ollama container needs an embedding model: `docker exec oll
   6. Delete the clone from the list (confirmation dialog).
   7. Open the team's page (**Teams** → the team). Find the **Embedders** card.
   8. Click the red ⊗ on the shared embedder and confirm.
-- **Expected:** The saved key is never rendered into the page; blank keeps it; the clone keeps the source's key; the shared embedder is visible to team members; deleted embedders disappear from the list. The team page lists the team's embedders (provider, model, size, owner, how many cases use it) with a **Create Embedder** button that pre-selects the team; step 8 shows "… is no longer shared with …", the card empties, and cases already using the embedder keep it.
+- **Expected:** The saved key is never rendered into the page; blank keeps it; the clone keeps the source's key; the shared embedder is visible to team members; deleted embedders disappear from the list. The team page lists the team's embedders (provider, model, size, owner, how many cases use it) with a **Create Embedder** button that pre-selects the team; step 8 shows "… unshared from …", the card empties, and cases already using the embedder keep it.
 
 ### 19.3 Pick a case's embedder
 

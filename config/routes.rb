@@ -188,7 +188,6 @@ Rails.application.routes.draw do
       post 'cases/:case_id/unarchive' => 'teams#unarchive_case', as: :unarchive_case
       post 'search_endpoints/:search_endpoint_id/archive' => 'teams#archive_search_endpoint', as: :archive_search_endpoint
       post 'search_endpoints/:search_endpoint_id/unarchive' => 'teams#unarchive_search_endpoint', as: :unarchive_search_endpoint
-      delete 'embedders/:embedder_id' => 'teams#remove_embedder', as: :embedder
     end
 
     collection do
@@ -198,6 +197,7 @@ Rails.application.routes.draw do
       post 'books/unshare' => 'teams#unshare_book', as: :unshare_book
       post 'search_endpoints/share' => 'teams#share_search_endpoint', as: :share_search_endpoint
       post 'search_endpoints/unshare' => 'teams#unshare_search_endpoint', as: :unshare_search_endpoint
+      post 'embedders/unshare' => 'teams#unshare_embedder', as: :unshare_embedder
     end
   end
 

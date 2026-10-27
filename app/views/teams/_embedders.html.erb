@@ -50,8 +50,8 @@
                   <span class="badge rounded-pill bg-secondary"><%= pluralize(embedder_case_counts.fetch(embedder.id, 0), 'Case') %></span>
                 </td>
                 <td class="text-end">
-                  <%= button_to embedder_team_path(team, embedder_id: embedder.id),
-                                method: :delete,
+                  <%= button_to unshare_embedder_teams_path,
+                                params: { team_id: team.id, embedder_id: embedder.id },
                                 class: "btn btn-link text-danger p-0",
                                 title: "Stop sharing with this team",
                                 aria: { label: "Stop sharing with this team" },
