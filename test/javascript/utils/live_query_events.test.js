@@ -57,14 +57,21 @@ describe("live query events runtime", () => {
     const { eventTarget, query, publishQuery, refreshQueryVector, scoreAll } = setup()
     query.vectorStatus = "pending"
 
-    eventTarget.dispatchEvent(new CustomEvent("quepid:query-vectors-changed", {
-      detail: { caseId: 8, queries: { 1: { status: "current", reason: null } } }
-    }))
+    eventTarget.dispatchEvent(
+      new CustomEvent("quepid:query-vectors-changed", {
+        detail: { caseId: 8, queries: { 1: { status: "current", reason: null } } }
+      })
+    )
     expect(query.vectorStatus).toBe("pending")
 
-    eventTarget.dispatchEvent(new CustomEvent("quepid:query-vectors-changed", {
-      detail: { caseId: 7, queries: { 1: { status: "current", reason: null }, 99: { status: "failed" } } }
-    }))
+    eventTarget.dispatchEvent(
+      new CustomEvent("quepid:query-vectors-changed", {
+        detail: {
+          caseId: 7,
+          queries: { 1: { status: "current", reason: null }, 99: { status: "failed" } }
+        }
+      })
+    )
 
     expect(query.vectorStatus).toBe("current")
     expect(query.vectorStatusReason).toBeNull()
@@ -78,14 +85,18 @@ describe("live query events runtime", () => {
     query.vectorStatus = "pending"
     query.vectorStatusReason = "Waiting"
 
-    eventTarget.dispatchEvent(new CustomEvent("quepid:query-vectors-changed", {
-      detail: { caseId: 7, queries: { 1: { status: "pending", reason: "Waiting" } } }
-    }))
+    eventTarget.dispatchEvent(
+      new CustomEvent("quepid:query-vectors-changed", {
+        detail: { caseId: 7, queries: { 1: { status: "pending", reason: "Waiting" } } }
+      })
+    )
     expect(publishQuery).not.toHaveBeenCalled()
 
-    eventTarget.dispatchEvent(new CustomEvent("quepid:query-vectors-changed", {
-      detail: { caseId: 7, queries: { 1: { status: "failed", reason: "401 from OpenAI" } } }
-    }))
+    eventTarget.dispatchEvent(
+      new CustomEvent("quepid:query-vectors-changed", {
+        detail: { caseId: 7, queries: { 1: { status: "failed", reason: "401 from OpenAI" } } }
+      })
+    )
     expect(query.vectorStatus).toBe("failed")
     expect(query.vectorStatusReason).toBe("401 from OpenAI")
     expect(publishQuery).toHaveBeenCalledOnce()

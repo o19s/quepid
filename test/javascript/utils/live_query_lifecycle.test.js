@@ -74,10 +74,16 @@ describe("createLiveQueryLifecycleRuntime", () => {
     })
     const runtime = runtimeFor({ searchAndScore })
 
-    await runtime.commitQueries({ query }, {
-      status: 201,
-      data: { display_order: [3], query: { query_id: 3, options: { query_vec: [0.1, 0.2] }, vector_status: "current" } }
-    })
+    await runtime.commitQueries(
+      { query },
+      {
+        status: 201,
+        data: {
+          display_order: [3],
+          query: { query_id: 3, options: { query_vec: [0.1, 0.2] }, vector_status: "current" }
+        }
+      }
+    )
 
     expect(searchAndScore).toHaveBeenCalledWith(query)
     expect(query.vectorStatus).toBe("current")

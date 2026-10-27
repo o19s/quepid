@@ -89,7 +89,9 @@ describe("EmbedderFormController", () => {
     expect(controller.instructionFieldsTarget.hidden).toBe(false)
     expect(controller.truncationTarget.querySelector("option[value='native']").disabled).toBe(true)
     expect(controller.dimensionsRowTarget.hidden).toBe(true)
-    expect(controller.helpTargets.filter((help) => !help.hidden).map((help) => help.dataset.provider)).toEqual(["ollama"])
+    expect(
+      controller.helpTargets.filter((help) => !help.hidden).map((help) => help.dataset.provider)
+    ).toEqual(["ollama"])
   })
 
   it("says whether the provider needs a key", () => {
@@ -109,7 +111,9 @@ describe("EmbedderFormController", () => {
     controller.refresh()
 
     expect(controller.dimensionsRowTarget.hidden).toBe(false)
-    expect(controller.dimensionsHintTarget.textContent).toBe("Voyage AI accepts 256, 512, 1024, 2048.")
+    expect(controller.dimensionsHintTarget.textContent).toBe(
+      "Voyage AI accepts 256, 512, 1024, 2048."
+    )
   })
 
   it("changing provider fills in its defaults and drops native truncation it can't do", () => {
@@ -132,7 +136,13 @@ describe("EmbedderFormController", () => {
     controller.testTextTarget.value = "star wars"
     apiFetch.mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve({ input: "star wars", dimensions: 3, preview: [0.1, 0.2, 0.3], elapsed_ms: 12 })
+      json: () =>
+        Promise.resolve({
+          input: "star wars",
+          dimensions: 3,
+          preview: [0.1, 0.2, 0.3],
+          elapsed_ms: 12
+        })
     })
 
     await controller.test({ preventDefault: () => {} })
@@ -149,10 +159,16 @@ describe("EmbedderFormController", () => {
     const controller = buildController()
     const form = document.createElement("form")
     form.appendChild((controller.element = document.createElement("div")))
-    apiFetch.mockResolvedValue({ ok: false, status: 502, json: () => Promise.resolve({ error: "Ollama API error: 404" }) })
+    apiFetch.mockResolvedValue({
+      ok: false,
+      status: 502,
+      json: () => Promise.resolve({ error: "Ollama API error: 404" })
+    })
 
     await controller.test({ preventDefault: () => {} })
 
-    expect(controller.testResultTarget.querySelector(".alert-danger").textContent).toBe("Ollama API error: 404")
+    expect(controller.testResultTarget.querySelector(".alert-danger").textContent).toBe(
+      "Ollama API error: 404"
+    )
   })
 })

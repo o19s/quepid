@@ -46,7 +46,9 @@ describe("QueryRowController", () => {
     controller.querqyTarget = controller.element.querySelector('[data-query-row-target="querqy"]')
     controller.headerTarget = controller.element.querySelector('[data-query-row-target="header"]')
     controller.toggleTarget = controller.element.querySelector('[data-query-row-target="toggle"]')
-    controller.vectorBadgeTarget = controller.element.querySelector('[data-query-row-target="vectorBadge"]')
+    controller.vectorBadgeTarget = controller.element.querySelector(
+      '[data-query-row-target="vectorBadge"]'
+    )
     controller.vectorStatusValue = "none"
     controller.vectorStatusReasonValue = ""
     controller.queryTextValue = "Star Wars"

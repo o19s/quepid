@@ -4,9 +4,18 @@ import { isImageUrl, queryStateClass } from "utils/query_state"
 // Whether the query's vector matches the case's embedder (QueryVectorStatus): no badge
 // when it does or the case has none; the reason is in the tooltip.
 const VECTOR_BADGES = {
-  pending: { label: "pending vectorisation", classes: ["bg-secondary-subtle", "text-secondary-emphasis", "border-secondary-subtle"] },
-  stale: { label: "vector outdated", classes: ["bg-warning-subtle", "text-warning-emphasis", "border-warning-subtle"] },
-  failed: { label: "vectorisation failed", classes: ["bg-danger-subtle", "text-danger-emphasis", "border-danger-subtle"] }
+  pending: {
+    label: "pending vectorisation",
+    classes: ["bg-secondary-subtle", "text-secondary-emphasis", "border-secondary-subtle"]
+  },
+  stale: {
+    label: "vector outdated",
+    classes: ["bg-warning-subtle", "text-warning-emphasis", "border-warning-subtle"]
+  },
+  failed: {
+    label: "vectorisation failed",
+    classes: ["bg-danger-subtle", "text-danger-emphasis", "border-danger-subtle"]
+  }
 }
 const VECTOR_BADGE_CLASSES = Object.values(VECTOR_BADGES).flatMap((badge) => badge.classes)
 

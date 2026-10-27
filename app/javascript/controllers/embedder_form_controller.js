@@ -55,7 +55,9 @@ export default class extends Controller {
     })
     this.apiKeyRowTarget.hidden = preset.uses_key === false
     if (this.hasApiKeyHintTarget) {
-      this.apiKeyHintTarget.textContent = preset.requires_key ? `Required for ${preset.label}.` : "Optional."
+      this.apiKeyHintTarget.textContent = preset.requires_key
+        ? `Required for ${preset.label}.`
+        : "Optional."
     }
     this.instructionFieldsTarget.hidden = !preset.supports_instructions
 
@@ -71,7 +73,9 @@ export default class extends Controller {
 
     const allowed = preset.allowed_dimensions || []
     this.dimensionsHintTarget.textContent =
-      truncation === "native" && allowed.length > 0 ? `${preset.label} accepts ${allowed.join(", ")}.` : ""
+      truncation === "native" && allowed.length > 0
+        ? `${preset.label} accepts ${allowed.join(", ")}.`
+        : ""
   }
 
   async test(event) {
@@ -100,7 +104,10 @@ export default class extends Controller {
       sent.style.whiteSpace = "pre-wrap"
       this.testResultTarget.replaceChildren(
         element("div", { className: "alert alert-success small mb-0" }, [
-          element("div", {}, [element("strong", { text: `${result.dimensions} dimensions` }), ` in ${result.elapsed_ms} ms`]),
+          element("div", {}, [
+            element("strong", { text: `${result.dimensions} dimensions` }),
+            ` in ${result.elapsed_ms} ms`
+          ]),
           element("div", {}, ["Sent: ", sent]),
           element("div", {}, ["Vector: ", element("code", { text: `[${preview}, …]` })])
         ])

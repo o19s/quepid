@@ -3,7 +3,12 @@ import { apiFetch } from "api/fetch"
 import { CORE_EVENTS } from "utils/core_events"
 
 const POLL_MS = 3000
-const STATUS_LABELS = { current: "current", pending: "pending", stale: "outdated", failed: "failed" }
+const STATUS_LABELS = {
+  current: "current",
+  pending: "pending",
+  stale: "outdated",
+  failed: "failed"
+}
 
 function describe(embedder) {
   const size = embedder.dimensions ? `${embedder.dimensions} dims` : "model default size"
@@ -157,7 +162,10 @@ export default class extends CoreModalControllerBase {
 
     try {
       const url = this.vectorizeUrlTemplateValue.replaceAll("__CASE_ID__", this.caseId)
-      const response = await apiFetch(`${url}?force=true`, { method: "POST", headers: { Accept: "application/json" } })
+      const response = await apiFetch(`${url}?force=true`, {
+        method: "POST",
+        headers: { Accept: "application/json" }
+      })
       const data = await response.json().catch(() => ({}))
       if (!response.ok) throw new Error(data.error || `Unable to re-vectorize (${response.status})`)
 

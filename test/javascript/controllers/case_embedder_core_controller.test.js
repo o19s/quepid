@@ -19,7 +19,13 @@ const STATE = {
   embedder: null,
   embedders: [
     { embedder_id: 7, name: "MiniLM", provider: "Ollama", model: "all-minilm", dimensions: 128 },
-    { embedder_id: 9, name: "OpenAI small", provider: "OpenAI", model: "text-embedding-3-small", dimensions: null }
+    {
+      embedder_id: 9,
+      name: "OpenAI small",
+      provider: "OpenAI",
+      model: "text-embedding-3-small",
+      dimensions: null
+    }
   ]
 }
 
@@ -84,7 +90,14 @@ describe("CaseEmbedderCoreController", () => {
   })
 
   it("warns when the case's embedder isn't shared with the user, and still lists it", async () => {
-    const hidden = { embedder_id: 3, name: "Teammate's", provider: "Voyage AI", model: "voyage-3.5", dimensions: 1024, accessible: false }
+    const hidden = {
+      embedder_id: 3,
+      name: "Teammate's",
+      provider: "Voyage AI",
+      model: "voyage-3.5",
+      dimensions: 1024,
+      accessible: false
+    }
     apiFetch.mockResolvedValue(jsonResponse({ ...STATE, embedder_id: 3, embedder: hidden }))
     const controller = buildModalController()
 
@@ -97,7 +110,11 @@ describe("CaseEmbedderCoreController", () => {
   })
 
   it("selecting a different embedder enables save; saving PUTs it, refreshes the header and closes", async () => {
-    const saved = { ...STATE, embedder_id: 7, embedder: { ...STATE.embedders[0], accessible: true } }
+    const saved = {
+      ...STATE,
+      embedder_id: 7,
+      embedder: { ...STATE.embedders[0], accessible: true }
+    }
     apiFetch.mockResolvedValueOnce(jsonResponse(STATE)).mockResolvedValueOnce(jsonResponse(saved))
     const controller = buildModalController()
     const announced = vi.fn()
@@ -109,7 +126,10 @@ describe("CaseEmbedderCoreController", () => {
 
     await controller.save()
 
-    expect(apiFetch).toHaveBeenLastCalledWith("api/cases/5/embedders/7", expect.objectContaining({ method: "PUT" }))
+    expect(apiFetch).toHaveBeenLastCalledWith(
+      "api/cases/5/embedders/7",
+      expect.objectContaining({ method: "PUT" })
+    )
     expect(announced).toHaveBeenCalledTimes(1)
     expect(announced.mock.calls[0][0].detail).toEqual({ caseNo: 5, reason: "embedder" })
     expect(hideBsModal).toHaveBeenCalled()
@@ -137,7 +157,11 @@ describe("CaseEmbedderCoreController", () => {
       embedder_id: 7,
       embedder: { ...STATE.embedders[0], accessible: true },
       embedders: STATE.embedders,
-      vectors: { running: true, counts: { current: 18, pending: 2 }, queries: { 11: { status: "pending", reason: "Waiting" } } }
+      vectors: {
+        running: true,
+        counts: { current: 18, pending: 2 },
+        queries: { 11: { status: "pending", reason: "Waiting" } }
+      }
     }
 
     afterEach(() => {
@@ -154,7 +178,10 @@ describe("CaseEmbedderCoreController", () => {
 
       modal.applyState(WITH_VECTORS)
 
-      expect(received.mock.calls[0][0].detail).toEqual({ caseId: 5, queries: WITH_VECTORS.vectors.queries })
+      expect(received.mock.calls[0][0].detail).toEqual({
+        caseId: 5,
+        queries: WITH_VECTORS.vectors.queries
+      })
       expect(fetchState).not.toHaveBeenCalled()
 
       await vi.advanceTimersByTimeAsync(3000)
@@ -183,12 +210,16 @@ describe("CaseEmbedderCoreController", () => {
       await openModal(controller)
 
       expect(controller.vectorPanelTarget.hidden).toBe(false)
-      expect(controller.vectorSummaryTarget.textContent).toBe("18 current · 2 pending — vectorising…")
+      expect(controller.vectorSummaryTarget.textContent).toBe(
+        "18 current · 2 pending — vectorising…"
+      )
       expect(controller.revectorizeButtonTarget.disabled).toBe(true)
     })
 
     it("hides the summary for a case without an embedder", async () => {
-      apiFetch.mockResolvedValue(jsonResponse({ ...STATE, vectors: { running: false, counts: {}, queries: {} } }))
+      apiFetch.mockResolvedValue(
+        jsonResponse({ ...STATE, vectors: { running: false, counts: {}, queries: {} } })
+      )
       const controller = buildModalController()
 
       await openModal(controller)
@@ -198,7 +229,9 @@ describe("CaseEmbedderCoreController", () => {
 
     it("re-vectorize POSTs force=true, hands on the new statuses and polls", async () => {
       const idle = { ...WITH_VECTORS, vectors: { ...WITH_VECTORS.vectors, running: false } }
-      apiFetch.mockResolvedValueOnce(jsonResponse(idle)).mockResolvedValueOnce(jsonResponse(WITH_VECTORS))
+      apiFetch
+        .mockResolvedValueOnce(jsonResponse(idle))
+        .mockResolvedValueOnce(jsonResponse(WITH_VECTORS))
       const controller = buildModalController()
       const announced = vi.fn()
       document.addEventListener(CORE_EVENTS.QUERY_VECTORS_CHANGED, announced)
