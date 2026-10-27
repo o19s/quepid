@@ -91,9 +91,17 @@ describe("DiffCoreController", () => {
   })
 
   beforeEach(() => {
-    showStatusMessage = vi.spyOn(CoreModalControllerBase.prototype, "showStatusMessage").mockImplementation(() => {})
+    showStatusMessage = vi
+      .spyOn(CoreModalControllerBase.prototype, "showStatusMessage")
+      .mockImplementation(() => {})
     vi.clearAllMocks()
-    apiFetch.mockResolvedValue({ text: async function () { return JSON.stringify(await this.json()) || "" },  ok: true, json: async () => ({ snapshots: [] }) })
+    apiFetch.mockResolvedValue({
+      text: async function () {
+        return JSON.stringify(await this.json()) || ""
+      },
+      ok: true,
+      json: async () => ({ snapshots: [] })
+    })
   })
 
   afterEach(() => vi.restoreAllMocks())
@@ -142,24 +150,37 @@ describe("DiffCoreController", () => {
 
     await controller.update()
 
-    expect(controller.snapshotBridgeOutlet.apply).toHaveBeenCalledWith({ selections: ["2"], snapshotsUrl: "api/cases/1/snapshots" })
+    expect(controller.snapshotBridgeOutlet.apply).toHaveBeenCalledWith({
+      selections: ["2"],
+      snapshotsUrl: "api/cases/1/snapshots"
+    })
     expect(controller.closeModal).toHaveBeenCalledOnce()
     expect(controller.updateButtonTarget.disabled).toBe(false)
   })
 
-  const alertMessages = () => showStatusMessage.mock.calls.map(([, options]) => options.message).filter(Boolean)
+  const alertMessages = () =>
+    showStatusMessage.mock.calls.map(([, options]) => options.message).filter(Boolean)
 
   it("opens with the bridge's current selections and loads snapshots shallowly", async () => {
     const bridge = buildBridge()
     bridge.currentSelections.mockReturnValue([4])
     const controller = buildController(bridge)
     controller.snapshotsUrlValue = "api/cases/1/snapshots"
-    apiFetch.mockResolvedValue({ text: async function () { return JSON.stringify(await this.json()) || "" },  ok: true, json: async () => ({ snapshots: [{ id: 4, name: "Release" }] }) })
+    apiFetch.mockResolvedValue({
+      text: async function () {
+        return JSON.stringify(await this.json()) || ""
+      },
+      ok: true,
+      json: async () => ({ snapshots: [{ id: 4, name: "Release" }] })
+    })
 
     await controller.openFor(null)
 
     expect(controller.selectionValues).toEqual(["4"])
-    expect(apiFetch).toHaveBeenCalledWith("api/cases/1/snapshots?shallow=true", { method: "GET", headers: { Accept: "application/json" } })
+    expect(apiFetch).toHaveBeenCalledWith("api/cases/1/snapshots?shallow=true", {
+      method: "GET",
+      headers: { Accept: "application/json" }
+    })
     expect(controller.selectionsTarget.querySelector("select").value).toBe("4")
     expect(controller.updateButtonTarget.disabled).toBe(false)
   })
@@ -174,7 +195,12 @@ describe("DiffCoreController", () => {
 
   it("shows an error and an empty list when snapshots can't be loaded", async () => {
     const controller = buildController()
-    apiFetch.mockResolvedValue({ text: async () => "", json: async () => null,  ok: false, status: 500 })
+    apiFetch.mockResolvedValue({
+      text: async () => "",
+      json: async () => null,
+      ok: false,
+      status: 500
+    })
 
     await controller.loadSnapshots()
 
@@ -261,11 +287,14 @@ describe("DiffCoreController", () => {
     expect(controller.deleteWarningTarget.classList.contains("d-none")).toBe(false)
     await controller.confirmDelete({ preventDefault: vi.fn() })
 
-    expect(controller.snapshotBridgeOutlet.delete).toHaveBeenCalledWith({ snapshotId: "3", snapshotsUrl: "api/cases/1/snapshots" })
+    expect(controller.snapshotBridgeOutlet.delete).toHaveBeenCalledWith({
+      snapshotId: "3",
+      snapshotsUrl: "api/cases/1/snapshots"
+    })
     expect(controller.selectionValues).toEqual(["2"])
     expect(controller.snapshots).toEqual([{ id: 2, name: "Weekly" }])
     const select = controller.selectionsTarget.querySelector("select")
-    expect([...select.options].map(option => option.value)).toEqual(["", "2"])
+    expect([...select.options].map((option) => option.value)).toEqual(["", "2"])
     expect(select.value).toBe("2")
     expect(controller.deleteId).toBeNull()
     expect(controller.deleteWarningTarget.classList.contains("d-none")).toBe(true)
@@ -285,7 +314,14 @@ describe("DiffCoreController", () => {
   it.each([
     ["apply", (c) => c.update(), "Could not fetch one or more snapshots!"],
     ["clear", (c) => c.clear(), "Could not fetch one or more snapshots!"],
-    ["delete", (c) => { c.deleteId = "2"; return c.confirmDelete({ preventDefault: vi.fn() }) }, "Could not delete snapshot."]
+    [
+      "delete",
+      (c) => {
+        c.deleteId = "2"
+        return c.confirmDelete({ preventDefault: vi.fn() })
+      },
+      "Could not delete snapshot."
+    ]
   ])("reports a failed %s and keeps the modal state", async (command, act, message) => {
     const bridge = buildBridge()
     const failure = new Error("bridge failed")
@@ -299,17 +335,38 @@ describe("DiffCoreController", () => {
     expect(logged).toHaveBeenCalledWith(failure)
     expect(alertMessages()).toContain(message)
     expect(controller.selectionValues).toEqual(["2"])
-    expect(controller.snapshots.map(snapshot => snapshot.id)).toEqual([2, 3])
+    expect(controller.snapshots.map((snapshot) => snapshot.id)).toEqual([2, 3])
     expect(controller.closeModal).not.toHaveBeenCalled()
     expect(controller.updateButtonTarget.disabled).toBe(false)
   })
 
   it.each([
     ["one applied snapshot", (c) => c.update(), "Snapshot loaded successfully for comparison."],
-    ["two applied snapshots", (c) => { c.selectionValues = ["2", "3"]; return c.update() }, "Snapshots loaded successfully for comparison."],
+    [
+      "two applied snapshots",
+      (c) => {
+        c.selectionValues = ["2", "3"]
+        return c.update()
+      },
+      "Snapshots loaded successfully for comparison."
+    ],
     ["a cleared comparison", (c) => c.clear(), "Comparison view has been cleared."],
-    ["an empty selection", (c) => { c.selectionValues = [""]; return c.update() }, "Comparison view has been cleared."],
-    ["a deleted snapshot", (c) => { c.deleteId = "2"; return c.confirmDelete({ preventDefault: vi.fn() }) }, "Snapshot deleted successfully."]
+    [
+      "an empty selection",
+      (c) => {
+        c.selectionValues = [""]
+        return c.update()
+      },
+      "Comparison view has been cleared."
+    ],
+    [
+      "a deleted snapshot",
+      (c) => {
+        c.deleteId = "2"
+        return c.confirmDelete({ preventDefault: vi.fn() })
+      },
+      "Snapshot deleted successfully."
+    ]
   ])("flashes success for %s, as the Angular picker did", async (_label, act, message) => {
     const controller = buildController()
     controller.closeModal = vi.fn()
@@ -333,13 +390,20 @@ describe("DiffCoreController", () => {
     await controller.confirmDelete({ preventDefault: vi.fn() })
 
     expect(showStatusMessage.mock.lastCall[1]).toEqual({ message: "", className: "alert d-none" })
-    expect(coreFlash.show).toHaveBeenCalledExactlyOnceWith("notice", "Snapshot deleted successfully.")
+    expect(coreFlash.show).toHaveBeenCalledExactlyOnceWith(
+      "notice",
+      "Snapshot deleted successfully."
+    )
   })
 
   it("keeps the buttons disabled while the bridge is working", async () => {
     let finish
     const bridge = buildBridge()
-    bridge.apply.mockReturnValue(new Promise((resolve) => { finish = resolve }))
+    bridge.apply.mockReturnValue(
+      new Promise((resolve) => {
+        finish = resolve
+      })
+    )
     const controller = buildController(bridge)
     controller.closeModal = vi.fn()
 
@@ -354,7 +418,9 @@ describe("DiffCoreController", () => {
   it("names snapshots by name, falling back to the id, with a short date when known", () => {
     const controller = buildController()
 
-    expect(controller.snapshotName({ id: 2, name: "Weekly", created_at: "2026-09-28T12:00:00Z" })).toBe("(9/28/26) Weekly")
+    expect(
+      controller.snapshotName({ id: 2, name: "Weekly", created_at: "2026-09-28T12:00:00Z" })
+    ).toBe("(9/28/26) Weekly")
     expect(controller.snapshotName({ id: 3, snapshot_name: "Legacy" })).toBe("Legacy")
     expect(controller.snapshotName({ id: 4, time: "not a date" })).toBe("Snapshot 4")
   })

@@ -3,18 +3,18 @@ import { Controller } from "@hotwired/stimulus"
 
 /**
  * Team Member Autocomplete Controller
- * 
+ *
  * Provides intelligent user suggestions when adding members to a team.
  * Shows avatars, names, and email addresses in a dropdown as the user types.
  * Note: Does not include keyboard navigation support.
- * 
+ *
  * Connects to data-controller="team-member-autocomplete"
- * 
+ *
  * Targets:
  *   - input: The email input field
  *   - suggestions: The dropdown container for suggestions
  *   - itemTemplate: Markup for one suggestion row
- * 
+ *
  * Values:
  *   - url: API endpoint for fetching suggestions
  *   - minLength: Minimum characters before showing suggestions (default: 2)
@@ -73,8 +73,8 @@ export default class extends Controller {
     try {
       const data = await getJson(`${this.urlValue}?query=${encodeURIComponent(query)}`, {
         headers: {
-          'Accept': 'application/json',
-          'X-Requested-With': 'XMLHttpRequest'
+          Accept: "application/json",
+          "X-Requested-With": "XMLHttpRequest"
         },
         signal: request.signal
       })
@@ -86,7 +86,7 @@ export default class extends Controller {
     } catch (error) {
       if (this.request !== request) return
       this.request = null
-      console.error('Error fetching suggestions:', error)
+      console.error("Error fetching suggestions:", error)
       this.hideLoading()
       this.hideSuggestions()
     }
@@ -113,14 +113,14 @@ export default class extends Controller {
       return
     }
 
-    this.suggestionsTarget.innerHTML = ''
+    this.suggestionsTarget.innerHTML = ""
 
     users.forEach((user) => {
       const item = this.createSuggestionItem(user)
       this.suggestionsTarget.appendChild(item)
     })
 
-    this.suggestionsTarget.style.display = 'block'
+    this.suggestionsTarget.style.display = "block"
   }
 
   /**
@@ -167,8 +167,8 @@ export default class extends Controller {
    * Hide the suggestions dropdown and clear state
    */
   hideSuggestions() {
-    this.suggestionsTarget.style.display = 'none'
-    this.suggestionsTarget.innerHTML = ''
+    this.suggestionsTarget.style.display = "none"
+    this.suggestionsTarget.innerHTML = ""
     this.suggestions = []
   }
 
@@ -197,7 +197,7 @@ export default class extends Controller {
   showLoading() {
     if (this.hasSpinnerTarget) {
       this.isLoading = true
-      this.spinnerTarget.style.display = 'inline-block'
+      this.spinnerTarget.style.display = "inline-block"
     }
   }
 
@@ -207,7 +207,7 @@ export default class extends Controller {
   hideLoading() {
     if (this.hasSpinnerTarget) {
       this.isLoading = false
-      this.spinnerTarget.style.display = 'none'
+      this.spinnerTarget.style.display = "none"
     }
   }
 }

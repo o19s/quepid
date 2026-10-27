@@ -1,4 +1,7 @@
-import { createSearchEndpointSelect, updateSearchEndpointSelect } from "modules/search_endpoint_select"
+import {
+  createSearchEndpointSelect,
+  updateSearchEndpointSelect
+} from "modules/search_endpoint_select"
 import TomSelect from "tom-select"
 import { endpointSettings, formatEndpointHeaders } from "utils/endpoint_settings"
 import { Controller } from "@hotwired/stimulus"
@@ -32,17 +35,51 @@ const MAX_FIELD_SUGGESTIONS = 12
 
 export default class extends Controller {
   static targets = [
-    "step", "tracker", "caseName", "endpointSelect", "searchUrl", "apiMethod",
-    "testQuery", "proxyRequests", "basicAuth", "customHeaders", "titleField",
-    "idField", "additionalFields", "queryText", "queryList", "staticFile",
-    "alert", "continueButton", "finishButton", "skipButton",
-    "mapperEngines", "queryPattern",
-    "tlsWarning", "tlsProtocol", "endpointContinue", "loading", "pingButton", "urlFormat",
-    "selectedEndpointUrl", "selectedEndpointMethod", "mapperMessage", "engineName", "endpointLink",
-    "wikiLink", "curlAuth", "solrConfigUrl",
-    "engineOption", "engineTileTemplate", "headerType",
-    "staticAlert", "staticContent", "staticImportButton", "staticStatus",
-    "createPanel", "existingPanel"
+    "step",
+    "tracker",
+    "caseName",
+    "endpointSelect",
+    "searchUrl",
+    "apiMethod",
+    "testQuery",
+    "proxyRequests",
+    "basicAuth",
+    "customHeaders",
+    "titleField",
+    "idField",
+    "additionalFields",
+    "queryText",
+    "queryList",
+    "staticFile",
+    "alert",
+    "continueButton",
+    "finishButton",
+    "skipButton",
+    "mapperEngines",
+    "queryPattern",
+    "tlsWarning",
+    "tlsProtocol",
+    "endpointContinue",
+    "loading",
+    "pingButton",
+    "urlFormat",
+    "selectedEndpointUrl",
+    "selectedEndpointMethod",
+    "mapperMessage",
+    "engineName",
+    "endpointLink",
+    "wikiLink",
+    "curlAuth",
+    "solrConfigUrl",
+    "engineOption",
+    "engineTileTemplate",
+    "headerType",
+    "staticAlert",
+    "staticContent",
+    "staticImportButton",
+    "staticStatus",
+    "createPanel",
+    "existingPanel"
   ]
 
   static values = {
@@ -133,7 +170,9 @@ export default class extends Controller {
       apiMethod: query.get("apiMethod"),
       basicAuthCredential: query.get("basicAuthCredential")
     }
-    Object.entries(overrides).forEach(([key, value]) => { if (value) this.settings[key] = value })
+    Object.entries(overrides).forEach(([key, value]) => {
+      if (value) this.settings[key] = value
+    })
     this.forceProxyIfRequired()
   }
 
@@ -142,7 +181,9 @@ export default class extends Controller {
     const query = new URLSearchParams(window.location.search)
     if (!query.get("searchEngine")) return
     const existing = Boolean(query.get("existingSearchEndpoint"))
-    const panel = existing ? (this.hasExistingPanelTarget && this.existingPanelTarget) : (this.hasCreatePanelTarget && this.createPanelTarget)
+    const panel = existing
+      ? this.hasExistingPanelTarget && this.existingPanelTarget
+      : this.hasCreatePanelTarget && this.createPanelTarget
     if (panel) panel.open = true
     this.endpointMode = existing ? "existing" : "new"
   }
@@ -170,7 +211,9 @@ export default class extends Controller {
   proxyEndpointError(endpoint) {
     if (!this.proxyRequiredValue) return null
     if (!endpoint && !this.settings?.searchEndpointId) return null
-    endpoint ||= this.searchEndpoints.find((item) => String(item.id) === String(this.settings.searchEndpointId))
+    endpoint ||= this.searchEndpoints.find(
+      (item) => String(item.id) === String(this.settings.searchEndpointId)
+    )
     if (endpoint?.proxyRequests === true && endpoint.apiMethod !== "JSONP") return null
 
     return "This existing search endpoint must have proxying enabled and use a non-JSONP API method. Edit the endpoint first, or choose a search engine to configure a new endpoint."
@@ -180,7 +223,10 @@ export default class extends Controller {
     const { proxyRequests, searchUrl, searchEngine } = this.settings || {}
     // A static endpoint's URL is replaced by Quepid's own snapshot URL on import.
     if (searchEngine === "static") return false
-    return proxyRequests !== true && Boolean(this.capability?.navigation.needToRedirectProtocol(searchUrl))
+    return (
+      proxyRequests !== true &&
+      Boolean(this.capability?.navigation.needToRedirectProtocol(searchUrl))
+    )
   }
 
   open() {
@@ -250,9 +296,15 @@ export default class extends Controller {
       this.applySettings(event.target.value)
       // The CSV is imported once per wizard (as in the Angular wizard), so coming back to
       // Static reuses that snapshot rather than requiring, and creating, another one.
-      if (event.target.value === "static" && this.staticSearchUrl) this.settings.searchUrl = this.staticSearchUrl
+      if (event.target.value === "static" && this.staticSearchUrl)
+        this.settings.searchUrl = this.staticSearchUrl
     }
-    if (["searchUrl", "proxyRequests", "apiMethod", "basicAuthCredential"].includes(event.target.dataset.wizardField)) this.clearValidation()
+    if (
+      ["searchUrl", "proxyRequests", "apiMethod", "basicAuthCredential"].includes(
+        event.target.dataset.wizardField
+      )
+    )
+      this.clearValidation()
     this.render()
   }
 
@@ -274,9 +326,10 @@ export default class extends Controller {
       testQuery: endpoint.testQuery,
       // As in the Angular wizard, a Search API endpoint's saved test query seeds the pattern set on the
       // Query step, unless its mapper-based engine has a pattern of its own.
-      queryParams: endpoint.searchEngine === "searchapi"
-        ? defaults.queryParams || endpoint.testQuery || ""
-        : defaults.queryParams || ""
+      queryParams:
+        endpoint.searchEngine === "searchapi"
+          ? defaults.queryParams || endpoint.testQuery || ""
+          : defaults.queryParams || ""
     }
     this.forceProxyIfRequired()
     this.render()
@@ -286,11 +339,18 @@ export default class extends Controller {
     const settings = this.capability?.settings
     if (!settings) return
     const selected = settings.pick(preset || this.settings.searchEngine, url)
-    this.settings = { ...this.settings, ...selected, searchEnginePreset: preset || selected.searchEngine }
+    this.settings = {
+      ...this.settings,
+      ...selected,
+      searchEnginePreset: preset || selected.searchEngine
+    }
     this.forceProxyIfRequired()
     this.settings.queryParams ||= ""
     if (selected.searchEngine === "solr") {
-      this.settings.searchUrl = window.location.protocol === "https:" ? selected.secureSearchUrl : selected.insecureSearchUrl
+      this.settings.searchUrl =
+        window.location.protocol === "https:"
+          ? selected.secureSearchUrl
+          : selected.insecureSearchUrl
     }
     this.clearValidation()
   }
@@ -301,11 +361,14 @@ export default class extends Controller {
     if (proxyError) return this.fail(proxyError)
     if (this.tlsMismatch()) return this.render()
     this.setBusy(true)
-    const headerValue = this.hasCustomHeadersTarget ? this.customHeadersTarget.value : this.settings.customHeaders
+    const headerValue = this.hasCustomHeadersTarget
+      ? this.customHeadersTarget.value
+      : this.settings.customHeaders
     this.settings.customHeaders = headerValue
     const headerResult = parseCustomHeaders(headerValue)
     if (!headerResult.valid) return this.fail("Custom Headers must be a valid JSON object")
-    if (invalidProxyApiMethod(this.settings.proxyRequests, this.settings.apiMethod)) return this.fail("You must change from JSONP to another API method when proxying.")
+    if (invalidProxyApiMethod(this.settings.proxyRequests, this.settings.apiMethod))
+      return this.fail("You must change from JSONP to another API method when proxying.")
 
     const settings = { ...this.settings }
     settings.searchEngine = normalizeSearchEngine(settings.searchEngine)
@@ -323,7 +386,8 @@ export default class extends Controller {
         return this.render()
       }
     }
-    if (settings.proxyRequests) settings.proxyUrl = this.capability.settings.proxyUrlFor(settings.searchEndpointId)
+    if (settings.proxyRequests)
+      settings.proxyUrl = this.capability.settings.proxyUrlFor(settings.searchEndpointId)
 
     try {
       const validator = this.capability.search.createValidator(settings)
@@ -331,7 +395,11 @@ export default class extends Controller {
       this.searchFields = validator.fields || []
       this.idFields = validator.idFields || []
       this.applyFieldDefaults()
-      this.settings.fieldSpec = buildFieldSpec(this.settings.idField, this.settings.titleField, this.settings.additionalFields)
+      this.settings.fieldSpec = buildFieldSpec(
+        this.settings.idField,
+        this.settings.titleField,
+        this.settings.additionalFields
+      )
       this.setBusy(false)
       this.urlValid = true
       if (!justValidate) {
@@ -416,14 +484,28 @@ export default class extends Controller {
 
   validateFields() {
     this.fieldError = null
-    if (!this.settings.idField?.trim()) this.fieldError = "This field is required. Please select an ID field."
-    if (!this.settings.titleField?.trim()) this.fieldError = "This field is required. Please select a title field."
+    if (!this.settings.idField?.trim())
+      this.fieldError = "This field is required. Please select an ID field."
+    if (!this.settings.titleField?.trim())
+      this.fieldError = "This field is required. Please select a title field."
     if (this.fieldError) return this.render()
     // Search API fields come from the mapper code, so only other engines can have a typo here.
-    const customField = [this.settings.titleField, this.settings.idField].some((field) => !this.searchFields.includes(field))
-    if (customField && this.settings.searchEngine !== "searchapi" &&
-      !window.confirm("You are using a custom field for the title or ID (could be a typo), are you sure you want to continue?")) return
-    this.settings.fieldSpec = buildFieldSpec(this.settings.idField, this.settings.titleField, this.settings.additionalFields)
+    const customField = [this.settings.titleField, this.settings.idField].some(
+      (field) => !this.searchFields.includes(field)
+    )
+    if (
+      customField &&
+      this.settings.searchEngine !== "searchapi" &&
+      !window.confirm(
+        "You are using a custom field for the title or ID (could be a typo), are you sure you want to continue?"
+      )
+    )
+      return
+    this.settings.fieldSpec = buildFieldSpec(
+      this.settings.idField,
+      this.settings.titleField,
+      this.settings.additionalFields
+    )
     this.stepIndex = 4
     this.render()
   }
@@ -467,7 +549,8 @@ export default class extends Controller {
 
   async importStatic(event) {
     event?.preventDefault()
-    if (this.staticImporting || this.staticImported || this.staticAlert || !this.staticRows.length) return
+    if (this.staticImporting || this.staticImported || this.staticAlert || !this.staticRows.length)
+      return
     this.settings.searchEngine = "static"
     this.settings.searchEnginePreset = "static"
     this.staticImporting = true
@@ -480,9 +563,14 @@ export default class extends Controller {
         getQuepidRootUrl()
       )
       const snapshotId = importedSnapshots.at(-1)?.id
-      this.staticSearchUrl = this.snapshotSearchUrlTemplateValue.replaceAll("__SNAPSHOT_ID__", String(snapshotId))
+      this.staticSearchUrl = this.snapshotSearchUrlTemplateValue.replaceAll(
+        "__SNAPSHOT_ID__",
+        String(snapshotId)
+      )
       this.settings.searchUrl = this.staticSearchUrl
-      this.staticQueries = [...new Set(this.staticRows.map((row) => row["Query Text"]).filter(Boolean))].map((queryString) => ({ queryString }))
+      this.staticQueries = [
+        ...new Set(this.staticRows.map((row) => row["Query Text"]).filter(Boolean))
+      ].map((queryString) => ({ queryString }))
       this.staticImported = true
       this.staticStatus = "Static data imported successfully."
     } catch {
@@ -505,10 +593,17 @@ export default class extends Controller {
       const selectedCase = caseCapability.selected()
       if (this.settings.caseName) await caseCapability.rename(selectedCase, this.settings.caseName)
       if (!settings.demoChosen(this.settings.searchEngine, this.settings.searchUrl)) {
-        if (endpoints.isEsOrOs(this.settings.searchEngine) && typeof this.settings.queryParams === "string") {
-          this.settings.queryParams = this.settings.queryParams.replace("REPLACE_ME", this.settings.titleField || "")
+        if (
+          endpoints.isEsOrOs(this.settings.searchEngine) &&
+          typeof this.settings.queryParams === "string"
+        ) {
+          this.settings.queryParams = this.settings.queryParams.replace(
+            "REPLACE_ME",
+            this.settings.titleField || ""
+          )
         }
-        if (this.settings.searchEngine === "solr") this.settings.queryParams = settings.defaultSolrQueryParams()
+        if (this.settings.searchEngine === "solr")
+          this.settings.queryParams = settings.defaultSolrQueryParams()
       }
       this.settings.selectedTry ||= settings.applicable()
       const queries = this.activeQueries()
@@ -519,7 +614,10 @@ export default class extends Controller {
       const isFirstCaseWizard = !currentUser.completedCaseWizard
       await user.shownIntroWizard()
       getOrCreateBsModal(this.element)?.hide()
-      navigation.navigateTo({ tryNo: this.settings.selectedTry.tryNo, startTour: isFirstCaseWizard })
+      navigation.navigateTo({
+        tryNo: this.settings.selectedTry.tryNo,
+        startTour: isFirstCaseWizard
+      })
     } catch (error) {
       this.saving = false
       this.showError(formatWizardSaveError(error))
@@ -553,29 +651,37 @@ export default class extends Controller {
   renderEndpointChoices() {
     if (this.hasMapperEnginesTarget && this.hasEngineTileTemplateTarget) {
       // The built-in engine tiles are rendered in ERB; only the mapper-based ones are added here.
-      this.mapperEnginesTarget.querySelectorAll("[data-mapper-engine]").forEach((tile) => tile.remove())
-      this.mapperEnginesTarget.append(...this.mapperEngines.map((engine) => {
-        const tile = this.engineTileTemplateTarget.content.firstElementChild.cloneNode(true)
-        const radio = tile.querySelector("input")
-        radio.value = engine.id
-        radio.setAttribute("aria-label", engine.name)
-        const logo = tile.querySelector("img")
-        logo.src = `images/${engine.logo || "searchapi"}.png`
-        logo.alt = engine.name
-        return tile
-      }))
+      this.mapperEnginesTarget
+        .querySelectorAll("[data-mapper-engine]")
+        .forEach((tile) => tile.remove())
+      this.mapperEnginesTarget.append(
+        ...this.mapperEngines.map((engine) => {
+          const tile = this.engineTileTemplateTarget.content.firstElementChild.cloneNode(true)
+          const radio = tile.querySelector("input")
+          radio.value = engine.id
+          radio.setAttribute("aria-label", engine.name)
+          const logo = tile.querySelector("img")
+          logo.src = `images/${engine.logo || "searchapi"}.png`
+          logo.alt = engine.name
+          return tile
+        })
+      )
     }
     if (!this.hasEndpointSelectTarget) return
     const endpoints = this.searchEndpoints.filter((endpoint) => endpoint.searchEngine !== "static")
     if (!this.endpointTomSelect) {
-      this.endpointTomSelect = createSearchEndpointSelect(this.endpointSelectTarget, "Select a search endpoint…")
+      this.endpointTomSelect = createSearchEndpointSelect(
+        this.endpointSelectTarget,
+        "Select a search endpoint…"
+      )
     }
     updateSearchEndpointSelect(this.endpointTomSelect, endpoints, this.settings?.searchEndpointId)
     if (endpoints.length) this.endpointTomSelect.enable()
     else this.endpointTomSelect.disable()
-    this.endpointTomSelect.settings.placeholder = endpoints.length ? "Select a search endpoint…" : "You do not have any Search Endpoints created yet."
+    this.endpointTomSelect.settings.placeholder = endpoints.length
+      ? "Select a search endpoint…"
+      : "You do not have any Search Endpoints created yet."
     this.endpointTomSelect.inputState()
-
   }
 
   // The named conditions that `data-wizard-when` lists in the ERB; an element is shown
@@ -644,7 +750,9 @@ export default class extends Controller {
 
   troubleshootingWikiUrl() {
     const { searchEngine, searchEnginePreset } = this.settings || {}
-    return this.capability?.settings.troubleshootingWikiUrl?.(searchEngine, searchEnginePreset) || null
+    return (
+      this.capability?.settings.troubleshootingWikiUrl?.(searchEngine, searchEnginePreset) || null
+    )
   }
 
   // The URL a user can open to check the endpoint directly, through the proxy when proxying.
@@ -677,20 +785,43 @@ export default class extends Controller {
   renderGuidance() {
     const settings = this.settings || {}
     const searchUrl = settings.searchUrl || ""
-    this.engineNameTargets.forEach((target) => { target.textContent = this.engineDisplayName() })
-    this.endpointLinkTargets.forEach((link) => { link.href = this.endpointUrl() })
+    this.engineNameTargets.forEach((target) => {
+      target.textContent = this.engineDisplayName()
+    })
+    this.endpointLinkTargets.forEach((link) => {
+      link.href = this.endpointUrl()
+    })
     const wikiUrl = this.troubleshootingWikiUrl()
-    this.wikiLinkTargets.forEach((link) => { if (wikiUrl) link.href = wikiUrl })
-    if (this.hasCurlAuthTarget) this.curlAuthTarget.textContent = settings.basicAuthCredential ? `-u ${settings.basicAuthCredential} ` : ""
-    if (this.hasSolrConfigUrlTarget) this.solrConfigUrlTarget.textContent = `${searchUrl.substring(0, searchUrl.lastIndexOf("/"))}/config`
+    this.wikiLinkTargets.forEach((link) => {
+      if (wikiUrl) link.href = wikiUrl
+    })
+    if (this.hasCurlAuthTarget)
+      this.curlAuthTarget.textContent = settings.basicAuthCredential
+        ? `-u ${settings.basicAuthCredential} `
+        : ""
+    if (this.hasSolrConfigUrlTarget)
+      this.solrConfigUrlTarget.textContent = `${searchUrl.substring(0, searchUrl.lastIndexOf("/"))}/config`
     if (this.hasUrlFormatTarget) this.urlFormatTarget.textContent = settings.urlFormat || ""
-    if (this.hasMapperMessageTarget) this.mapperMessageTarget.textContent = this.mapperErrorMessage || ""
-    if (this.hasSelectedEndpointUrlTarget) this.selectedEndpointUrlTargets.forEach((target) => { target.textContent = searchUrl })
-    if (this.hasSelectedEndpointMethodTarget) this.selectedEndpointMethodTargets.forEach((target) => { target.textContent = settings.apiMethod || "" })
+    if (this.hasMapperMessageTarget)
+      this.mapperMessageTarget.textContent = this.mapperErrorMessage || ""
+    if (this.hasSelectedEndpointUrlTarget)
+      this.selectedEndpointUrlTargets.forEach((target) => {
+        target.textContent = searchUrl
+      })
+    if (this.hasSelectedEndpointMethodTarget)
+      this.selectedEndpointMethodTargets.forEach((target) => {
+        target.textContent = settings.apiMethod || ""
+      })
   }
 
   renderFieldChoices() {
-    if (this.loaded && this.stepIndex === 3 && this.hasTitleFieldTarget && this.hasIdFieldTarget && !this.fieldSelects) {
+    if (
+      this.loaded &&
+      this.stepIndex === 3 &&
+      this.hasTitleFieldTarget &&
+      this.hasIdFieldTarget &&
+      !this.fieldSelects
+    ) {
       this.fieldSelects = ["titleField", "idField"].map((field) => {
         const input = this[`${field}Target`]
         return new TomSelect(input, {
@@ -752,7 +883,9 @@ export default class extends Controller {
     const select = this.additionalFieldSelect
     const values = (this.settings.additionalFields || []).map((field) => field.text ?? field)
     select.clearOptions()
-    select.addOptions([...new Set([...this.fieldSuggestions(), ...values])].map((value) => ({ value, text: value })))
+    select.addOptions(
+      [...new Set([...this.fieldSuggestions(), ...values])].map((value) => ({ value, text: value }))
+    )
     if (JSON.stringify(select.items) !== JSON.stringify(values)) select.setValue(values, true)
   }
 
@@ -762,12 +895,21 @@ export default class extends Controller {
     this.tlsWarningTarget.hidden = !mismatch
     if (!mismatch) return
     const [, protocol] = this.capability.navigation.swapUrlTls()
-    this.tlsProtocolTargets.forEach((target) => { target.textContent = protocol })
+    this.tlsProtocolTargets.forEach((target) => {
+      target.textContent = protocol
+    })
   }
 
   reloadInOtherProtocol() {
     const [url] = this.capability.navigation.swapUrlTls()
-    const { searchEnginePreset, searchEngine, searchUrl, caseName, apiMethod, basicAuthCredential } = this.settings
+    const {
+      searchEnginePreset,
+      searchEngine,
+      searchUrl,
+      caseName,
+      apiMethod,
+      basicAuthCredential
+    } = this.settings
     const params = new URLSearchParams({
       showWizard: "true",
       searchEngine: searchEnginePreset || searchEngine || "",
@@ -783,7 +925,9 @@ export default class extends Controller {
   render() {
     this.settings ||= {}
     if (this.hasLoadingTarget) this.loadingTarget.hidden = this.loaded || Boolean(this.error)
-    this.stepTargets.forEach((step, index) => step.hidden = !this.loaded || index !== this.stepIndex)
+    this.stepTargets.forEach(
+      (step, index) => (step.hidden = !this.loaded || index !== this.stepIndex)
+    )
     this.trackerTargets.forEach((item, index) => {
       item.classList.toggle("active", index === this.stepIndex)
       item.classList.toggle("done", index < this.stepIndex)
@@ -798,50 +942,74 @@ export default class extends Controller {
     if (this.hasSearchUrlTarget) this.searchUrlTarget.value = this.settings?.searchUrl || ""
     if (this.hasApiMethodTarget) this.apiMethodTarget.value = this.settings?.apiMethod || ""
     if (this.hasTestQueryTarget) this.testQueryTarget.value = this.settings?.testQuery || ""
-    if (this.hasBasicAuthTarget) this.basicAuthTarget.value = this.settings?.basicAuthCredential || ""
+    if (this.hasBasicAuthTarget)
+      this.basicAuthTarget.value = this.settings?.basicAuthCredential || ""
     if (this.hasCustomHeadersTarget) {
       const customHeaders = this.settings?.customHeaders
-      this.customHeadersTarget.value = customHeaders && customHeaders !== "null" && typeof customHeaders === "object"
-        ? formatEndpointHeaders(customHeaders)
-        : customHeaders === "null" ? "" : customHeaders || ""
+      this.customHeadersTarget.value =
+        customHeaders && customHeaders !== "null" && typeof customHeaders === "object"
+          ? formatEndpointHeaders(customHeaders)
+          : customHeaders === "null"
+            ? ""
+            : customHeaders || ""
     }
     if (this.hasHeaderTypeTarget) {
       // Presets default to "None"; an endpoint that already has headers shows them as Custom.
-      const hasHeaders = Boolean(this.hasCustomHeadersTarget && this.customHeadersTarget.value.trim())
+      const hasHeaders = Boolean(
+        this.hasCustomHeadersTarget && this.customHeadersTarget.value.trim()
+      )
       const chosen = this.settings?.headerType
       const headerType = hasHeaders && (!chosen || chosen === "None") ? "Custom" : chosen || "None"
       this.headerTypeTarget.value = headerType
       if (this.hasCustomHeadersTarget) this.customHeadersTarget.readOnly = headerType === "None"
     }
-    if (this.hasProxyRequestsTarget) this.proxyRequestsTarget.checked = this.settings?.proxyRequests === true
-    if (this.endpointTomSelect) this.endpointTomSelect.setValue(String(this.settings?.searchEndpointId ?? ""), true)
-    else if (this.hasEndpointSelectTarget) this.endpointSelectTarget.value = String(this.settings?.searchEndpointId ?? "")
+    if (this.hasProxyRequestsTarget)
+      this.proxyRequestsTarget.checked = this.settings?.proxyRequests === true
+    if (this.endpointTomSelect)
+      this.endpointTomSelect.setValue(String(this.settings?.searchEndpointId ?? ""), true)
+    else if (this.hasEndpointSelectTarget)
+      this.endpointSelectTarget.value = String(this.settings?.searchEndpointId ?? "")
     const preset = this.settings?.searchEnginePreset || this.settings?.searchEngine || "solr"
-    this.engineOptionTargets.forEach((option) => { option.checked = option.value === preset })
-    if (this.hasTitleFieldTarget && !this.fieldSelects) this.titleFieldTarget.value = this.settings?.titleField || ""
-    if (this.hasIdFieldTarget && !this.fieldSelects) this.idFieldTarget.value = this.settings?.idField || ""
+    this.engineOptionTargets.forEach((option) => {
+      option.checked = option.value === preset
+    })
+    if (this.hasTitleFieldTarget && !this.fieldSelects)
+      this.titleFieldTarget.value = this.settings?.titleField || ""
+    if (this.hasIdFieldTarget && !this.fieldSelects)
+      this.idFieldTarget.value = this.settings?.idField || ""
     // Leave the field list alone while it is being typed in, so a trailing separator survives.
-    if (this.hasAdditionalFieldsTarget && !this.additionalFieldSelect && document.activeElement !== this.additionalFieldsTarget) {
-      this.additionalFieldsTarget.value = (this.settings?.additionalFields || []).map((field) => field.text ?? field).join(", ")
+    if (
+      this.hasAdditionalFieldsTarget &&
+      !this.additionalFieldSelect &&
+      document.activeElement !== this.additionalFieldsTarget
+    ) {
+      this.additionalFieldsTarget.value = (this.settings?.additionalFields || [])
+        .map((field) => field.text ?? field)
+        .join(", ")
     }
-    if (this.hasQueryPatternTarget) this.queryPatternTargets.forEach((target) => { target.value = this.settings?.queryParams || "" })
+    if (this.hasQueryPatternTarget)
+      this.queryPatternTargets.forEach((target) => {
+        target.value = this.settings?.queryParams || ""
+      })
     if (this.hasQueryTextTarget) this.queryTextTarget.value = this.settings?.text || ""
     if (this.hasQueryListTarget) {
-      this.queryListTarget.replaceChildren(...this.activeQueries().map((query, index) => {
-        const item = document.createElement("span")
-        item.className = "wiz_new_query"
-        const text = document.createElement("span")
-        text.className = "query_text"
-        text.textContent = query.queryString
-        item.append(text)
-        const remove = document.createElement("button")
-        remove.type = "button"
-        remove.textContent = "X"
-        remove.dataset.action = "wizard#removeQuery"
-        remove.dataset.wizardIndexParam = index
-        item.append(remove)
-        return item
-      }))
+      this.queryListTarget.replaceChildren(
+        ...this.activeQueries().map((query, index) => {
+          const item = document.createElement("span")
+          item.className = "wiz_new_query"
+          const text = document.createElement("span")
+          text.className = "query_text"
+          text.textContent = query.queryString
+          item.append(text)
+          const remove = document.createElement("button")
+          remove.type = "button"
+          remove.textContent = "X"
+          remove.dataset.action = "wizard#removeQuery"
+          remove.dataset.wizardIndexParam = index
+          item.append(remove)
+          return item
+        })
+      )
     }
     if (this.hasAlertTarget) {
       this.alertTarget.textContent = this.error || this.fieldError || ""
@@ -851,24 +1019,37 @@ export default class extends Controller {
       this.staticAlertTarget.textContent = this.staticAlert || ""
       this.staticAlertTarget.hidden = !this.staticAlert
     }
-    if (this.hasStaticContentTarget) this.staticContentTarget.textContent = this.staticFileContent || ""
+    if (this.hasStaticContentTarget)
+      this.staticContentTarget.textContent = this.staticFileContent || ""
     if (this.hasStaticImportButtonTarget) {
-      this.staticImportButtonTarget.disabled = Boolean(this.staticImporting || this.staticImported || this.staticAlert || !this.staticRows.length)
+      this.staticImportButtonTarget.disabled = Boolean(
+        this.staticImporting || this.staticImported || this.staticAlert || !this.staticRows.length
+      )
     }
     if (this.hasStaticStatusTarget) {
       this.staticStatusTarget.textContent = this.staticStatus || ""
       this.staticStatusTarget.hidden = !this.staticStatus
     }
     // A static endpoint has nothing to validate until its CSV has been imported.
-    const awaitingStaticImport = this.stepIndex === 2 && this.settings?.searchEngine === "static" && !this.staticImported
+    const awaitingStaticImport =
+      this.stepIndex === 2 && this.settings?.searchEngine === "static" && !this.staticImported
     const awaitingTestQuery = this.stepIndex === 2 && this.testQueryRequired()
-    const awaitingExistingEndpoint = this.stepIndex === 2 && this.endpointMode === "existing" && !this.settings?.searchEndpointId
+    const awaitingExistingEndpoint =
+      this.stepIndex === 2 && this.endpointMode === "existing" && !this.settings?.searchEndpointId
     const awaitingQueryPattern = this.stepIndex === 4 && this.queryPatternRequired()
     this.continueButtonTargets.forEach((button) => {
-      button.disabled = this.validating || awaitingStaticImport || awaitingTestQuery || awaitingExistingEndpoint || awaitingQueryPattern || (this.stepIndex === 1 && !this.settings?.caseName?.trim())
+      button.disabled =
+        this.validating ||
+        awaitingStaticImport ||
+        awaitingTestQuery ||
+        awaitingExistingEndpoint ||
+        awaitingQueryPattern ||
+        (this.stepIndex === 1 && !this.settings?.caseName?.trim())
     })
     // As in the Angular wizard, the existing panel's ping waits for an endpoint to be chosen.
-    this.pingButtonTargets.forEach((button) => { button.disabled = Boolean(this.validating || awaitingExistingEndpoint) })
+    this.pingButtonTargets.forEach((button) => {
+      button.disabled = Boolean(this.validating || awaitingExistingEndpoint)
+    })
     if (this.hasFinishButtonTarget) this.finishButtonTarget.disabled = this.saving
     if (this.hasStaticFileTarget) this.staticFileTarget.disabled = Boolean(this.staticImported)
     this.renderTls()

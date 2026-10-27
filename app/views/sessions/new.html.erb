@@ -90,7 +90,8 @@
 
           <h2>Sign up to get started!</h2>
           <% if controller.class.to_s.include?("SignupsController") && @user.errors.any? %>
-            <div id="error_explanation">
+            <%# Login and signup errors are mutually exclusive; retain the existing error selector. %>
+            <div id="error_explanation"> <%# herb:disable html-no-duplicate-ids %>
               <% @user.errors.full_messages.each do |message| %>
               <div class="alert alert-danger">
                 <%= message %>

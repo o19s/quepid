@@ -15,8 +15,15 @@ function buildRuntime(overrides = {}) {
   const runtimeConfig = {
     getSettings: () => ({ createFieldSpec: () => ({ id: "id" }) }),
     copySettings: (settings) => ({ ...settings }),
-    createSearcher: vi.fn(() => ({ search: vi.fn(() => Promise.resolve()), docs: [], numFound: 0 })),
-    createRatedSearcher: vi.fn(() => ({ search: vi.fn(() => Promise.resolve()), linkUrl: "rated" })),
+    createSearcher: vi.fn(() => ({
+      search: vi.fn(() => Promise.resolve()),
+      docs: [],
+      numFound: 0
+    })),
+    createRatedSearcher: vi.fn(() => ({
+      search: vi.fn(() => Promise.resolve()),
+      linkUrl: "rated"
+    })),
     searchApiRatedDocs: vi.fn(),
     supportsSearchApiRatedDocsLookup: vi.fn(() => true),
     normalizeDocuments: vi.fn(() => [{ id: "rated-2" }]),
@@ -78,7 +85,11 @@ describe("query runtime", () => {
   it("tells the user to pick a search endpoint when no searcher can be built", async () => {
     const onError = vi.fn()
     const createSearcher = vi.fn(() => null)
-    const { query, runtime } = buildRuntime({ query: { hasBeenScored: true }, createSearcher, onError })
+    const { query, runtime } = buildRuntime({
+      query: { hasBeenScored: true },
+      createSearcher,
+      onError
+    })
     const message = "No Search Endpoint configured. Please select a search endpoint in Settings."
 
     await expect(runtime.search()).rejects.toBe(message)
@@ -179,9 +190,7 @@ describe("query runtime", () => {
 
     await runtime.refreshRatedDocs(25)
 
-    expect(createRatedSearcher).toHaveBeenCalledWith(
-      expect.objectContaining({ numberOfRows: 25 })
-    )
+    expect(createRatedSearcher).toHaveBeenCalledWith(expect.objectContaining({ numberOfRows: 25 }))
     expect(normalizeDocuments).toHaveBeenCalledWith(
       ratedSearcher,
       expect.objectContaining({ id: "id" })
@@ -244,7 +253,9 @@ describe("query runtime", () => {
 
   it("loads Search API rated documents by id and publishes them", async () => {
     const searcher = { linkUrl: "rated-url", numFound: 2 }
-    const searchApiRatedDocs = vi.fn(() => Promise.resolve({ searcher, docs: [{ id: "a" }, { id: "b" }] }))
+    const searchApiRatedDocs = vi.fn(() =>
+      Promise.resolve({ searcher, docs: [{ id: "a" }, { id: "b" }] })
+    )
     const settings = { searchEngine: "searchapi", selectedTry: {}, createFieldSpec: () => ({}) }
     const { query, runtime, publish } = buildRuntime({
       query: { ratings: { a: 1, "": 2, b: 3 }, ratingsGeneration: 0 },
@@ -254,11 +265,18 @@ describe("query runtime", () => {
 
     await runtime.refreshRatedDocs()
 
-    expect(searchApiRatedDocs).toHaveBeenCalledWith(expect.objectContaining({ searchEngine: "searchapi" }), query, ["a", "b"])
+    expect(searchApiRatedDocs).toHaveBeenCalledWith(
+      expect.objectContaining({ searchEngine: "searchapi" }),
+      query,
+      ["a", "b"]
+    )
     expect(query).toMatchObject({
       ratedSearcher: searcher,
       ratedUrl: "rated-url",
-      ratedDocs: [{ id: "a", rateable: true }, { id: "b", rateable: true }],
+      ratedDocs: [
+        { id: "a", rateable: true },
+        { id: "b", rateable: true }
+      ],
       ratedDocsFound: 2,
       ratingsReady: true,
       ratingsPromise: null
@@ -267,17 +285,33 @@ describe("query runtime", () => {
   })
 
   it("treats a Search API rated lookup with no ratings, or a null result, as empty", async () => {
-    const getSettings = () => ({ searchEngine: "searchapi", selectedTry: {}, createFieldSpec: () => ({}) })
+    const getSettings = () => ({
+      searchEngine: "searchapi",
+      selectedTry: {},
+      createFieldSpec: () => ({})
+    })
     const searchApiRatedDocs = vi.fn(() => Promise.resolve(null))
 
-    const noRatings = buildRuntime({ query: { ratings: {}, ratedDocs: [{ id: "old" }] }, getSettings, searchApiRatedDocs })
+    const noRatings = buildRuntime({
+      query: { ratings: {}, ratedDocs: [{ id: "old" }] },
+      getSettings,
+      searchApiRatedDocs
+    })
     await noRatings.runtime.refreshRatedDocs()
     expect(searchApiRatedDocs).not.toHaveBeenCalled()
     expect(noRatings.query).toMatchObject({ ratedDocs: [], ratedDocsFound: 0, ratingsReady: true })
 
-    const nullResult = buildRuntime({ query: { ratings: { a: 1 }, ratingsGeneration: 0 }, getSettings, searchApiRatedDocs })
+    const nullResult = buildRuntime({
+      query: { ratings: { a: 1 }, ratingsGeneration: 0 },
+      getSettings,
+      searchApiRatedDocs
+    })
     await nullResult.runtime.refreshRatedDocs()
-    expect(nullResult.query).toMatchObject({ ratedDocsUnsupported: true, ratedDocs: [], ratingsPromise: null })
+    expect(nullResult.query).toMatchObject({
+      ratedDocsUnsupported: true,
+      ratedDocs: [],
+      ratingsPromise: null
+    })
   })
 
   it("shares an in-flight rated refresh and clears it after a failure so the next call retries", async () => {
@@ -286,7 +320,10 @@ describe("query runtime", () => {
       .fn()
       .mockReturnValueOnce({ search: () => Promise.reject(error) })
       .mockReturnValueOnce({ search: () => Promise.resolve(), linkUrl: "ok" })
-    const { query, runtime } = buildRuntime({ query: { ratingsGeneration: 0 }, createRatedSearcher })
+    const { query, runtime } = buildRuntime({
+      query: { ratingsGeneration: 0 },
+      createRatedSearcher
+    })
 
     const first = runtime.refreshRatedDocs()
     expect(runtime.refreshRatedDocs()).toBe(first)
@@ -332,5 +369,4 @@ describe("query runtime", () => {
     expect(exhausted.query.ratedSearcher).toBeNull()
     expect(exhausted.publish).not.toHaveBeenCalled()
   })
-
 })

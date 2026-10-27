@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest"
-import { isEsLikeEngine, normalizeSearchEngine, searchEngineLabel, supportsLookupById } from "utils/search_engines"
+import {
+  isEsLikeEngine,
+  normalizeSearchEngine,
+  searchEngineLabel,
+  supportsLookupById
+} from "utils/search_engines"
 
 describe("search_engines", () => {
   it("treats Elasticsearch and OpenSearch as ES-like", () => {

@@ -13,7 +13,7 @@ function query(searchers) {
   return {
     diffs: {
       getSearchers: () => searchers,
-      getSearcher: index => searchers[index]
+      getSearcher: (index) => searchers[index]
     }
   }
 }
@@ -23,10 +23,18 @@ describe("buildCaseDiffScores", () => {
     const baseline = searcher("Baseline", 3, { score: 0.5, allRated: true })
     const tuned = searcher("Tuned", 4, { score: 1, allRated: false })
 
-    expect(buildCaseDiffScores([query([baseline, tuned]), query([
-      searcher("Baseline", 3, { score: 1, allRated: true }),
-      searcher("Tuned", 4, { score: 0.5, allRated: true })
-    ])], 1)).toEqual([
+    expect(
+      buildCaseDiffScores(
+        [
+          query([baseline, tuned]),
+          query([
+            searcher("Baseline", 3, { score: 1, allRated: true }),
+            searcher("Tuned", 4, { score: 0.5, allRated: true })
+          ])
+        ],
+        1
+      )
+    ).toEqual([
       {
         name: "Baseline",
         version: 3,
@@ -51,10 +59,13 @@ describe("buildCaseDiffScores", () => {
   })
 
   it("ignores unrated and missing scores, returning the pending sentinel when needed", () => {
-    const scores = buildCaseDiffScores({
-      first: query([searcher("Baseline", 1, { score: "--", allRated: false })]),
-      second: query([searcher("Baseline", 1, { score: null, allRated: true })])
-    }, 2)
+    const scores = buildCaseDiffScores(
+      {
+        first: query([searcher("Baseline", 1, { score: "--", allRated: false })]),
+        second: query([searcher("Baseline", 1, { score: null, allRated: true })])
+      },
+      2
+    )
 
     expect(scores[0].score).toMatchObject({
       score: "--",

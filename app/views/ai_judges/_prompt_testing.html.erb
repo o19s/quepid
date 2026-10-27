@@ -88,12 +88,12 @@
                 invalid HTML (the browser discards the inner one, so a would-be
                 form.submit() here actually POSTs the OUTER save form instead -
                 silently creating/saving a judge just from picking a scale). %>
-            <% picker_path = ai_judge.persisted? ? edit_ai_judge_path(ai_judge) : new_ai_judge_path %>
             <div class="mt-2" style="max-width: 320px;">
               <select class="form-select form-select-sm" data-action="change->ai-judge-wizard#navigateToScale">
                 <option value="">Select a rating scale...</option>
                 <% scorer_options_for_select(current_user).each do |label, id| %>
-                  <option value="<%= id %>" data-url="<%= "#{picker_path}?scorer_id=#{id}" %>" <%= 'selected' if scorer_id.to_s == id.to_s %>><%= label %></option>
+                  <% picker_url = ai_judge.persisted? ? edit_ai_judge_path(ai_judge, scorer_id: id) : new_ai_judge_path(scorer_id: id) %>
+                  <%= tag.option label, value: id, selected: scorer_id.to_s == id.to_s, data: { url: picker_url } %>
                 <% end %>
               </select>
             </div>

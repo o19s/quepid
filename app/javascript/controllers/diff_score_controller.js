@@ -13,7 +13,8 @@ export default class extends Controller {
   connect() {
     this.store = getCoreStores().documents
     this.onStoreChange = () => this.render()
-    this.unsubscribeStore = this.store && subscribeToStore(this.store, { change: this.onStoreChange })
+    this.unsubscribeStore =
+      this.store && subscribeToStore(this.store, { change: this.onStoreChange })
     this.render()
   }
 

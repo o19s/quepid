@@ -1,5 +1,5 @@
-import { test, expect, type Page } from '@playwright/test';
-import { apiHeaders } from './case_helpers';
+import { test, expect, type Page } from "@playwright/test"
+import { apiHeaders } from "./case_helpers"
 
 /**
  * Book import/export end-to-end coverage (Books::ImportController /
@@ -20,22 +20,22 @@ import { apiHeaders } from './case_helpers';
  * `force_create_users`.
  */
 
-const IMPORT_EMAIL = process.env.QUEPID_E2E_EMAIL ?? 'quepid+realisticactivity@o19s.com';
+const IMPORT_EMAIL = process.env.QUEPID_E2E_EMAIL ?? "quepid+realisticactivity@o19s.com"
 
 function importJson(name: string) {
   return {
     name,
     scale: [0, 1],
-    scale_with_labels: { '0': 'Not Relevant', '1': 'Relevant' },
+    scale_with_labels: { "0": "Not Relevant", "1": "Relevant" },
     query_doc_pairs: [
       {
-        query_text: 'dog',
-        doc_id: 'pw-doc-123',
+        query_text: "dog",
+        doc_id: "pw-doc-123",
         judgements: [{ rating: 1.0, unrateable: false, user_email: IMPORT_EMAIL }]
       },
-      { query_text: 'dog', doc_id: 'pw-doc-234' }
+      { query_text: "dog", doc_id: "pw-doc-234" }
     ]
-  };
+  }
 }
 
 /**
@@ -47,110 +47,113 @@ function importJson(name: string) {
  */
 async function deleteBook(page: Page, bookId: number) {
   const response = await page.request.delete(`books/${bookId}`, {
-    headers: await apiHeaders(page, { 'X-Requested-With': 'XMLHttpRequest' }),
+    headers: await apiHeaders(page, { "X-Requested-With": "XMLHttpRequest" }),
     maxRedirects: 0
-  });
-  expect(response.status()).toBeLessThan(400);
+  })
+  expect(response.status()).toBeLessThan(400)
 }
 
 /** Uploads `json` on the Import Book form and returns the new Book's id. */
 async function importBook(page: Page, json: Record<string, unknown>): Promise<number> {
-  await page.goto('books/import/new');
-  await expect(page.getByRole('heading', { name: 'Import Book', level: 1 })).toBeVisible();
+  await page.goto("books/import/new")
+  await expect(page.getByRole("heading", { name: "Import Book", level: 1 })).toBeVisible()
 
   await page.locator('input[type="file"]#book_import_file').setInputFiles({
-    name: 'book.json',
-    mimeType: 'application/json',
+    name: "book.json",
+    mimeType: "application/json",
     buffer: Buffer.from(JSON.stringify(json))
-  });
-  await page.getByRole('button', { name: 'Upload' }).click();
+  })
+  await page.getByRole("button", { name: "Upload" }).click()
 
-  await page.waitForURL(/\/books\/\d+$/, { timeout: 10_000 });
-  await expect(page.locator('#flash-messages')).toContainText(/successfully created/i);
+  await page.waitForURL(/\/books\/\d+$/, { timeout: 10_000 })
+  await expect(page.locator("#flash-messages")).toContainText(/successfully created/i)
 
-  const bookId = Number(page.url().match(/\/books\/(\d+)$/)?.[1]);
-  expect(bookId).toBeGreaterThan(0);
-  return bookId;
+  const bookId = Number(page.url().match(/\/books\/(\d+)$/)?.[1])
+  expect(bookId).toBeGreaterThan(0)
+  return bookId
 }
 
-test.describe('Book import/export', () => {
-  test('imports a JSON file and creates a book with the right query doc pairs', async ({ page }) => {
-    const name = `Playwright Import ${Date.now()}`;
-    const bookId = await importBook(page, importJson(name));
+test.describe("Book import/export", () => {
+  test("imports a JSON file and creates a book with the right query doc pairs", async ({
+    page
+  }) => {
+    const name = `Playwright Import ${Date.now()}`
+    const bookId = await importBook(page, importJson(name))
 
     try {
       // ImportBookJob runs asynchronously — poll the show page until the
       // imported query and query/doc pair counts land.
       await expect(async () => {
-        await page.goto(`books/${bookId}`);
-        await expect(page.getByText(/This book has 1 query and 2 query\/doc pairs/)).toBeVisible();
-      }).toPass({ timeout: 15_000 });
+        await page.goto(`books/${bookId}`)
+        await expect(page.getByText(/This book has 1 query and 2 query\/doc pairs/)).toBeVisible()
+      }).toPass({ timeout: 15_000 })
 
-      await expect(page.getByRole('heading', { name: new RegExp(name) })).toBeVisible();
+      await expect(page.getByRole("heading", { name: new RegExp(name) })).toBeVisible()
 
       // Two query_doc_pairs were imported for the single "dog" query.
-      await page.goto(`books/${bookId}/query_doc_pairs`);
-      await expect(page.locator('table tbody tr')).toHaveCount(2);
-      await expect(page.getByRole('cell', { name: 'pw-doc-123' })).toBeVisible();
-      await expect(page.getByRole('cell', { name: 'pw-doc-234' })).toBeVisible();
+      await page.goto(`books/${bookId}/query_doc_pairs`)
+      await expect(page.locator("table tbody tr")).toHaveCount(2)
+      await expect(page.getByRole("cell", { name: "pw-doc-123" })).toBeVisible()
+      await expect(page.getByRole("cell", { name: "pw-doc-234" })).toBeVisible()
 
       // The one judgement supplied for pw-doc-123 was attributed to the
       // importing (seeded) user.
-      await page.goto(`books/${bookId}/judgements?filtered=1&q=doc_id:pw-doc-123`);
-      const row = page.locator('table tbody tr').first();
-      await expect(row).toBeVisible();
-      await expect(row.getByRole('cell', { name: '1.0' })).toBeVisible();
+      await page.goto(`books/${bookId}/judgements?filtered=1&q=doc_id:pw-doc-123`)
+      const row = page.locator("table tbody tr").first()
+      await expect(row).toBeVisible()
+      await expect(row.getByRole("cell", { name: "1.0" })).toBeVisible()
     } finally {
-      await deleteBook(page, bookId);
+      await deleteBook(page, bookId)
     }
-  });
+  })
 
-  test('rejects an invalid JSON file without creating a book', async ({ page }) => {
-    await page.goto('books/import/new');
+  test("rejects an invalid JSON file without creating a book", async ({ page }) => {
+    await page.goto("books/import/new")
 
     await page.locator('input[type="file"]#book_import_file').setInputFiles({
-      name: 'not-quite.json',
-      mimeType: 'application/json',
-      buffer: Buffer.from('{ this is not valid JSON')
-    });
-    await page.getByRole('button', { name: 'Upload' }).click();
+      name: "not-quite.json",
+      mimeType: "application/json",
+      buffer: Buffer.from("{ this is not valid JSON")
+    })
+    await page.getByRole("button", { name: "Upload" }).click()
 
     // ImportController#create re-renders :new (200, not a redirect) with
     // the book's validation errors when JSON parsing fails.
-    await expect(page).toHaveURL(/\/books\/import/);
-    await expect(page.locator('#error_explanation')).toContainText(/Invalid JSON file/i);
-  });
+    await expect(page).toHaveURL(/\/books\/import/)
+    await expect(page.locator("#error_explanation")).toContainText(/Invalid JSON file/i)
+  })
 
-  test('exports a book as a downloadable JSON file', async ({ page }) => {
-    const name = `Playwright Export ${Date.now()}`;
-    const bookId = await importBook(page, importJson(name));
+  test("exports a book as a downloadable JSON file", async ({ page }) => {
+    const name = `Playwright Export ${Date.now()}`
+    const bookId = await importBook(page, importJson(name))
 
     try {
-      await page.goto(`books/${bookId}/export`);
-      await expect(page.getByRole('heading', { name: 'Export Data' })).toBeVisible();
+      await page.goto(`books/${bookId}/export`)
+      await expect(page.getByRole("heading", { name: "Export Data" })).toBeVisible()
 
-      await page.getByRole('button', { name: 'Export' }).click();
+      await page.getByRole("button", { name: "Export" }).click()
 
       // ExportController#update redirects back to the export page with a "queued" notice;
       // ExportBookJob then attaches export_file async and the page updates itself.
-      await page.waitForURL(`**/books/${bookId}/export`, { timeout: 10_000 });
-      await expect(page.locator('#flash-messages')).toContainText(/queued up export/i);
+      await page.waitForURL(`**/books/${bookId}/export`, { timeout: 10_000 })
+      await expect(page.locator("#flash-messages")).toContainText(/queued up export/i)
 
-      const exportLink = page.getByRole('link', { name: /available to download/ });
+      const exportLink = page.getByRole("link", { name: /available to download/ })
       await expect(async () => {
-        await page.reload();
-        await expect(exportLink).toBeVisible();
-      }).toPass({ timeout: 15_000 });
+        await page.reload()
+        await expect(exportLink).toBeVisible()
+      }).toPass({ timeout: 15_000 })
 
       // Confirm the export is a real, fetchable file rather than just a
       // visible link — full ZIP/JSON content verification is out of scope
       // here since it duplicates BookExporter's own service-level tests.
-      const href = await exportLink.getAttribute('href');
-      expect(href).toBeTruthy();
-      const download = await page.request.get(href as string);
-      expect(download.ok()).toBeTruthy();
+      const href = await exportLink.getAttribute("href")
+      // eslint-disable-next-line playwright/prefer-web-first-assertions -- href is read for the download below
+      expect(href).toBeTruthy()
+      const download = await page.request.get(href as string)
+      expect(download.ok()).toBeTruthy()
     } finally {
-      await deleteBook(page, bookId);
+      await deleteBook(page, bookId)
     }
-  });
-});
+  })
+})

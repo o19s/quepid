@@ -3,7 +3,13 @@ import { lazyDetail } from "utils/lazy_detail"
 import { plainDocument } from "utils/query_documents"
 
 // Keys of snapshot() other than queryId, exposed lazily on `change` events. Keep in sync (tested).
-export const DOCUMENTS_SNAPSHOT_KEYS = ["showOnlyRated", "query", "queries", "caseDiffs", "caseSummary"]
+export const DOCUMENTS_SNAPSHOT_KEYS = [
+  "showOnlyRated",
+  "query",
+  "queries",
+  "caseDiffs",
+  "caseSummary"
+]
 
 /**
  * Observable read model for the documents in each expanded query.
@@ -20,9 +26,11 @@ export class QueryDocumentsStore extends EventTarget {
     // These projections share the collection's page lifetime. A preference or
     // live-query publication must also notify expanded-results subscribers.
     // Keep single-query changes scoped so other comparison controls stay mounted.
-    this.collection.addEventListener("change", event => {
+    this.collection.addEventListener("change", (event) => {
       this.pruneRemovedQueries(event.detail.queryId)
-      this.dispatchEvent(new CustomEvent("change", { detail: this.changeDetail(event.detail.queryId) }))
+      this.dispatchEvent(
+        new CustomEvent("change", { detail: this.changeDetail(event.detail.queryId) })
+      )
     })
     this.collection.addEventListener("reset", () => this.reset())
   }
@@ -40,8 +48,8 @@ export class QueryDocumentsStore extends EventTarget {
       ...previous,
       queryId: Number(queryId),
       ...state,
-      docs: docs.map(doc => snapshotDocument(doc, state)),
-      ratedDocs: ratedDocs.map(doc => snapshotDocument(doc, state)),
+      docs: docs.map((doc) => snapshotDocument(doc, state)),
+      ratedDocs: ratedDocs.map((doc) => snapshotDocument(doc, state)),
       diffs: snapshotDiffs(state.diffs, state)
     })
     this.dispatchEvent(new CustomEvent("change", { detail: this.changeDetail(queryId) }))
@@ -90,9 +98,11 @@ export class QueryDocumentsStore extends EventTarget {
   }
 
   request(command, detail = {}) {
-    this.dispatchEvent(new CustomEvent("command", {
-      detail: { command, ...detail }
-    }))
+    this.dispatchEvent(
+      new CustomEvent("command", {
+        detail: { command, ...detail }
+      })
+    )
   }
 
   requestToggleQuery(queryId) {
@@ -136,15 +146,19 @@ export class QueryDocumentsStore extends EventTarget {
   }
 
   changeDetail(queryId) {
-    return lazyDetail(DOCUMENTS_SNAPSHOT_KEYS, () => this.snapshot(queryId), { queryId: queryId == null ? null : Number(queryId) })
+    return lazyDetail(DOCUMENTS_SNAPSHOT_KEYS, () => this.snapshot(queryId), {
+      queryId: queryId == null ? null : Number(queryId)
+    })
   }
 
   snapshot(queryId) {
-    const queries = Object.fromEntries([...this._queries.keys()].map(key => [key, this.query(key)]).filter(([, query]) => query))
+    const queries = Object.fromEntries(
+      [...this._queries.keys()].map((key) => [key, this.query(key)]).filter(([, query]) => query)
+    )
     return {
       queryId: queryId == null ? null : Number(queryId),
       showOnlyRated: this.collection.showOnlyRated,
-      query: queryId == null ? null : queries[String(queryId)] ?? null,
+      query: queryId == null ? null : (queries[String(queryId)] ?? null),
       queries,
       caseDiffs: this.caseDiffs(),
       caseSummary: { ...this._caseSummary }
@@ -194,14 +208,18 @@ function snapshotDiffs(diffs, state = {}) {
       inError: Boolean(searcher.inError),
       searchError: searcher.searchError || "",
       score: searcher.score || { score: "?", allRated: false },
-      docs: (searcher.docs || []).map(doc => snapshotDocument(doc, {
-        ...state,
-        maxDocScore: searcher.maxDocScore
-      })),
-      ratedDocs: (searcher.ratedDocs || []).map(doc => snapshotDocument(doc, {
-        ...state,
-        maxDocScore: searcher.maxDocScore
-      }))
+      docs: (searcher.docs || []).map((doc) =>
+        snapshotDocument(doc, {
+          ...state,
+          maxDocScore: searcher.maxDocScore
+        })
+      ),
+      ratedDocs: (searcher.ratedDocs || []).map((doc) =>
+        snapshotDocument(doc, {
+          ...state,
+          maxDocScore: searcher.maxDocScore
+        })
+      )
     }))
   }
 }

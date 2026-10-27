@@ -14,7 +14,7 @@ export default class extends Controller {
     this.dragging = false
 
     // Also read by the drawer's content (the tune-relevance outlet) to restore its own state.
-    const kept = this.handoff = takeKeptOpen()
+    const kept = (this.handoff = takeKeptOpen())
     if (kept) {
       this.toggled = true
       if (kept.width > 0) this.eastPaneWidth = kept.width
@@ -72,7 +72,10 @@ export default class extends Controller {
   keepOpenAcrossNavigation(extras = {}) {
     if (!this.toggled) return
     try {
-      window.sessionStorage.setItem(KEEP_OPEN_KEY, JSON.stringify({ ...extras, width: this.eastPaneWidth }))
+      window.sessionStorage.setItem(
+        KEEP_OPEN_KEY,
+        JSON.stringify({ ...extras, width: this.eastPaneWidth })
+      )
     } catch {
       // Storage unavailable: the pane just starts collapsed, as before.
     }
@@ -138,7 +141,10 @@ export default class extends Controller {
       // the container instead of being clipped by its overflow rule.
       const cssMinimumEast = parseFloat(window.getComputedStyle(this.east).minWidth) || 0
       const minimumEast = Math.min(width, Math.max(250, cssMinimumEast) + 6)
-      const minimumMain = Math.min(width - minimumEast, Math.max(Math.min(230, width / 2), width - window.innerWidth))
+      const minimumMain = Math.min(
+        width - minimumEast,
+        Math.max(Math.min(230, width / 2), width - window.innerWidth)
+      )
       x = Math.max(minimumMain, Math.min(x, width - minimumEast))
       this.eastPaneWidth = width - x
     }

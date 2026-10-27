@@ -21,7 +21,14 @@ import crypto from "node:crypto"
 import fs from "node:fs"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
-import { COMPARE_OPTIONS, decodePng, diffRegions, THUMB_GRID, thumbnail, thumbnailDifference } from "./png-diff.mjs"
+import {
+  COMPARE_OPTIONS,
+  decodePng,
+  diffRegions,
+  THUMB_GRID,
+  thumbnail,
+  thumbnailDifference
+} from "./png-diff.mjs"
 import { readHistory, sourceFingerprint, storedImageStatus } from "./screen-history.mjs"
 import { linkedScreenshotStatus, readScreenshotTracker } from "./screenshot-tracker.mjs"
 import { screenshotPaths, screenshotSourceCurrent } from "./screenshot-dependencies.mjs"
@@ -98,7 +105,9 @@ function pixelDiff(beforeRel, afterRel, beforeBytes, afterBytes) {
 }
 
 function saveDiffCache() {
-  const entries = Object.fromEntries(Object.entries(diffCache).filter(([key]) => usedCacheKeys.has(key)))
+  const entries = Object.fromEntries(
+    Object.entries(diffCache).filter(([key]) => usedCacheKeys.has(key))
+  )
   fs.writeFileSync(diffCachePath, JSON.stringify({ version: DIFF_VERSION, entries }))
 }
 
@@ -139,13 +148,19 @@ function topicAndFile(relPath) {
  * duplicate captures" filter uses to keep one representative per group.
  */
 function markDuplicateCaptures(current) {
-  const entries = [...current.groups, ...current.singles].sort((a, b) => a.topic.localeCompare(b.topic) || a.id.localeCompare(b.id, undefined, { numeric: true }))
+  const entries = [...current.groups, ...current.singles].sort(
+    (a, b) =>
+      a.topic.localeCompare(b.topic) || a.id.localeCompare(b.id, undefined, { numeric: true })
+  )
   const byHash = new Map()
   for (const entry of entries) {
     const image = entry.after || entry.image
     let hash
     try {
-      hash = crypto.createHash("sha256").update(fs.readFileSync(path.join(shotDir, image))).digest("hex")
+      hash = crypto
+        .createHash("sha256")
+        .update(fs.readFileSync(path.join(shotDir, image)))
+        .digest("hex")
     } catch {
       continue // missing or unreadable image: reported by captureStatus, not a duplicate
     }
@@ -154,7 +169,9 @@ function markDuplicateCaptures(current) {
   for (const members of byHash.values()) {
     if (members.length < 2) continue
     members.forEach((entry, index) => {
-      entry.duplicates = members.filter((other) => other !== entry).map((other) => ({ id: other.id, title: other.title }))
+      entry.duplicates = members
+        .filter((other) => other !== entry)
+        .map((other) => ({ id: other.id, title: other.title }))
       if (index > 0) entry.duplicateShadowed = true
     })
   }
@@ -183,7 +200,10 @@ function loadThumbCache() {
  * content-addressed, so a path never changes meaning).
  */
 function markSimilarCaptures(current) {
-  const entries = [...current.groups, ...current.singles].sort((a, b) => a.topic.localeCompare(b.topic) || a.id.localeCompare(b.id, undefined, { numeric: true }))
+  const entries = [...current.groups, ...current.singles].sort(
+    (a, b) =>
+      a.topic.localeCompare(b.topic) || a.id.localeCompare(b.id, undefined, { numeric: true })
+  )
   const cache = loadThumbCache()
   const used = {}
   const items = []
@@ -196,9 +216,20 @@ function markSimilarCaptures(current) {
         used[image] = cached
       } else {
         const png = decodePng(fs.readFileSync(path.join(shotDir, image)))
-        used[image] = { size, grid: THUMB_GRID, width: png.width, height: png.height, thumb: Buffer.from(thumbnail(png)).toString("base64") }
+        used[image] = {
+          size,
+          grid: THUMB_GRID,
+          width: png.width,
+          height: png.height,
+          thumb: Buffer.from(thumbnail(png)).toString("base64")
+        }
       }
-      items.push({ entry, width: used[image].width, height: used[image].height, thumb: Buffer.from(used[image].thumb, "base64") })
+      items.push({
+        entry,
+        width: used[image].width,
+        height: used[image].height,
+        thumb: Buffer.from(used[image].thumb, "base64")
+      })
     } catch {
       // Missing, corrupt or unsupported image: not comparable.
     }
@@ -208,7 +239,12 @@ function markSimilarCaptures(current) {
   const representatives = items.filter((item) => !item.entry.duplicateShadowed)
   const kept = []
   for (const item of representatives) {
-    const match = kept.find((other) => other.width === item.width && other.height === item.height && thumbnailDifference(item.thumb, other.thumb) <= SIMILAR_PERCENT)
+    const match = kept.find(
+      (other) =>
+        other.width === item.width &&
+        other.height === item.height &&
+        thumbnailDifference(item.thumb, other.thumb) <= SIMILAR_PERCENT
+    )
     if (match) item.entry.similarShadowed = true
     else kept.push(item)
   }
@@ -219,9 +255,17 @@ function markSimilarCaptures(current) {
       if (other === item || other.width !== item.width || other.height !== item.height) continue
       if (item.entry.duplicates?.some((duplicate) => duplicate.id === other.entry.id)) continue
       const percent = thumbnailDifference(item.thumb, other.thumb)
-      if (percent <= SIMILAR_PERCENT) similar.push({ id: other.entry.id, title: other.entry.title, percentDifferent: Number(percent.toFixed(2)) })
+      if (percent <= SIMILAR_PERCENT)
+        similar.push({
+          id: other.entry.id,
+          title: other.entry.title,
+          percentDifferent: Number(percent.toFixed(2))
+        })
     }
-    if (similar.length) item.entry.similar = similar.sort((a, b) => a.percentDifferent - b.percentDifferent).slice(0, 5)
+    if (similar.length)
+      item.entry.similar = similar
+        .sort((a, b) => a.percentDifferent - b.percentDifferent)
+        .slice(0, 5)
   }
 }
 
@@ -384,7 +428,8 @@ const linkedScreens = linkedScreenshotStatus(repoRoot, tracker, history)
 manifest.compare = COMPARE_OPTIONS
 manifest.screenshots = linkedScreens
 const linkedById = new Map(linkedScreens.map((screen) => [screen.id, screen]))
-const imageExists = (image) => image && storedImageStatus(repoRoot, { image }).status === "available"
+const imageExists = (image) =>
+  image && storedImageStatus(repoRoot, { image }).status === "available"
 const current = { groups: [], singles: [], branch: history.branch }
 const revisions = []
 for (const screen of Object.values(history.screens)) {
@@ -395,7 +440,9 @@ for (const screen of Object.values(history.screens)) {
   const linked = linkedById.get(screen.id)
   try {
     const paths = screenshotPaths(screen.id, screen.paths, tracker)
-    stale = linked ? linked.current.status === "stale" : !screenshotSourceCurrent(repoRoot, screen, paths, sourceFingerprint(repoRoot, paths))
+    stale = linked
+      ? linked.current.status === "stale"
+      : !screenshotSourceCurrent(repoRoot, screen, paths, sourceFingerprint(repoRoot, paths))
   } catch {
     // Removed source remains visibly pending until a replacement capture is recorded.
   }
@@ -405,19 +452,29 @@ for (const screen of Object.values(history.screens)) {
     topic: screen.area,
     title: screen.title,
     stale,
-    captureStatus: linked?.current.status || (imageExists(now.image) ? stale ? "stale" : "current" : "missing"),
+    captureStatus:
+      linked?.current.status ||
+      (imageExists(now.image) ? (stale ? "stale" : "current") : "missing"),
     versions,
     now,
     legacy: screen.legacy || null,
-    legacyComparison: imageExists(screen.legacy?.image) && imageExists(now.image) ? {
-      before: screen.legacy.image,
-      after: now.image,
-      ...compareFiles(screen.legacy.image, now.image)
-    } : null
+    legacyComparison:
+      imageExists(screen.legacy?.image) && imageExists(now.image)
+        ? {
+            before: screen.legacy.image,
+            after: now.image,
+            ...compareFiles(screen.legacy.image, now.image)
+          }
+        : null
   }
   const before = versions.at(-2)
   if (before && imageExists(before.image) && imageExists(now.image)) {
-    current.groups.push({ ...entry, before: before.image, after: now.image, ...compareFiles(before.image, now.image) })
+    current.groups.push({
+      ...entry,
+      before: before.image,
+      after: now.image,
+      ...compareFiles(before.image, now.image)
+    })
   } else {
     current.singles.push({ ...entry, image: now.image, note: "First capture" })
   }
@@ -433,8 +490,12 @@ for (const screen of Object.values(history.screens)) {
     })
   }
 }
-current.groups.sort((a, b) => a.topic.localeCompare(b.topic) || a.id.localeCompare(b.id, undefined, { numeric: true }))
-current.singles.sort((a, b) => a.topic.localeCompare(b.topic) || a.id.localeCompare(b.id, undefined, { numeric: true }))
+current.groups.sort(
+  (a, b) => a.topic.localeCompare(b.topic) || a.id.localeCompare(b.id, undefined, { numeric: true })
+)
+current.singles.sort(
+  (a, b) => a.topic.localeCompare(b.topic) || a.id.localeCompare(b.id, undefined, { numeric: true })
+)
 markDuplicateCaptures(current)
 markSimilarCaptures(current)
 manifest.current = current

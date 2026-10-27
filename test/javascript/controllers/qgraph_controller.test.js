@@ -15,7 +15,14 @@ const scores = [
 ]
 
 function json(body, ok = true, status = 200) {
-  return { text: async function () { return JSON.stringify(await this.json()) || "" },  ok, status, json: async () => body }
+  return {
+    text: async function () {
+      return JSON.stringify(await this.json()) || ""
+    },
+    ok,
+    status,
+    json: async () => body
+  }
 }
 
 const mounted = []
@@ -45,7 +52,7 @@ function mount({ width = 200, height = 50 } = {}) {
   return { controller, element, container }
 }
 
-const flush = () => new Promise(resolve => setTimeout(resolve, 0))
+const flush = () => new Promise((resolve) => setTimeout(resolve, 0))
 
 describe("QgraphController", () => {
   let scoringStore
@@ -56,21 +63,24 @@ describe("QgraphController", () => {
     vi.spyOn(console, "error").mockImplementation(() => {})
     finalize = vi.fn()
     window.vegaEmbed = vi.fn().mockResolvedValue({ finalize })
-    vi.stubGlobal("ResizeObserver", class {
-      observe() {}
-      disconnect() {}
-    })
+    vi.stubGlobal(
+      "ResizeObserver",
+      class {
+        observe() {}
+        disconnect() {}
+      }
+    )
     scoringStore = new EventTarget()
     scoringStore.caseScore = { maxScore: 50 }
     testStores = { scoring: scoringStore }
-    apiFetch.mockImplementation(async url => {
+    apiFetch.mockImplementation(async (url) => {
       if (url.includes("scores")) return json({ scores })
       return json({ annotations: [{ message: "tuned", updated_at: "2026-01-02T00:00:00Z" }] })
     })
   })
   afterEach(() => {
     // Release store subscriptions and chart resources between tests.
-    mounted.splice(0).forEach(controller => controller.disconnect())
+    mounted.splice(0).forEach((controller) => controller.disconnect())
     vi.unstubAllGlobals()
     delete window.vegaEmbed
     document.body.innerHTML = ""
@@ -82,8 +92,14 @@ describe("QgraphController", () => {
     controller.connect()
     await flush()
 
-    expect(apiFetch).toHaveBeenCalledWith("/api/cases/5/scores", { method: "GET", headers: { Accept: "application/json" } })
-    expect(apiFetch).toHaveBeenCalledWith("/api/cases/5/annotations", { method: "GET", headers: { Accept: "application/json" } })
+    expect(apiFetch).toHaveBeenCalledWith("/api/cases/5/scores", {
+      method: "GET",
+      headers: { Accept: "application/json" }
+    })
+    expect(apiFetch).toHaveBeenCalledWith("/api/cases/5/annotations", {
+      method: "GET",
+      headers: { Accept: "application/json" }
+    })
     expect(element.hidden).toBe(false)
     expect(window.vegaEmbed).toHaveBeenCalled()
     const spec = window.vegaEmbed.mock.calls.at(-1)[1]
@@ -91,7 +107,7 @@ describe("QgraphController", () => {
   })
 
   it("stays hidden with fewer than two scores", async () => {
-    apiFetch.mockImplementation(async url =>
+    apiFetch.mockImplementation(async (url) =>
       url.includes("scores") ? json({ scores: [scores[0]] }) : json({ annotations: [] })
     )
     const { controller, element } = mount()
@@ -104,7 +120,7 @@ describe("QgraphController", () => {
   })
 
   it("hides and does not draw when scores fail to load", async () => {
-    apiFetch.mockImplementation(async url =>
+    apiFetch.mockImplementation(async (url) =>
       url.includes("scores") ? json({}, false, 500) : json({ annotations: [] })
     )
     const { controller, element } = mount()
@@ -117,7 +133,7 @@ describe("QgraphController", () => {
   })
 
   it("still draws scores when annotations fail to load", async () => {
-    apiFetch.mockImplementation(async url =>
+    apiFetch.mockImplementation(async (url) =>
       url.includes("scores") ? json({ scores }) : Promise.reject(new Error("offline"))
     )
     const { controller } = mount()
@@ -161,7 +177,10 @@ describe("QgraphController", () => {
     expect(apiFetch).not.toHaveBeenCalled()
 
     controller.handleScorePersisted({ detail: { caseId: "5" } })
-    expect(apiFetch).toHaveBeenCalledWith("/api/cases/5/scores", { method: "GET", headers: { Accept: "application/json" } })
+    expect(apiFetch).toHaveBeenCalledWith("/api/cases/5/scores", {
+      method: "GET",
+      headers: { Accept: "application/json" }
+    })
   })
 
   it("reloads annotations only for its own case when annotations change", async () => {
@@ -174,7 +193,10 @@ describe("QgraphController", () => {
     expect(apiFetch).not.toHaveBeenCalled()
 
     controller.handleAnnotationsChanged({ detail: { caseId: "5" } })
-    expect(apiFetch).toHaveBeenCalledWith("/api/cases/5/annotations", { method: "GET", headers: { Accept: "application/json" } })
+    expect(apiFetch).toHaveBeenCalledWith("/api/cases/5/annotations", {
+      method: "GET",
+      headers: { Accept: "application/json" }
+    })
   })
 
   it("clears failed annotation refreshes and fetches fresh markers on a later event", async () => {
@@ -189,7 +211,9 @@ describe("QgraphController", () => {
     expect(controller.scores).toEqual(scores)
     expect(JSON.stringify(window.vegaEmbed.mock.calls.at(-1)[1])).not.toContain("tuned")
 
-    apiFetch.mockResolvedValueOnce(json({ annotations: [{ message: "fresh marker", updated_at: "2026-01-02T00:00:00Z" }] }))
+    apiFetch.mockResolvedValueOnce(
+      json({ annotations: [{ message: "fresh marker", updated_at: "2026-01-02T00:00:00Z" }] })
+    )
     controller.handleAnnotationsChanged({ detail: { caseId: "5" } })
     await flush()
     expect(controller.annotations[0].updatedAt).toBe("2026-01-02T00:00:00Z")

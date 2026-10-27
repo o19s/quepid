@@ -20,12 +20,14 @@ describe("case runtime", () => {
   })
 
   it("loads and selects a case without framework objects", async () => {
-    const request = vi.fn().mockResolvedValue(response({
-      case_id: 7,
-      case_name: "Books",
-      last_try_number: 2,
-      tries: [{ try_number: 2 }]
-    }))
+    const request = vi.fn().mockResolvedValue(
+      response({
+        case_id: 7,
+        case_name: "Books",
+        last_try_number: 2,
+        tries: [{ try_number: 2 }]
+      })
+    )
     vi.stubGlobal("fetch", request)
     const runtime = createCaseRuntime()
     const selected = vi.fn()
@@ -36,10 +38,12 @@ describe("case runtime", () => {
 
     expect(value).toMatchObject({ caseNo: 7, caseName: "Books", lastTry: 2 })
     expect(runtime.selected()).toBe(value)
-    expect(selected).toHaveBeenCalledWith(expect.objectContaining({
-      type: "quepid:case-selected",
-      detail: expect.objectContaining({ caseNo: 7, caseName: "Books" })
-    }))
+    expect(selected).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: "quepid:case-selected",
+        detail: expect.objectContaining({ caseNo: 7, caseName: "Books" })
+      })
+    )
     document.removeEventListener("quepid:case-selected", selected)
   })
 
@@ -50,25 +54,39 @@ describe("case runtime", () => {
 
     runtime.select({ caseNo: 7, caseName: "Books", bookId: 12, bookName: "Catalog" })
 
-    expect(selected).toHaveBeenCalledWith(expect.objectContaining({
-      detail: {
-        caseNo: 7,
-        caseName: "Books",
-        bookId: 12,
-        bookName: "Catalog"
-      }
-    }))
+    expect(selected).toHaveBeenCalledWith(
+      expect.objectContaining({
+        detail: {
+          caseNo: 7,
+          caseName: "Books",
+          bookId: 12,
+          bookName: "Catalog"
+        }
+      })
+    )
     document.removeEventListener("quepid:case-selected", selected)
   })
 
   it("initializes the selected record from page data and reconciles later API refreshes", async () => {
-    const request = vi.fn().mockResolvedValue(response({ case_id: 7, case_name: "Refreshed", book_id: 8 }))
+    const request = vi
+      .fn()
+      .mockResolvedValue(response({ case_id: 7, case_name: "Refreshed", book_id: 8 }))
     vi.stubGlobal("fetch", request)
     const runtime = createCaseRuntime()
 
-    const initial = runtime.initialize({ case_id: 7, case_name: "Page", book_id: 3, tries: [{ try_number: 2 }] })
+    const initial = runtime.initialize({
+      case_id: 7,
+      case_name: "Page",
+      book_id: 3,
+      tries: [{ try_number: 2 }]
+    })
 
-    expect(initial).toMatchObject({ caseNo: 7, caseName: "Page", bookId: 3, tries: [{ try_number: 2 }] })
+    expect(initial).toMatchObject({
+      caseNo: 7,
+      caseName: "Page",
+      bookId: 3,
+      tries: [{ try_number: 2 }]
+    })
     expect(runtime.selected()).toBe(initial)
     expect(request).not.toHaveBeenCalled()
     await runtime.read(7)
@@ -87,11 +105,21 @@ describe("case runtime", () => {
 
     await runtime.delete({ caseNo: 7 })
     expect(runtime.selected()).toBeNull()
-    expect(request).toHaveBeenCalledWith("api/cases/7", expect.objectContaining({ method: "DELETE" }))
+    expect(request).toHaveBeenCalledWith(
+      "api/cases/7",
+      expect.objectContaining({ method: "DELETE" })
+    )
   })
 
   it("rejects failed mutations with the action and status, and ignores a blank rename", async () => {
-    const request = vi.fn().mockResolvedValue({ text: async function () { return JSON.stringify(await this.json()) || "" },  ok: false, status: 403, json: vi.fn(async () => null) })
+    const request = vi.fn().mockResolvedValue({
+      text: async function () {
+        return JSON.stringify(await this.json()) || ""
+      },
+      ok: false,
+      status: 403,
+      json: vi.fn(async () => null)
+    })
     vi.stubGlobal("fetch", request)
     const runtime = createCaseRuntime()
 
@@ -114,7 +142,8 @@ describe("case runtime", () => {
   })
 
   it("preserves case mutations and server-rendered header events", async () => {
-    const request = vi.fn()
+    const request = vi
+      .fn()
       .mockResolvedValueOnce(response())
       .mockResolvedValueOnce(response())
       .mockResolvedValueOnce(response())
@@ -145,7 +174,14 @@ describe("case runtime", () => {
   })
   it("coalesces concurrent reads but fetches fresh data on the next open", async () => {
     let finish
-    const request = vi.fn().mockImplementationOnce(() => new Promise(resolve => { finish = resolve }))
+    const request = vi
+      .fn()
+      .mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            finish = resolve
+          })
+      )
       .mockResolvedValueOnce(response({ case_id: 7, book_id: 9 }))
     vi.stubGlobal("fetch", request)
     const runtime = createCaseRuntime()
@@ -163,7 +199,15 @@ describe("case runtime", () => {
 
   it("does not let a response from a previous selection overwrite the current record", async () => {
     let finish
-    vi.stubGlobal("fetch", vi.fn(() => new Promise(resolve => { finish = resolve })))
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(
+        () =>
+          new Promise((resolve) => {
+            finish = resolve
+          })
+      )
+    )
     const runtime = createCaseRuntime()
     runtime.select({ caseNo: 7 })
     const reading = runtime.read(7)
@@ -174,9 +218,13 @@ describe("case runtime", () => {
   })
 
   it("allows retry after a failed refresh without losing selected settings", async () => {
-    vi.stubGlobal("fetch", vi.fn()
-      .mockRejectedValueOnce(new Error("offline"))
-      .mockResolvedValueOnce(response({ case_id: 7, book_id: 9 })))
+    vi.stubGlobal(
+      "fetch",
+      vi
+        .fn()
+        .mockRejectedValueOnce(new Error("offline"))
+        .mockResolvedValueOnce(response({ case_id: 7, book_id: 9 }))
+    )
     const runtime = createCaseRuntime()
     runtime.select({ caseNo: 7, bookId: 12 })
     await expect(runtime.read(7)).rejects.toThrow("offline")
@@ -187,28 +235,44 @@ describe("case runtime", () => {
 
   it("saves book settings in the selected record and invalidates an older refresh", async () => {
     let finish
-    vi.stubGlobal("fetch", vi.fn()
-      .mockImplementationOnce(() => new Promise(resolve => { finish = resolve }))
-      .mockResolvedValueOnce(response({ book_name: "New book" })))
+    vi.stubGlobal(
+      "fetch",
+      vi
+        .fn()
+        .mockImplementationOnce(
+          () =>
+            new Promise((resolve) => {
+              finish = resolve
+            })
+        )
+        .mockResolvedValueOnce(response({ book_name: "New book" }))
+    )
     const runtime = createCaseRuntime()
     const selected = { caseNo: 7, bookId: 1 }
     runtime.select(selected)
     const reading = runtime.read(7)
     await runtime.saveBookSettings(7, {
-      book_id: 9, auto_populate_book_pairs: true, auto_populate_case_judgements: false
+      book_id: 9,
+      auto_populate_book_pairs: true,
+      auto_populate_case_judgements: false
     })
     finish(response({ case_id: 7, book_id: 1 }))
     await reading
     expect(runtime.selected()).toBe(selected)
     expect(selected).toMatchObject({
-      bookId: 9, bookName: "New book", autoPopulateBookPairs: true,
+      bookId: 9,
+      bookName: "New book",
+      autoPopulateBookPairs: true,
       autoPopulateCaseJudgements: false
     })
   })
 
   it("keeps the newest overlapping refresh and publishes its book settings", async () => {
     const finish = []
-    vi.stubGlobal("fetch", vi.fn(() => new Promise(resolve => finish.push(resolve))))
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() => new Promise((resolve) => finish.push(resolve)))
+    )
     const runtime = createCaseRuntime()
     runtime.select({ caseNo: 7, bookId: 1 })
     const updated = vi.fn()
@@ -222,7 +286,10 @@ describe("case runtime", () => {
       await first
       expect(runtime.selected().bookId).toBe(9)
       expect(updated).toHaveBeenCalledOnce()
-      expect(updated.mock.calls[0][0].detail).toMatchObject({ bookId: 9, autoPopulateBookPairs: true })
+      expect(updated.mock.calls[0][0].detail).toMatchObject({
+        bookId: 9,
+        autoPopulateBookPairs: true
+      })
     } finally {
       document.removeEventListener("quepid:case-book-updated", updated)
     }
@@ -230,9 +297,18 @@ describe("case runtime", () => {
 
   it("does not publish a save for a previous selection, and preserves settings on failure", async () => {
     let finish
-    vi.stubGlobal("fetch", vi.fn()
-      .mockImplementationOnce(() => new Promise(resolve => { finish = resolve }))
-      .mockRejectedValueOnce(new Error("offline")))
+    vi.stubGlobal(
+      "fetch",
+      vi
+        .fn()
+        .mockImplementationOnce(
+          () =>
+            new Promise((resolve) => {
+              finish = resolve
+            })
+        )
+        .mockRejectedValueOnce(new Error("offline"))
+    )
     const runtime = createCaseRuntime()
     runtime.select({ caseNo: 7, bookId: 1 })
     const updated = vi.fn()
@@ -250,33 +326,51 @@ describe("case runtime", () => {
     }
   })
 
-  it.each(["before", "during"])("preserves a Nightly save against a refresh started %s the PUT", async (ordering) => {
-    let finishRead
-    let finishWrite
-    vi.stubGlobal("fetch", vi.fn((_url, options) => new Promise(resolve => {
-      if (options.method === "PUT") finishWrite = resolve
-      else finishRead = resolve
-    })))
-    const runtime = createCaseRuntime()
-    const selected = { caseNo: 7, nightly: false }
-    runtime.select(selected)
-    let reading
-    if (ordering === "before") reading = runtime.read(7)
-    selected.nightly = true
-    const saving = runtime.updateNightly(selected)
-    if (ordering === "during") reading = runtime.read(7)
-    finishRead(response({ case_id: 7, nightly: false }))
-    await reading
-    finishWrite(response())
-    await saving
-    expect(runtime.selected().nightly).toBe(true)
-  })
+  it.each(["before", "during"])(
+    "preserves a Nightly save against a refresh started %s the PUT",
+    async (ordering) => {
+      let finishRead
+      let finishWrite
+      vi.stubGlobal(
+        "fetch",
+        vi.fn(
+          (_url, options) =>
+            new Promise((resolve) => {
+              if (options.method === "PUT") finishWrite = resolve
+              else finishRead = resolve
+            })
+        )
+      )
+      const runtime = createCaseRuntime()
+      const selected = { caseNo: 7, nightly: false }
+      runtime.select(selected)
+      let reading
+      if (ordering === "before") reading = runtime.read(7)
+      selected.nightly = true
+      const saving = runtime.updateNightly(selected)
+      if (ordering === "during") reading = runtime.read(7)
+      finishRead(response({ case_id: 7, nightly: false }))
+      await reading
+      finishWrite(response())
+      await saving
+      expect(runtime.selected().nightly).toBe(true)
+    }
+  )
 
   it("invalidates a refresh still pending when the Nightly save completes", async () => {
     let finishRead
-    vi.stubGlobal("fetch", vi.fn()
-      .mockResolvedValueOnce(response())
-      .mockImplementationOnce(() => new Promise(resolve => { finishRead = resolve })))
+    vi.stubGlobal(
+      "fetch",
+      vi
+        .fn()
+        .mockResolvedValueOnce(response())
+        .mockImplementationOnce(
+          () =>
+            new Promise((resolve) => {
+              finishRead = resolve
+            })
+        )
+    )
     const runtime = createCaseRuntime()
     runtime.select({ caseNo: 7, nightly: true })
     const saving = runtime.updateNightly(runtime.selected())
@@ -289,7 +383,15 @@ describe("case runtime", () => {
 
   it("ignores a Nightly save that finished after the selection changed or a newer save began", async () => {
     const finish = []
-    vi.stubGlobal("fetch", vi.fn(() => new Promise(resolve => { finish.push(resolve) })))
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(
+        () =>
+          new Promise((resolve) => {
+            finish.push(resolve)
+          })
+      )
+    )
     const runtime = createCaseRuntime()
     const stale = vi.fn()
     document.addEventListener("quepid:case-header-stale", stale)
@@ -321,7 +423,15 @@ describe("case runtime", () => {
 
   it("ignores a book-settings save superseded by a newer save for the same case", async () => {
     const finish = []
-    vi.stubGlobal("fetch", vi.fn(() => new Promise(resolve => { finish.push(resolve) })))
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(
+        () =>
+          new Promise((resolve) => {
+            finish.push(resolve)
+          })
+      )
+    )
     const runtime = createCaseRuntime()
     runtime.select({ caseNo: 7, bookId: 1 })
     const first = runtime.saveBookSettings(7, { book_id: 2 })
@@ -357,5 +467,4 @@ describe("case runtime", () => {
     await expect(runtime.delete({ caseNo: 7 })).resolves.toBeUndefined()
     expect(runtime.selected()).toBeNull()
   })
-
 })

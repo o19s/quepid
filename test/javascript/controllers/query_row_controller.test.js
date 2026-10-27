@@ -37,8 +37,12 @@ describe("QueryRowController", () => {
     controller.queryTarget = controller.element.querySelector('[data-query-row-target="query"]')
     controller.imageTarget = controller.element.querySelector('[data-query-row-target="image"]')
     controller.textTarget = controller.element.querySelector('[data-query-row-target="text"]')
-    controller.resultCountTarget = controller.element.querySelector('[data-query-row-target="resultCount"]')
-    controller.resultLabelTarget = controller.element.querySelector('[data-query-row-target="resultLabel"]')
+    controller.resultCountTarget = controller.element.querySelector(
+      '[data-query-row-target="resultCount"]'
+    )
+    controller.resultLabelTarget = controller.element.querySelector(
+      '[data-query-row-target="resultLabel"]'
+    )
     controller.querqyTarget = controller.element.querySelector('[data-query-row-target="querqy"]')
     controller.headerTarget = controller.element.querySelector('[data-query-row-target="header"]')
     controller.toggleTarget = controller.element.querySelector('[data-query-row-target="toggle"]')
@@ -63,13 +67,23 @@ describe("QueryRowController", () => {
     expect(controller.element.getAttribute("rank")).toBe("3")
     expect(controller.textTarget.textContent).toBe("Star Wars\u00a0")
     expect(controller.imageTarget.classList.contains("d-none")).toBe(true)
-    expect(controller.queryTarget.getAttribute("data-bs-tooltip-title-value")).toBe("Info Need: Find space movies")
+    expect(controller.queryTarget.getAttribute("data-bs-tooltip-title-value")).toBe(
+      "Info Need: Find space movies"
+    )
     expect(controller.resultCountTarget.getAttribute("data-count-up-number-value")).toBe("1")
     expect(controller.resultLabelTarget.textContent).toBe("Result")
     expect(controller.querqyTarget.classList.contains("d-none")).toBe(false)
     expect(controller.element.classList.contains("queryHeader_searching")).toBe(true)
-    expect(controller.element.querySelector('[data-query-row-target="header"]').classList.contains("diff-query-display")).toBe(true)
-    expect(controller.element.querySelector('[data-query-row-target="toggle"]').classList.contains("bi-caret-up-fill")).toBe(true)
+    expect(
+      controller.element
+        .querySelector('[data-query-row-target="header"]')
+        .classList.contains("diff-query-display")
+    ).toBe(true)
+    expect(
+      controller.element
+        .querySelector('[data-query-row-target="toggle"]')
+        .classList.contains("bi-caret-up-fill")
+    ).toBe(true)
   })
 
   it("dispatches a toggle intent", () => {
@@ -98,8 +112,16 @@ describe("QueryRowController", () => {
     expect(controller.querqyTarget.classList.contains("d-none")).toBe(true)
     expect(controller.element.classList.contains("queryHeader_searching")).toBe(false)
     expect(controller.element.classList.contains("queryHeader_error")).toBe(true)
-    expect(controller.element.querySelector('[data-query-row-target="header"]').classList.contains("diff-query-display")).toBe(false)
-    expect(controller.element.querySelector('[data-query-row-target="toggle"]').classList.contains("bi-caret-down-fill")).toBe(true)
+    expect(
+      controller.element
+        .querySelector('[data-query-row-target="header"]')
+        .classList.contains("diff-query-display")
+    ).toBe(false)
+    expect(
+      controller.element
+        .querySelector('[data-query-row-target="toggle"]')
+        .classList.contains("bi-caret-down-fill")
+    ).toBe(true)
   })
 
   it("renders image queries as thumbnails instead of text", () => {

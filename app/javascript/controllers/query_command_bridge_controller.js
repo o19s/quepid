@@ -15,8 +15,8 @@ export default class extends Controller {
     const stores = getCoreStores()
     this.collectionStore = stores.queries
     this.documentsStore = stores.documents
-    this.handleDocumentCommand = event => this.routeDocumentCommand(event.detail || {})
-    this.handleCollectionCommand = event => this.routeCollectionCommand(event.detail || {})
+    this.handleDocumentCommand = (event) => this.routeDocumentCommand(event.detail || {})
+    this.handleCollectionCommand = (event) => this.routeCollectionCommand(event.detail || {})
 
     this.documentsStore.addEventListener("command", this.handleDocumentCommand)
     this.collectionStore.addEventListener("command", this.handleCollectionCommand)

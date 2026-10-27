@@ -5,7 +5,24 @@ import { serverMessage } from "utils/error_message"
 
 // Testing uses the active form values; only the Rails Save submission persists.
 export default class extends withStatusMessages(Controller) {
-  static targets = ["name", "step2", "queryText", "docId", "informationNeed", "documentFields", "options", "notes", "position", "status", "ratingInfo", "loadingSpinner", "runPromptButton", "rating", "explanation", "unrateable"]
+  static targets = [
+    "name",
+    "step2",
+    "queryText",
+    "docId",
+    "informationNeed",
+    "documentFields",
+    "options",
+    "notes",
+    "position",
+    "status",
+    "ratingInfo",
+    "loadingSpinner",
+    "runPromptButton",
+    "rating",
+    "explanation",
+    "unrateable"
+  ]
   static values = { sampleUrl: String, testUrl: String, existing: Boolean, draftKey: String }
 
   connect() {
@@ -72,7 +89,12 @@ export default class extends withStatusMessages(Controller) {
     const snapshot = []
     form.querySelectorAll("input[name], select[name], textarea[name]").forEach((field) => {
       if ("checkbox" === field.type || "radio" === field.type) {
-        snapshot.push({ name: field.name, value: field.value, type: field.type, checked: field.checked })
+        snapshot.push({
+          name: field.name,
+          value: field.value,
+          type: field.type,
+          checked: field.checked
+        })
       } else {
         snapshot.push({ name: field.name, value: field.value, type: field.type })
       }
@@ -91,7 +113,9 @@ export default class extends withStatusMessages(Controller) {
 
     JSON.parse(raw).forEach(({ name, value, type, checked }) => {
       if ("checkbox" === type || "radio" === type) {
-        const field = form.querySelector(`[name="${CSS.escape(name)}"][value="${CSS.escape(value)}"]`)
+        const field = form.querySelector(
+          `[name="${CSS.escape(name)}"][value="${CSS.escape(value)}"]`
+        )
         if (field) field.checked = checked
       } else {
         const field = form.querySelector(`[name="${CSS.escape(name)}"]`)
@@ -107,12 +131,14 @@ export default class extends withStatusMessages(Controller) {
     // does, per data-controller's token order) - redo it now that a
     // restored draft may have changed the provider or other inputs it
     // reads, so its panels/help/criteria aren't left showing the wrong one.
-    this.application?.getControllerForElementAndIdentifier?.(this.element, "ai-judge-form")?.updateProviderPanels()
+    this.application
+      ?.getControllerForElementAndIdentifier?.(this.element, "ai-judge-form")
+      ?.updateProviderPanels()
   }
 
   async sampleQueryDocPair(event) {
     event?.preventDefault()
-    const generation = this.sampleGeneration = (this.sampleGeneration || 0) + 1
+    const generation = (this.sampleGeneration = (this.sampleGeneration || 0) + 1)
     try {
       const data = await getJson(this.sampleUrlValue, { signal: this.abortController.signal })
       if (generation !== this.sampleGeneration) return
@@ -123,10 +149,19 @@ export default class extends withStatusMessages(Controller) {
   }
 
   applyQueryDocPair(pair) {
-    for (const [target, key] of [["queryText", "query_text"], ["docId", "doc_id"], ["informationNeed", "information_need"], ["notes", "notes"], ["position", "position"]]) {
+    for (const [target, key] of [
+      ["queryText", "query_text"],
+      ["docId", "doc_id"],
+      ["informationNeed", "information_need"],
+      ["notes", "notes"],
+      ["position", "position"]
+    ]) {
       this[`${target}Target`].value = pair[key] ?? ""
     }
-    for (const [target, key] of [["documentFields", "document_fields"], ["options", "options"]]) {
+    for (const [target, key] of [
+      ["documentFields", "document_fields"],
+      ["options", "options"]
+    ]) {
       const field = this[`${target}Target`]
       const value = JSON.stringify(pair[key] || {}, null, 2)
       if (field.editor) field.editor.setValue(value)
@@ -157,30 +192,40 @@ export default class extends withStatusMessages(Controller) {
     this.loadingSpinnerTarget.style.display = "block"
     try {
       const formData = new FormData(this.element.closest("form"))
-      const data = await postJson(this.testUrlValue, {
-        system_prompt: formData.get("user[system_prompt]"),
-        llm_key: formData.get("user[llm_key]"),
-        judge_options: this.judgeOptions(formData),
-        query_doc_pair: {
-          query_text: this.queryTextTarget.value,
-          doc_id: this.docIdTarget.value,
-          information_need: this.informationNeedTarget.value,
-          document_fields: this.documentFieldsTarget.editor?.getValue() ?? this.documentFieldsTarget.value,
-          options: this.optionsTarget.editor?.getValue() ?? this.optionsTarget.value,
-          notes: this.notesTarget.value,
-          position: this.positionTarget.value
-        }
-      }, { signal: this.abortController.signal })
+      const data = await postJson(
+        this.testUrlValue,
+        {
+          system_prompt: formData.get("user[system_prompt]"),
+          llm_key: formData.get("user[llm_key]"),
+          judge_options: this.judgeOptions(formData),
+          query_doc_pair: {
+            query_text: this.queryTextTarget.value,
+            doc_id: this.docIdTarget.value,
+            information_need: this.informationNeedTarget.value,
+            document_fields:
+              this.documentFieldsTarget.editor?.getValue() ?? this.documentFieldsTarget.value,
+            options: this.optionsTarget.editor?.getValue() ?? this.optionsTarget.value,
+            notes: this.notesTarget.value,
+            position: this.positionTarget.value
+          }
+        },
+        { signal: this.abortController.signal }
+      )
       this.ratingTarget.textContent = String(data.rating ?? "")
-      if (this.hasUnrateableTarget) this.unrateableTarget.style.display = data.unrateable ? "" : "none"
+      if (this.hasUnrateableTarget)
+        this.unrateableTarget.style.display = data.unrateable ? "" : "none"
       this.explanationTarget.textContent = data.explanation || ""
       this.ratingInfoTarget.style.display = "block"
     } catch (error) {
       if (error.name !== "AbortError") this.showError(error)
     } finally {
       this.running = false
-      const scaleNotice = this.element.querySelector("[data-ai-judge-form-target~=needsScaleNotice]")
-      this.runPromptButtonTarget.disabled = Boolean(scaleNotice && scaleNotice.style.display !== "none")
+      const scaleNotice = this.element.querySelector(
+        "[data-ai-judge-form-target~=needsScaleNotice]"
+      )
+      this.runPromptButtonTarget.disabled = Boolean(
+        scaleNotice && scaleNotice.style.display !== "none"
+      )
       this.loadingSpinnerTarget.style.display = "none"
     }
   }

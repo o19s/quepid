@@ -28,7 +28,13 @@ const tryData = (tryNumber = 1) => ({
 describe("settings runtime", () => {
   it("carries direct-document capability from the selected try", () => {
     const runtime = createSettingsRuntime()
-    runtime.setCaseTries([{ ...tryData(), search_engine: "searchapi", mapper_based_search_engine_supports_direct_document_lookup: true }])
+    runtime.setCaseTries([
+      {
+        ...tryData(),
+        search_engine: "searchapi",
+        mapper_based_search_engine_supports_direct_document_lookup: true
+      }
+    ])
     runtime.setCurrentTry(1)
     expect(runtime.applicable().mapperBasedSearchEngineSupportsDirectDocumentLookup).toBe(true)
   })
@@ -47,7 +53,7 @@ describe("settings runtime", () => {
   })
 
   it("maps tries, selects the active try, and tracks curator variables", () => {
-    const runtime = createSettingsRuntime({ createFieldSpec: value => ({ value }) })
+    const runtime = createSettingsRuntime({ createFieldSpec: (value) => ({ value }) })
     runtime.setCaseTries([tryData(1), tryData(2)])
     runtime.setCurrentTry(2)
 
@@ -74,7 +80,12 @@ describe("settings runtime", () => {
     form.numberOfRows = 23
     form.fieldSpec = "id,title"
     form.escapeQuery = false
-    form.applyEndpoint({ searchEndpointId: 7, searchUrl: "http://new/select", searchEngine: "solr", endpointName: "New" })
+    form.applyEndpoint({
+      searchEndpointId: 7,
+      searchUrl: "http://new/select",
+      searchEngine: "solr",
+      endpointName: "New"
+    })
 
     expect(selected.queryParams).toBe(form.queryParams)
     expect(form.curatorVars).toBe(selected.curatorVars)
@@ -85,13 +96,21 @@ describe("settings runtime", () => {
     expect(selected.escapeQuery).toBe(true)
     await runtime.renameTry(2, "Renamed")
     const reloaded = runtime.draft()
-    expect(reloaded).toMatchObject({ numberOfRows: 10, fieldSpec: "id:id, title:title", escapeQuery: true, queryParams: form.queryParams, searchEndpointId: 7 })
+    expect(reloaded).toMatchObject({
+      numberOfRows: 10,
+      fieldSpec: "id:id, title:title",
+      escapeQuery: true,
+      queryParams: form.queryParams,
+      searchEndpointId: 7
+    })
     expect(reloaded.curatorVars).toBe(selected.curatorVars)
-    expect(runtime.tries().find(item => item.tryNo === 2).name).toBe("Renamed")
+    expect(runtime.tries().find((item) => item.tryNo === 2).name).toBe("Renamed")
   })
 
   it("retains shared wizard edits before a failed update without applying the response", async () => {
-    const request = vi.fn().mockResolvedValue({ ok: false, status: 503, text: async () => "", json: async () => null })
+    const request = vi
+      .fn()
+      .mockResolvedValue({ ok: false, status: 503, text: async () => "", json: async () => null })
     const navigate = vi.fn()
     vi.stubGlobal("fetch", request)
     const runtime = createSettingsRuntime({ caseNo: () => 9, tryNo: () => 1, navigate })
@@ -103,7 +122,11 @@ describe("settings runtime", () => {
     settings.numberOfRows = 25
 
     const pending = runtime.update(settings)
-    expect(runtime.applicable()).toMatchObject({ apiMethod: "POST", queryParams: "q=wizard", numberOfRows: 10 })
+    expect(runtime.applicable()).toMatchObject({
+      apiMethod: "POST",
+      queryParams: "q=wizard",
+      numberOfRows: 10
+    })
     await expect(pending).rejects.toThrow("Request failed (503)")
     expect(navigate).not.toHaveBeenCalled()
     request.mockResolvedValue(response({ ...tryData(1), number_of_rows: 99 }))
@@ -124,7 +147,10 @@ describe("settings runtime", () => {
 
     await runtime.update(settings)
 
-    expect(request).toHaveBeenCalledWith("api/cases/9/tries/1", expect.objectContaining({ method: "PUT" }))
+    expect(request).toHaveBeenCalledWith(
+      "api/cases/9/tries/1",
+      expect.objectContaining({ method: "PUT" })
+    )
     expect(JSON.parse(request.mock.calls[0][1].body)).toMatchObject({
       try: { number_of_rows: 25, field_spec: "id:id, title:title" },
       parent_try_number: 1
@@ -133,7 +159,8 @@ describe("settings runtime", () => {
   })
 
   it("supports duplicate, rename, and delete operations", async () => {
-    const request = vi.fn()
+    const request = vi
+      .fn()
       .mockResolvedValueOnce(response(tryData(3)))
       .mockResolvedValueOnce(response())
       .mockResolvedValueOnce(response())
@@ -150,7 +177,7 @@ describe("settings runtime", () => {
     expect(request.mock.calls[0][0]).toBe("api/clone/cases/9/tries/1")
     expect(request.mock.calls[1][0]).toBe("api/cases/9/tries/2")
     expect(request.mock.calls[2][0]).toBe("api/cases/9/tries/2")
-    expect(runtime.editable().tries.find(item => item.tryNo === 2).deleted).toBe(true)
+    expect(runtime.editable().tries.find((item) => item.tryNo === 2).deleted).toBe(true)
   })
 
   it("saves a tuning draft, selects the new try, and returns it for controller navigation", async () => {
@@ -212,7 +239,12 @@ describe("settings runtime", () => {
     const runtime = createSettingsRuntime()
     runtime.setCaseTries([
       { ...tryData(1), query_params: null },
-      { ...tryData(2), search_engine: "es", query_params: null, custom_headers: { Authorization: "ApiKey abc" } },
+      {
+        ...tryData(2),
+        search_engine: "es",
+        query_params: null,
+        custom_headers: { Authorization: "ApiKey abc" }
+      },
       { ...tryData(3), custom_headers: { "X-Thing": "1" } }
     ])
 
@@ -241,9 +273,17 @@ describe("settings runtime", () => {
   })
 
   it("previews query arguments and rejects failed API responses", async () => {
-    const request = vi.fn()
+    const request = vi
+      .fn()
       .mockResolvedValueOnce(response({ args: { q: ["books"] } }))
-      .mockResolvedValueOnce({ text: async function () { return JSON.stringify(await this.json()) || "" },  ok: false, status: 503, json: vi.fn(async () => null) })
+      .mockResolvedValueOnce({
+        text: async function () {
+          return JSON.stringify(await this.json()) || ""
+        },
+        ok: false,
+        status: 503,
+        json: vi.fn(async () => null)
+      })
     vi.stubGlobal("fetch", request)
     const runtime = createSettingsRuntime({ caseNo: () => 9 })
 

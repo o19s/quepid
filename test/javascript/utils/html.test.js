@@ -3,7 +3,9 @@ import { escapeHtml, renderTextWithLinks, sanitizeHtml, sanitizeSnippetHtml } fr
 
 describe("html escaping", () => {
   it("escapes &, <, >, and both quote types", () => {
-    expect(escapeHtml(`<a href="x" title='y'>&`)).toBe("&lt;a href=&quot;x&quot; title=&#39;y&#39;&gt;&amp;")
+    expect(escapeHtml(`<a href="x" title='y'>&`)).toBe(
+      "&lt;a href=&quot;x&quot; title=&#39;y&#39;&gt;&amp;"
+    )
   })
 
   it("treats null and undefined as empty", () => {

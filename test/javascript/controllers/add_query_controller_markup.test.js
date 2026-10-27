@@ -4,7 +4,10 @@ import { Application } from "@hotwired/stimulus"
 import AddQueryController from "controllers/add_query_controller"
 
 // Override the unit-test alias for this file, including the controller's import.
-vi.mock("@hotwired/stimulus", () => import("../../../node_modules/@hotwired/stimulus/dist/stimulus.js"))
+vi.mock(
+  "@hotwired/stimulus",
+  () => import("../../../node_modules/@hotwired/stimulus/dist/stimulus.js")
+)
 vi.mock("utils/core_capability_access", () => ({ getCoreCapabilities: () => testCapabilities }))
 
 let testCapabilities
@@ -31,7 +34,9 @@ describe("add-query ERB wiring with real Stimulus", () => {
     // breaking Stimulus's scope identity check for document actions. Preserve
     // browser semantics (a matching element is its own closest ancestor).
     const closest = form.closest.bind(form)
-    vi.spyOn(form, "closest").mockImplementation(selector => form.matches(selector) ? form : closest(selector))
+    vi.spyOn(form, "closest").mockImplementation((selector) =>
+      form.matches(selector) ? form : closest(selector)
+    )
     input = form.querySelector('input[type="text"]')
     submit = form.querySelector('input[type="submit"]')
     spinner = form.querySelector(".spinner")
@@ -89,9 +94,11 @@ describe("add-query ERB wiring with real Stimulus", () => {
     input.dispatchEvent(new Event("input", { bubbles: true }))
     expect(submit.disabled).toBe(false)
 
-    testCapabilities = { queryCapabilities: {
-      getListState: () => ({ canAddQueries: false, addQueryMessage: "Queries are unavailable" })
-    } }
+    testCapabilities = {
+      queryCapabilities: {
+        getListState: () => ({ canAddQueries: false, addQueryMessage: "Queries are unavailable" })
+      }
+    }
     document.dispatchEvent(new CustomEvent("queries-state:changed"))
     expect(submit.disabled).toBe(true)
     expect(input.placeholder).toBe("Queries are unavailable")

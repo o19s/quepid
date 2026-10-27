@@ -23,7 +23,10 @@ import { renderJsonExplorer } from "utils/json_explorer"
 import DetailedDocumentController from "controllers/detailed_document_controller"
 import { buildControllerFixture } from "../support/controller_fixture"
 import { loadDynamicModalTemplate, controllerTargets } from "../support/view_template"
-import { openDetailedDocumentModal as openModal, sanitizeDocumentHtml } from "utils/detailed_document_modal"
+import {
+  openDetailedDocumentModal as openModal,
+  sanitizeDocumentHtml
+} from "utils/detailed_document_modal"
 
 function openDetailedDocumentModal(options) {
   const result = openModal(options)
@@ -32,7 +35,9 @@ function openDetailedDocumentModal(options) {
   const controller = buildControllerFixture(DetailedDocumentController, {
     element,
     targets,
-    values: { engineLabels: { solr: "Solr", es: "Elasticsearch", os: "OpenSearch", searchapi: "Search API" } }
+    values: {
+      engineLabels: { solr: "Solr", es: "Elasticsearch", os: "OpenSearch", searchapi: "Search API" }
+    }
   })
   controller.connect()
   return result
@@ -115,7 +120,11 @@ describe("detailed document modal", () => {
     const [relative] = anchors("<a href='/docs/1'>Rel</a>")
     expect(relative.getAttribute("href")).toBe(new URL("/docs/1", document.baseURI).href)
 
-    for (const unsafe of ["<a href='javascript:alert(1)'>JS</a>", "<a href='data:text/html,x'>Data</a>", "<a>None</a>"]) {
+    for (const unsafe of [
+      "<a href='javascript:alert(1)'>JS</a>",
+      "<a href='data:text/html,x'>Data</a>",
+      "<a>None</a>"
+    ]) {
       const [link] = anchors(unsafe)
       expect(link.hasAttribute("href")).toBe(false)
       expect(link.hasAttribute("target")).toBe(false)
@@ -148,11 +157,20 @@ describe("detailed document modal", () => {
 
   it("renders overview and cast arrays as readable strings while retaining the raw JSON explorer", () => {
     const rawFields = { overview: ["A story"], cast: ["Haley Lu Richardson", "Cole Sprouse"] }
-    openDetailedDocumentModal({ doc: { id: "527641", title: "Five Feet Apart", subs: rawFields, rawFields } })
+    openDetailedDocumentModal({
+      doc: { id: "527641", title: "Five Feet Apart", subs: rawFields, rawFields }
+    })
 
-    const values = [...modal.element.querySelectorAll("[data-detailed-document-target='fields'] .col-md-8")]
-    expect(values.map(field => field.textContent)).toEqual(["A story", "Haley Lu Richardson,Cole Sprouse"])
-    expect(values.some(field => field.hasAttribute("data-detailed-doc-sub-json-index"))).toBe(false)
+    const values = [
+      ...modal.element.querySelectorAll("[data-detailed-document-target='fields'] .col-md-8")
+    ]
+    expect(values.map((field) => field.textContent)).toEqual([
+      "A story",
+      "Haley Lu Richardson,Cole Sprouse"
+    ])
+    expect(values.some((field) => field.hasAttribute("data-detailed-doc-sub-json-index"))).toBe(
+      false
+    )
     expect(renderJsonExplorer).toHaveBeenCalledTimes(1)
     expect(renderJsonExplorer).toHaveBeenCalledWith(
       modal.element.querySelector("[data-detailed-document-target='rawFields']"),
@@ -167,13 +185,23 @@ describe("detailed document modal", () => {
       queryText: "<img src=x onerror=alert(1)>"
     })
     const heading = modal.element.querySelector("#detailed-document-modal-title")
-    expect(heading.textContent).toBe("Detailed Document View of doc: 11 for query <img src=x onerror=alert(1)>")
+    expect(heading.textContent).toBe(
+      "Detailed Document View of doc: 11 for query <img src=x onerror=alert(1)>"
+    )
     expect(heading.querySelector("em").textContent).toBe("<img src=x onerror=alert(1)>")
     expect(heading.querySelector("img")).toBeNull()
-    expect(heading.querySelector("[data-detailed-document-target='queryContext']").hidden).toBe(false)
+    expect(heading.querySelector("[data-detailed-document-target='queryContext']").hidden).toBe(
+      false
+    )
   })
 
-  it.each([["solr", "Solr"], ["es", "Elasticsearch"], ["os", "OpenSearch"], [null, "Search Engine"], ["unknown", "Search Engine"]])("labels the document link for engine %s", (searchEngine, label) => {
+  it.each([
+    ["solr", "Solr"],
+    ["es", "Elasticsearch"],
+    ["os", "OpenSearch"],
+    [null, "Search Engine"],
+    ["unknown", "Search Engine"]
+  ])("labels the document link for engine %s", (searchEngine, label) => {
     openDetailedDocumentModal({
       doc: { id: "doc-1", title: "Title", rawFields: {} },
       linkUrl: "https://example.test/doc-1",
@@ -190,12 +218,16 @@ describe("detailed document modal", () => {
       searchEngine: "searchapi",
       mapperBasedSearchEngineName: "Vespa"
     })
-    expect(modal.element.querySelector(".detailed-doc-view").textContent).toBe("View Document on Vespa")
+    expect(modal.element.querySelector(".detailed-doc-view").textContent).toBe(
+      "View Document on Vespa"
+    )
   })
 
   it("disables View Document when there is no link", () => {
     openDetailedDocumentModal({ doc: { id: "doc-1", title: "Title", rawFields: {} } })
     expect(modal.element.querySelector(".detailed-doc-view").disabled).toBe(true)
-    expect(modal.element.querySelector("[data-detailed-document-target='queryContext']").hidden).toBe(true)
+    expect(
+      modal.element.querySelector("[data-detailed-document-target='queryContext']").hidden
+    ).toBe(true)
   })
 })

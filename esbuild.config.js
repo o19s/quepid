@@ -21,6 +21,18 @@ const BUNDLES = {
   'core-case': {
     entryPoints: [`${JS}/core_stimulus.js`],
     outfile: 'app/assets/builds/core_case.js',
+    // Share the browser's importmap editor and Bootstrap/Vega globals with Rails pages.
+    format: 'esm',
+    external: ['bootstrap_globals', 'vega_globals'],
+    plugins: [{
+      name: 'shared-editor-importmap',
+      setup(build) {
+        // The modules alias is expanded before resolution; retain the browser's bare specifier.
+        build.onResolve({ filter: /(^|\/)modules\/editor(?:\.js)?$/ }, () => ({
+          path: 'modules/editor', external: true
+        }));
+      }
+    }],
     // Bare specifiers used by core code; the importmap resolves these for Rails pages.
     alias: {
       controllers: `./${JS}/controllers`,

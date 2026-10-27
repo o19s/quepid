@@ -20,9 +20,11 @@ vi.mock("utils/dynamic_modal", () => ({
   openDynamicModal: vi.fn(({ templateId }) => {
     dynamicModal.element = document.createElement("div")
     if (templateId === "match-explain-debug-modal-template") {
-      dynamicModal.element.innerHTML = '<em data-match-explain-modal-target="title"></em><span data-match-explain-modal-target="docId"></span><div data-match-explain-modal-target="json"></div>'
+      dynamicModal.element.innerHTML =
+        '<em data-match-explain-modal-target="title"></em><span data-match-explain-modal-target="docId"></span><div data-match-explain-modal-target="json"></div>'
     } else {
-      dynamicModal.element.innerHTML = '<span data-match-explain-modal-target="score"></span><pre data-match-explain-modal-target="explanation"></pre>'
+      dynamicModal.element.innerHTML =
+        '<span data-match-explain-modal-target="score"></span><pre data-match-explain-modal-target="explanation"></pre>'
     }
     const root = document.createElement("div")
     root.dataset.controller = "match-explain-modal"
@@ -31,11 +33,15 @@ vi.mock("utils/dynamic_modal", () => ({
     Object.defineProperty(root, "matchExplainData", {
       set(data) {
         Object.defineProperty(root, "matchExplainData", { value: data, configurable: true })
-        const targets = Object.fromEntries([...root.querySelectorAll("[data-match-explain-modal-target]")].map(el =>
-          [el.dataset.matchExplainModalTarget, el]
-        ))
+        const targets = Object.fromEntries(
+          [...root.querySelectorAll("[data-match-explain-modal-target]")].map((el) => [
+            el.dataset.matchExplainModalTarget,
+            el
+          ])
+        )
         buildControllerFixture(MatchExplainModalController, { element: root, targets }).connect()
-      }, configurable: true
+      },
+      configurable: true
     })
     return dynamicModal
   })
@@ -43,7 +49,8 @@ vi.mock("utils/dynamic_modal", () => ({
 
 vi.mock("utils/json_explorer", () => ({
   renderJsonExplorer: vi.fn(),
-  escapeHtml: (value) => String(value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+  escapeHtml: (value) =>
+    String(value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
 }))
 
 import { createBsPopover } from "utils/bs_popover"
@@ -155,11 +162,16 @@ describe("MatchExplainController", () => {
   })
 
   it("shows the No Match chip and the no-breakdown message when the doc has no explain children", () => {
-    const controller = buildController(element, baseData({ hasChildren: false, hots: [], explainAsJson: "{}" }))
+    const controller = buildController(
+      element,
+      baseData({ hasChildren: false, hots: [], explainAsJson: "{}" })
+    )
     MatchExplainController.prototype.connect.call(controller)
 
     expect(element.querySelector(".matches-popper span").textContent).toBe("No Match")
-    expect(element.querySelector(".graph-label").textContent).toBe("no per-term score breakdown for doc")
+    expect(element.querySelector(".graph-label").textContent).toBe(
+      "no per-term score breakdown for doc"
+    )
   })
 
   it("shows only the first 3 bars plus a collapsed rest and a Show N More toggle beyond 3 hots", () => {
@@ -191,7 +203,10 @@ describe("MatchExplainController", () => {
   })
 
   it("clamps out-of-range percentages into the progress bar width", () => {
-    const controller = buildController(element, baseData({ hots: [{ description: "over", percentage: 140 }] }))
+    const controller = buildController(
+      element,
+      baseData({ hots: [{ description: "over", percentage: 140 }] })
+    )
     MatchExplainController.prototype.connect.call(controller)
 
     const bar = element.querySelector(".progress-bar")
@@ -209,14 +224,20 @@ describe("MatchExplainController", () => {
   })
 
   it("escapes match descriptions rendered into the bars", () => {
-    const controller = buildController(element, baseData({ hots: [{ description: "<b>x</b>", percentage: 10 }] }))
+    const controller = buildController(
+      element,
+      baseData({ hots: [{ description: "<b>x</b>", percentage: 10 }] })
+    )
     MatchExplainController.prototype.connect.call(controller)
 
     expect(element.querySelector(".graph-label").textContent).toBe("<b>x</b>")
   })
 
   it("popover body shows the explain tree and disables Debug when there are no explain children", () => {
-    const controller = buildController(element, baseData({ hasChildren: false, hots: [], explainAsJson: "{}" }))
+    const controller = buildController(
+      element,
+      baseData({ hasChildren: false, hots: [], explainAsJson: "{}" })
+    )
     MatchExplainController.prototype.connect.call(controller)
 
     const body = lastBody()
@@ -241,8 +262,12 @@ describe("MatchExplainController", () => {
     expect(options.windowClass).toBe("full-screen-modal")
     expect(options.templateId).toBe("match-explain-debug-modal-template")
     expect(options.ariaLabelledBy).toBe("match-explain-debug-modal-title")
-    expect(dynamicModal.element.querySelector("[data-match-explain-modal-target='title']").textContent).toBe("Some Doc")
-    expect(dynamicModal.element.querySelector("[data-match-explain-modal-target='docId']").textContent).toBe("doc-1")
+    expect(
+      dynamicModal.element.querySelector("[data-match-explain-modal-target='title']").textContent
+    ).toBe("Some Doc")
+    expect(
+      dynamicModal.element.querySelector("[data-match-explain-modal-target='docId']").textContent
+    ).toBe("doc-1")
 
     expect(renderJsonExplorer).toHaveBeenCalledTimes(1)
     expect(renderJsonExplorer.mock.calls[0][1]).toBe(data.explainRawStr)
@@ -272,8 +297,13 @@ describe("MatchExplainController", () => {
     expect(options.windowClass).toBe("full-screen-modal")
     expect(options.templateId).toBe("match-explain-expand-modal-template")
     expect(options.ariaLabelledBy).toBe("match-explain-expand-modal-title")
-    expect(dynamicModal.element.querySelector("[data-match-explain-modal-target='score']").textContent).toBe("3.5")
-    expect(dynamicModal.element.querySelector("[data-match-explain-modal-target='explanation']").textContent).toContain("3.5 weight(title:foo)")
+    expect(
+      dynamicModal.element.querySelector("[data-match-explain-modal-target='score']").textContent
+    ).toBe("3.5")
+    expect(
+      dynamicModal.element.querySelector("[data-match-explain-modal-target='explanation']")
+        .textContent
+    ).toContain("3.5 weight(title:foo)")
   })
 
   it("updates the popover in place (setTitle/setBody) on a data change, without disposing or recreating it", () => {
@@ -282,7 +312,10 @@ describe("MatchExplainController", () => {
     clickAction(controller, element.querySelector(".match-explain-toggle"))
     expect(element.querySelector(".match-explain-toggle").textContent).toBe("Show Less")
 
-    MatchExplainController.prototype.dataValueChanged.call(controller, baseData({ hots: MANY_HOTS, docScore: 4.2 }))
+    MatchExplainController.prototype.dataValueChanged.call(
+      controller,
+      baseData({ hots: MANY_HOTS, docScore: 4.2 })
+    )
 
     // The whole point of updating in place: an open popover elsewhere on the
     // page (e.g. another doc row) must not get torn down just because this
@@ -296,7 +329,9 @@ describe("MatchExplainController", () => {
 
   it("ignores a dataValueChanged that fires before connect() (Stimulus's ValueObserver runs first)", () => {
     const controller = buildController(element, baseData())
-    expect(() => MatchExplainController.prototype.dataValueChanged.call(controller, baseData())).not.toThrow()
+    expect(() =>
+      MatchExplainController.prototype.dataValueChanged.call(controller, baseData())
+    ).not.toThrow()
     expect(createBsPopover).not.toHaveBeenCalled()
   })
 
@@ -306,7 +341,10 @@ describe("MatchExplainController", () => {
     const firstCollapse = controller.collapseInstance
     expect(firstCollapse).not.toBeNull()
 
-    MatchExplainController.prototype.dataValueChanged.call(controller, baseData({ hots: MANY_HOTS }))
+    MatchExplainController.prototype.dataValueChanged.call(
+      controller,
+      baseData({ hots: MANY_HOTS })
+    )
 
     expect(firstCollapse.disposed).toBe(true)
     expect(controller.collapseInstance).not.toBe(firstCollapse)
@@ -331,7 +369,9 @@ describe("MatchExplainController", () => {
     MatchExplainController.prototype.disconnect.call(controller)
     vi.clearAllMocks()
 
-    expect(() => MatchExplainController.prototype.dataValueChanged.call(controller, baseData())).not.toThrow()
+    expect(() =>
+      MatchExplainController.prototype.dataValueChanged.call(controller, baseData())
+    ).not.toThrow()
     expect(popoverHandle.setTitle).not.toHaveBeenCalled()
     expect(popoverHandle.setBody).not.toHaveBeenCalled()
   })

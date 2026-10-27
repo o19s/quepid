@@ -10,11 +10,13 @@ describe("QueryDocumentsStore", () => {
   })
 
   it("exposes every snapshot field on change events without building a snapshot per event", () => {
-    expect([...DOCUMENTS_SNAPSHOT_KEYS, "queryId"].toSorted()).toEqual(Object.keys(store.snapshot()).toSorted())
+    expect([...DOCUMENTS_SNAPSHOT_KEYS, "queryId"].toSorted()).toEqual(
+      Object.keys(store.snapshot()).toSorted()
+    )
 
     const snapshot = vi.spyOn(store, "snapshot")
     const details = []
-    store.addEventListener("change", event => details.push(event.detail))
+    store.addEventListener("change", (event) => details.push(event.detail))
     store.updateQueryState(12, { numFound: 3 })
 
     expect(details[0].queryId).toBe(12)
@@ -97,7 +99,12 @@ describe("QueryDocumentsStore", () => {
       title: "T",
       score: () => 4,
       hotMatchesOutOf: (max) => [{ description: "title", percentage: (4 / max) * 100 }],
-      explain: () => ({ children, toStr: () => "explained", asJson: { value: 4 }, rawStr: () => "raw" })
+      explain: () => ({
+        children,
+        toStr: () => "explained",
+        asJson: { value: 4 },
+        rawStr: () => "raw"
+      })
     })
 
     store.replaceQuery(1, { docs: [explainDoc([{}]), explainDoc([])], maxDocScore: 8 })
@@ -113,12 +120,25 @@ describe("QueryDocumentsStore", () => {
       docId: "d",
       docScore: 4
     })
-    expect(withoutChildren.matchExplain).toMatchObject({ hasChildren: false, explainToStr: null, explainAsJson: '{\n  "value": 4\n}' })
+    expect(withoutChildren.matchExplain).toMatchObject({
+      hasChildren: false,
+      explainToStr: null,
+      explainAsJson: '{\n  "value": 4\n}'
+    })
   })
 
   it("still renders a document whose explain throws", () => {
     store.replaceQuery(1, {
-      docs: [{ id: "d", title: "T", hotMatchesOutOf: () => [], explain: () => { throw new Error("bad explain") } }]
+      docs: [
+        {
+          id: "d",
+          title: "T",
+          hotMatchesOutOf: () => [],
+          explain: () => {
+            throw new Error("bad explain")
+          }
+        }
+      ]
     })
 
     expect(store.query(1).docs[0]).toMatchObject({ id: "d", title: "T", matchExplain: null })
@@ -137,26 +157,55 @@ describe("QueryDocumentsStore", () => {
       maxDocScore: 99,
       diffs: {
         searchers: [
-          { name: "Snap A", version: 2, inError: 1, searchError: "boom", score: { score: 0.5, allRated: true }, maxDocScore: 7, docs: [doc], ratedDocs: [ratedDoc] },
+          {
+            name: "Snap A",
+            version: 2,
+            inError: 1,
+            searchError: "boom",
+            score: { score: 0.5, allRated: true },
+            maxDocScore: 7,
+            docs: [doc],
+            ratedDocs: [ratedDoc]
+          },
           {}
         ]
       }
     })
     const [first, second] = store.query(1).diffs.searchers
 
-    expect(first).toMatchObject({ name: "Snap A", version: 2, inError: true, searchError: "boom", score: { score: 0.5, allRated: true } })
+    expect(first).toMatchObject({
+      name: "Snap A",
+      version: 2,
+      inError: true,
+      searchError: "boom",
+      score: { score: 0.5, allRated: true }
+    })
     expect(first.docs.map((d) => d.id)).toEqual(["d"])
     expect(first.ratedDocs.map((d) => d.id)).toEqual(["r"])
     expect(doc.hotMatchesOutOf).toHaveBeenCalledWith(7)
     expect(ratedDoc.hotMatchesOutOf).toHaveBeenCalledWith(7)
-    expect(second).toEqual({ name: "Snapshot", version: null, inError: false, searchError: "", score: { score: "?", allRated: false }, docs: [], ratedDocs: [] })
+    expect(second).toEqual({
+      name: "Snapshot",
+      version: null,
+      inError: false,
+      searchError: "",
+      score: { score: "?", allRated: false },
+      docs: [],
+      ratedDocs: []
+    })
     store.replaceQuery(2, {})
     expect(store.query(2).diffs).toBeNull()
   })
 
   it.each([
     ["replaceQuery", (s) => s.replaceQuery(1, {})],
-    ["updateQueryState for a known query", (s) => { s.replaceQuery(1, {}); s.collection.setExpanded(1, true) }],
+    [
+      "updateQueryState for a known query",
+      (s) => {
+        s.replaceQuery(1, {})
+        s.collection.setExpanded(1, true)
+      }
+    ],
     ["updateQueryState for a pending query", (s) => s.collection.setExpanded(5, true)],
     ["setCaseDiffs", (s) => s.setCaseDiffs([{ name: "A" }])],
     ["setShowOnlyRated", (s) => s.collection.setShowOnlyRated(true)],
@@ -168,18 +217,20 @@ describe("QueryDocumentsStore", () => {
     mutate(store)
 
     expect(changed).toHaveBeenCalled()
-    expect(changed.mock.calls.at(-1)[0].detail).toEqual(expect.objectContaining({ queries: expect.any(Object) }))
+    expect(changed.mock.calls.at(-1)[0].detail).toEqual(
+      expect.objectContaining({ queries: expect.any(Object) })
+    )
   })
 
   it.each([
-    ["upsert", s => s.collection.upsert({ queryId: "2", numFound: 9 })],
-    ["remove", s => s.collection.remove("2")],
-    ["setExpanded", s => s.collection.setExpanded("2", true)]
+    ["upsert", (s) => s.collection.upsert({ queryId: "2", numFound: 9 })],
+    ["remove", (s) => s.collection.remove("2")],
+    ["setExpanded", (s) => s.collection.setExpanded("2", true)]
   ])("scopes collection %s notifications to the affected query", (_label, mutate) => {
     store.replaceQuery(1, { docs: [] })
     store.replaceQuery(2, { docs: [] })
     const changes = []
-    store.addEventListener("change", event => changes.push(event.detail))
+    store.addEventListener("change", (event) => changes.push(event.detail))
 
     mutate(store)
 
@@ -188,9 +239,9 @@ describe("QueryDocumentsStore", () => {
   })
 
   it.each([
-    ["rated-only", s => s.collection.setShowOnlyRated(true)],
-    ["collapse-all", s => s.collection.collapseAll()],
-    ["replace", s => s.collection.replace({ caseId: 1, queries: [{ queryId: 1 }] })]
+    ["rated-only", (s) => s.collection.setShowOnlyRated(true)],
+    ["collapse-all", (s) => s.collection.collapseAll()],
+    ["replace", (s) => s.collection.replace({ caseId: 1, queries: [{ queryId: 1 }] })]
   ])("keeps %s notifications collection-wide", (_label, mutate) => {
     const changed = vi.fn()
     store.addEventListener("change", changed)
@@ -214,7 +265,7 @@ describe("QueryDocumentsStore", () => {
 
     store.replaceQuery(12, {
       docs: [doc],
-      documentUrlFor: candidate => `https://search.example/doc/${candidate.id}`
+      documentUrlFor: (candidate) => `https://search.example/doc/${candidate.id}`
     })
 
     expect(store.query(12).docs[0].linkUrl).toBe("https://search.example/doc/doc-1")
@@ -222,13 +273,13 @@ describe("QueryDocumentsStore", () => {
 
   it("replaces a query atomically and notifies subscribers", () => {
     const changes = []
-    store.addEventListener("change", event => changes.push(event.detail))
+    store.addEventListener("change", (event) => changes.push(event.detail))
 
     store.replaceQuery(4, { docs: [{ id: "first" }] })
     store.replaceQuery(4, { docs: [{ id: "second" }] })
 
     expect(changes).toHaveLength(2)
-    expect(store.query(4).docs.map(doc => doc.id)).toEqual(["second"])
+    expect(store.query(4).docs.map((doc) => doc.id)).toEqual(["second"])
   })
 
   it("removes query state without affecting other queries", () => {
@@ -243,7 +294,7 @@ describe("QueryDocumentsStore", () => {
 
   it("publishes live-query intents without knowing their owner", () => {
     const commands = []
-    store.addEventListener("command", event => commands.push(event.detail))
+    store.addEventListener("command", (event) => commands.push(event.detail))
 
     store.requestToggleQuery(12)
     store.requestPaginateQuery(12, true)
@@ -288,9 +339,7 @@ describe("QueryDocumentsStore", () => {
   })
 
   it("publishes case-level diff scores separately from query documents", () => {
-    store.setCaseDiffs([
-      { name: "Baseline", version: 3, score: { score: 0.75, allRated: true } }
-    ])
+    store.setCaseDiffs([{ name: "Baseline", version: 3, score: { score: 0.75, allRated: true } }])
 
     expect(store.snapshot().caseDiffs).toEqual([
       { name: "Baseline", version: 3, score: { score: 0.75, allRated: true } }
@@ -320,13 +369,18 @@ describe("QueryDocumentsStore", () => {
       queryId: 8,
       numFound: 10,
       errorText: "",
-      state: () => query.errorText ? "error" : "loaded",
+      state: () => (query.errorText ? "error" : "loaded"),
       currentScore: { score: 0, allRated: false, countMissingRatings: 2 }
     }
     store.collection.upsert(query)
     store.replaceQuery(8, { docs: [{ id: "first" }] })
     const before = store.query(8)
-    expect(before).toMatchObject({ numFound: 10, allRated: false, missingRatings: 2, queryState: "loaded" })
+    expect(before).toMatchObject({
+      numFound: 10,
+      allRated: false,
+      missingRatings: 2,
+      queryState: "loaded"
+    })
 
     query.currentScore = { score: 1, allRated: true, countMissingRatings: 0 }
     query.numFound = 12
@@ -396,5 +450,4 @@ describe("QueryDocumentsStore", () => {
     expect(store.snapshot(99).query).toBeNull()
     expect(store.snapshot(1).query).toMatchObject({ queryId: 1 })
   })
-
 })

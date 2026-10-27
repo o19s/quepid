@@ -44,12 +44,19 @@ describe("parseCsv", () => {
     expect(parseCsv(content).errors).toEqual(["line 4: expected 2 columns but found 1."])
   })
 
-  it.each(["\n", "\r\n", "\r"])("ignores blank lines while keeping error line numbers with %j", (eol) => {
-    const content = ["a,b", "1,2", "", "   ", "3,4", "", "bad", "", ""].join(eol)
-    const { rows, errors } = parseCsv(content)
-    expect(rows).toEqual([{ a: "1", b: "2" }, { a: "3", b: "4" }, { a: "bad", b: "" }])
-    expect(errors).toEqual(["line 7: expected 2 columns but found 1."])
-  })
+  it.each(["\n", "\r\n", "\r"])(
+    "ignores blank lines while keeping error line numbers with %j",
+    (eol) => {
+      const content = ["a,b", "1,2", "", "   ", "3,4", "", "bad", "", ""].join(eol)
+      const { rows, errors } = parseCsv(content)
+      expect(rows).toEqual([
+        { a: "1", b: "2" },
+        { a: "3", b: "4" },
+        { a: "bad", b: "" }
+      ])
+      expect(errors).toEqual(["line 7: expected 2 columns but found 1."])
+    }
+  )
 
   it("reports an unclosed quote", () => {
     expect(parseCsv('a,b\n"open,1\n').errors).toContain("line 2: unclosed quote.")
@@ -77,7 +84,9 @@ describe("parseCsv", () => {
   })
 
   it("still reads standard quoted fields, including empty and quote-only ones", () => {
-    expect(parseCsv('a,b,c,d\n"",x,"""",""""""\n').rows).toEqual([{ a: "", b: "x", c: '"', d: '""' }])
+    expect(parseCsv('a,b,c,d\n"",x,"""",""""""\n').rows).toEqual([
+      { a: "", b: "x", c: '"', d: '""' }
+    ])
   })
 
   it("reads an empty quoted field followed by spaces as empty, not as a pre-8.7 quote", () => {
@@ -93,7 +102,10 @@ describe("parseCsv", () => {
   })
   it("drops blank lines but keeps delimiter-only rows for validation", () => {
     const result = parseCsv("a,b\n\n1,2\n,\n")
-    expect(result.rows).toEqual([{ a: "1", b: "2" }, { a: "", b: "" }])
+    expect(result.rows).toEqual([
+      { a: "1", b: "2" },
+      { a: "", b: "" }
+    ])
   })
 
   it("trims the last value of a file without a trailing newline, quoted or not", () => {

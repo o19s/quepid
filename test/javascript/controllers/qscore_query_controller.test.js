@@ -58,8 +58,8 @@ describe("QscoreQueryController", () => {
   it("renders the formatted score and color once the store has this query's score", () => {
     store.setLatestScoreInfo({
       allRated: true,
-      score:    75,
-      queries:  { 1: { score: 75, maxScore: 100, text: "q1", numFound: 10 } }
+      score: 75,
+      queries: { 1: { score: 75, maxScore: 100, text: "q1", numFound: 10 } }
     })
 
     const controller = buildController(element)
@@ -80,8 +80,8 @@ describe("QscoreQueryController", () => {
 
     store.setLatestScoreInfo({
       allRated: true,
-      score:    50,
-      queries:  { 1: { score: 42, maxScore: 100, text: "q1", numFound: 3 } }
+      score: 50,
+      queries: { 1: { score: 42, maxScore: 100, text: "q1", numFound: 3 } }
     })
 
     expect(valueEl.textContent).toBe("42.00")
@@ -95,8 +95,8 @@ describe("QscoreQueryController", () => {
 
     store.setLatestScoreInfo({
       allRated: true,
-      score:    50,
-      queries:  { 1: { score: 42, maxScore: 100, text: "q1", numFound: 3 } }
+      score: 50,
+      queries: { 1: { score: 42, maxScore: 100, text: "q1", numFound: 3 } }
     })
 
     expect(valueEl.textContent).toBe("?")
@@ -108,8 +108,8 @@ describe("QscoreQueryController", () => {
     // 100-point default scale instead of the store's actual per-query maxScore.
     store.setLatestScoreInfo({
       allRated: true,
-      score:    0.9,
-      queries:  { 1: { score: 0.9, maxScore: 1, text: "q1", numFound: 10 } }
+      score: 0.9,
+      queries: { 1: { score: 0.9, maxScore: 1, text: "q1", numFound: 10 } }
     })
 
     const controller = buildController(element)
@@ -125,8 +125,8 @@ describe("QscoreQueryController", () => {
   it("re-renders when queryIdValue changes (Stimulus valueChanged callback)", () => {
     store.setLatestScoreInfo({
       allRated: true,
-      score:    50,
-      queries:  {
+      score: 50,
+      queries: {
         1: { score: 42, maxScore: 100, text: "q1", numFound: 3 },
         2: { score: 88, maxScore: 100, text: "q2", numFound: 5 }
       }

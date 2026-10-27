@@ -7,7 +7,9 @@ import MoveQueryCoreController from "controllers/move_query_core_controller"
 
 let testCapabilities
 
-vi.mock("utils/core_capability_access", () => ({ getCoreCapabilities: () => testCapabilities || {} }))
+vi.mock("utils/core_capability_access", () => ({
+  getCoreCapabilities: () => testCapabilities || {}
+}))
 
 vi.mock("utils/core_flash", () => ({ default: { show: vi.fn(), hide: vi.fn() } }))
 beforeEach(() => {
@@ -59,15 +61,28 @@ function trigger({ queryId = "12" } = {}) {
 
 describe("MoveQueryCoreController", () => {
   it("reconciles the submitted query and leaves a reopened modal alone", async () => {
-    const controller = buildController({ currentCaseId: "4", queryId: "12", selectedCase: { case_id: 8 }, openGeneration: 1 })
+    const controller = buildController({
+      currentCaseId: "4",
+      queryId: "12",
+      selectedCase: { case_id: 8 },
+      openGeneration: 1
+    })
     let resolveSave
-    apiFetch.mockReturnValueOnce(new Promise(resolve => { resolveSave = resolve }))
+    apiFetch.mockReturnValueOnce(
+      new Promise((resolve) => {
+        resolveSave = resolve
+      })
+    )
     const pending = controller.submit({ preventDefault: vi.fn() })
     await controller.openFor(trigger({ queryId: "13" }))
     controller.selectCase({ params: { caseId: 8 } })
     resolveSave({ ok: true, status: 200, text: async () => "{}" })
     await pending
-    expect(controller.queryCommandBridgeOutlet.queryRemoved).toHaveBeenCalledWith({ caseId: 4, queryId: 12, targetCaseId: 8 })
+    expect(controller.queryCommandBridgeOutlet.queryRemoved).toHaveBeenCalledWith({
+      caseId: 4,
+      queryId: 12,
+      targetCaseId: 8
+    })
     expect(controller.queryId).toBe("13")
     expect(hideBsModal).not.toHaveBeenCalled()
     expect(controller.submitButtonTarget.disabled).toBe(false)
@@ -79,18 +94,18 @@ describe("MoveQueryCoreController", () => {
         return JSON.stringify(await this.json()) || ""
       },
       ok: true,
-      json: () => Promise.resolve({
-        all_cases: [
-          { case_id: 4, case_name: "Current" },
-          { case_id: 8, case_name: "Other Case" }
-        ]
-      })
+      json: () =>
+        Promise.resolve({
+          all_cases: [
+            { case_id: 4, case_name: "Current" },
+            { case_id: 8, case_name: "Other Case" }
+          ]
+        })
     })
     Object.assign(coreFlash, { show: vi.fn() })
   })
 
   afterEach(() => {
-
     testCapabilities = undefined
     vi.restoreAllMocks()
   })
@@ -122,10 +137,13 @@ describe("MoveQueryCoreController", () => {
 
     await controller.submit({ preventDefault: vi.fn() })
 
-    expect(apiFetch).toHaveBeenCalledWith("api/cases/4/queries/12", expect.objectContaining({
-      method: "PUT",
-      body: JSON.stringify({ other_case_id: 8 })
-    }))
+    expect(apiFetch).toHaveBeenCalledWith(
+      "api/cases/4/queries/12",
+      expect.objectContaining({
+        method: "PUT",
+        body: JSON.stringify({ other_case_id: 8 })
+      })
+    )
     const detail = { caseId: 4, queryId: 12, targetCaseId: 8 }
     expect(controller.queryCommandBridgeOutlet.queryRemoved).toHaveBeenCalledWith(detail)
     expect(controller.dispatch).toHaveBeenCalledWith("completed", { detail })
@@ -139,7 +157,12 @@ describe("MoveQueryCoreController", () => {
     const controller = buildController()
     await controller.openFor(trigger())
     controller.selectCase({ params: { caseId: 8 } })
-    apiFetch.mockResolvedValue({ ok: false, status: 500, text: async () => "", json: async () => null })
+    apiFetch.mockResolvedValue({
+      ok: false,
+      status: 500,
+      text: async () => "",
+      json: async () => null
+    })
 
     await controller.submit({ preventDefault: vi.fn() })
 

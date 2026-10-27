@@ -1,5 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import { createBsModal, getOrCreateBsModal, hideBsModal, installModalEscapeFallback, installModalTabWrap, showBsModal, showStackedModal } from "utils/bs_modal"
+import {
+  createBsModal,
+  getOrCreateBsModal,
+  hideBsModal,
+  installModalEscapeFallback,
+  installModalTabWrap,
+  showBsModal,
+  showStackedModal
+} from "utils/bs_modal"
 
 describe("bs_modal", () => {
   let element
@@ -95,7 +103,7 @@ describe("bs_modal", () => {
     const addModal = () => {
       const modal = doc.createElement("div")
       modal.className = "modal show"
-      modal.innerHTML = "<button type=\"button\">Pick</button>"
+      modal.innerHTML = '<button type="button">Pick</button>'
       modal.addEventListener("keydown", (event) => {
         if (event.key === "Escape") received.push(modal)
       })
@@ -143,7 +151,7 @@ describe("bs_modal", () => {
 
     it("does not retain a canceled opening", async () => {
       const modal = addModal()
-      modal.addEventListener("show.bs.modal", event => event.preventDefault())
+      modal.addEventListener("show.bs.modal", (event) => event.preventDefault())
       modal.dispatchEvent(new Event("show.bs.modal", { bubbles: true, cancelable: true }))
       await Promise.resolve()
       pressEscape()
@@ -189,7 +197,12 @@ describe("bs_modal", () => {
     let last
 
     const pressTab = (target, shiftKey = false) => {
-      const event = new KeyboardEvent("keydown", { key: "Tab", shiftKey, bubbles: true, cancelable: true })
+      const event = new KeyboardEvent("keydown", {
+        key: "Tab",
+        shiftKey,
+        bubbles: true,
+        cancelable: true
+      })
       target.dispatchEvent(event)
       return event
     }
@@ -283,7 +296,11 @@ describe("bs_modal", () => {
       const outer = openModal()
       backdrop()
       const wrapper = document.createElement("div")
-      const modal = { show: vi.fn(() => { created.push(backdrop()) }) }
+      const modal = {
+        show: vi.fn(() => {
+          created.push(backdrop())
+        })
+      }
       const outerFocusTrap = { deactivate: vi.fn(), activate: vi.fn() }
       window.bootstrap.Modal.instances.set(outer, { _focustrap: outerFocusTrap })
 
@@ -316,23 +333,26 @@ describe("bs_modal", () => {
     it.each([
       ["no longer shown", (outer) => outer.classList.remove("show")],
       ["removed from the page", (outer) => outer.remove()]
-    ])("leaves the outer modal alone when it is %s by the time the stacked one closes", (_label, close) => {
-      const outer = openModal()
-      const opener = document.createElement("button")
-      outer.appendChild(opener)
-      opener.focus()
-      const focusTrap = { deactivate: vi.fn(), activate: vi.fn() }
-      window.bootstrap.Modal.instances.set(outer, { _focustrap: focusTrap })
-      const wrapper = document.createElement("div")
+    ])(
+      "leaves the outer modal alone when it is %s by the time the stacked one closes",
+      (_label, close) => {
+        const outer = openModal()
+        const opener = document.createElement("button")
+        outer.appendChild(opener)
+        opener.focus()
+        const focusTrap = { deactivate: vi.fn(), activate: vi.fn() }
+        window.bootstrap.Modal.instances.set(outer, { _focustrap: focusTrap })
+        const wrapper = document.createElement("div")
 
-      showStackedModal(wrapper, { show: vi.fn() })
-      opener.blur()
-      close(outer)
-      wrapper.dispatchEvent(new Event("hidden.bs.modal"))
+        showStackedModal(wrapper, { show: vi.fn() })
+        opener.blur()
+        close(outer)
+        wrapper.dispatchEvent(new Event("hidden.bs.modal"))
 
-      expect(focusTrap.activate).not.toHaveBeenCalled()
-      expect(document.activeElement).not.toBe(opener)
-    })
+        expect(focusTrap.activate).not.toHaveBeenCalled()
+        expect(document.activeElement).not.toBe(opener)
+      }
+    )
 
     it("does not return focus to a disabled opener or one outside the outer modal", () => {
       const outer = openModal()
@@ -341,9 +361,14 @@ describe("bs_modal", () => {
       const elsewhere = document.createElement("button")
       document.body.appendChild(elsewhere)
       created.push(elsewhere)
-      window.bootstrap.Modal.instances.set(outer, { _focustrap: { deactivate: vi.fn(), activate: vi.fn() } })
+      window.bootstrap.Modal.instances.set(outer, {
+        _focustrap: { deactivate: vi.fn(), activate: vi.fn() }
+      })
 
-      for (const [opener, disable] of [[inside, true], [elsewhere, false]]) {
+      for (const [opener, disable] of [
+        [inside, true],
+        [elsewhere, false]
+      ]) {
         opener.focus()
         const wrapper = document.createElement("div")
         showStackedModal(wrapper, { show: vi.fn() })
@@ -365,5 +390,4 @@ describe("bs_modal", () => {
       }).not.toThrow()
     })
   })
-
 })

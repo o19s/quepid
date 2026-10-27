@@ -91,21 +91,28 @@ export default class extends Controller {
 
     this.vegaResult?.finalize()
     this.containerTarget.replaceChildren()
-    window.vegaEmbed(this.containerTarget, graphSpec(
-      scoreData,
-      annotationData,
-      this.maxScore || this.maxScoreValue || 1,
-      width,
-      height,
-      this.margin
-    ), {
-      actions: false,
-      renderer: "svg",
-      tooltip: { theme: "dark" }
-    }).then((result) => {
-      this.vegaResult = result
-    }).catch((error) => {
-      console.error("Error rendering qgraph:", error)
-    })
+    window
+      .vegaEmbed(
+        this.containerTarget,
+        graphSpec(
+          scoreData,
+          annotationData,
+          this.maxScore || this.maxScoreValue || 1,
+          width,
+          height,
+          this.margin
+        ),
+        {
+          actions: false,
+          renderer: "svg",
+          tooltip: { theme: "dark" }
+        }
+      )
+      .then((result) => {
+        this.vegaResult = result
+      })
+      .catch((error) => {
+        console.error("Error rendering qgraph:", error)
+      })
   }
 }

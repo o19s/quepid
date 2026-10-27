@@ -8,11 +8,7 @@ vi.mock("utils/bs_tooltip", () => ({
   disposeBsTooltip: vi.fn()
 }))
 
-import {
-  createBsTooltip,
-  disposeBsTooltip,
-  updateBsTooltipContent
-} from "utils/bs_tooltip"
+import { createBsTooltip, disposeBsTooltip, updateBsTooltipContent } from "utils/bs_tooltip"
 
 function buildController(element) {
   return buildControllerFixture(BsTooltipController, {
@@ -53,10 +49,7 @@ describe("BsTooltipController", () => {
 
     BsTooltipController.prototype.titleValueChanged.call(controller, "Updated")
 
-    expect(updateBsTooltipContent).toHaveBeenCalledWith(
-      { id: "tooltip-instance" },
-      "Updated"
-    )
+    expect(updateBsTooltipContent).toHaveBeenCalledWith({ id: "tooltip-instance" }, "Updated")
   })
 
   it("disposes the tooltip on disconnect", () => {

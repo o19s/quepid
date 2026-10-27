@@ -2,7 +2,7 @@
 
 source 'https://rubygems.org'
 
-ruby '4.0.7'
+ruby '4.0.9'
 
 gem 'active_storage_db'
 gem 'acts_as_list'
@@ -84,6 +84,7 @@ group :development do
   gem 'letter_opener'
   gem 'rubocop', require: false
   gem 'rubocop-rails', require: false
+  gem 'rubocop-minitest', require: false
   gem 'brakeman', require: false
   gem 'bundler-audit', require: false
   gem 'rails-erd'
@@ -97,5 +98,3 @@ group :test do
   gem 'webmock'
   gem 'rails-controller-testing' # bring back compatibility with rails 4 assigns in controller tests.
 end
-
-gem 'rubocop-minitest'

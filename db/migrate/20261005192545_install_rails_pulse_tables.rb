@@ -31,6 +31,7 @@ class InstallRailsPulseTables < ActiveRecord::Migration[8.1]
     # Rollback: drop all Rails Pulse tables in reverse dependency order
     say "Dropping Rails Pulse tables..."
 
+    drop_table :rails_pulse_events if table_exists?(:rails_pulse_events)
     drop_table :rails_pulse_operations if table_exists?(:rails_pulse_operations)
     drop_table :rails_pulse_job_runs if table_exists?(:rails_pulse_job_runs)
     drop_table :rails_pulse_jobs if table_exists?(:rails_pulse_jobs)
@@ -52,7 +53,7 @@ class InstallRailsPulseTables < ActiveRecord::Migration[8.1]
       rails_pulse_routes rails_pulse_queries rails_pulse_requests
       rails_pulse_operations rails_pulse_jobs rails_pulse_job_runs
       rails_pulse_summaries rails_pulse_deployments
-      rails_pulse_exception_groups rails_pulse_exception_occurrences
+      rails_pulse_exception_groups rails_pulse_exception_occurrences rails_pulse_events
     ].all? { |table| table_exists?(table) }
   end
 end

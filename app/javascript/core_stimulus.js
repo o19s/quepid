@@ -14,6 +14,8 @@
  * off, because Turbo treats anything inside a <turbo-frame> as navigatable
  * regardless.
  */
+import "bootstrap_globals"
+import "vega_globals"
 import "@hotwired/turbo-rails"
 import "core_runtime"
 import { application } from "controllers/application"

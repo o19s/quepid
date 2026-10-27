@@ -1,5 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import { deleteJson, getJson, patchJson, postJson, putJson, readJson, requestJsonResponse } from "api/json"
+import {
+  deleteJson,
+  getJson,
+  patchJson,
+  postJson,
+  putJson,
+  readJson,
+  requestJsonResponse
+} from "api/json"
 import { HttpError } from "api/http_error"
 
 describe("api/json", () => {
@@ -12,7 +20,10 @@ describe("api/json", () => {
   })
 
   function stubFetch(response) {
-    vi.stubGlobal("fetch", vi.fn(() => Promise.resolve(response)))
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() => Promise.resolve(response))
+    )
   }
 
   it("postJson sends a JSON body with CSRF and returns the parsed response", async () => {
@@ -32,17 +43,24 @@ describe("api/json", () => {
   })
 
   it("keeps caller headers given as a Headers instance or tuple array, and lets them override defaults", async () => {
-    vi.stubGlobal("fetch", vi.fn(() => Promise.resolve(new Response("{}", { status: 200 }))))
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() => Promise.resolve(new Response("{}", { status: 200 })))
+    )
 
     await getJson("/x", { headers: new Headers({ "X-Trace": "1", accept: "text/plain" }) })
     await postJson("/x", {}, { headers: [["X-Trace", "2"]] })
 
     // Header-name casing is normalized differently by browsers and happy-dom.
     const sent = (call) =>
-      Object.fromEntries(Object.entries(fetch.mock.calls[call][1].headers).map(([k, v]) => [k.toLowerCase(), v]))
+      Object.fromEntries(
+        Object.entries(fetch.mock.calls[call][1].headers).map(([k, v]) => [k.toLowerCase(), v])
+      )
     expect(sent(0)).toMatchObject({ "x-trace": "1", accept: "text/plain" })
     // The caller's header replaces the default rather than being sent alongside it.
-    const acceptKeys = Object.keys(fetch.mock.calls[0][1].headers).filter((k) => k.toLowerCase() === "accept")
+    const acceptKeys = Object.keys(fetch.mock.calls[0][1].headers).filter(
+      (k) => k.toLowerCase() === "accept"
+    )
     expect(acceptKeys).toHaveLength(1)
     expect(fetch.mock.calls[0][1].method).toBe("GET")
     expect(sent(1)).toMatchObject({
@@ -64,7 +82,12 @@ describe("api/json", () => {
 
     expect(error).toBeInstanceOf(HttpError)
     expect(error).toBeInstanceOf(Error)
-    expect(error).toMatchObject({ status: 422, ok: false, data: { error: "nope" }, message: "nope" })
+    expect(error).toMatchObject({
+      status: 422,
+      ok: false,
+      data: { error: "nope" },
+      message: "nope"
+    })
   })
 
   it("falls back to a status message when the error body is not JSON", async () => {
@@ -78,7 +101,9 @@ describe("api/json", () => {
   })
 
   it("falls back to a status message when the error body's error is not a string", async () => {
-    stubFetch(new Response(JSON.stringify({ error: { name: ["can't be blank"] } }), { status: 422 }))
+    stubFetch(
+      new Response(JSON.stringify({ error: { name: ["can't be blank"] } }), { status: 422 })
+    )
 
     const error = await postJson("/x", {}).catch((e) => e)
 
@@ -102,7 +127,11 @@ describe("api/json", () => {
 
   it("rejects non-JSON failures with their status", async () => {
     stubFetch(new Response("<html>Unavailable</html>", { status: 503 }))
-    await expect(getJson("api/cases")).rejects.toMatchObject({ name: "HttpError", status: 503, data: null })
+    await expect(getJson("api/cases")).rejects.toMatchObject({
+      name: "HttpError",
+      status: 503,
+      data: null
+    })
   })
 
   it.each([
@@ -117,12 +146,19 @@ describe("api/json", () => {
     expect(fetch.mock.calls[0][1]).toMatchObject({
       method,
       body: '{"name":"n"}',
-      headers: { "Content-Type": "application/json", Accept: "application/json", "X-CSRF-Token": "tok" }
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        "X-CSRF-Token": "tok"
+      }
     })
   })
 
   it("deleteJson sends a body only when given one", async () => {
-    vi.stubGlobal("fetch", vi.fn(() => Promise.resolve(new Response("", { status: 204 }))))
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() => Promise.resolve(new Response("", { status: 204 })))
+    )
 
     await deleteJson("api/cases/1")
     await deleteJson("api/ratings", { rating: { doc_id: "a" } })
@@ -130,7 +166,10 @@ describe("api/json", () => {
     expect(fetch.mock.calls[0][1].method).toBe("DELETE")
     expect(fetch.mock.calls[0][1].body).toBeUndefined()
     expect(fetch.mock.calls[0][1].headers["Content-Type"]).toBeUndefined()
-    expect(fetch.mock.calls[1][1]).toMatchObject({ method: "DELETE", body: '{"rating":{"doc_id":"a"}}' })
+    expect(fetch.mock.calls[1][1]).toMatchObject({
+      method: "DELETE",
+      body: '{"rating":{"doc_id":"a"}}'
+    })
   })
 
   it("passes fetch options through, but the helper's verb always wins", async () => {
@@ -147,5 +186,4 @@ describe("api/json", () => {
     await expect(putJson("api/cases/1", {})).resolves.toBeNull()
     expect(fetch.mock.calls[0][1].method).toBe("PUT")
   })
-
 })

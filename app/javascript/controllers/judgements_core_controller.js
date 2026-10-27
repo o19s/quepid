@@ -269,7 +269,11 @@ export default class extends CoreModalControllerBase {
       const url = this.catalogUrlTemplateValue.replaceAll(CASE_ID_PLACEHOLDER, caseId)
       const response = await apiFetch(url, { headers: { Accept: "text/html" } })
       if (!response.ok) {
-        throw new HttpError({ status: response.status, statusText: response.statusText, data: await readJson(response) })
+        throw new HttpError({
+          status: response.status,
+          statusText: response.statusText,
+          data: await readJson(response)
+        })
       }
       if (response.redirected) throw new Error("Unable to load judgements settings.")
       const html = new DOMParser().parseFromString(await response.text(), "text/html")
@@ -303,9 +307,9 @@ export default class extends CoreModalControllerBase {
     books.sort((a, b) => {
       if (Number(a.dataset.judgementsCoreBookIdParam) === this.activeBookId) return -1
       if (Number(b.dataset.judgementsCoreBookIdParam) === this.activeBookId) return 1
-      return a.querySelector('[data-slot="name"]').textContent.localeCompare(
-        b.querySelector('[data-slot="name"]').textContent
-      )
+      return a
+        .querySelector('[data-slot="name"]')
+        .textContent.localeCompare(b.querySelector('[data-slot="name"]').textContent)
     })
     this.books = books.map((row) => ({
       id: Number(row.dataset.judgementsCoreBookIdParam),
@@ -375,7 +379,6 @@ export default class extends CoreModalControllerBase {
     this.savedBookId = bookId
     this.savedAutoPopulateBookPairs = payload.auto_populate_book_pairs
     this.savedAutoPopulateCaseJudgements = payload.auto_populate_case_judgements
-
   }
 
   async _refreshRatings({
@@ -398,7 +401,8 @@ export default class extends CoreModalControllerBase {
     } catch (error) {
       if (!isSameId(this.currentCaseId, caseId)) return
       if (error instanceof HttpError) {
-        error.message = error.data?.statusText || serverMessage(error, `Refresh failed (${error.status})`)
+        error.message =
+          error.data?.statusText || serverMessage(error, `Refresh failed (${error.status})`)
       }
       throw error
     }

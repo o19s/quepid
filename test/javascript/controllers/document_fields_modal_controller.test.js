@@ -4,7 +4,7 @@ import DocumentFieldsModalController from "controllers/document_fields_modal_con
 import { getOrCreateBsModal, showBsModal } from "utils/bs_modal"
 
 vi.mock("utils/bs_modal", () => ({
-  getOrCreateBsModal: vi.fn(el => ({ el })),
+  getOrCreateBsModal: vi.fn((el) => ({ el })),
   showBsModal: vi.fn()
 }))
 
@@ -31,14 +31,20 @@ describe("DocumentFieldsModalController#show", () => {
 
   it("fills the modal with the query, doc id and pretty-printed JSON, then opens it", () => {
     const controller = buildController()
-    const event = clickEvent({ queryText: "star wars", docId: "d1", documentFields: '{"title":"A New Hope"}' })
+    const event = clickEvent({
+      queryText: "star wars",
+      docId: "d1",
+      documentFields: '{"title":"A New Hope"}'
+    })
 
     controller.show(event)
 
     expect(event.preventDefault).toHaveBeenCalled()
     expect(controller.queryTextTarget.textContent).toBe("star wars")
     expect(controller.docIdTarget.textContent).toBe("d1")
-    expect(controller.contentTarget.textContent).toBe(JSON.stringify({ title: "A New Hope" }, null, 2))
+    expect(controller.contentTarget.textContent).toBe(
+      JSON.stringify({ title: "A New Hope" }, null, 2)
+    )
     expect(getOrCreateBsModal).toHaveBeenCalledWith(controller.modalTarget)
     expect(showBsModal).toHaveBeenCalledTimes(1)
   })

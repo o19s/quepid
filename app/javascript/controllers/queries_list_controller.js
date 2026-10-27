@@ -17,7 +17,26 @@ import { paginationRange } from "utils/pagination"
  * behind narrow adapters for persistence, sorting, and query-template rendering.
  */
 export default class extends Controller {
-  static targets = ["ratedCheckbox", "ratedLabel", "filter", "sortLink", "manualSortLink", "sortIcon", "manualHelp", "list", "pagination", "count", "bootstrapFeedback", "searchFeedback", "batchPosition", "batchSize", "rowTemplate", "searchResultsTemplate", "paginationTemplate", "diffScoreTemplate"]
+  static targets = [
+    "ratedCheckbox",
+    "ratedLabel",
+    "filter",
+    "sortLink",
+    "manualSortLink",
+    "sortIcon",
+    "manualHelp",
+    "list",
+    "pagination",
+    "count",
+    "bootstrapFeedback",
+    "searchFeedback",
+    "batchPosition",
+    "batchSize",
+    "rowTemplate",
+    "searchResultsTemplate",
+    "paginationTemplate",
+    "diffScoreTemplate"
+  ]
   static values = {
     showOnlyRated: Boolean,
     showOnlyRatedUnsupported: Boolean,
@@ -40,7 +59,7 @@ export default class extends Controller {
     const stores = getCoreStores()
     this.store = stores.queries
     this.storeChange = () => this.scheduleRender()
-    this.searchFailed = event => this.handleSearchFailed(event)
+    this.searchFailed = (event) => this.handleSearchFailed(event)
     this.searchSettled = () => this.handleSearchSettled()
     this.unsubscribeStore = subscribeToStore(this.store, {
       change: this.storeChange,
@@ -50,7 +69,12 @@ export default class extends Controller {
     })
     this.documentStore = stores.documents
     this.documentStoreChange = () => this.scheduleRender()
-    this.unsubscribeDocumentStore = this.documentStore && subscribeToStore(this.documentStore, { change: this.documentStoreChange, reset: this.documentStoreChange })
+    this.unsubscribeDocumentStore =
+      this.documentStore &&
+      subscribeToStore(this.documentStore, {
+        change: this.documentStoreChange,
+        reset: this.documentStoreChange
+      })
     this.setupSortable()
     this.render()
   }
@@ -73,7 +97,9 @@ export default class extends Controller {
   }
 
   changePage(event) {
-    this.currentPage = event.params.page || Math.max(1, this.currentPage + (event.params.direction === "next" ? 1 : -1))
+    this.currentPage =
+      event.params.page ||
+      Math.max(1, this.currentPage + (event.params.direction === "next" ? 1 : -1))
     this.render()
   }
 
@@ -145,7 +171,7 @@ export default class extends Controller {
   dragStart() {
     hideTooltipsWithin(this.listTarget)
     this.listTarget.classList.add("dragging")
-    this.draggedQueryIds = [...this.listTarget.children].map(item => item.dataset.queryId)
+    this.draggedQueryIds = [...this.listTarget.children].map((item) => item.dataset.queryId)
     this.dispatch("drag-start")
   }
 
@@ -192,8 +218,8 @@ export default class extends Controller {
   restoreDraggedOrder() {
     if (!this.draggedQueryIds) return
     const items = [...this.listTarget.children]
-    this.draggedQueryIds.forEach(queryId => {
-      const item = items.find(candidate => candidate.dataset.queryId === queryId)
+    this.draggedQueryIds.forEach((queryId) => {
+      const item = items.find((candidate) => candidate.dataset.queryId === queryId)
       if (item) this.listTarget.appendChild(item)
     })
   }
@@ -207,13 +233,17 @@ export default class extends Controller {
       filter: ".unsortable",
       preventOnFilter: false,
       onStart: () => this.dragStart(),
-      onEnd: event => this.dragEnd(event)
+      onEnd: (event) => this.dragEnd(event)
     })
     this.updateSortableState()
   }
 
   updateSortableState() {
-    if (this.sortable) this.sortable.option("disabled", !this.queryListSortableValue || this.activeSortName() !== "default")
+    if (this.sortable)
+      this.sortable.option(
+        "disabled",
+        !this.queryListSortableValue || this.activeSortName() !== "default"
+      )
   }
 
   activeSortName() {
@@ -246,7 +276,8 @@ export default class extends Controller {
   render() {
     this.syncListState()
     const showOnlyRated = this.currentShowOnlyRated ?? this.showOnlyRatedValue
-    const showOnlyRatedUnsupported = this.currentShowOnlyRatedUnsupported ?? this.showOnlyRatedUnsupportedValue
+    const showOnlyRatedUnsupported =
+      this.currentShowOnlyRatedUnsupported ?? this.showOnlyRatedUnsupportedValue
     if (this.hasRatedCheckboxTarget) {
       this.ratedCheckboxTarget.checked = showOnlyRated
       this.ratedCheckboxTarget.disabled = showOnlyRatedUnsupported
@@ -258,13 +289,13 @@ export default class extends Controller {
         : ""
     }
 
-    this.sortLinkTargets.forEach(link => {
+    this.sortLinkTargets.forEach((link) => {
       const active = link.dataset.sortField === this.activeSortName()
       link.classList.toggle("active", active)
       link.setAttribute("aria-pressed", String(active))
     })
 
-    this.sortIconTargets.forEach(icon => {
+    this.sortIconTargets.forEach((icon) => {
       const active = icon.dataset.sortField === this.activeSortName()
       icon.classList.toggle("d-none", !active)
       icon.classList.toggle("bi-arrow-up", active && this.activeReverse())
@@ -289,9 +320,12 @@ export default class extends Controller {
 
     this.currentShowOnlyRated = state.showOnlyRated
     this.currentShowOnlyRatedUnsupported = state.showOnlyRatedUnsupported
-    if (this.hasBootstrapFeedbackTarget) this.bootstrapFeedbackTarget.classList.toggle("d-none", !state.isBootstrapping)
-    if (this.hasSearchFeedbackTarget) this.searchFeedbackTarget.classList.toggle("d-none", !state.searching)
-    if (this.hasBatchPositionTarget) this.batchPositionTarget.textContent = String(state.batchPosition)
+    if (this.hasBootstrapFeedbackTarget)
+      this.bootstrapFeedbackTarget.classList.toggle("d-none", !state.isBootstrapping)
+    if (this.hasSearchFeedbackTarget)
+      this.searchFeedbackTarget.classList.toggle("d-none", !state.searching)
+    if (this.hasBatchPositionTarget)
+      this.batchPositionTarget.textContent = String(state.batchPosition)
     if (this.hasBatchSizeTarget) this.batchSizeTarget.textContent = String(state.batchSize)
   }
 
@@ -313,7 +347,7 @@ export default class extends Controller {
 
     // Rows are keyed by query id and reused, so a store change updates them in place instead of
     // reconnecting every nested controller (and losing, e.g., a half-typed note).
-    const existing = new Map([...this.listTarget.children].map(row => [row.dataset.queryId, row]))
+    const existing = new Map([...this.listTarget.children].map((row) => [row.dataset.queryId, row]))
     visibleQueries.forEach((query, index) => {
       const queryId = String(query.queryId)
       const expanded = this.queryExpanded(query)
@@ -330,17 +364,18 @@ export default class extends Controller {
       const current = this.listTarget.children[index]
       if (current !== row) this.listTarget.insertBefore(row, current || null)
     })
-    existing.forEach(row => row.remove())
+    existing.forEach((row) => row.remove())
 
     if (this.hasCountTarget) this.countTarget.textContent = String(totalQueries.length)
     this.renderPagination(pageCount, queries.length)
   }
 
   orderedLiveQueries({ ignoreFilter = false } = {}) {
-    const queries = this.store.orderedQueryIds()
-      .map(queryId => this.store.query?.(queryId))
+    const queries = this.store
+      .orderedQueryIds()
+      .map((queryId) => this.store.query?.(queryId))
       .filter(Boolean)
-      .filter(query => ignoreFilter || this.matchesFilter(query))
+      .filter((query) => ignoreFilter || this.matchesFilter(query))
 
     const sortName = this.activeSortName()
     if (sortName === "default") return queries
@@ -395,20 +430,24 @@ export default class extends Controller {
   renderQueryShell(row, query) {
     const queryId = String(query.queryId)
     const fragment = this.rowTemplateTarget.content.cloneNode(true)
-    const slot = name => fragment.querySelector(`[data-slot="${name}"]`)
+    const slot = (name) => fragment.querySelector(`[data-slot="${name}"]`)
 
     slot("row").dataset.queryRowQueryIdValue = queryId
     slot("score").dataset.qscoreQueryQueryIdValue = queryId
     slot("unratedBadge").dataset.queryUnratedBadgeQueryIdValue = queryId
-    slot("row").querySelector('[data-query-row-target="expanded"]').appendChild(this.buildSearchResults(query))
+    slot("row")
+      .querySelector('[data-query-row-target="expanded"]')
+      .appendChild(this.buildSearchResults(query))
     row.replaceChildren(fragment)
   }
 
   // Every render: the row's changeable values. Unchanged values are left alone so their
   // controllers' value callbacks only run for real changes.
   updateQueryRow(row, query, rank, expanded) {
-    const numFound = String(Number(queryResultCount(query, this.currentShowOnlyRated ?? this.showOnlyRatedValue) || 0))
-    const slot = name => row.querySelector(`[data-slot="${name}"]`)
+    const numFound = String(
+      Number(queryResultCount(query, this.currentShowOnlyRated ?? this.showOnlyRatedValue) || 0)
+    )
+    const slot = (name) => row.querySelector(`[data-slot="${name}"]`)
     assignChanged(slot("row").dataset, {
       queryRowRankValue: String(rank),
       queryRowNumFoundValue: numFound,
@@ -423,7 +462,9 @@ export default class extends Controller {
       queryRowVectorStatusReasonValue: query.vectorStatusReason || ""
     })
     assignChanged(slot("resultCount").dataset, { countUpNumberValue: numFound })
-    assignChanged(slot("label").dataset, { bsTooltipTitleValue: `Info Need: ${query.informationNeed || ""}` })
+    assignChanged(slot("label").dataset, {
+      bsTooltipTitleValue: `Info Need: ${query.informationNeed || ""}`
+    })
     this.renderDiffScores(slot("diffScores"), query)
   }
 
@@ -431,19 +472,21 @@ export default class extends Controller {
     const searchers = this.documentStore?.query(query.queryId)?.diffs?.searchers || []
     if (container.children.length === searchers.length) return
 
-    container.replaceChildren(...searchers.map((_searcher, index) => {
-      const badge = this.diffScoreTemplateTarget.content.firstElementChild.cloneNode(true)
-      badge.dataset.diffScoreQueryIdValue = String(query.queryId)
-      badge.dataset.diffScoreIndexValue = String(index)
-      return badge
-    }))
+    container.replaceChildren(
+      ...searchers.map((_searcher, index) => {
+        const badge = this.diffScoreTemplateTarget.content.firstElementChild.cloneNode(true)
+        badge.dataset.diffScoreQueryIdValue = String(query.queryId)
+        badge.dataset.diffScoreIndexValue = String(index)
+        return badge
+      })
+    )
   }
 
   // The expanded-query shell, wired to this query's id and server-provided API URLs.
   buildSearchResults(query) {
     const fragment = this.searchResultsTemplateTarget.content.cloneNode(true)
     const queryId = String(query.queryId)
-    const slot = name => fragment.querySelector(`[data-slot="${name}"]`)
+    const slot = (name) => fragment.querySelector(`[data-slot="${name}"]`)
 
     slot("explain").dataset.queryExplainQueryIdValue = queryId
     slot("missingDocuments").dataset.missingDocumentsQueryIdValue = queryId
@@ -452,7 +495,10 @@ export default class extends Controller {
       queryDeleteDeleteUrlValue: this.queryUrl(this.queryUrlTemplateValue, queryId)
     })
     slot("notes").dataset.queryNotesUrlValue = this.queryUrl(this.notesUrlTemplateValue, queryId)
-    for (const [field, prefix] of [["informationNeed", "information"], ["notes", "notes"]]) {
+    for (const [field, prefix] of [
+      ["informationNeed", "information"],
+      ["notes", "notes"]
+    ]) {
       const id = `${prefix}-${queryId}`
       slot(`${field}Field`).id = id
       slot(`${field}Label`).htmlFor = id
@@ -469,7 +515,8 @@ export default class extends Controller {
   // `query-explain` outlet API: renders the template through the live searcher; rejects on failure.
   async renderQueryTemplate(queryId) {
     const searcher = this.queryCapabilities?.getQuery?.(queryId)?.searcher
-    if (typeof searcher?.isTemplateCall !== "function") throw new Error(`No live searcher for query ${queryId}`)
+    if (typeof searcher?.isTemplateCall !== "function")
+      throw new Error(`No live searcher for query ${queryId}`)
 
     const isTemplatedQuery = searcher.isTemplateCall(searcher.args)
     // Only templated queries can be rendered; asking the engine to render anything else is a 400.
@@ -491,9 +538,11 @@ export default class extends Controller {
       : firstChild?.querySelector('[data-controller="search-results"]')
     if (!searchResults) return
 
-    searchResults.dispatchEvent(new CustomEvent("query-row:toggle", {
-      detail: event.detail
-    }))
+    searchResults.dispatchEvent(
+      new CustomEvent("query-row:toggle", {
+        detail: event.detail
+      })
+    )
   }
 
   handleQueryDeleteCompleted(event) {
@@ -512,12 +561,15 @@ export default class extends Controller {
   // (e.g. re-search after an import/judgements reload, or a settings change) —
   // the collection store now reports every generation-tracked failure here.
   handleSearchFailed(event) {
-    const message = flashErrorMessage(event.detail?.error, "Search failed. Some queries may not have updated.")
+    const message = flashErrorMessage(
+      event.detail?.error,
+      "Search failed. Some queries may not have updated."
+    )
     coreFlash.show("error", message, "search-error")
   }
 
   handleSearchSettled() {
-      coreFlash.hide("search-error")
+    coreFlash.hide("search-error")
   }
 
   handleQueryMoveCompleted(event) {
@@ -539,11 +591,15 @@ export default class extends Controller {
       `Page ${this.currentPage} of ${pageCount} (${totalCount} queries)`
     nav.querySelector('[data-slot="previous"]').disabled = this.currentPage === 1
     nav.querySelector('[data-slot="next"]').disabled = this.currentPage === pageCount
-    nav.querySelector('[data-slot="previousItem"]').classList.toggle("disabled", this.currentPage === 1)
-    nav.querySelector('[data-slot="nextItem"]').classList.toggle("disabled", this.currentPage === pageCount)
+    nav
+      .querySelector('[data-slot="previousItem"]')
+      .classList.toggle("disabled", this.currentPage === 1)
+    nav
+      .querySelector('[data-slot="nextItem"]')
+      .classList.toggle("disabled", this.currentPage === pageCount)
     const pageItem = nav.querySelector('[data-slot="pageItem"]')
     const ellipsisItem = nav.querySelector('[data-slot="ellipsisItem"]')
-    paginationRange(this.currentPage, pageCount).forEach(page => {
+    paginationRange(this.currentPage, pageCount).forEach((page) => {
       if (page === null) {
         pageItem.before(ellipsisItem.cloneNode(true))
         return
@@ -563,7 +619,6 @@ export default class extends Controller {
     ellipsisItem.remove()
     this.paginationTarget.appendChild(nav)
   }
-
 }
 
 function assignChanged(dataset, values) {
@@ -591,7 +646,8 @@ function queryExplainData(query) {
 
   if (query.queryDetails !== undefined) {
     if (Object.keys(query.queryDetails || {}).length === 0) {
-      data.queryDetailsMessage = "The list of query parameters used to construct the query was not returned by Solr."
+      data.queryDetailsMessage =
+        "The list of query parameters used to construct the query was not returned by Solr."
     } else {
       data.queryDetails = sortedJson(query.queryDetails)
     }
@@ -603,9 +659,11 @@ function queryExplainData(query) {
 }
 
 function sortedJson(value) {
-  const sorted = Object.keys(value || {}).sort().reduce((result, key) => {
-    result[key] = value[key]
-    return result
-  }, {})
+  const sorted = Object.keys(value || {})
+    .sort()
+    .reduce((result, key) => {
+      result[key] = value[key]
+      return result
+    }, {})
   return JSON.stringify(sorted, null, 2)
 }

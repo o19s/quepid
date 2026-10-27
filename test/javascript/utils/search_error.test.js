@@ -25,19 +25,27 @@ describe("search error utilities", () => {
   })
 
   it("renders escaped markup with safe links for the per-query error panel", () => {
-    const html = parseResponseObject({}, "http://example.com/?q=\"><img>", "solr").toHtml()
+    const html = parseResponseObject({}, 'http://example.com/?q="><img>', "solr").toHtml()
     const container = document.createElement("div")
     container.innerHTML = html
 
     expect(container.querySelector("img")).toBeNull()
     expect(container.querySelectorAll("a")).toHaveLength(2)
-    expect(container.querySelector("a").getAttribute("href")).toBe("http://example.com/?q=%22%3E%3Cimg%3E")
+    expect(container.querySelector("a").getAttribute("href")).toBe(
+      "http://example.com/?q=%22%3E%3Cimg%3E"
+    )
   })
 
   it("treats server-supplied error text as text, not markup", () => {
-    const error = parseResponseObject({ status: 500, data: { error: "<script>x</script>" } }, "", "es")
+    const error = parseResponseObject(
+      { status: 500, data: { error: "<script>x</script>" } },
+      "",
+      "es"
+    )
 
-    expect(error.parts).toEqual([{ text: "An unexpected error was returned: [500: Internal Server Error]: <script>x</script>" }])
+    expect(error.parts).toEqual([
+      { text: "An unexpected error was returned: [500: Internal Server Error]: <script>x</script>" }
+    ])
     expect(error.toHtml()).toContain("&lt;script&gt;")
   })
 
@@ -47,21 +55,29 @@ describe("search error utilities", () => {
       "Search API mapper error: MapperError: mapper failed"
     )
 
-    expect(parseResponseObject({ status: 500, statusText: "Internal Server Error" }, "", "searchapi").message).toContain(
-      "[500: Internal Server Error] - Internal Server Error"
-    )
+    expect(
+      parseResponseObject({ status: 500, statusText: "Internal Server Error" }, "", "searchapi")
+        .message
+    ).toContain("[500: Internal Server Error] - Internal Server Error")
   })
 
   it("handles URL/CORS errors with a wiki link and API response messages without undefined", () => {
     const urlError = parseResponseObject({ status: -1 }, "", "es")
     expect(urlError.message).toContain("typo in your URL (Quepid Wiki for more help)")
-    expect(urlError.parts).toContainEqual({ text: "Quepid Wiki", href: "https://github.com/o19s/quepid/wiki" })
+    expect(urlError.parts).toContainEqual({
+      text: "Quepid Wiki",
+      href: "https://github.com/o19s/quepid/wiki"
+    })
 
-    const message = parseResponseObject({
-      status: 400,
-      statusText: "Bad Request",
-      data: { message: "invalid setting" }
-    }, "", "algolia").message
+    const message = parseResponseObject(
+      {
+        status: 400,
+        statusText: "Bad Request",
+        data: { message: "invalid setting" }
+      },
+      "",
+      "algolia"
+    ).message
     expect(message).toContain("invalid setting")
     expect(message).not.toContain("undefined")
   })
@@ -69,72 +85,74 @@ describe("search error utilities", () => {
   it("appends the engine's error body, serializing Elasticsearch-style error objects", () => {
     const esError = { type: "parsing_exception", reason: "Unknown key [qury]" }
 
-    expect(parseResponseObject({ status: 400, data: { error: esError } }, "", "es").message)
-      .toMatch(/: \{"type":"parsing_exception","reason":"Unknown key \[qury\]"\}$/)
-    expect(parseResponseObject({ status: 400, data: { error: "bad field" } }, "", "os").message)
-      .toMatch(/: bad field$/)
+    expect(
+      parseResponseObject({ status: 400, data: { error: esError } }, "", "es").message
+    ).toMatch(/: \{"type":"parsing_exception","reason":"Unknown key \[qury\]"\}$/)
+    expect(
+      parseResponseObject({ status: 400, data: { error: "bad field" } }, "", "os").message
+    ).toMatch(/: bad field$/)
   })
 })
 
 describe("HTTP status names", () => {
   const names = {
-  100: "Continue",
-  101: "Switching Protocols",
-  102: "Processing",
-  200: "OK",
-  201: "Created",
-  202: "Accepted",
-  203: "Non-Authoritative Information",
-  204: "No Content",
-  205: "Reset Content",
-  206: "Partial Content",
-  207: "Multi-Status",
-  300: "Multiple Choices",
-  301: "Moved Permanently",
-  302: "Moved Temporarily",
-  303: "See Other",
-  304: "Not Modified",
-  305: "Use Proxy",
-  307: "Temporary Redirect",
-  308: "Permanent Redirect",
-  400: "Bad Request",
-  401: "Unauthorized",
-  402: "Payment Required",
-  403: "Forbidden",
-  404: "Not Found",
-  405: "Method Not Allowed",
-  406: "Not Acceptable",
-  407: "Proxy Authentication Required",
-  408: "Request Time-out",
-  409: "Conflict",
-  410: "Gone",
-  411: "Length Required",
-  412: "Precondition Failed",
-  413: "Request Entity Too Large",
-  414: "Request-URI Too Large",
-  415: "Unsupported Media Type",
-  416: "Requested Range Not Satisfiable",
-  417: "Expectation Failed",
-  418: "I'm a teapot",
-  422: "Unprocessable Entity",
-  423: "Locked",
-  424: "Failed Dependency",
-  425: "Unordered Collection",
-  426: "Upgrade Required",
-  428: "Precondition Required",
-  429: "Too Many Requests",
-  431: "Request Header Fields Too Large",
-  500: "Internal Server Error",
-  501: "Not Implemented",
-  502: "Bad Gateway",
-  503: "Service Unavailable",
-  504: "Gateway Time-out",
-  505: "HTTP Version Not Supported",
-  506: "Variant Also Negotiates",
-  507: "Insufficient Storage",
-  509: "Bandwidth Limit Exceeded",
-  510: "Not Extended",
-  511: "Network Authentication Required"
+    100: "Continue",
+    101: "Switching Protocols",
+    102: "Processing",
+    200: "OK",
+    201: "Created",
+    202: "Accepted",
+    203: "Non-Authoritative Information",
+    204: "No Content",
+    205: "Reset Content",
+    206: "Partial Content",
+    207: "Multi-Status",
+    300: "Multiple Choices",
+    301: "Moved Permanently",
+    302: "Moved Temporarily",
+    303: "See Other",
+    304: "Not Modified",
+    305: "Use Proxy",
+    307: "Temporary Redirect",
+    308: "Permanent Redirect",
+    400: "Bad Request",
+    401: "Unauthorized",
+    402: "Payment Required",
+    403: "Forbidden",
+    404: "Not Found",
+    405: "Method Not Allowed",
+    406: "Not Acceptable",
+    407: "Proxy Authentication Required",
+    408: "Request Time-out",
+    409: "Conflict",
+    410: "Gone",
+    411: "Length Required",
+    412: "Precondition Failed",
+    413: "Request Entity Too Large",
+    414: "Request-URI Too Large",
+    415: "Unsupported Media Type",
+    416: "Requested Range Not Satisfiable",
+    417: "Expectation Failed",
+    418: "I'm a teapot",
+    422: "Unprocessable Entity",
+    423: "Locked",
+    424: "Failed Dependency",
+    425: "Unordered Collection",
+    426: "Upgrade Required",
+    428: "Precondition Required",
+    429: "Too Many Requests",
+    431: "Request Header Fields Too Large",
+    500: "Internal Server Error",
+    501: "Not Implemented",
+    502: "Bad Gateway",
+    503: "Service Unavailable",
+    504: "Gateway Time-out",
+    505: "HTTP Version Not Supported",
+    506: "Variant Also Negotiates",
+    507: "Insufficient Storage",
+    509: "Bandwidth Limit Exceeded",
+    510: "Not Extended",
+    511: "Network Authentication Required"
   }
 
   it.each(Object.entries(names))("names status %s", (code, name) => {
@@ -157,7 +175,9 @@ describe("parseResponseObject fallbacks", () => {
 
   it("appends status text, reason and response body details in order", () => {
     const text = (response) => parseResponseObject(response, "u", "es").message
-    expect(text({ status: 500 })).toBe("An unexpected error was returned: [500: Internal Server Error]")
+    expect(text({ status: 500 })).toBe(
+      "An unexpected error was returned: [500: Internal Server Error]"
+    )
     expect(text({ status: 500, statusText: "Boom", reason: "Why" })).toBe(
       "An unexpected error was returned: [500: Internal Server Error] - Boom - Why"
     )
@@ -172,7 +192,10 @@ describe("parseResponseObject fallbacks", () => {
 
   it("explains a status of -1 and mapper errors", () => {
     const unreachable = parseResponseObject({ status: -1 }, "u", "es")
-    expect(unreachable.parts[1]).toEqual({ text: "Quepid Wiki", href: "https://github.com/o19s/quepid/wiki" })
+    expect(unreachable.parts[1]).toEqual({
+      text: "Quepid Wiki",
+      href: "https://github.com/o19s/quepid/wiki"
+    })
     expect(unreachable.message).toContain("make sure that CORS is enabled")
     expect(parseResponseObject(new Error("bad mapper"), "u", "searchapi").message).toBe(
       "Search API mapper error: bad mapper"
@@ -185,4 +208,3 @@ describe("parseResponseObject fallbacks", () => {
     expect(html).toContain("Solr instance directly")
   })
 })
-

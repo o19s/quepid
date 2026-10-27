@@ -8,7 +8,13 @@ afterEach(() => vi.restoreAllMocks())
 
 it("skips an already accepted banner and disposes a displayed toast before caching", () => {
   const toast = { show: vi.fn(), hide: vi.fn(), dispose: vi.fn() }
-  window.bootstrap = { Toast: class { constructor() { return toast } } }
+  window.bootstrap = {
+    Toast: class {
+      constructor() {
+        return toast
+      }
+    }
+  }
   const controller = buildControllerFixture(ConsentToastController)
   Cookies.get.mockReturnValue("true")
   controller.connect()
@@ -17,7 +23,11 @@ it("skips an already accepted banner and disposes a displayed toast before cachi
   controller.connect()
   expect(toast.show).toHaveBeenCalledOnce()
   controller.accept()
-  expect(Cookies.set).toHaveBeenCalledWith("cookie_eu_consented", true, expect.objectContaining({ expires: 365, path: "/" }))
+  expect(Cookies.set).toHaveBeenCalledWith(
+    "cookie_eu_consented",
+    true,
+    expect.objectContaining({ expires: 365, path: "/" })
+  )
   expect(toast.hide).toHaveBeenCalledOnce()
   controller.teardown()
   controller.disconnect()

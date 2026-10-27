@@ -306,13 +306,13 @@ On the Ruby side there is no property-testing gem. For importer/exporter pairs, 
 
 ### Pre-commit hooks
 
-Git commits run RuboCop (Ruby), ESLint on the `app/javascript/` tree, and Prettier on `app/javascript/api/` and `utils/` — via a version-controlled hook in `.githooks/pre-commit`. No extra tooling is required beyond what the project already uses (Bundler/RuboCop and Yarn).
+Git commits run RuboCop (Ruby), ESLint on the `app/javascript/` tree, and Prettier on `app/javascript/`, `test/javascript/`, `test/playwright/` and `scripts/`, plus Stylelint and Prettier on `app/assets/stylesheets/` — via a version-controlled hook in `.githooks/pre-commit`. No extra tooling is required beyond what the project already uses (Bundler/RuboCop and Yarn).
 
 Hooks prefer Docker when it is available. RuboCop reuses the running app container
 that mounts the current checkout at `/srv/app` (including one started by
 `bin/docker s` / `q`), so comparison servers for other worktrees do not make the
 selection ambiguous. With no running app container, it falls back to `bin/docker r`; the JS hooks
-also use `bin/docker r`.
+also use `bin/docker r`. The CSS hook (`stylelint-staged`) runs on the host.
 
 Enable hooks:
 
@@ -342,8 +342,8 @@ The detailed JavaScript lint and formatting scope is maintained in [`docs/js_too
 
 ```bash
 bin/docker r yarn lint:js
-bin/docker r yarn format:js:check    # Prettier check — api/, utils/; or yarn format:js to fix
-bin/docker r rails test:eslint       # ESLint + Prettier (CI-style)
+bin/docker r yarn format:js:check    # Prettier check — app/javascript/, test/javascript/, test/playwright/, scripts/; or yarn format:js to fix
+bin/docker r rails test:eslint       # ESLint + Prettier + Playwright tsc (CI-style)
 ```
 
 Git commits can run linters on staged JS via [pre-commit](https://pre-commit.com):
@@ -353,7 +353,7 @@ pip install pre-commit   # or: pipx install pre-commit
 pre-commit install
 ```
 
-The hook lints scoped files under `app/javascript` (ESLint on everything in scope; Prettier on `api/` and `utils/`). Lint/format scope is in `config/javascript_lint_scope.mjs` and [`docs/js_tooling.md`](docs/js_tooling.md). Requires `yarn install` on the host so `node_modules` exists. Re-run `pre-commit install` after cloning or pulling hook changes.
+The hook lints scoped files under `app/javascript` (ESLint on `app/javascript`; Prettier on `app/javascript`, `test/javascript`, `test/playwright` and `scripts`). Lint/format scope is in `config/javascript_lint_scope.mjs` and [`docs/js_tooling.md`](docs/js_tooling.md). Requires `yarn install` on the host so `node_modules` exists. Re-run `pre-commit install` after cloning or pulling hook changes.
 
 ### CSS Lint
 
@@ -361,19 +361,15 @@ To lint first-party stylesheets in `app/assets/stylesheets`:
 
 ```bash
 bin/docker r yarn lint:css
-# or
+bin/docker r yarn format:css:check   # Prettier; yarn format:css to fix
+bin/docker r yarn fix:css            # stylelint --fix, then Prettier — fixes both in one pass
+# or both at once
 bin/docker r rails test:stylelint
 ```
 
 Configuration lives in `.stylelintrc.json` (extends `stylelint-config-standard` with pragmatic overrides for legacy Quepid CSS). Built bundles under `app/assets/builds/` and vendored CSS are ignored (see `.stylelintignore`).
 
-Pre-commit can lint staged CSS with the same hook workflow:
-
-```bash
-pre-commit install
-```
-
-The `stylelint-staged` hook only runs on `app/assets/stylesheets/*.css`. Requires `yarn install` so `node_modules/stylelint` exists.
+Both `.githooks/pre-commit` and the pre-commit.com config (`pre-commit install`) lint staged CSS: the `stylelint-staged` hook runs Stylelint and the Prettier check on `app/assets/stylesheets/*.css`. Requires `yarn install` so `node_modules/stylelint` and `node_modules/prettier` exist.
 
 ### Playwright E2E
 
@@ -428,8 +424,11 @@ retained heap, script time and, up to 1000 queries, how many splainer explain
 trees exist while every query is collapsed. Each run writes its numbers to
 `tmp/perf/` with the git SHA. Budgets are soft assertions. `PERF_PROFILE=1` adds
 the hottest functions by CPU self time, and `PERF_BREAKDOWN=1` the biggest
-retainers of string memory. Timings vary between machines, so compare the medians
-of interleaved before/after runs on one machine.
+retainers of string memory. The peak heap includes garbage not yet collected, so
+a page that makes more garbage can peak higher while holding no more data.
+`PERF_LIVE_PEAK=1` forces a GC before each sample to measure held data only; its
+extra GCs slow the load, so don't compare its timings. Timings vary between
+machines, so compare the medians of interleaved before/after runs on one machine.
 
 ### Routine visual regression checks
 
@@ -569,7 +568,7 @@ When developing Quepid alongside changes to `splainer-search`, you can mount you
    bin/docker s
    ```
 
-3. **After splainer changes**: **splainer-search 3.x** is installed under **`node_modules/splainer-search`** and pulled into the core vendor bundle via **`splainer_search_adapter.js`**.
+3. **After splainer changes**: **splainer-search 3.x** is installed under **`node_modules/splainer-search`** and pulled into the core case bundle (**`core_case.js`**) via **`app/javascript/utils/splainer_search_runtime.js`**.
 
    With **`bin/docker s`**, Foreman rebuilds the core bundles when you save; **hard-refresh** the case page.
 

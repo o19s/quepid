@@ -36,7 +36,7 @@ export function decodePng(buffer) {
   let width, height, bitDepth, colorType, interlace
   let ended = false
   const idat = []
-  for (let offset = 8; offset < buffer.length; ) {
+  for (let offset = 8; offset < buffer.length;) {
     if (offset + 12 > buffer.length) throw new Error("truncated PNG chunk")
     const length = buffer.readUInt32BE(offset)
     if (offset + length + 12 > buffer.length) throw new Error("truncated PNG chunk")
@@ -61,7 +61,9 @@ export function decodePng(buffer) {
 
   const channels = CHANNELS[colorType]
   if (bitDepth !== 8 || !channels || interlace !== 0) {
-    throw new Error(`unsupported PNG (bit depth ${bitDepth}, color type ${colorType}, interlace ${interlace})`)
+    throw new Error(
+      `unsupported PNG (bit depth ${bitDepth}, color type ${colorType}, interlace ${interlace})`
+    )
   }
 
   const raw = zlib.inflateSync(Buffer.concat(idat))
@@ -182,7 +184,12 @@ export function diffRegions(before, after) {
   // diffMask leaves unchanged pixels transparent and paints counted
   // differences DIFF_COLOR (ignored anti-aliased pixels get AA_COLOR).
   const mask = Buffer.alloc(a.length)
-  pixelmatch(a, b, mask, width, height, { ...COMPARE_OPTIONS, diffMask: true, diffColor: DIFF_COLOR, aaColor: AA_COLOR })
+  pixelmatch(a, b, mask, width, height, {
+    ...COMPARE_OPTIONS,
+    diffMask: true,
+    diffColor: DIFF_COLOR,
+    aaColor: AA_COLOR
+  })
 
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {

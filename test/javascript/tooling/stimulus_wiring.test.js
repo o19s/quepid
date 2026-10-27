@@ -15,14 +15,14 @@ const repoRoot = process.cwd()
 const controllerModules = import.meta.glob("../../../app/javascript/controllers/*_controller.js")
 
 function sourceFiles(directory, pattern) {
-  return readdirSync(directory, { withFileTypes: true }).flatMap(entry => {
+  return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
     const filePath = path.join(directory, entry.name)
     if (entry.isDirectory()) return sourceFiles(filePath, pattern)
     return pattern.test(entry.name) ? [filePath] : []
   })
 }
 
-const camelize = name => name.replace(/[-_](\w)/g, (_match, letter) => letter.toUpperCase())
+const camelize = (name) => name.replace(/[-_](\w)/g, (_match, letter) => letter.toUpperCase())
 
 // Stimulus unions static targets/values/outlets across the class chain.
 function declarations(ControllerClass) {
@@ -30,11 +30,17 @@ function declarations(ControllerClass) {
   const values = new Set()
   const outlets = new Set()
   const methods = new Set()
-  for (let klass = ControllerClass; klass && klass !== Function.prototype; klass = Object.getPrototypeOf(klass)) {
-    if (Object.hasOwn(klass, "targets")) klass.targets.forEach(name => targets.add(name))
-    if (Object.hasOwn(klass, "values")) Object.keys(klass.values).forEach(name => values.add(name))
-    if (Object.hasOwn(klass, "outlets")) klass.outlets.forEach(name => outlets.add(camelize(name)))
-    Object.getOwnPropertyNames(klass.prototype ?? {}).forEach(name => methods.add(name))
+  for (
+    let klass = ControllerClass;
+    klass && klass !== Function.prototype;
+    klass = Object.getPrototypeOf(klass)
+  ) {
+    if (Object.hasOwn(klass, "targets")) klass.targets.forEach((name) => targets.add(name))
+    if (Object.hasOwn(klass, "values"))
+      Object.keys(klass.values).forEach((name) => values.add(name))
+    if (Object.hasOwn(klass, "outlets"))
+      klass.outlets.forEach((name) => outlets.add(camelize(name)))
+    Object.getOwnPropertyNames(klass.prototype ?? {}).forEach((name) => methods.add(name))
   }
   return { targets, values, outlets, methods }
 }
@@ -42,7 +48,7 @@ function declarations(ControllerClass) {
 // Core modals also read `data-<identifier>-<name>-value` from the button that
 // opened them, via CoreModalControllerBase#triggerValue.
 function triggerValues(source) {
-  return [...source.matchAll(/\btriggerValue\([^,]+,\s*["'](\w+)["']/g)].map(match => match[1])
+  return [...source.matchAll(/\btriggerValue\([^,]+,\s*["'](\w+)["']/g)].map((match) => match[1])
 }
 
 async function loadControllers() {
@@ -50,8 +56,11 @@ async function loadControllers() {
   for (const [modulePath, load] of Object.entries(controllerModules)) {
     const identifier = path.basename(modulePath, "_controller.js").replace(/_/g, "-")
     const declared = declarations((await load()).default)
-    const source = readFileSync(path.join(repoRoot, "app/javascript/controllers", path.basename(modulePath)), "utf8")
-    triggerValues(source).forEach(name => declared.values.add(name))
+    const source = readFileSync(
+      path.join(repoRoot, "app/javascript/controllers", path.basename(modulePath)),
+      "utf8"
+    )
+    triggerValues(source).forEach((name) => declared.values.add(name))
     controllers.set(identifier, declared)
   }
   return controllers
@@ -73,7 +82,10 @@ function rubyDataHashes(source) {
       if (source[index] === "}") depth -= 1
       index += 1
     }
-    hashes.push({ body: source.slice(match.index + match[0].length, index - 1), index: match.index })
+    hashes.push({
+      body: source.slice(match.index + match[0].length, index - 1),
+      index: match.index
+    })
   }
   return hashes
 }
@@ -98,17 +110,17 @@ function* dataAttributes(source) {
   }
 }
 
-const interpolated = value => /<%|#\{/.test(value)
+const interpolated = (value) => /<%|#\{/.test(value)
 
 function wiringProblems(source, controllers) {
   const problems = []
   const identifiers = [...controllers.keys()].sort((a, b) => b.length - a.length)
-  const owner = prefix => identifiers.find(identifier => prefix.startsWith(`${identifier}-`))
+  const owner = (prefix) => identifiers.find((identifier) => prefix.startsWith(`${identifier}-`))
 
   for (const [attribute, value, line] of dataAttributes(source)) {
     // Bootstrap's data-bs-* attributes aren't Stimulus wiring.
     if (attribute.startsWith("bs-")) continue
-    const report = reason => problems.push(`${line}: data-${attribute}="${value}" ${reason}`)
+    const report = (reason) => problems.push(`${line}: data-${attribute}="${value}" ${reason}`)
 
     // Value and outlet attribute names can be checked even when the value is
     // interpolated; controller, action and target values can't.
@@ -133,9 +145,11 @@ function wiringProblems(source, controllers) {
     if (interpolated(value)) continue
 
     if (attribute === "controller") {
-      value.split(/\s+/).filter(Boolean)
-        .filter(identifier => !controllers.has(identifier))
-        .forEach(identifier => report(`— no controller "${identifier}"`))
+      value
+        .split(/\s+/)
+        .filter(Boolean)
+        .filter((identifier) => !controllers.has(identifier))
+        .forEach((identifier) => report(`— no controller "${identifier}"`))
     } else if (attribute === "action") {
       for (const descriptor of value.split(/\s+/).filter(Boolean)) {
         const parsed = descriptor.match(/^(?:.+->)?([\w-]+)#(\w+)(?::[\w:!]+)?$/)
@@ -149,9 +163,11 @@ function wiringProblems(source, controllers) {
       }
     } else if (attribute.endsWith("-target")) {
       const identifier = attribute.slice(0, -"-target".length)
-      value.split(/\s+/).filter(Boolean)
-        .filter(name => !controllers.get(identifier).targets.has(name))
-        .forEach(name => report(`— "${identifier}" declares no target "${name}"`))
+      value
+        .split(/\s+/)
+        .filter(Boolean)
+        .filter((name) => !controllers.get(identifier).targets.has(name))
+        .forEach((name) => report(`— "${identifier}" declares no target "${name}"`))
     }
   }
   return problems
@@ -166,9 +182,10 @@ describe("Stimulus wiring", () => {
       ...sourceFiles(path.join(repoRoot, "app/views"), /\.erb$/),
       ...sourceFiles(path.join(repoRoot, "app/helpers"), /\.rb$/)
     ]
-    const problems = markupFiles.flatMap(filePath =>
-      wiringProblems(readFileSync(filePath, "utf8"), controllers)
-        .map(problem => `${path.relative(repoRoot, filePath)}:${problem}`)
+    const problems = markupFiles.flatMap((filePath) =>
+      wiringProblems(readFileSync(filePath, "utf8"), controllers).map(
+        (problem) => `${path.relative(repoRoot, filePath)}:${problem}`
+      )
     )
 
     expect(problems).toEqual([])
@@ -176,7 +193,15 @@ describe("Stimulus wiring", () => {
 
   it("reports unresolved wiring", () => {
     const controllers = new Map([
-      ["demo", { targets: new Set(["field"]), values: new Set(["url"]), outlets: new Set(), methods: new Set(["save"]) }]
+      [
+        "demo",
+        {
+          targets: new Set(["field"]),
+          values: new Set(["url"]),
+          outlets: new Set(),
+          methods: new Set(["save"])
+        }
+      ]
     ])
     const markup = `
       <div data-controller="demo missing"

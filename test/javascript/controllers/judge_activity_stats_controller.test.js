@@ -4,7 +4,10 @@ import { Application, Controller } from "@hotwired/stimulus"
 import JudgeActivityStatsController from "controllers/judge_activity_stats_controller"
 
 // Override the unit-test alias for this file, including the controller's import.
-vi.mock("@hotwired/stimulus", () => import("../../../node_modules/@hotwired/stimulus/dist/stimulus.js"))
+vi.mock(
+  "@hotwired/stimulus",
+  () => import("../../../node_modules/@hotwired/stimulus/dist/stimulus.js")
+)
 
 const updates = []
 
@@ -45,29 +48,37 @@ describe("judge-activity-stats outlet wiring with real Stimulus", () => {
   })
 
   it("forwards values to its chart, including when the cell is replaced", async () => {
-    const { cell } = renderRow(7, [ { date: "Sep 1", count: 3 } ])
+    const { cell } = renderRow(7, [{ date: "Sep 1", count: 3 }])
     application = Application.start()
     application.register("judge-sparkline", FakeSparklineController)
     application.register("judge-activity-stats", JudgeActivityStatsController)
-    await vi.waitFor(() => expect(updates.at(-1)).toEqual([ { date: "Sep 1", count: 3 } ]))
+    await vi.waitFor(() => expect(updates.at(-1)).toEqual([{ date: "Sep 1", count: 3 }]))
 
     const fresh = cell.cloneNode()
-    fresh.setAttribute("data-judge-activity-stats-sparkline-value", JSON.stringify([ { date: "Sep 2", count: 5 } ]))
+    fresh.setAttribute(
+      "data-judge-activity-stats-sparkline-value",
+      JSON.stringify([{ date: "Sep 2", count: 5 }])
+    )
     cell.replaceWith(fresh)
-    await vi.waitFor(() => expect(updates.at(-1)).toEqual([ { date: "Sep 2", count: 5 } ]))
+    await vi.waitFor(() => expect(updates.at(-1)).toEqual([{ date: "Sep 2", count: 5 }]))
   })
 
   it("delivers pending values once the chart's controller connects", async () => {
-    renderRow(9, [ { date: "Sep 3", count: 1 } ])
+    renderRow(9, [{ date: "Sep 3", count: 1 }])
     application = Application.start()
     application.register("judge-activity-stats", JudgeActivityStatsController)
     await vi.waitFor(() => {
-      expect(application.getControllerForElementAndIdentifier(document.getElementById("judge-count-9"), "judge-activity-stats")).not.toBeNull()
+      expect(
+        application.getControllerForElementAndIdentifier(
+          document.getElementById("judge-count-9"),
+          "judge-activity-stats"
+        )
+      ).not.toBeNull()
     })
     expect(updates).toEqual([])
 
     application.register("judge-sparkline", FakeSparklineController)
-    await vi.waitFor(() => expect(updates.at(-1)).toEqual([ { date: "Sep 3", count: 1 } ]))
+    await vi.waitFor(() => expect(updates.at(-1)).toEqual([{ date: "Sep 3", count: 1 }]))
   })
 
   it("does nothing when its chart isn't in the DOM", async () => {
@@ -77,7 +88,12 @@ describe("judge-activity-stats outlet wiring with real Stimulus", () => {
     application.register("judge-sparkline", FakeSparklineController)
     application.register("judge-activity-stats", JudgeActivityStatsController)
     await vi.waitFor(() => {
-      expect(application.getControllerForElementAndIdentifier(document.getElementById("judge-count-11"), "judge-activity-stats")).not.toBeNull()
+      expect(
+        application.getControllerForElementAndIdentifier(
+          document.getElementById("judge-count-11"),
+          "judge-activity-stats"
+        )
+      ).not.toBeNull()
     })
     expect(updates).toEqual([])
   })

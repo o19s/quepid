@@ -22,15 +22,15 @@ describe("JudgeSparklineController", () => {
   })
 
   it("embeds once on connect with the initial values, named so later updates can target it", async () => {
-    const controller = buildController([ { date: "Sep 1", count: 2 } ])
+    const controller = buildController([{ date: "Sep 1", count: 2 }])
 
     controller.connect()
     await Promise.resolve()
 
     expect(global.vegaEmbed).toHaveBeenCalledTimes(1)
-    const [ element, spec, options ] = global.vegaEmbed.mock.calls[0]
+    const [element, spec, options] = global.vegaEmbed.mock.calls[0]
     expect(element).toBe(controller.element)
-    expect(spec.data).toEqual({ name: "source", values: [ { date: "Sep 1", count: 2 } ] })
+    expect(spec.data).toEqual({ name: "source", values: [{ date: "Sep 1", count: 2 }] })
     expect(options).toEqual({ actions: false, renderer: "svg" })
   })
 
@@ -39,10 +39,10 @@ describe("JudgeSparklineController", () => {
     controller.connect()
     await Promise.resolve()
 
-    controller.updateValues([ { date: "Sep 2", count: 5 } ])
+    controller.updateValues([{ date: "Sep 2", count: 5 }])
 
     expect(global.vegaEmbed).toHaveBeenCalledTimes(1)
-    expect(view.data).toHaveBeenCalledWith("source", [ { date: "Sep 2", count: 5 } ])
+    expect(view.data).toHaveBeenCalledWith("source", [{ date: "Sep 2", count: 5 }])
     expect(view.resize).toHaveBeenCalledOnce()
     expect(view.run).toHaveBeenCalledOnce()
   })
@@ -50,7 +50,7 @@ describe("JudgeSparklineController", () => {
   it("does nothing when asked to update before the chart has finished embedding", () => {
     const controller = buildController([])
 
-    expect(() => controller.updateValues([ { date: "Sep 2", count: 5 } ])).not.toThrow()
+    expect(() => controller.updateValues([{ date: "Sep 2", count: 5 }])).not.toThrow()
     expect(view.data).not.toHaveBeenCalled()
   })
 

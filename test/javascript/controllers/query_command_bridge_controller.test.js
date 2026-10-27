@@ -8,7 +8,9 @@ vi.mock("utils/core_store_access", () => ({ getCoreStores: () => testStores || {
 
 let testCapabilities
 
-vi.mock("utils/core_capability_access", () => ({ getCoreCapabilities: () => testCapabilities || {} }))
+vi.mock("utils/core_capability_access", () => ({
+  getCoreCapabilities: () => testCapabilities || {}
+}))
 
 function store() {
   return {
@@ -53,19 +55,36 @@ describe("query_command_bridge_controller", () => {
   it("subscribes and removes the store command listeners", () => {
     controller.connect()
 
-    expect(documentsStore.addEventListener).toHaveBeenCalledWith("command", controller.handleDocumentCommand)
-    expect(collectionStore.addEventListener).toHaveBeenCalledWith("command", controller.handleCollectionCommand)
+    expect(documentsStore.addEventListener).toHaveBeenCalledWith(
+      "command",
+      controller.handleDocumentCommand
+    )
+    expect(collectionStore.addEventListener).toHaveBeenCalledWith(
+      "command",
+      controller.handleCollectionCommand
+    )
 
     controller.disconnect()
 
-    expect(documentsStore.removeEventListener).toHaveBeenCalledWith("command", controller.handleDocumentCommand)
-    expect(collectionStore.removeEventListener).toHaveBeenCalledWith("command", controller.handleCollectionCommand)
+    expect(documentsStore.removeEventListener).toHaveBeenCalledWith(
+      "command",
+      controller.handleDocumentCommand
+    )
+    expect(collectionStore.removeEventListener).toHaveBeenCalledWith(
+      "command",
+      controller.handleCollectionCommand
+    )
   })
 
   it("routes document commands through the explicit query command runtime", () => {
     controller.connect()
 
-    controller.routeDocumentCommand({ command: "rate-document", queryId: 4, docId: "doc-1", rating: 2 })
+    controller.routeDocumentCommand({
+      command: "rate-document",
+      queryId: 4,
+      docId: "doc-1",
+      rating: 2
+    })
     controller.routeDocumentCommand({ command: "rate-all", queryId: 4, rating: 3 })
     controller.routeDocumentCommand({ command: "toggle-query", queryId: 4 })
     controller.routeDocumentCommand({ command: "paginate-query", queryId: 4, ratedOnly: true })
@@ -96,8 +115,16 @@ describe("query_command_bridge_controller", () => {
     controller.queryRemoved({ caseId: 8, queryId: 6 })
     controller.queryRemoved({ caseId: 7 })
 
-    expect(testCapabilities.queryCapabilities.reconcileQueryRemoval).toHaveBeenNthCalledWith(1, 4, true)
-    expect(testCapabilities.queryCapabilities.reconcileQueryRemoval).toHaveBeenNthCalledWith(2, 5, true)
+    expect(testCapabilities.queryCapabilities.reconcileQueryRemoval).toHaveBeenNthCalledWith(
+      1,
+      4,
+      true
+    )
+    expect(testCapabilities.queryCapabilities.reconcileQueryRemoval).toHaveBeenNthCalledWith(
+      2,
+      5,
+      true
+    )
     expect(testCapabilities.queryCapabilities.reconcileQueryRemoval).toHaveBeenCalledTimes(2)
   })
 })

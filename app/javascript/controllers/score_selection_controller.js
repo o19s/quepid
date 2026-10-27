@@ -8,12 +8,14 @@ export default class extends Controller {
   }
 
   toggleAll() {
-    this.scoreTargets.forEach(score => { score.checked = this.allTarget.checked })
+    this.scoreTargets.forEach((score) => {
+      score.checked = this.allTarget.checked
+    })
     this.sync()
   }
 
   sync() {
-    const selected = this.scoreTargets.filter(score => score.checked).length
+    const selected = this.scoreTargets.filter((score) => score.checked).length
     this.allTarget.checked = this.scoreTargets.length > 0 && selected === this.scoreTargets.length
     this.deleteTarget.disabled = selected === 0
   }

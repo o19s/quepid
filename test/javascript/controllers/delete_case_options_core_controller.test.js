@@ -29,15 +29,15 @@ function buildModalController(overrides = {}) {
     targets: {
       title: document.createElement("h5"),
       optionButton: [
-    buildOptionButton("destroy_queries"),
-    buildOptionButton("archive"),
-    buildOptionButton("destroy_case")
-  ],
+        buildOptionButton("destroy_queries"),
+        buildOptionButton("archive"),
+        buildOptionButton("destroy_case")
+      ],
       description: [
-    buildDescription("destroy_queries"),
-    buildDescription("archive"),
-    buildDescription("destroy_case")
-  ],
+        buildDescription("destroy_queries"),
+        buildDescription("archive"),
+        buildDescription("destroy_case")
+      ],
       submitButton: document.createElement("button")
     },
     values: {
@@ -63,7 +63,6 @@ describe("DeleteCaseOptionsCoreController", () => {
     postJson.mockResolvedValue({ redirect_url: "/cases" })
     deleteJson.mockResolvedValue({ redirect_url: "/case/42/1" })
   })
-
 
   it("open titles itself from the live case header and disables the submit button until a choice is made", () => {
     const controller = buildModalController()
@@ -114,44 +113,59 @@ describe("DeleteCaseOptionsCoreController", () => {
     expect(assign).toHaveBeenCalledWith("/case/42/1")
   })
 
-  it.each(["archive", "destroy_queries", "destroy_case"])("navigates to sign-in after %s loses its session", async action => {
-    const controller = buildModalController()
-    controller.currentCaseId = "42"
-    controller.selectedAction = action
-    const request = action === "archive" ? postJson : deleteJson
-    request.mockRejectedValueOnce(new HttpError({ status: 401, data: { redirect_url: "/quepid/sessions/new" } }))
+  it.each(["archive", "destroy_queries", "destroy_case"])(
+    "navigates to sign-in after %s loses its session",
+    async (action) => {
+      const controller = buildModalController()
+      controller.currentCaseId = "42"
+      controller.selectedAction = action
+      const request = action === "archive" ? postJson : deleteJson
+      request.mockRejectedValueOnce(
+        new HttpError({ status: 401, data: { redirect_url: "/quepid/sessions/new" } })
+      )
 
-    await controller.confirm()
+      await controller.confirm()
 
-    expect(assign).toHaveBeenCalledWith("/quepid/sessions/new")
-    expect(coreFlash.show).not.toHaveBeenCalled()
-    expect(controller.submitButtonTarget.disabled).toBe(false)
-  })
+      expect(assign).toHaveBeenCalledWith("/quepid/sessions/new")
+      expect(coreFlash.show).not.toHaveBeenCalled()
+      expect(controller.submitButtonTarget.disabled).toBe(false)
+    }
+  )
 
-  it.each(["archive", "destroy_queries", "destroy_case"])("keeps the workspace after a failed %s and permits retry", async action => {
-    const controller = buildModalController()
-    controller.currentCaseId = "42"
-    controller.selectedAction = action
-    const request = action === "archive" ? postJson : deleteJson
-    request.mockRejectedValueOnce(new HttpError({ status: 500, data: { error: "Database unavailable" } }))
+  it.each(["archive", "destroy_queries", "destroy_case"])(
+    "keeps the workspace after a failed %s and permits retry",
+    async (action) => {
+      const controller = buildModalController()
+      controller.currentCaseId = "42"
+      controller.selectedAction = action
+      const request = action === "archive" ? postJson : deleteJson
+      request.mockRejectedValueOnce(
+        new HttpError({ status: 500, data: { error: "Database unavailable" } })
+      )
 
-    await controller.confirm()
+      await controller.confirm()
 
-    expect(controller.hide).toHaveBeenCalledOnce()
-    expect(coreFlash.show).toHaveBeenCalledWith("error", "Database unavailable")
-    expect(assign).not.toHaveBeenCalled()
-    expect(controller.submitButtonTarget.disabled).toBe(false)
-    await controller.confirm()
-    expect(request).toHaveBeenCalledTimes(2)
-    expect(assign).toHaveBeenCalledOnce()
-  })
+      expect(controller.hide).toHaveBeenCalledOnce()
+      expect(coreFlash.show).toHaveBeenCalledWith("error", "Database unavailable")
+      expect(assign).not.toHaveBeenCalled()
+      expect(controller.submitButtonTarget.disabled).toBe(false)
+      await controller.confirm()
+      expect(request).toHaveBeenCalledTimes(2)
+      expect(assign).toHaveBeenCalledOnce()
+    }
+  )
 
   it("shows a contextual error for an HTML 500 and blocks duplicate requests", async () => {
     const controller = buildModalController()
     controller.currentCaseId = "42"
     controller.selectedAction = "destroy_case"
     let reject
-    deleteJson.mockImplementationOnce(() => new Promise((resolve, rejectRequest) => { reject = rejectRequest }))
+    deleteJson.mockImplementationOnce(
+      () =>
+        new Promise((resolve, rejectRequest) => {
+          reject = rejectRequest
+        })
+    )
     const pending = controller.confirm()
     await controller.confirm()
     expect(deleteJson).toHaveBeenCalledOnce()

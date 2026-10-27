@@ -10,7 +10,7 @@ main > .container {
 }
 
 /* Keep the icon sidebar beside content below the Bootstrap column breakpoint. */
-@media (max-width: 767.98px) {
+@media (width < 768px) {
   .sidebar + main {
     width: calc(100% - 3.5rem);
     min-width: 0;
@@ -31,13 +31,12 @@ main > .container {
 */
 
 .navbar-brand:hover .hover {
-	top: 5px;
+  top: 5px;
 }
 
 .navbar-secondary {
-  padding: 0px;
+  padding: 0;
 }
-
 
 .alert {
   z-index: 100;
@@ -81,8 +80,9 @@ h3 {
 }
 
 .turbo-progress-bar {
+  --q-progress-bar-color: #ffd700;
   height: 5px;
-  background-color: gold;
+  background-color: var(--q-progress-bar-color);
 }
 
 /* For the kraken image */
@@ -92,8 +92,13 @@ h3 {
 }
 
 @keyframes fadeOut {
-  from { opacity: 1; }
-  to { opacity: 0; }
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
 }
 
 /* Bootstrap's .visually-hidden is position:absolute. Inside a table cell with no positioned ancestor it
@@ -112,11 +117,11 @@ h3 {
   z-index: 1000;
   max-height: 300px;
   overflow-y: auto;
-  background: white;
+  background: var(--bs-body-bg);
   border: 1px solid #ced4da;
   border-top: none;
   border-radius: 0 0 0.25rem 0.25rem;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .autocomplete-item {
@@ -197,4 +202,10 @@ h3 {
 .vega-bind .vega-bind-name {
   font-weight: 500;
   margin-right: 0.25rem;
+}
+
+/* Mapper wizard: the HTML preview's Expand toggle (mapper_wizard_controller).
+ * !important beats the <pre>'s inline collapsed max-height. */
+.html-preview.expanded {
+  max-height: 600px !important;
 }

@@ -162,8 +162,6 @@ describe("bs_popover", () => {
       expect(instance._visible).toBe(true)
     })
 
-
-
     it("hides the popover on a click outside both the trigger and the rendered tip", () => {
       const tip = document.createElement("div")
       tip.id = "test-tip"
@@ -201,7 +199,6 @@ describe("bs_popover", () => {
       expect(instance._visible).toBe(true)
       tip.remove()
     })
-
 
     it("ignores a click when no tip is rendered yet (aria-describedby unset)", () => {
       const { instance } = createPopover({
