@@ -92,6 +92,12 @@ export default class extends Controller {
     this.loadCapabilities()
   }
 
+  // Below ~750px the drawer covers the toolbar's own "Tune Relevance" toggle
+  // (core-additions.css), leaving this button as the only way to close it.
+  close() {
+    this.paneOutlet.toggle()
+  }
+
   selectTab(event) {
     this.showTab(event.params.tab)
   }
