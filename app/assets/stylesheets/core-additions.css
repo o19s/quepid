@@ -63,18 +63,31 @@ body {
     min-width: 0;
   }
 
-  /* #case-header's score widget and title sit side by side as plain inline
-   * boxes (core/index.html.erb, core/_case_header.html.erb) - fine above
-   * 750px, where both always fit on one line. Below it they already wrap as
-   * a pair, but the title's own name/try/scorer still run together as one
-   * inline phrase, so a long case name wraps mid-line straight into its own
-   * "— Try N — Scorer" metadata. Force each onto its own line instead. */
+  /* #case-header's score widget and title are plain inline boxes
+   * (core/index.html.erb, core/_case_header.html.erb) that only sit side by
+   * side when there's room for both - fine above 750px, but below it they
+   * wrap onto separate lines with the full-width widget pushing the title
+   * down. Keep the same left/right layout as desktop instead: the widget's
+   * own width (qscore.css) stays put, and the title takes the rest. */
+  #case-header .col-sm-12 {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
 
-  /* !important: overrides Bootstrap's .d-inline-flex/.d-inline-block utility
-   * classes on these same elements, which are themselves !important. */
-  #case-header [data-controller="diff-case-scores"],
+  #case-header [data-controller="diff-case-scores"] {
+    flex-shrink: 0;
+  }
+
+  /* The title's own name/try/scorer still run together as one inline
+   * phrase, so a case name long enough to wrap lands its own
+   * "— Try N — Scorer" metadata on the same ragged line. min-width: 0 lets
+   * this column (and its text) actually shrink below its content's natural
+   * width instead of overflowing the row; force name/try/scorer onto their
+   * own line each. */
   #case-header [data-controller="case-rename"] {
-    display: block !important;
+    flex: 1 1 auto;
+    min-width: 0;
   }
 
   #case-header h1.fs-1 > span[data-action],
