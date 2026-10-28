@@ -62,6 +62,25 @@ body {
   #main {
     min-width: 0;
   }
+
+  /* #case-header's score widget and title sit side by side as plain inline
+   * boxes (core/index.html.erb, core/_case_header.html.erb) - fine above
+   * 750px, where both always fit on one line. Below it they already wrap as
+   * a pair, but the title's own name/try/scorer still run together as one
+   * inline phrase, so a long case name wraps mid-line straight into its own
+   * "— Try N — Scorer" metadata. Force each onto its own line instead. */
+
+  /* !important: overrides Bootstrap's .d-inline-flex/.d-inline-block utility
+   * classes on these same elements, which are themselves !important. */
+  #case-header [data-controller="diff-case-scores"],
+  #case-header [data-controller="case-rename"] {
+    display: block !important;
+  }
+
+  #case-header h1.fs-1 > span[data-action],
+  #case-header h1.fs-1 > small.fw-normal.text-muted {
+    display: block;
+  }
 }
 
 /* Above #main's min-width, a workbench wider than the viewport (e.g. a very
