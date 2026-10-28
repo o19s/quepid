@@ -53,8 +53,20 @@ body {
   min-width: 750px;
 }
 
-/* Below #main's min-width the workbench scrolls sideways on its own, so the
- * header keeps the window's width and the page never gets a second scrollbar. */
+/* Below ~750px (phones/small tablets), the BS3-era assumption that the
+ * workbench never needs to be narrower than 750px just forces a
+ * horizontally-scrolled shell instead of letting the header, toolbar and
+ * query list reflow to fit. Let #main shrink to fit; .sub-results below has
+ * its own, similarly-sized override for the same reason. */
+@media (width <= 749.98px) {
+  #main {
+    min-width: 0;
+  }
+}
+
+/* Above #main's min-width, a workbench wider than the viewport (e.g. a very
+ * long case name) scrolls sideways on its own instead of growing the header,
+ * so the page never gets a second, full-height scrollbar. */
 #main-content {
   flex: 1 1 auto;
   min-height: 0;
@@ -296,6 +308,16 @@ header .dropdown-item:focus {
 	 * below so the two rules stay in sync from one source of
 	 * truth instead of two independently-hardcoded pixel values. */
   --score-col-end: 90px;
+}
+
+/* Same shrink-to-fit override as #main above, and for the same reason -
+ * .sub-results assumed at least 650px of width for its absolutely-positioned
+ * "Score All" column (.col-ratings) plus the toolbar offset from it
+ * (--score-col-end above). */
+@media (width <= 649.98px) {
+  .sub-results {
+    min-width: 0;
+  }
 }
 
 /* Sub-results panel — toolbar absolutely top-right of the per-query
