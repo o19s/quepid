@@ -208,7 +208,7 @@ class SampleData < Thor
     azure_anthropic_judge.judge_options = {
       llm_provider:    'azure_ai_foundry_anthropic',
       llm_service_url: 'https://YOUR-RESOURCE.services.ai.azure.com/anthropic',
-      llm_model:       'claude-3-5-haiku-20241022',
+      llm_model:       'claude-haiku-5-5',
       llm_timeout:     30,
       llm_api_version: '',
     }
