@@ -2330,3 +2330,30 @@ parts:
         result: pass
         notes: "Covered live: current user, mixed-case prefix lookup capped at8, omitted/no-match prefix, numeric/fully escaped email lookup, company/default preferences and default0 fallback, onboarding flag write, missing-user404 and absence of secret user fields (10 API requests). Not covered: automatic-tour browser launch, malformed updates and inaccessible-scorer validation. Evidence api-results.jsonl; fixtures/tokens removed and cleanup verified."
         paths: ["app/controllers/api/v1/users_controller.rb", "app/controllers/api/v1/current_user_controller.rb", "app/models/user.rb", "app/views/api/v1/users/", "app/views/api/v1/current_user/", "config/routes.rb", "app/controllers/api/api_controller.rb", "app/controllers/concerns/authentication/", "app/controllers/concerns/api_key_authenticatable.rb"]
+  "19":
+    file: 19-embedders.md
+    scenarios:
+      "19.1":
+        title: "Create an embedder and test it"
+        last_run: 2026-10-05T19:30:00Z
+        result: pass
+        notes: "New scenario, driven with a Playwright script against localhost:3000. Checked: OpenAI shows key and hides instruction fields; switching to Ollama filled the configured URL, hid the key and showed Instruction/Input template; Ollama all-minilm with native 128 dims and an instruction tested live (128 dimensions, instruction template in the sent text) and saved. Voyage with 300 dims showed the allowed-sizes error. Not covered: live OpenAI/Voyage/OpenAI-compatible calls (no keys/servers here; covered by WebMock tests), client-side truncation live, a failing provider live."
+        paths: ["app/controllers/embedders_controller.rb", "app/controllers/embedders/connection_checks_controller.rb", "app/views/embedders/_form.html.erb", "app/javascript/controllers/embedder_form_controller.js", "app/models/embedder.rb", "app/models/embedder_provider.rb", "app/services/embedder_adapters"]
+      "19.2":
+        title: "Edit, clone, share and delete an embedder"
+        last_run: 2026-10-05T19:45:00Z
+        result: pass
+        notes: "Partially driven. Team page part (steps 7-8) with a Playwright script on team OSC: the Embedders card listed the shared embedder with provider/model/128/owner/0 Cases and a Create Embedder button; removing it via the confirm dialog showed the notice and emptied the card; header count went to 0. Earlier pass: Test on the saved embedder with a blank key worked. Clone keeping the key, blank-key update and sharing from the form are covered by controller tests but were not clicked through this pass."
+        paths: ["app/controllers/embedders_controller.rb", "app/views/embedders/index.html.erb", "app/views/embedders/_form.html.erb", "app/views/teams/_embedders.html.erb", "app/controllers/teams_controller.rb"]
+      "19.3":
+        title: "Pick a case's embedder"
+        last_run: 2026-10-05T19:30:00Z
+        result: pass
+        notes: "Re-exercised with phase 3 in the user's Chrome on case 6: the picker opened with the status summary (20 pending) and Re-vectorize all; the user switched the case to another embedder with it, and the header and badges followed. The earlier full pass (pick, header shows it, survives reload, set back to None) was on case 1 with a Playwright script. Not covered live: the not-shared-with-you warning, Create New Embedder, clone (Vitest/model tests cover the warning and clone)."
+        paths: ["app/javascript/controllers/case_embedder_core_controller.js", "app/views/shared/_case_embedder_core_modal.html.erb", "app/controllers/api/v1/case_embedders_controller.rb", "app/views/core/_case_header.html.erb", "app/views/core/_case_toolbar.html.erb", "app/javascript/core_stimulus.js"]
+      "19.4":
+        title: "Vectorise a case's queries"
+        last_run: 2026-10-05T19:25:00Z
+        result: pass_with_fixes
+        notes: "Driven in the user's Chrome on case 6 (20 queries, Ollama all-minilm, 128 dims): rows showed pending badges; Re-vectorize all ran through the SolidQueue worker and the badges cleared without a reload. First pass found that the page never received the vectors (queriesSvc.fetchOptions JSON.parse'd an object the API already returns parsed and silently kept the old options); fixed, re-driven: all 20 queries current with 128-dim query_vec and query_vec_meta in the page, shown in Set Options (closed with Cancel). The user switched the case to a keyless OpenAI embedder: 20 failed badges with OpenAI's 401 in the tooltip, as intended. Not covered live: stale after editing an embedder (model/job tests cover it), adding a query with sync vectorisation (controller test covers it)."
+        paths: ["app/services/query_vectorizer.rb", "app/jobs/vectorize_case_queries_job.rb", "app/models/query_vector_status.rb", "app/models/query.rb", "app/javascript/utils/live_query_events.js", "app/javascript/utils/live_query_factory.js", "app/javascript/controllers/query_row_controller.js", "app/views/core/_query_list_templates.html.erb", "app/javascript/controllers/case_embedder_core_controller.js", "app/controllers/api/v1/case_embedders_controller.rb", "app/controllers/api/v1/queries_controller.rb"]

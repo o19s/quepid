@@ -8,7 +8,7 @@ This part covers the chrome that surrounds every logged-in page — the left ico
 
 ### 15.1 Left icon sidebar
 
-- [ ] **Steps:** On any logged-in page, confirm the left sidebar shows icons (each with a tooltip on hover/focus) for: Dashboard (home), Relevancy Cases, Judgements (Books), Scorers, Notebooks, Search Endpoints, AI Judges, Teams — plus an avatar dropdown at the bottom with **Create case...**, **Profile**, **Log out**. There is no second Home item.
+- [ ] **Steps:** On any logged-in page, confirm the left sidebar shows icons (each with a tooltip on hover/focus) for: Dashboard (home), Relevancy Cases, Judgements (Books), Scorers, Notebooks, Search Endpoints, AI Judges, Embedders (`[::]`), Teams — plus an avatar dropdown at the bottom with **Create case...**, **Profile**, **Log out**. There is no second Home item.
 - **Expected:** Each icon navigates to the correct page; the icon for whichever section you're currently in is visually highlighted (active state).
 - **Edge cases:**
   - [ ] Confirm tooltips appear correctly on hover (this is BS5-tooltip-driven — see Part 16 for known BS3→BS5 tooltip/popover traps).

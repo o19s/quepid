@@ -1,6 +1,24 @@
 import { Controller } from "@hotwired/stimulus"
 import { isImageUrl, queryStateClass } from "utils/query_state"
 
+// Whether the query's vector matches the case's embedder (QueryVectorStatus): no badge
+// when it does or the case has none; the reason is in the tooltip.
+const VECTOR_BADGES = {
+  pending: {
+    label: "pending vectorisation",
+    classes: ["bg-secondary-subtle", "text-secondary-emphasis", "border-secondary-subtle"]
+  },
+  stale: {
+    label: "vector outdated",
+    classes: ["bg-warning-subtle", "text-warning-emphasis", "border-warning-subtle"]
+  },
+  failed: {
+    label: "vectorisation failed",
+    classes: ["bg-danger-subtle", "text-danger-emphasis", "border-danger-subtle"]
+  }
+}
+const VECTOR_BADGE_CLASSES = Object.values(VECTOR_BADGES).flatMap((badge) => badge.classes)
+
 /**
  * Query-row presentation. The live-query runtime still owns the expanded row and its
  * controls; this controller owns the header values and dispatches the toggle
@@ -17,7 +35,8 @@ export default class extends Controller {
     "header",
     "toggle",
     "expanded",
-    "diffScores"
+    "diffScores",
+    "vectorBadge"
   ]
   static values = {
     queryId: Number,
@@ -28,7 +47,9 @@ export default class extends Controller {
     queryText: String,
     state: String,
     diff: Boolean,
-    toggled: Boolean
+    toggled: Boolean,
+    vectorStatus: String,
+    vectorStatusReason: String
   }
 
   connect() {
@@ -60,6 +81,14 @@ export default class extends Controller {
   }
 
   toggledValueChanged() {
+    this.render()
+  }
+
+  vectorStatusValueChanged() {
+    this.render()
+  }
+
+  vectorStatusReasonValueChanged() {
     this.render()
   }
 
@@ -109,6 +138,21 @@ export default class extends Controller {
     if (this.hasToggleTarget) {
       this.toggleTarget.classList.toggle("bi-caret-up-fill", this.toggledValue)
       this.toggleTarget.classList.toggle("bi-caret-down-fill", !this.toggledValue)
+    }
+    if (this.hasVectorBadgeTarget) this.renderVectorBadge()
+  }
+
+  renderVectorBadge() {
+    const badge = VECTOR_BADGES[this.vectorStatusValue]
+    const target = this.vectorBadgeTarget
+    target.classList.remove(...VECTOR_BADGE_CLASSES)
+    target.classList.toggle("d-none", !badge)
+    target.textContent = badge?.label || ""
+    if (badge) {
+      target.classList.add(...badge.classes)
+      target.title = this.vectorStatusReasonValue
+    } else {
+      target.removeAttribute("title")
     }
   }
 }

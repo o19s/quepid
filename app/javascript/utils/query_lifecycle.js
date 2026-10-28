@@ -12,6 +12,13 @@ export function fetchQueries(caseId) {
   return getJson(`api/cases/${caseId}/queries?bootstrap=true`)
 }
 
+/** Loads one query's options; older API responses held them as a JSON string. */
+export async function fetchQueryOptions(caseId, queryId) {
+  const data = await getJson(`api/cases/${caseId}/queries/${queryId}/options`)
+  const options = data?.options
+  return typeof options === "string" ? JSON.parse(options) : options || {}
+}
+
 // Callers branch on a 204 (no new queries), so these resolve to `{ status, data }`.
 async function persist(method, url, json) {
   const { data, status } = await requestJsonResponse(url, { method, json })

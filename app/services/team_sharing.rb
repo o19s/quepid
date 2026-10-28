@@ -6,7 +6,7 @@ class TeamSharing
   class AccessDenied < ActiveRecord::RecordNotFound; end
   class NotShareable < StandardError; end
 
-  ASSOCIATIONS = { 'Case' => :cases, 'Book' => :books, 'Scorer' => :scorers, 'SearchEndpoint' => :search_endpoints }.freeze
+  ASSOCIATIONS = { 'Case' => :cases, 'Book' => :books, 'Scorer' => :scorers, 'SearchEndpoint' => :search_endpoints, 'Embedder' => :embedders }.freeze
 
   def initialize user, team = nil
     @user = user

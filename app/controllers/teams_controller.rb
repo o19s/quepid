@@ -64,6 +64,13 @@ class TeamsController < ApplicationController
     unshare_with_team(record, record.fullname, team)
   end
 
+  # Unsharing leaves the embedder with its owner, and cases that already use it keep using it.
+  def unshare_embedder
+    team = current_user.teams.find(params.expect(:team_id))
+    record = Embedder.find(params.expect(:embedder_id))
+    unshare_with_team(record, record.name, team)
+  end
+
   # Archive a search endpoint
   def archive_search_endpoint
     search_endpoint = SearchEndpoint.find(params.expect(:search_endpoint_id))
@@ -408,6 +415,9 @@ class TeamsController < ApplicationController
     @book_cases_counts = Book.cases_count_by_book_id(book_ids)
     @scorer_cases_counts = Scorer.cases_count_by_scorer_id(@scorers.map(&:id))
     @search_endpoint_cases_counts = SearchEndpoint.cases_count_by_search_endpoint_id(@search_endpoints.map(&:id))
+    # Embedders are neither filtered nor paged: a team shares only a few.
+    @embedders = @team.embedders.includes(:owner).order(:name)
+    @embedder_case_counts = Embedder.cases_count_by_embedder_id(@embedders.map(&:id))
   end
 
   # The team page's list filters, as params. Each section's filter form carries

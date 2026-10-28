@@ -584,6 +584,59 @@ class TeamsControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  describe 'embedders' do
+    let(:shared_team) { teams(:shared) }
+    let(:embedder)    { embedders(:openai_small) }
+
+    it 'lists the embedders shared with the team, with how many cases use each' do
+      cases(:shared_with_team).update!(embedder: embedder)
+
+      # The page's cases and books lists trip Bullet on their own (as in 'cases search').
+      Bullet.enable = false
+      get team_path(shared_team)
+      Bullet.enable = true
+
+      assert_response :success
+      assert_select 'td a', text: embedder.name
+      assert_select 'td a', text: embedders(:private_ollama).name, count: 0
+      assert_select 'span.badge', text: '1 Case'
+      assert_select 'a[href=?]', new_embedder_path(team_id: shared_team.id)
+    end
+  end
+
+  describe 'unshare_embedder' do
+    let(:shared_team) { teams(:shared) }
+    let(:embedder)    { embedders(:openai_small) }
+
+    it 'unshares an embedder from the team, leaving the cases that use it alone' do
+      acase = cases(:shared_with_team)
+      acase.update!(embedder: embedder)
+      assert shared_team.embedders.exists?(embedder.id)
+
+      post unshare_embedder_teams_path, params: { team_id: shared_team.id, embedder_id: embedder.id }
+
+      assert_redirected_to teams_path
+      assert_not shared_team.reload.embedders.exists?(embedder.id)
+      assert_equal embedder.id, acase.reload.embedder_id
+      assert_match(/unshared from/, flash[:notice])
+    end
+
+    it 'sets an alert when the embedder is not shared with the team' do
+      assert_not @team.embedders.exists?(embedder.id)
+
+      post unshare_embedder_teams_path, params: { team_id: @team.id, embedder_id: embedder.id }
+
+      assert_redirected_to teams_path
+      assert_match(/is not shared with/, flash[:alert])
+    end
+
+    it 'denies an embedder the user has no access to' do
+      post unshare_embedder_teams_path, params: { team_id: shared_team.id, embedder_id: embedders(:private_ollama).id }
+
+      assert_match(/do not have access/, flash[:alert])
+    end
+  end
+
   describe 'unshare_search_endpoint' do
     it 'unshares a search endpoint the user has access to from one of their teams' do
       shared_team = teams(:shared)

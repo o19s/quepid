@@ -66,6 +66,30 @@ describe("createLiveQueryLifecycleRuntime", () => {
     expect(updateScores).not.toHaveBeenCalled()
   })
 
+  it("takes the options and vector status the server returned for a new query, before its first search", async () => {
+    const query = { options: {} }
+    const searchAndScore = vi.fn(() => {
+      expect(query.options.query_vec).toEqual([0.1, 0.2])
+      return Promise.resolve()
+    })
+    const runtime = runtimeFor({ searchAndScore })
+
+    await runtime.commitQueries(
+      { query },
+      {
+        status: 201,
+        data: {
+          display_order: [3],
+          query: { query_id: 3, options: { query_vec: [0.1, 0.2] }, vector_status: "current" }
+        }
+      }
+    )
+
+    expect(searchAndScore).toHaveBeenCalledWith(query)
+    expect(query.vectorStatus).toBe("current")
+    expect(query.vectorStatusReason).toBeNull()
+  })
+
   it("rescores after a single query searches successfully", async () => {
     const updateScores = vi.fn()
     const registerQuery = vi.fn()

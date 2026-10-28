@@ -16,14 +16,16 @@
 #  created_at                    :datetime         not null
 #  updated_at                    :datetime         not null
 #  book_id                       :integer
+#  embedder_id                   :bigint
 #  owner_id                      :integer
 #  scorer_id                     :integer
 #
 # Indexes
 #
-#  idx_owner_archived       (owner_id,archived)
-#  index_cases_book_id      (book_id)
-#  index_cases_on_owner_id  (owner_id)
+#  idx_owner_archived          (owner_id,archived)
+#  index_cases_book_id         (book_id)
+#  index_cases_on_embedder_id  (embedder_id)
+#  index_cases_on_owner_id     (owner_id)
 #
 # Foreign Keys
 #
@@ -356,5 +358,26 @@ class CaseTest < ActiveSupport::TestCase
       case_name: 'Test',
       options:   options
     )
+  end
+
+  describe 'clone embedder' do
+    let(:the_case)    { cases(:random_case) }
+    let(:cloned_case) { Case.new(case_name: 'Cloned Case') }
+
+    it 'keeps an embedder the cloning user can see' do
+      the_case.update!(embedder: embedders(:openai_small))
+
+      cloned_case.clone_case the_case, users(:random), try: the_case.tries.latest
+
+      assert_equal embedders(:openai_small), cloned_case.embedder
+    end
+
+    it 'drops an embedder the cloning user cannot see' do
+      the_case.update!(embedder: embedders(:private_ollama))
+
+      cloned_case.clone_case the_case, users(:random), try: the_case.tries.latest
+
+      assert_nil cloned_case.embedder_id
+    end
   end
 end

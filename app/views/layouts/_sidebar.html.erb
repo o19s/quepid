@@ -29,6 +29,12 @@
                  active: make_active?({path: 'search_endpoint'}) %>
       <%= render "layouts/sidebar_item", url: ai_judges_path, label: "AI Judges", icon: "bi-robot",
                  active: make_active?({path: 'ai_judge'}), data: { turbo_prefetch: false } %>
+      <%# Not _sidebar_item: the [::] mark is an SVG, not a bi-* icon. %>
+      <li>
+        <%= link_to embedders_path, data: { turbo_prefetch: false, controller: 'bs-tooltip', 'bs-tooltip-placement-value': 'right', 'bs-tooltip-title-value': 'Embedders β' }, class: "nav-link #{make_active?({path: 'embedder'}) ? 'active' : ''} py-3 border-bottom rounded-0", 'aria-label':'Embedders' do %>
+          <%= render 'embedders/icon', size: '1.5rem', style: "color: #{make_active?({path: 'embedder'}) ? 'white' : 'cornflowerblue'};" %>
+        <% end %>
+      </li>
       <% unless desktop_mode? %>
         <%= render "layouts/sidebar_item", url: teams_path, label: "Teams", icon: "bi-people-fill",
                    active: make_active?({path: 'teams'}), data: { turbo_prefetch: false } %>

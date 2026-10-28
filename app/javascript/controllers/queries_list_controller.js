@@ -457,7 +457,9 @@ export default class extends Controller {
       // User-controlled values are assigned as data attributes, never interpolated into markup.
       queryRowQueryTextValue: query.queryText || "",
       queryRowInformationNeedValue: query.informationNeed || "",
-      queryRowStateValue: query.state || ""
+      queryRowStateValue: query.state || "",
+      queryRowVectorStatusValue: query.vectorStatus || "none",
+      queryRowVectorStatusReasonValue: query.vectorStatusReason || ""
     })
     assignChanged(slot("resultCount").dataset, { countUpNumberValue: numFound })
     assignChanged(slot("label").dataset, {

@@ -16,6 +16,7 @@ describe("QueryRowController", () => {
         <span data-query-row-target="querqy"></span>
         <div data-query-row-target="header"></div>
         <i data-query-row-target="toggle"></i>
+        <span data-query-row-target="vectorBadge" class="d-none"></span>
       </div>
     `
     controller = buildControllerFixture(QueryRowController, {
@@ -29,6 +30,7 @@ describe("QueryRowController", () => {
         hasQuerqyTarget: true,
         hasHeaderTarget: true,
         hasToggleTarget: true,
+        hasVectorBadgeTarget: true,
         hasStateValue: true
       }
     })
@@ -44,6 +46,11 @@ describe("QueryRowController", () => {
     controller.querqyTarget = controller.element.querySelector('[data-query-row-target="querqy"]')
     controller.headerTarget = controller.element.querySelector('[data-query-row-target="header"]')
     controller.toggleTarget = controller.element.querySelector('[data-query-row-target="toggle"]')
+    controller.vectorBadgeTarget = controller.element.querySelector(
+      '[data-query-row-target="vectorBadge"]'
+    )
+    controller.vectorStatusValue = "none"
+    controller.vectorStatusReasonValue = ""
     controller.queryTextValue = "Star Wars"
     controller.queryIdValue = 42
     controller.rankValue = 3
@@ -126,5 +133,29 @@ describe("QueryRowController", () => {
     expect(controller.imageTarget.classList.contains("d-none")).toBe(false)
     expect(controller.imageTarget.src).toBe("https://example.test/poster.jpg?size=small")
     expect(controller.textTarget.classList.contains("d-none")).toBe(true)
+  })
+
+  it("shows a vector badge with the reason only while the vector is not current", () => {
+    controller.render()
+    expect(controller.vectorBadgeTarget.classList.contains("d-none")).toBe(true)
+
+    controller.vectorStatusValue = "failed"
+    controller.vectorStatusReasonValue = "401 from OpenAI"
+    controller.render()
+    expect(controller.vectorBadgeTarget.classList.contains("d-none")).toBe(false)
+    expect(controller.vectorBadgeTarget.textContent).toBe("vectorisation failed")
+    expect(controller.vectorBadgeTarget.title).toBe("401 from OpenAI")
+    expect(controller.vectorBadgeTarget.classList.contains("bg-danger-subtle")).toBe(true)
+
+    controller.vectorStatusValue = "stale"
+    controller.render()
+    expect(controller.vectorBadgeTarget.textContent).toBe("vector outdated")
+    expect(controller.vectorBadgeTarget.classList.contains("bg-danger-subtle")).toBe(false)
+    expect(controller.vectorBadgeTarget.classList.contains("bg-warning-subtle")).toBe(true)
+
+    controller.vectorStatusValue = "current"
+    controller.render()
+    expect(controller.vectorBadgeTarget.classList.contains("d-none")).toBe(true)
+    expect(controller.vectorBadgeTarget.hasAttribute("title")).toBe(false)
   })
 })

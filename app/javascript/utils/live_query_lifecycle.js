@@ -23,8 +23,14 @@ export function createLiveQueryLifecycleRuntime({
 }) {
   function commitSingleQuery(query, persisted) {
     if (persisted.status !== 204) {
+      const saved = persisted.data.query
       applyDisplayOrder(persisted.data.display_order)
-      query.queryId = persisted.data.query.query_id
+      query.queryId = saved.query_id
+      // The server may already have vectorised it (options.query_vec), and the first
+      // search runs right below.
+      if (saved.options) query.options = saved.options
+      query.vectorStatus = saved.vector_status || "none"
+      query.vectorStatusReason = saved.vector_status_reason || null
       setQueryId(query, query.queryId)
       registerQuery(query.queryId, query)
     }

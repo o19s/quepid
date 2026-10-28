@@ -107,6 +107,18 @@ Rails.application.routes.draw do
 
   resources :ai_judges
 
+  resources :embedders do
+    member do
+      get 'clone'
+    end
+    # A check runs the form's current values in memory: a collection route serves the
+    # unsaved form, a member route one that is saved (and can fall back on its saved key).
+    collection do
+      post 'connection_check', to: 'embedders/connection_checks#create', as: :connection_check
+    end
+    resource :connection_check, only: :create, module: :embedders
+  end
+
   resources :teams, only: [] do
     resources :ai_judges, controller: :ai_judges, except: [ :index ] do
       get :clone, on: :member
@@ -185,6 +197,7 @@ Rails.application.routes.draw do
       post 'books/unshare' => 'teams#unshare_book', as: :unshare_book
       post 'search_endpoints/share' => 'teams#share_search_endpoint', as: :share_search_endpoint
       post 'search_endpoints/unshare' => 'teams#unshare_search_endpoint', as: :unshare_search_endpoint
+      post 'embedders/unshare' => 'teams#unshare_embedder', as: :unshare_embedder
     end
   end
 
@@ -266,6 +279,8 @@ Rails.application.routes.draw do
 
         # Case Scorers
         resources :scorers, only: [ :index, :update ], controller: :case_scorers
+        post 'embedders/vectorize' => 'case_embedders#vectorize', as: :embedders_vectorize
+        resources :embedders, only: [ :index, :update ], controller: :case_embedders
 
         # Case Queries
         resources :queries, except: [ :new, :edit, :show ] do
@@ -320,6 +335,7 @@ Rails.application.routes.draw do
       end
 
       resources :search_endpoints, except: [ :new, :edit ]
+      resources :embedders, except: [ :new, :edit ]
       resources :mapper_based_search_engines, only: [ :index ]
       resources :scorers, except: [ :new, :edit ]
 
@@ -331,6 +347,7 @@ Rails.application.routes.draw do
         resources :cases,   only: [ :index, :create, :destroy ], controller: :team_cases
         resources :books,   only: [ :index ], controller: :team_books
         resources :search_endpoints, only: [ :index ]
+        resources :embedders, only: [ :index ]
       end
 
       # Imports

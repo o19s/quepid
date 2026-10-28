@@ -49,4 +49,24 @@ module AdapterFunctions
   def self.natural_log
     :mysql == adapter ? 'LOG' : 'LN'
   end
+
+  # SQL for one top-level key of a JSON column, as JSON text (NULL when absent), so a
+  # caller can read a small part of a large document without loading all of it.
+  # `column` and `key` are interpolated, so pass identifiers from code, never input.
+  def self.json_value column, key
+    case adapter
+    when :postgresql then "(#{column}::jsonb -> '#{key}')::text"
+    else "JSON_EXTRACT(#{column}, '$.#{key}')"
+    end
+  end
+
+  # SQL that is true when a JSON column has the top-level key. PostgreSQL's `?`
+  # operator would clash with ActiveRecord's bind placeholders, hence jsonb_exists.
+  def self.json_has_key column, key
+    case adapter
+    when :mysql then "JSON_CONTAINS_PATH(#{column}, 'one', '$.#{key}')"
+    when :postgresql then "jsonb_exists(#{column}::jsonb, '#{key}')"
+    else "(JSON_TYPE(#{column}, '$.#{key}') IS NOT NULL)"
+    end
+  end
 end

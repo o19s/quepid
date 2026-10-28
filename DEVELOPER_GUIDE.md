@@ -1067,13 +1067,14 @@ The case page's controllers and module-owned runtime talk to each other with `Cu
 | `core-bootstrap:failed` | `{ error }` | `core-bootstrap` | none in the app (Playwright and tests read it) |
 | `quepid:case-selected` | `{ caseNo, caseName, bookId, bookName }` (book fields `null` when unset) | `utils/case_runtime` | none; `coreWorkspace.caseState` reads the selected record directly |
 | `quepid:case-renamed` | `{ caseNo, caseName }` | `utils/case_runtime` | `case-toolbar` |
-| `quepid:case-header-stale` | `{ caseNo, reason }` | `utils/case_runtime`, other surfaces that change header state (contract in `core/_case_header.html.erb`) | `case-toolbar` (refetches the header frame) |
+| `quepid:case-header-stale` | `{ caseNo, reason }` | `utils/case_runtime`, `case-embedder-core`, other surfaces that change header state (contract in `core/_case_header.html.erb`) | `case-toolbar` (refetches the header frame) |
 | `quepid:case-team-changed` | `{ action, caseNo, team: { id, name } }` | `share-case-core` | none in the app (tested only) |
 | `case-settings:updated` | `{ caseNo, lastTry }` | `utils/settings_runtime` | `tune-relevance` (`keepDrawerOpen`) |
 | `pick-scorer:selected` | `{ caseId, scorer }` | `pick-scorer-core` | `case-toolbar`, `qscore-case`, `utils/live_query_events` |
 | `query-options:saved` | `{ queryId, options }` (no `caseId`: listeners treat it as the current case) | `query-options-core` | `utils/live_query_events` |
 | `judgements:queries-need-reload`, `imports:queries-need-reload` | `{ caseId }` | `judgements-core`, `import-ratings-core` | `utils/live_query_events` (reloads only for the current case) |
 | `quepid:case-book-updated` | `{ caseId, bookId, bookName, autoPopulateBookPairs, autoPopulateCaseJudgements }` | `utils/case_runtime` (fresh read or successful settings save) | `utils/live_query_events` (reconfigures book sync) |
+| `quepid:query-vectors-changed` | `{ caseId, queries }` (`queries` keyed by query id: `{ status, reason }`) | `case-embedder-core` (page load, save, re-vectorize, polls during a run) | `utils/live_query_events` (badges; reloads options and re-searches a query whose vector became current) |
 | `queries-state:changed` | none | `utils/live_query_runtime_owner` | `queries-list`, `add-query` |
 | `query-diffs:refreshed` | `{ success }` | `utils/live_query_runtime_owner` | `qscore-case` |
 | `case-score:persisted` | `{ caseId }` | `qscore-case` | `qgraph` |

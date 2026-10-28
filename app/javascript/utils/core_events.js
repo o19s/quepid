@@ -11,6 +11,7 @@ export const CORE_EVENTS = Object.freeze({
   JUDGEMENTS_QUERIES_NEED_RELOAD: "judgements:queries-need-reload",
   IMPORTS_QUERIES_NEED_RELOAD: "imports:queries-need-reload",
   CASE_BOOK_UPDATED: "quepid:case-book-updated",
+  QUERY_VECTORS_CHANGED: "quepid:query-vectors-changed",
   QUERIES_STATE_CHANGED: "queries-state:changed",
   QUERY_DIFFS_REFRESHED: "query-diffs:refreshed",
   CASE_SCORE_PERSISTED: "case-score:persisted",

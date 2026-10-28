@@ -20,6 +20,7 @@ export function createLiveQueryEventsRuntime({
   scoreAll,
   updateScores = scoreAll,
   setQueryOptions,
+  refreshQueryVector,
   setScorer,
   reloadQueries,
   configureBook,
@@ -49,6 +50,35 @@ export function createLiveQueryEventsRuntime({
     schedule(() => {
       setQueryOptions(query, detail.options)
       updateScores()
+    })
+  }
+
+  // Statuses from the embedder picker's polls (case_embedder_core_controller.js), keyed by
+  // query id. A query whose vector just became current gets its options (with the new
+  // query_vec) reloaded and is searched again, since a template using
+  // #$qOption.query_vec## needs it.
+  function vectorsChanged(event) {
+    const detail = event.detail || {}
+    if (!isSameId(detail.caseId, getCaseNo())) return
+    schedule(() => {
+      const refreshed = []
+      Object.entries(detail.queries || {}).forEach(([queryId, next]) => {
+        const query = getQuery(queryId)
+        if (!query || !next) return
+        const reason = next.reason ?? null
+        if (query.vectorStatus === next.status && query.vectorStatusReason === reason) return
+
+        const becameCurrent = next.status === "current" && query.vectorStatus !== "current"
+        query.vectorStatus = next.status
+        query.vectorStatusReason = reason
+        publishQuery(query)
+        if (becameCurrent) refreshed.push(refreshQueryVector(query))
+      })
+      if (refreshed.length === 0) return
+
+      Promise.all(refreshed)
+        .then(updateScores)
+        .catch((error) => onError("Could not search with the new query vectors", error))
     })
   }
 
@@ -93,6 +123,7 @@ export function createLiveQueryEventsRuntime({
     eventTarget.addEventListener(CORE_EVENTS.JUDGEMENTS_QUERIES_NEED_RELOAD, queriesNeedReload)
     eventTarget.addEventListener(CORE_EVENTS.IMPORTS_QUERIES_NEED_RELOAD, queriesNeedReload)
     eventTarget.addEventListener(CORE_EVENTS.CASE_BOOK_UPDATED, bookSettingsSaved)
+    eventTarget.addEventListener(CORE_EVENTS.QUERY_VECTORS_CHANGED, vectorsChanged)
   }
 
   return { connect }

@@ -50,6 +50,7 @@ Keep `last_run` as the actual test time.
 | 16 | [Cross-Cutting: BS5, Responsive & Accessibility](16-cross-cutting-bs5-responsive-and-accessibility.md) | Bootstrap 3→5 migration regression checks, narrow-viewport reflow, modal accessibility |
 | 17 | [Documentation coverage audit](17-documentation-coverage.md) | Ordered coverage review of the published User Manual and GitHub wiki, plus manual checks for the integration seams that were previously missing |
 | 18 | [API Workflows](18-api-workflows.md) | Direct API clients: resource filters, metadata, tries, queries/ratings, book pairs/judgements, team deletion, background work and scorer replacement |
+| 19 | [Embedders](19-embedders.md) | Connecting text-embedding APIs (OpenAI, Voyage, Ollama, OpenAI-compatible), testing them, sharing with teams |
 
 ## General testing notes
 

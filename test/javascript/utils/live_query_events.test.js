@@ -6,13 +6,15 @@ describe("live query events runtime", () => {
     const eventTarget = new EventTarget()
     const scoringStore = new EventTarget()
     const query = { queryId: 1, options: {}, setDirty: vi.fn() }
-    const getQuery = vi.fn().mockImplementation((id) => (id === 1 ? query : null))
+    const getQuery = vi.fn().mockImplementation((id) => (String(id) === "1" ? query : null))
     const scoreAll = vi.fn().mockResolvedValue(undefined)
     const invalidateRatedDocs = vi.fn()
     const schedule = vi.fn((callback) => callback())
     const setScorer = vi.fn().mockResolvedValue(undefined)
     const reloadQueries = vi.fn().mockResolvedValue(undefined)
     const configureBook = vi.fn()
+    const publishQuery = vi.fn()
+    const refreshQueryVector = vi.fn().mockResolvedValue(undefined)
     const runtime = createLiveQueryEventsRuntime({
       eventTarget,
       scoringStore,
@@ -21,12 +23,13 @@ describe("live query events runtime", () => {
       getQueries: () => ({ 1: query }),
       ratingChangedQueryId: vi.fn().mockReturnValue(1),
       invalidateRatedDocs,
-      publishQuery: vi.fn(),
+      publishQuery,
       scoreAll,
       setQueryOptions: (target, options) => {
         target.options = options
         target.setDirty()
       },
+      refreshQueryVector,
       setScorer,
       reloadQueries,
       configureBook,
@@ -44,9 +47,61 @@ describe("live query events runtime", () => {
       setScorer,
       reloadQueries,
       configureBook,
-      invalidateRatedDocs
+      invalidateRatedDocs,
+      publishQuery,
+      refreshQueryVector
     }
   }
+
+  it("updates query vector statuses for the active case and re-searches a query whose vector became current", async () => {
+    const { eventTarget, query, publishQuery, refreshQueryVector, scoreAll } = setup()
+    query.vectorStatus = "pending"
+
+    eventTarget.dispatchEvent(
+      new CustomEvent("quepid:query-vectors-changed", {
+        detail: { caseId: 8, queries: { 1: { status: "current", reason: null } } }
+      })
+    )
+    expect(query.vectorStatus).toBe("pending")
+
+    eventTarget.dispatchEvent(
+      new CustomEvent("quepid:query-vectors-changed", {
+        detail: {
+          caseId: 7,
+          queries: { 1: { status: "current", reason: null }, 99: { status: "failed" } }
+        }
+      })
+    )
+
+    expect(query.vectorStatus).toBe("current")
+    expect(query.vectorStatusReason).toBeNull()
+    expect(publishQuery).toHaveBeenCalledWith(query)
+    expect(refreshQueryVector).toHaveBeenCalledWith(query)
+    await vi.waitFor(() => expect(scoreAll).toHaveBeenCalledOnce())
+  })
+
+  it("leaves unchanged and non-current vector statuses alone apart from the badge", () => {
+    const { eventTarget, query, publishQuery, refreshQueryVector } = setup()
+    query.vectorStatus = "pending"
+    query.vectorStatusReason = "Waiting"
+
+    eventTarget.dispatchEvent(
+      new CustomEvent("quepid:query-vectors-changed", {
+        detail: { caseId: 7, queries: { 1: { status: "pending", reason: "Waiting" } } }
+      })
+    )
+    expect(publishQuery).not.toHaveBeenCalled()
+
+    eventTarget.dispatchEvent(
+      new CustomEvent("quepid:query-vectors-changed", {
+        detail: { caseId: 7, queries: { 1: { status: "failed", reason: "401 from OpenAI" } } }
+      })
+    )
+    expect(query.vectorStatus).toBe("failed")
+    expect(query.vectorStatusReason).toBe("401 from OpenAI")
+    expect(publishQuery).toHaveBeenCalledOnce()
+    expect(refreshQueryVector).not.toHaveBeenCalled()
+  })
 
   it("invalidates and rescoring on rating changes", () => {
     const { scoringStore, scoreAll, invalidateRatedDocs } = setup()

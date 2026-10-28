@@ -62,7 +62,11 @@
       <div class="clearfix"></div>
       <div class="d-flex flex-row-reverse flex-wrap">
         <div class="pe-3">Number of Queries: <span data-queries-list-target="count">0</span></div>
-        <div class="pe-3"><input type="search" data-queries-list-target="filter" data-action="input->queries-list#filter" placeholder="Filter Queries" aria-label="Filter queries" class="form-control form-control-sm" id="queries-filter" autocomplete="off"></div>
+        <%# Chrome's password manager takes this box for a username field and fills in the saved
+            login (ignoring autocomplete="off"), which silently filters every query out of the list.
+            Browsers never autofill a readonly field, so it stays readonly until focused; the
+            data-* attributes do the same for 1Password, LastPass and Bitwarden. %>
+        <div class="pe-3"><input type="search" data-queries-list-target="filter" data-action="input->queries-list#filter" placeholder="Filter Queries" aria-label="Filter queries" class="form-control form-control-sm" id="queries-filter" name="queries-filter" autocomplete="off" readonly onfocus="this.removeAttribute('readonly')" data-1p-ignore data-lpignore="true" data-bwignore data-form-type="other"></div>
         <div class="pe-3">
           <button type="button" class="btn btn-link p-0" data-controller="frog-report" data-action="click->frog-report#open"
                   data-frog-report-refresh-url-template-value="<%= api_book_refresh_path(book_id: '__BOOK_ID__', case_id: kase.id, create_missing_queries: 'false', process_in_background: '__BACKGROUND__') %>">

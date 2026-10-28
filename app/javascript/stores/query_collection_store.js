@@ -284,6 +284,8 @@ export class QueryCollectionStore extends EventTarget {
       allRated: query.allRated ?? currentScore.allRated,
       state: queryState,
       options: query.options || {},
+      vectorStatus: query.vectorStatus ?? "none",
+      vectorStatusReason: query.vectorStatusReason ?? null,
       parsedQueryDetails,
       queryDetails: searcher?.queryDetails,
       supportsTemplate: typeof searcher?.isTemplateCall === "function",

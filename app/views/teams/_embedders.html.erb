@@ -1,0 +1,70 @@
+<%# locals: (embedder_case_counts:, embedders:, team:) %>
+<div class="card">
+  <div class="card-body">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h5 class="card-title mb-0">
+        <%= render 'embedders/icon' %> Embedders<%= render 'embedders/beta' %>
+        <small class="text-muted ms-2">
+          <%= link_to 'See all embedders', embedders_path, class: 'text-decoration-none' %>
+        </small>
+      </h5>
+    </div>
+
+    <% if embedders.any? %>
+      <div class="table-responsive">
+        <table class="table table-sm table-hover">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Provider</th>
+              <th>Model</th>
+              <th>Dimensions</th>
+              <th>Owner</th>
+              <th>Used by</th>
+              <th class="text-end"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <% embedders.each do |embedder| %>
+              <tr>
+                <td>
+                  <%= link_to embedder.name, edit_embedder_path(embedder) %>
+                  <% if embedder.archived %>
+                    <span class="badge bg-secondary">Archived</span>
+                  <% end %>
+                </td>
+                <td><%= embedder.provider_definition&.label || embedder.provider %></td>
+                <td><code><%= embedder.model %></code></td>
+                <td>
+                  <% if embedder.dimensions %>
+                    <%= embedder.dimensions %>
+                  <% else %>
+                    <span class="text-muted">model default</span>
+                  <% end %>
+                </td>
+                <td><%= embedder.owner&.fullname || '—' %></td>
+                <td>
+                  <span class="badge rounded-pill bg-secondary"><%= pluralize(embedder_case_counts.fetch(embedder.id, 0), 'Case') %></span>
+                </td>
+                <td class="text-end">
+                  <%= button_to unshare_embedder_teams_path,
+                                params: { team_id: team.id, embedder_id: embedder.id },
+                                class: "btn btn-link text-danger p-0",
+                                title: "Stop sharing with this team",
+                                aria: { label: "Stop sharing with this team" },
+                                form: { class: "d-inline", data: { turbo_confirm: "Stop sharing #{embedder.name} with #{team.name}? Cases already using it keep it." } } do %>
+                    <i class="bi bi-x-circle" aria-hidden="true"></i>
+                  <% end %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <div class="text-center text-muted py-3">
+        <p class="mb-0">No embedders are shared with this team.</p>
+      </div>
+    <% end %>
+  </div>
+</div>

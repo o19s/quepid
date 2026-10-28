@@ -28,7 +28,7 @@ import {
   queryLifecycleState,
   ratingChangedQueryId
 } from "utils/query_state"
-import { fetchQueries } from "utils/query_lifecycle"
+import { fetchQueries, fetchQueryOptions } from "utils/query_lifecycle"
 import { caseRuntime } from "utils/case_runtime"
 import coreFlash from "utils/core_flash"
 import { errorMessage } from "utils/error_message"
@@ -269,6 +269,12 @@ export function createLiveQueryRuntimeOwner({
       query.options = options
       query.setDirty()
     },
+    refreshQueryVector: (query) =>
+      fetchQueryOptions(getCaseNo(), query.queryId).then((options) => {
+        query.options = options
+        query.setDirty()
+        return searchAndScore(query)
+      }),
     setScorer: (scorerData) => domain.scorer.select(scorerData),
     reloadQueries: liveQueryLifecycleRuntime.refreshQueries,
     configureBook: ({ bookId, autoPopulate }) => {

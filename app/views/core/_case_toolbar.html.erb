@@ -53,6 +53,16 @@
         </button>
       </li>
       <li class="list-inline-item">
+        <%= render 'embedders/icon' %>
+        <button
+          type="button"
+          class="btn btn-link p-0 border-0 align-baseline"
+          data-bs-toggle="modal"
+          data-bs-target="#caseEmbedderModal"
+          data-case-embedder-core-id-value="<%= kase.id %>"
+        >Select embedder</button><%= render 'embedders/beta' %>
+      </li>
+      <li class="list-inline-item">
         <i
           class="bi bi-book-half"
           aria-hidden="true"

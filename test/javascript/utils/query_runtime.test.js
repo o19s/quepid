@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest"
 import { createQueryRuntime } from "utils/query_runtime"
+import { QueryNotReadyError } from "utils/query_service"
 
 function buildRuntime(overrides = {}) {
   const { query: queryOverrides = {}, ...runtimeOverrides } = overrides
@@ -96,6 +97,27 @@ describe("query runtime", () => {
 
     expect(onError).toHaveBeenCalledWith(message)
     expect(query.hasBeenScored).toBe(false)
+    expect(createSearcher).toHaveBeenCalledOnce()
+  })
+
+  it("resolves quietly instead of erroring when a query isn't ready to search (e.g. not yet vectorised)", async () => {
+    const onError = vi.fn()
+    const createSearcher = vi.fn(() => {
+      throw new QueryNotReadyError(
+        "Query template references qOption.query_vec, which isn't set for this query."
+      )
+    })
+    const { query, runtime } = buildRuntime({
+      query: { hasBeenScored: true },
+      createSearcher,
+      onError
+    })
+
+    await expect(runtime.search()).resolves.toBeUndefined()
+
+    expect(onError).not.toHaveBeenCalled()
+    expect(query.hasBeenScored).toBe(false)
+    expect(query.searcher).toBeNull()
     expect(createSearcher).toHaveBeenCalledOnce()
   })
 

@@ -20,6 +20,7 @@ With zero teams, confirm the solo-use explanation and **Create your first team**
   3. Confirm you (the creator) are automatically added as a member.
   4. Open the team, use the **Rename Team** card to rename it, click **Rename**.
   5. In the Cases, Books, Search Endpoints, and Custom Scorers sections, set a search filter. Set the archived filters for cases, books, and endpoints, then submit each search form in turn. Confirm each submission retains the other sections' query and archived filters.
+  6. Check the lists below the member cards: Cases, Books, Search Endpoints, Embedders (Part 19.2), Custom Scorers, and the counts in the header.
 - **Expected:** New team appears in the list; rename updates immediately with flash "Team renamed."
 - **Edge cases:**
   - [ ] Submit a blank team name on create or rename — expect the visible "Name can't be blank" validation error.

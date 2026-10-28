@@ -32,10 +32,7 @@ module Api
             end
 
             if create_queries # if we are creating queries, then go ahead and create the missing ones.
-              missing_queries.each do |missing_query|
-                query = Query.new query_text: missing_query, case: @case
-                query.save!
-              end
+              create_missing_queries(missing_queries)
               missing_queries.clear
             end
 
@@ -50,6 +47,15 @@ module Api
               render json:   { message: "Didn't find #{'this'.pluralize(missing_queries.count)} #{'query'.pluralize(missing_queries.count)} for the case: #{missing_queries.to_sentence}" },
                      status: :unprocessable_content
             end
+          end
+
+          private
+
+          def create_missing_queries query_texts
+            query_texts.each do |query_text|
+              Query.create! query_text: query_text, case: @case
+            end
+            VectorizeCaseQueriesJob.enqueue_for(@case) if query_texts.any?
           end
         end
       end

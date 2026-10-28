@@ -1,5 +1,11 @@
 import { describe, expect, it, vi } from "vitest"
-import { fetchQueries, moveQuery, persistQuery, persistQueries } from "utils/query_lifecycle"
+import {
+  fetchQueries,
+  fetchQueryOptions,
+  moveQuery,
+  persistQuery,
+  persistQueries
+} from "utils/query_lifecycle"
 
 describe("query_lifecycle", () => {
   it("loads the case's queries for bootstrap", async () => {
@@ -11,6 +17,30 @@ describe("query_lifecycle", () => {
     await expect(fetchQueries(42)).resolves.toEqual({ queries: [] })
     expect(fetch).toHaveBeenCalledWith(
       "api/cases/42/queries?bootstrap=true",
+      expect.objectContaining({ method: "GET" })
+    )
+    vi.unstubAllGlobals()
+  })
+
+  it("loads one query's options, whether the API returns an object or a JSON string", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi
+        .fn()
+        .mockResolvedValueOnce(
+          new Response(JSON.stringify({ options: { query_vec: [0.5] } }), { status: 200 })
+        )
+        .mockResolvedValueOnce(
+          new Response(JSON.stringify({ options: '{"boost":2}' }), { status: 200 })
+        )
+        .mockResolvedValueOnce(new Response(JSON.stringify({ options: null }), { status: 200 }))
+    )
+
+    await expect(fetchQueryOptions(42, 3)).resolves.toEqual({ query_vec: [0.5] })
+    await expect(fetchQueryOptions(42, 3)).resolves.toEqual({ boost: 2 })
+    await expect(fetchQueryOptions(42, 3)).resolves.toEqual({})
+    expect(fetch).toHaveBeenCalledWith(
+      "api/cases/42/queries/3/options",
       expect.objectContaining({ method: "GET" })
     )
     vi.unstubAllGlobals()

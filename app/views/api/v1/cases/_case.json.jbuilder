@@ -10,6 +10,7 @@ sampled_case_scores ||= nil
 json.case_name        acase.case_name
 json.case_id          acase.id
 json.scorer_id        acase.scorer_id
+json.embedder_id      acase.embedder_id
 json.book_id          acase.book_id
 json.owned            acase.owner_id == current_user.id if current_user.present?
 unless no_queries

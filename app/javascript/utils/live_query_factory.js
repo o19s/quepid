@@ -31,6 +31,10 @@ export function createLiveQueryFactory({
         ratedDocsUnsupported: false,
         numFound: 0,
         options: queryWithRatings.options == null ? {} : queryWithRatings.options,
+        // Whether options.query_vec matches the case's embedder (QueryVectorStatus on the
+        // server); drives the badge on the query row. Updated from the embedder picker's polls.
+        vectorStatus: queryWithRatings.vector_status || "none",
+        vectorStatusReason: queryWithRatings.vector_status_reason || null,
         notes: queryWithRatings.notes,
         modifiedAt: queryWithRatings.modified_at,
         informationNeed: queryWithRatings.information_need,
