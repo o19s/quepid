@@ -92,13 +92,19 @@ export default class extends Controller {
     this.loadCapabilities()
   }
 
+  // Below ~750px the drawer covers the toolbar's own "Tune Relevance" toggle
+  // (core-additions.css), leaving this button as the only way to close it.
+  close() {
+    this.paneOutlet.toggle()
+  }
+
   selectTab(event) {
     this.showTab(event.params.tab)
   }
 
   toggleSection(event) {
     const body = this.sectionBodyTargets.find(
-      (body) => body.dataset.sectionBody === event.params.section
+      (candidate) => candidate.dataset.sectionBody === event.params.section
     )
     if (!body) return
     const collapsed = body.classList.toggle("d-none")
@@ -554,7 +560,7 @@ export default class extends Controller {
     event.stopPropagation()
     const item = this.capability.settings
       .tries()
-      .find((item) => isSameId(item.tryNo, event.params.tryNo))
+      .find((candidate) => isSameId(candidate.tryNo, event.params.tryNo))
     if (item) this.showTryDetails(item)
   }
 

@@ -53,8 +53,52 @@ body {
   min-width: 750px;
 }
 
-/* Below #main's min-width the workbench scrolls sideways on its own, so the
- * header keeps the window's width and the page never gets a second scrollbar. */
+/* Below ~750px (phones/small tablets), the BS3-era assumption that the
+ * workbench never needs to be narrower than 750px just forces a
+ * horizontally-scrolled shell instead of letting the header, toolbar and
+ * query list reflow to fit. Let #main shrink to fit; .sub-results below has
+ * its own, similarly-sized override for the same reason. */
+@media (width <= 749.98px) {
+  #main {
+    min-width: 0;
+  }
+
+  /* #case-header's score widget and title are plain inline boxes
+   * (core/index.html.erb, core/_case_header.html.erb) that only sit side by
+   * side when there's room for both - fine above 750px, but below it they
+   * wrap onto separate lines with the full-width widget pushing the title
+   * down. Keep the same left/right layout as desktop instead: the widget's
+   * own width (qscore.css) stays put, and the title takes the rest. */
+  #case-header .col-sm-12 {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  #case-header .case-score-widget {
+    flex-shrink: 0;
+  }
+
+  /* The title's own name/try/scorer still run together as one inline
+   * phrase, so a case name long enough to wrap lands its own
+   * "— Try N — Scorer" metadata on the same ragged line. min-width: 0 lets
+   * this column (and its text) actually shrink below its content's natural
+   * width instead of overflowing the row; force name/try/scorer onto their
+   * own line each. */
+  #case-header .case-title {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  #case-header h1.fs-1 > span[data-action],
+  #case-header h1.fs-1 > small.fw-normal.text-muted {
+    display: block;
+  }
+}
+
+/* Above #main's min-width, a workbench wider than the viewport (e.g. a very
+ * long case name) scrolls sideways on its own instead of growing the header,
+ * so the page never gets a second, full-height scrollbar. */
 #main-content {
   flex: 1 1 auto;
   min-height: 0;
@@ -298,6 +342,16 @@ header .dropdown-item:focus {
   --score-col-end: 90px;
 }
 
+/* Same shrink-to-fit override as #main above, and for the same reason -
+ * .sub-results assumed at least 650px of width for its absolutely-positioned
+ * "Score All" column (.col-ratings) plus the toolbar offset from it
+ * (--score-col-end above). */
+@media (width <= 649.98px) {
+  .sub-results {
+    min-width: 0;
+  }
+}
+
 /* Sub-results panel — toolbar absolutely top-right of the per-query
  * panel. `left` reserves the space `.col-ratings.query-rating` occupies
  * (--score-col-end, set on .sub-results above) plus a small gap, so the
@@ -465,6 +519,15 @@ header .dropdown-item:focus {
 
   /* main's .dev-section wrapper inset the whole panel by 15px. */
   padding: 15px;
+}
+
+/* A block above the tabs, not absolutely positioned over them - #dev-settings
+ * is already tight on width (the comment on #dev-settings .nav-tabs above
+ * notes BS5's wider font wraps the 5 tabs onto a second row), so overlaying
+ * this on the tab row risks covering "Annotations". */
+.tune-relevance-close {
+  display: block;
+  margin: 0 0 10px auto;
 }
 
 #dev-settings .dev-header {

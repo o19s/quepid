@@ -1,6 +1,11 @@
 <%# locals: (kase:) %>
 <%# The tune-relevance controller lives on #main (core/index) so the try-details modal can sit outside the pane. %>
 <div id="dev-settings" data-bs-theme="dark">
+  <%# Below ~750px (core-additions.css) this drawer covers the toolbar's own
+      "Tune Relevance" toggle, so this is the only way to close it there;
+      kept visible at every width rather than only showing up on mobile. %>
+  <button type="button" class="btn-close btn-close-white tune-relevance-close" aria-label="Close Tune Relevance" data-action="click->tune-relevance#close"></button>
+
   <ul class="nav nav-tabs" role="tablist">
     <li class="nav-item"><button type="button" class="nav-link" data-tune-relevance-target="tab" data-action="click->tune-relevance#selectTab" data-tune-relevance-tab-param="developer" aria-selected="true">Query</button></li>
     <li class="nav-item"><button type="button" class="nav-link" data-tune-relevance-target="tab" data-action="click->tune-relevance#selectTab" data-tune-relevance-tab-param="curator" aria-selected="false">Tuning Knobs</button></li>
