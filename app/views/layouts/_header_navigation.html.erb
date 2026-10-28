@@ -1,4 +1,8 @@
 <ul class="navbar-nav me-auto">
+  <%# The icon sidebar already covers these at lg and up (navbar-expand-lg keeps this
+      menu permanently inline there, not just inside the collapse); only mobile needs
+      them repeated here. %>
+  <li class="nav-item d-lg-none"><%= link_to "Dashboard", root_path, class: "nav-link" %></li>
   <% %i[cases books].each do |section| %>
     <% cases_menu = section == :cases %>
     <% toggle_id = cases_menu ? 'dropdownCases' : 'dropdownBooks' %>
@@ -36,6 +40,7 @@
     </li>
   <% end %>
 
+  <li class="nav-item d-lg-none"><%= link_to "Search Endpoints", search_endpoints_path, class: "nav-link" %></li>
   <% unless desktop_mode? %>
     <li class="nav-item"><%= link_to "Teams", teams_path, class: "nav-link" %></li>
   <% end %>
