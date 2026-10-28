@@ -8,7 +8,10 @@
     }
     </script-->
 
-<div class="sidebar d-flex flex-column flex-shrink-0 bg-body-tertiary" style="width: 3.5rem;">
+<%# Below lg (the breakpoint navbar-expand-lg uses for the top nav's own collapse),
+    the top nav's hamburger menu carries these links instead -- see
+    layouts/_header_navigation.html.erb's d-lg-none items. %>
+<div class="sidebar d-none d-lg-flex flex-column flex-shrink-0 bg-body-tertiary" style="width: 3.5rem;">
     <ul class="nav nav-pills flex-column mb-auto text-center">
       <%= render "layouts/sidebar_item", url: root_path, label: "Dashboard", icon: "bi-speedometer2",
                  active: make_active?({controller: 'home'}) %>
