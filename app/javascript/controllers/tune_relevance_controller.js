@@ -104,7 +104,7 @@ export default class extends Controller {
 
   toggleSection(event) {
     const body = this.sectionBodyTargets.find(
-      (body) => body.dataset.sectionBody === event.params.section
+      (candidate) => candidate.dataset.sectionBody === event.params.section
     )
     if (!body) return
     const collapsed = body.classList.toggle("d-none")
@@ -560,7 +560,7 @@ export default class extends Controller {
     event.stopPropagation()
     const item = this.capability.settings
       .tries()
-      .find((item) => isSameId(item.tryNo, event.params.tryNo))
+      .find((candidate) => isSameId(candidate.tryNo, event.params.tryNo))
     if (item) this.showTryDetails(item)
   }
 
