@@ -35,6 +35,17 @@
   z-index: 5;
 }
 
+/* Below ~750px (phones/small tablets, matching #main's breakpoint in
+ * core-additions.css) a sticky footer permanently eats a meaningful chunk of
+ * the already-scarce screen height. Let it scroll with the query list
+ * instead, same as the footer on every non-case page. */
+@media (width <= 749.98px) {
+  .pane_main > footer {
+    position: static;
+    margin-top: 0;
+  }
+}
+
 /* Keep the drawer's bottom actions above visible core error/notice banners. */
 .pane_east {
   bottom: var(--core-flash-height, 0);
