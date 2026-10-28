@@ -75,7 +75,7 @@ body {
     gap: 10px;
   }
 
-  #case-header [data-controller="diff-case-scores"] {
+  #case-header .case-score-widget {
     flex-shrink: 0;
   }
 
@@ -85,7 +85,7 @@ body {
    * this column (and its text) actually shrink below its content's natural
    * width instead of overflowing the row; force name/try/scorer onto their
    * own line each. */
-  #case-header [data-controller="case-rename"] {
+  #case-header .case-title {
     flex: 1 1 auto;
     min-width: 0;
   }
