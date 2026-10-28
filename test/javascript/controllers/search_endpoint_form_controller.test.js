@@ -11,34 +11,46 @@ function buildTargets(apiMethodValue, proxyChecked) {
   proxyRequests.type = "checkbox"
   proxyRequests.checked = proxyChecked
 
-  return { apiMethod, proxyRequests }
+  const jsonpProxyWarning = document.createElement("div")
+  jsonpProxyWarning.classList.add("d-none")
+
+  return { apiMethod, proxyRequests, jsonpProxyWarning }
 }
 
 describe("search_endpoint_form controller", () => {
-  it("switches JSONP to GET when proxying is enabled", () => {
+  it("shows the warning when JSONP is selected and proxying is enabled", () => {
     const targets = buildTargets("JSONP", true)
     const controller = buildControllerFixture(SearchEndpointFormController, { targets })
 
-    controller.forceGetIfJsonpAndProxied()
+    controller.toggleJsonpProxyWarning()
 
-    expect(targets.apiMethod.value).toBe("GET")
+    expect(targets.jsonpProxyWarning.classList.contains("d-none")).toBe(false)
   })
 
-  it("leaves a non-JSONP method alone", () => {
+  it("hides the warning for a non-JSONP method", () => {
     const targets = buildTargets("GET", true)
     const controller = buildControllerFixture(SearchEndpointFormController, { targets })
 
-    controller.forceGetIfJsonpAndProxied()
+    controller.toggleJsonpProxyWarning()
 
-    expect(targets.apiMethod.value).toBe("GET")
+    expect(targets.jsonpProxyWarning.classList.contains("d-none")).toBe(true)
   })
 
-  it("leaves JSONP alone while proxying is off", () => {
+  it("hides the warning while proxying is off", () => {
     const targets = buildTargets("JSONP", false)
     const controller = buildControllerFixture(SearchEndpointFormController, { targets })
 
-    controller.forceGetIfJsonpAndProxied()
+    controller.toggleJsonpProxyWarning()
 
-    expect(targets.apiMethod.value).toBe("JSONP")
+    expect(targets.jsonpProxyWarning.classList.contains("d-none")).toBe(true)
+  })
+
+  it("does nothing when proxy requests is always required (no checkbox target)", () => {
+    const targets = buildTargets("GET", false)
+    delete targets.proxyRequests
+
+    const controller = buildControllerFixture(SearchEndpointFormController, { targets })
+
+    expect(() => controller.toggleJsonpProxyWarning()).not.toThrow()
   })
 })

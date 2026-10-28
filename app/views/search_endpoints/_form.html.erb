@@ -34,8 +34,11 @@
               [['GET', 'GET'], ['POST', 'POST'], ['JSONP', 'JSONP'], ['PUT', 'PUT'], ['AUTO', 'AUTO']].reject { |item| require_proxy_for_all_search_endpoints? && item.include?('JSONP') },
               :last, :first,
               { required: true, prompt: true },
-              { class: 'form-control', data: { search_endpoint_form_target: "apiMethod" } } %>
+              { class: 'form-control',
+                data: { search_endpoint_form_target: "apiMethod",
+                        action: "search-endpoint-form#toggleJsonpProxyWarning" } } %>
         <div class="form-text">Typically this is a POST for JSON apis, and GET for passing parameters via the URL. AUTO (mapper-based search engines only) picks GET for short queries and POST for long ones.</div>
+        <div class="form-text text-danger d-none" data-search-endpoint-form-target="jsonpProxyWarning">API Method cannot be JSONP when Proxy Requests is enabled.</div>
       </div>
 
       <div class="mb-3">
@@ -46,7 +49,7 @@
         <div class="form-check form-switch">
           <%= form.check_box :proxy_requests, class: 'form-check-input',
                 data: { search_endpoint_form_target: "proxyRequests",
-                        action: "search-endpoint-form#forceGetIfJsonpAndProxied" } %>
+                        action: "search-endpoint-form#toggleJsonpProxyWarning" } %>
           <%= form.label :proxy_requests, class:'form-check-label' %>
         </div>
         <div class="form-text">
