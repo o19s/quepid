@@ -1,9 +1,7 @@
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
   <h1><%= render 'icon' %> Embedders<%= render 'beta' %></h1>
   <div class="btn-toolbar mb-2 mb-md-0">
-    <%= link_to new_embedder_path, class: 'btn btn-success' do %>
-      <i class="bi bi-plus-lg" aria-hidden="true"></i> Create Embedder
-    <% end %>
+    <%= page_create_button 'Create Embedder', new_embedder_path %>
   </div>
 </div>
 
