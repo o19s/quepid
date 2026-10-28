@@ -1,5 +1,5 @@
 <%# locals: (search_endpoint:, cloned_from_id: nil) %>
-<%= form_with(model: search_endpoint) do |form| %>
+<%= form_with(model: search_endpoint, data: { controller: "search-endpoint-form" }) do |form| %>
   <%= hidden_field_tag :clone_of, cloned_from_id if cloned_from_id %>
   <div class="card">
     <div class="card-body">
@@ -30,8 +30,15 @@
 
       <div class="mb-3">
         <%= form.label :api_method, class: 'form-label' %>
-        <%= form.collection_select :api_method, [['GET', 'GET'], ['POST', 'POST'], ['JSONP', 'JSONP'], ['PUT', 'PUT'], ['AUTO', 'AUTO']].reject { |item| require_proxy_for_all_search_endpoints? && item.include?('JSONP') }, :last, :first, required: true, prompt:true,  class: 'form-control' %>
+        <%= form.collection_select :api_method,
+              [['GET', 'GET'], ['POST', 'POST'], ['JSONP', 'JSONP'], ['PUT', 'PUT'], ['AUTO', 'AUTO']].reject { |item| require_proxy_for_all_search_endpoints? && item.include?('JSONP') },
+              :last, :first,
+              { required: true, prompt: true },
+              { class: 'form-control',
+                data: { search_endpoint_form_target: "apiMethod",
+                        action: "search-endpoint-form#toggleJsonpProxyWarning" } } %>
         <div class="form-text">Typically this is a POST for JSON apis, and GET for passing parameters via the URL. AUTO (mapper-based search engines only) picks GET for short queries and POST for long ones.</div>
+        <div class="form-text text-danger d-none" data-search-endpoint-form-target="jsonpProxyWarning">API Method cannot be JSONP when Proxy Requests is enabled.</div>
       </div>
 
       <div class="mb-3">
@@ -40,7 +47,9 @@
           <div class="form-text">This Quepid instance requires all search requests to be proxied.</div>
         <% else %>
         <div class="form-check form-switch">
-          <%= form.check_box :proxy_requests, class:'form-check-input' %>
+          <%= form.check_box :proxy_requests, class: 'form-check-input',
+                data: { search_endpoint_form_target: "proxyRequests",
+                        action: "search-endpoint-form#toggleJsonpProxyWarning" } %>
           <%= form.label :proxy_requests, class:'form-check-label' %>
         </div>
         <div class="form-text">
