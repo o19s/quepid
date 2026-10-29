@@ -22,6 +22,7 @@ The always-on triggers (when to run `bin/manual_test_status`, age-expired scenar
 ## Finding what's due
 
 - Run `bin/manual_test_status` (plain `ruby`, no Docker/Rails boot needed). Use `--due-only` to filter, `--part 07` to scope to one part, `--paths-for 3.2` to see what a scenario tracks.
+- The full report ends with changed `app/`, `config/` and `lib/` files no scenario's `paths` names. Add each to the scenario that displays its effect. Add it to `docs/manual-testing/untracked_ignore.yml` only if it cannot change what the UI displays (tooling, server plumbing, API responses only external clients use); code that is not UI but feeds what is displayed stays in a scenario.
 - Follow the timestamp rules in [DEVELOPER_GUIDE.md — Manual testing tracker](../../../DEVELOPER_GUIDE.md#manual-testing-tracker). Preserve actual verification timestamps.
 
 ## Sampling
@@ -36,9 +37,11 @@ The always-on triggers (when to run `bin/manual_test_status`, age-expired scenar
 ## Driving scenarios
 
 - Drive the mutating path, not just the open modal, on a disposable case or clone. Open-modal-only coverage is acceptable only when the mutating path is blocked; say so in `notes`.
+- Capture a scenario's default screenshot states; skip its `alternates` unless the user asks for them or their own view changed. `yarn screenshots:status --source-changed` leaves alternates out unless given `--include-alternates`.
 
 ## Recording results
 
 - After running a scenario (pass or fail), update its entry in `tracking.yml`: `last_run` (today, UTC), `result` (`pass` / `pass_with_fixes` / `fail` / `blocked`), and `notes` on what was actually covered and what wasn't (partial coverage is normal — say so rather than implying the whole scenario was exhaustively verified; `tracking.yml`'s own header has the length guidance — brief for a clean pass, as long as it takes to be useful when the pass found and fixed something). Only set `last_run` for scenarios you actually exercised; leave others alone (`null` is honest and useful).
+- Immediately after setting `last_run`, before any further edits, run `bin/manual_test_status --record <ids>` for the scenarios you exercised. It records their files' content as verified, so later code changes are judged by content, not timestamps. It refuses a scenario whose `last_run` is over a day old; never record a scenario you didn't drive.
 - Update the tracker before moving to another scenario. During a long scenario, record verified checkpoints as you go, explicitly label the coverage as partial/in progress and name pending checks; do not leave an older result in place until the whole sweep finishes. The result describes only the recorded coverage. Replace the checkpoint notes with the final coverage and outcome when finished.
 - If a scenario's source moves or a new one is added, update `paths`/add an entry — the tracker is only as useful as its path mappings.
