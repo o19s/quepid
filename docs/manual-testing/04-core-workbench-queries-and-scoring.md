@@ -89,7 +89,7 @@ Before testing individual features, get oriented:
 - [ ] **Steps:**
   1. On a brand-new case, confirm the case score badge shows `?` or `--` before any query has been scored.
   2. Run searches / rate documents, confirm the case score badge and each query's score badge update with a sensible color (low score vs. high score should look visually distinct).
-- **Expected:** Badge color scale looks sane at both ends of the range; badges update live as ratings change. Numeric live and snapshot scores show their maximum (e.g. `0.75` / `of 1.00`); pending, unrated and zero-result scores also show **Not scored**, **Unrated** or **No results**, so color is supplemental.
+- **Expected:** Badge color scale looks sane at both ends of the range; badges update live as ratings change. Numeric live and snapshot scores show just the number (e.g. `0.75`), with no scale suffix, since the runtime supplies no reliable score maximum. DCG@10 is bounded for a fixed rating scale and cutoff, but its maximum is not 1; pending, unrated and zero-result scores also show **Not scored**, **Unrated** or **No results**, so color is supplemental.
 
 ### 4.8 Select a scorer for the case
 
