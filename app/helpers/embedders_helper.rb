@@ -1,8 +1,7 @@
 # frozen_string_literal: true
 
 module EmbeddersHelper
-  # The embedder form's connection dropdown: no connection (the embedder keeps its own URL and
-  # key), then every active connection the user can use that can make embeddings, plus the one the
+  # The embedder form's connection dropdown: a prompt, then every active connection the user can use that can make embeddings, plus the one the
   # embedder already has so saving doesn't silently unlink it. Only those for the embedder's
   # provider can be picked -- an Ollama embedder offers only Ollama connections -- so the others
   # are rendered disabled and hidden. They are still there because the provider can be changed on
@@ -20,6 +19,11 @@ module EmbeddersHelper
                   service_label: connection.service_definition&.label || connection.service } } ]
     end
 
-    options_for_select([ [ 'None: enter the URL and key here', '' ] ] + options, embedder.connection_id)
+    options_for_select([ [ 'Choose a connection', '' ] ] + options, embedder.connection_id)
+  end
+
+  # Is there a connection the embedder's provider can use, so that the form has something to pick?
+  def embedder_connection_offered? embedder
+    current_user.connections_involved_with.not_archived.exists?(service: embedder.provider)
   end
 end

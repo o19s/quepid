@@ -32,6 +32,18 @@ class ConnectionsControllerTest < ActionDispatch::IntegrationTest
     assert_select 'td .badge', text: 'Everyone'
   end
 
+  test 'index has a status column that asks for each connection separately' do
+    get connections_url
+
+    assert_select 'th', text: 'Status'
+    visible = [ connection, connections(:voyage), connections(:shared_ollama), connections(:instance_elasticsearch) ]
+    cells = css_select('td[data-controller="connection-status"]')
+    assert_equal visible.size, cells.size
+    visible.each do |shown|
+      assert_select "td[data-connection-status-url-value='#{connection_status_path(shown)}'] button i.bi-plug-fill"
+    end
+  end
+
   test 'index shows edit and delete only for connections the user can manage' do
     get connections_url
 

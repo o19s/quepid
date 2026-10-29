@@ -126,6 +126,8 @@ Rails.application.routes.draw do
       post 'check', to: 'connections/checks#create', as: :check
     end
     resource :check, only: :create, module: :connections
+    # Whether the saved connection answers right now, for the list's status column.
+    resource :status, only: :show, module: :connections
   end
 
   resources :teams, only: [] do

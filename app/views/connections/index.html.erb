@@ -23,6 +23,7 @@
               <th>Service</th>
               <th>URL</th>
               <th>Authentication</th>
+              <th>Status</th>
               <th>Owner</th>
               <th>Teams</th>
               <th>Used by</th>
@@ -45,6 +46,14 @@
                   <% if connection.secret.present? %>
                     <i class="bi bi-key-fill text-muted" title="A secret is saved" aria-label="A secret is saved"></i>
                   <% end %>
+                </td>
+                <td data-controller="connection-status"
+                    data-connection-status-url-value="<%= connection_status_path(connection) %>">
+                  <%# Grey while asking, then a green plug if the service answers or a red one if it doesn't. %>
+                  <button type="button" class="btn btn-link p-0 text-muted" data-connection-status-target="button"
+                          data-action="click->connection-status#check" aria-label="Checking connection" title="Checking...">
+                    <i class="bi bi-plug-fill" aria-hidden="true"></i>
+                  </button>
                 </td>
                 <td>
                   <% if connection.instance_wide? %>

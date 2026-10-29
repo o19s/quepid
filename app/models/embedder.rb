@@ -61,7 +61,8 @@ class Embedder < ApplicationRecord
   belongs_to :owner, class_name: 'User', optional: true
 
   # Where to reach the provider and the key to use, kept once for everything that calls it
-  # (ADR 0005). Without one the embedder uses its own service_url, api_key and timeout.
+  # (ADR 0005). An embedder made before connections has none and keeps using its own service_url,
+  # api_key and timeout, which the form no longer shows; a later migration moves them to connections.
   belongs_to :connection, optional: true, inverse_of: :embedders
 
   # Deleting an embedder unlinks its cases; the vectors already stored on their
@@ -89,6 +90,8 @@ class Embedder < ApplicationRecord
   validates :timeout, numericality: { only_integer: true, greater_than: 0, less_than_or_equal_to: 600 }
   validate :native_truncation_supported
   validate :connection_fits_and_is_usable
+  validate :connection_required_when_created, on: :create
+  validate :connection_not_removed, on: :update
   validate :api_key_present_when_required
   validate :input_template_has_query
 
@@ -189,6 +192,22 @@ class Embedder < ApplicationRecord
 
     self[:provider] = connection.service
     @provider_definition = nil
+  end
+
+  # A new embedder needs a connection: its URL, key and timeout live there, and the form no longer
+  # asks for them. Embedders made before connections keep their own settings, for now.
+  def connection_required_when_created
+    return if connection || self[:service_url].present?
+
+    errors.add(:connection, 'is required: it holds the URL and key (create one under Connections)')
+  end
+
+  # An embedder on a connection can move to another, but not back to settings of its own, which
+  # the form no longer has.
+  def connection_not_removed
+    return unless connection_id.nil? && connection_id_was.present?
+
+    errors.add(:connection, 'can be changed but not removed')
   end
 
   def connection_fits_and_is_usable

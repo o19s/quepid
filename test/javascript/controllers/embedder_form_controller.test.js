@@ -9,33 +9,33 @@ vi.mock("api/fetch", () => ({
 const PRESETS = {
   openai: {
     label: "OpenAI",
-    service_url: "https://api.openai.com",
     model: "text-embedding-3-small",
     supports_dimensions: true,
     allowed_dimensions: [],
-    supports_instructions: false,
-    uses_key: true,
-    requires_key: true
+    supports_instructions: false
   },
   voyage: {
     label: "Voyage AI",
-    service_url: "https://api.voyageai.com",
     model: "voyage-3.5",
     supports_dimensions: true,
     allowed_dimensions: [256, 512, 1024, 2048],
-    supports_instructions: false,
-    uses_key: true
+    supports_instructions: false
   },
   ollama: {
     label: "Ollama",
-    service_url: "http://ollama:11434",
     model: "qwen3-embedding:0.6b",
     supports_dimensions: false,
     allowed_dimensions: [],
-    supports_instructions: true,
-    uses_key: false
+    supports_instructions: true
   }
 }
+
+// A prompt, a Voyage connection and two Ollama ones, so the list can be narrowed by provider.
+const CONNECTIONS = [
+  ["7", "voyage", "https://api.voyageai.com", "Voyage AI"],
+  ["8", "ollama", "http://ollama:11434", "Ollama"],
+  ["9", "ollama", "http://gpu-box:11434", "Ollama"]
+]
 
 function select(values, selected) {
   const element = document.createElement("select")
@@ -48,46 +48,12 @@ function select(values, selected) {
   return element
 }
 
-function buildController({ provider = "openai", truncation = "none" } = {}) {
-  const controller = Object.create(EmbedderFormController.prototype)
-  controller.presetsValue = PRESETS
-  controller.checkUrlValue = "embedders/connection_check"
-  controller.providerTarget = select(Object.keys(PRESETS), provider)
-  controller.serviceUrlTarget = document.createElement("input")
-  controller.modelTarget = document.createElement("input")
-  controller.apiKeyRowTarget = document.createElement("div")
-  controller.hasApiKeyHintTarget = true
-  controller.apiKeyHintTarget = document.createElement("div")
-  controller.truncationTarget = select(["none", "native", "client"], truncation)
-  controller.truncationHintTarget = document.createElement("div")
-  controller.dimensionsRowTarget = document.createElement("div")
-  controller.dimensionsTarget = document.createElement("input")
-  controller.dimensionsHintTarget = document.createElement("div")
-  controller.instructionFieldsTarget = document.createElement("div")
-  controller.helpTargets = Object.keys(PRESETS).map((key) => {
-    const help = document.createElement("div")
-    help.dataset.provider = key
-    return help
-  })
-  controller.checkTextTarget = document.createElement("input")
-  controller.checkButtonTarget = document.createElement("button")
-  controller.checkResultTarget = document.createElement("div")
-  return controller
-}
-
-// A controller wired to a connection dropdown holding "none", a Voyage connection and two Ollama
-// ones, so the dropdown can be narrowed by provider.
-function buildConnectedController(options = {}) {
-  const controller = buildController(options)
+function connectionDropdown() {
   const dropdown = document.createElement("select")
-  const none = document.createElement("option")
-  none.value = ""
-  dropdown.append(none)
-  ;[
-    ["7", "voyage", "https://api.voyageai.com", "Voyage AI"],
-    ["8", "ollama", "http://ollama:11434", "Ollama"],
-    ["9", "ollama", "http://gpu-box:11434", "Ollama"]
-  ].forEach(([id, service, url, label]) => {
+  const prompt = document.createElement("option")
+  prompt.value = ""
+  dropdown.append(prompt)
+  CONNECTIONS.forEach(([id, service, url, label]) => {
     const option = document.createElement("option")
     option.value = id
     option.dataset.service = service
@@ -95,12 +61,42 @@ function buildConnectedController(options = {}) {
     option.dataset.serviceLabel = label
     dropdown.append(option)
   })
+  return dropdown
+}
+
+function buildController({ provider = "openai", truncation = "none" } = {}) {
+  const controller = Object.create(EmbedderFormController.prototype)
+  controller.presetsValue = PRESETS
+  controller.checkUrlValue = "embedders/connection_check"
+  controller.newConnectionUrlValue = "/connections/new"
+  controller.providerTarget = select(Object.keys(PRESETS), provider)
+  controller.modelTarget = document.createElement("input")
   controller.hasConnectionTarget = true
-  controller.connectionTarget = dropdown
+  controller.connectionTarget = connectionDropdown()
   controller.hasConnectionInfoTarget = true
   controller.connectionInfoTarget = document.createElement("div")
-  controller.serviceUrlRowTarget = document.createElement("div")
-  controller.timeoutRowTarget = document.createElement("div")
+  controller.hasNoConnectionsTarget = true
+  controller.noConnectionsTarget = document.createElement("div")
+  controller.hasNewConnectionLinkTarget = true
+  controller.newConnectionLinkTarget = document.createElement("a")
+  controller.truncationTarget = select(["none", "native", "client"], truncation)
+  controller.truncationHintTarget = document.createElement("div")
+  controller.dimensionsRowTarget = document.createElement("div")
+  controller.dimensionsTarget = document.createElement("input")
+  controller.dimensionsHintTarget = document.createElement("div")
+  controller.instructionFieldsTarget = document.createElement("div")
+  controller.hasNoInstructionsTarget = true
+  controller.noInstructionsTarget = document.createElement("div")
+  controller.helpTargets = Object.keys(PRESETS).map((key) => {
+    const help = document.createElement("div")
+    help.dataset.provider = key
+    return help
+  })
+  controller.checkTextTarget = document.createElement("input")
+  controller.checkButtonTarget = document.createElement("button")
+  controller.hasCheckHintTarget = true
+  controller.checkHintTarget = document.createElement("div")
+  controller.checkResultTarget = document.createElement("div")
   return controller
 }
 
@@ -115,34 +111,19 @@ describe("EmbedderFormController", () => {
     vi.clearAllMocks()
   })
 
-  describe("with a connection", () => {
-    it("keeps the URL, key and timeout fields when no connection is chosen", () => {
-      const controller = buildConnectedController({ provider: "ollama" })
-
-      controller.refresh()
-
-      expect(controller.serviceUrlRowTarget.hidden).toBe(false)
-      expect(controller.timeoutRowTarget.hidden).toBe(false)
-      expect(controller.apiKeyRowTarget.hidden).toBe(true) // Ollama takes no key
-      expect(controller.connectionInfoTarget.hidden).toBe(true)
-    })
-
+  describe("the connection", () => {
     it("lists only the connections for the chosen provider", () => {
-      const ollama = buildConnectedController({ provider: "ollama" })
+      const ollama = buildController({ provider: "ollama" })
       ollama.refresh()
       expect(offered(ollama)).toEqual(["8", "9"])
 
-      const voyage = buildConnectedController({ provider: "voyage" })
+      const voyage = buildController({ provider: "voyage" })
       voyage.refresh()
       expect(offered(voyage)).toEqual(["7"])
-
-      const openai = buildConnectedController({ provider: "openai" })
-      openai.refresh()
-      expect(offered(openai)).toEqual([])
     })
 
     it("narrows the list when the provider changes, and drops a connection that no longer fits", () => {
-      const controller = buildConnectedController({ provider: "ollama" })
+      const controller = buildController({ provider: "ollama" })
       controller.refresh()
       controller.connectionTarget.value = "8"
       controller.changeConnection()
@@ -152,48 +133,91 @@ describe("EmbedderFormController", () => {
 
       expect(offered(controller)).toEqual(["7"])
       expect(controller.connectionTarget.value).toBe("")
-      expect(controller.serviceUrlRowTarget.hidden).toBe(false)
     })
 
-    it("hides what the connection owns and says where it comes from", () => {
-      const controller = buildConnectedController({ provider: "ollama" })
+    it("says where the URL, key and timeout come from once one is chosen", () => {
+      const controller = buildController({ provider: "ollama" })
       controller.refresh()
-      controller.connectionTarget.value = "9"
+      expect(controller.connectionInfoTarget.hidden).toBe(true)
 
+      controller.connectionTarget.value = "9"
       controller.changeConnection()
 
-      expect(controller.serviceUrlRowTarget.hidden).toBe(true)
-      expect(controller.timeoutRowTarget.hidden).toBe(true)
-      expect(controller.apiKeyRowTarget.hidden).toBe(true)
       expect(controller.connectionInfoTarget.hidden).toBe(false)
       expect(controller.connectionInfoTarget.textContent).toContain(
         "Ollama at http://gpu-box:11434"
       )
+      expect(controller.connectionInfoTarget.textContent).toContain("URL, key and timeout")
     })
 
-    it("hides the key field for a provider that takes one once a connection is chosen", () => {
-      const controller = buildConnectedController({ provider: "voyage" })
-      controller.refresh()
-      expect(controller.apiKeyRowTarget.hidden).toBe(false)
+    it("offers to create a connection for the provider when there is none to pick", () => {
+      const controller = buildController({ provider: "openai" })
 
-      controller.connectionTarget.value = "7"
+      controller.refresh()
+
+      expect(controller.noConnectionsTarget.hidden).toBe(false)
+      expect(controller.newConnectionLinkTarget.textContent).toBe("Create a OpenAI connection")
+      expect(controller.newConnectionLinkTarget.getAttribute("href")).toBe(
+        "/connections/new?service=openai"
+      )
+    })
+
+    it("hides that offer when the provider has a connection, and shows it again for one without", () => {
+      const controller = buildController({ provider: "ollama" })
+
+      controller.refresh()
+      expect(controller.noConnectionsTarget.hidden).toBe(true)
+
+      controller.providerTarget.value = "voyage"
+      controller.changeProvider()
+      expect(controller.noConnectionsTarget.hidden).toBe(true)
+
+      controller.providerTarget.value = "openai"
+      controller.changeProvider()
+      expect(controller.noConnectionsTarget.hidden).toBe(false)
+      expect(controller.newConnectionLinkTarget.getAttribute("href")).toBe(
+        "/connections/new?service=openai"
+      )
+    })
+  })
+
+  describe("the Check connection button", () => {
+    it("is disabled, with a hint to add a connection, until one is chosen", () => {
+      const controller = buildController({ provider: "ollama" })
+
+      controller.refresh()
+
+      expect(controller.checkButtonTarget.disabled).toBe(true)
+      expect(controller.checkHintTarget.hidden).toBe(false)
+    })
+
+    it("is enabled once a connection is chosen", () => {
+      const controller = buildController({ provider: "ollama" })
+      controller.refresh()
+
+      controller.connectionTarget.value = "8"
       controller.changeConnection()
 
-      expect(controller.apiKeyRowTarget.hidden).toBe(true)
+      expect(controller.checkButtonTarget.disabled).toBe(false)
+      expect(controller.checkHintTarget.hidden).toBe(true)
     })
 
-    it("shows the fields again when the connection is cleared", () => {
-      const controller = buildConnectedController({ provider: "voyage" })
+    it("is disabled again when the connection is cleared or no longer fits the provider", () => {
+      const controller = buildController({ provider: "ollama" })
       controller.refresh()
-      controller.connectionTarget.value = "7"
+      controller.connectionTarget.value = "8"
       controller.changeConnection()
 
       controller.connectionTarget.value = ""
       controller.changeConnection()
+      expect(controller.checkButtonTarget.disabled).toBe(true)
 
-      expect(controller.serviceUrlRowTarget.hidden).toBe(false)
-      expect(controller.apiKeyRowTarget.hidden).toBe(false)
-      expect(controller.connectionInfoTarget.hidden).toBe(true)
+      controller.connectionTarget.value = "8"
+      controller.changeConnection()
+      controller.providerTarget.value = "voyage"
+      controller.changeProvider()
+      expect(controller.checkButtonTarget.disabled).toBe(true)
+      expect(controller.checkHintTarget.hidden).toBe(false)
     })
   })
 
@@ -202,7 +226,6 @@ describe("EmbedderFormController", () => {
 
     controller.refresh()
 
-    expect(controller.apiKeyRowTarget.hidden).toBe(true)
     expect(controller.instructionFieldsTarget.hidden).toBe(false)
     expect(controller.truncationTarget.querySelector("option[value='native']").disabled).toBe(true)
     expect(controller.dimensionsRowTarget.hidden).toBe(true)
@@ -211,15 +234,17 @@ describe("EmbedderFormController", () => {
     ).toEqual(["ollama"])
   })
 
-  it("says whether the provider needs a key", () => {
+  it("says so in the Instructions tab when the provider takes no instruction", () => {
     const controller = buildController({ provider: "openai" })
 
     controller.refresh()
-    expect(controller.apiKeyHintTarget.textContent).toBe("Required for OpenAI.")
+    expect(controller.instructionFieldsTarget.hidden).toBe(true)
+    expect(controller.noInstructionsTarget.hidden).toBe(false)
 
     controller.providerTarget.value = "ollama"
     controller.refresh()
-    expect(controller.apiKeyHintTarget.textContent).toBe("Optional.")
+    expect(controller.instructionFieldsTarget.hidden).toBe(false)
+    expect(controller.noInstructionsTarget.hidden).toBe(true)
   })
 
   it("lists the allowed sizes for native truncation", () => {
@@ -233,14 +258,12 @@ describe("EmbedderFormController", () => {
     )
   })
 
-  it("changing provider fills in its defaults and drops native truncation it can't do", () => {
+  it("changing provider fills in its default model and drops native truncation it can't do", () => {
     const controller = buildController({ provider: "openai", truncation: "native" })
-    controller.serviceUrlTarget.value = "https://api.openai.com"
     controller.providerTarget.value = "ollama"
 
     controller.changeProvider()
 
-    expect(controller.serviceUrlTarget.value).toBe("http://ollama:11434")
     expect(controller.modelTarget.value).toBe("qwen3-embedding:0.6b")
     expect(controller.truncationTarget.value).toBe("none")
   })

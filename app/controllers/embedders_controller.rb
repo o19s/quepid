@@ -15,9 +15,9 @@ class EmbeddersController < ApplicationController
   def new
     provider = EmbedderProvider.find('openai')
     @embedder = Embedder.new(
-      provider:    provider.key,
-      service_url: provider.default_service_url,
-      model:       provider.default_model
+      provider:   provider.key,
+      model:      provider.default_model,
+      connection: current_user.connections_involved_with.not_archived.where(service: provider.key).order(:name).first
     )
     @embedder.team_ids = [ @team.id ] if @team
   end
@@ -25,10 +25,8 @@ class EmbeddersController < ApplicationController
   def edit
   end
 
-  # The form never shows a key, so the clone posts back clone_of and #create copies the
-  # source's key when none was typed -- a clone works without re-entering it.
+  # The copy keeps the connection, so it works without choosing one again.
   def clone
-    @clone_of = @embedder
     @embedder = @embedder.dup
     @embedder.name = "Clone of #{@embedder.name}"
     @embedder.team_ids = [ @team.id ] if @team
@@ -37,8 +35,6 @@ class EmbeddersController < ApplicationController
 
   def create
     @embedder = current_user.owned_embedders.build(embedder_params)
-    @clone_of = current_user.embedders_involved_with.find_by(id: params[:clone_of]) if params[:clone_of].present?
-    @embedder.api_key = @clone_of.api_key if @clone_of && @embedder.api_key.blank?
 
     if usable_connection? && @embedder.save
       apply_team_ids(@embedder, params.dig(:embedder, :team_ids))

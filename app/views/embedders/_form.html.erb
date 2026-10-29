@@ -1,12 +1,10 @@
-<%# locals: (embedder:, form:, clone_of: nil) %>
-<%# A saved embedder (or the one being cloned) is checked with its saved key when the key
-    field is left blank -- see Embedders::ConnectionChecksController. %>
-<% key_source = embedder.persisted? ? embedder : clone_of %>
+<%# locals: (embedder:, form:) %>
 <% provider = embedder.provider_definition %>
 <div class="card"
      data-controller="embedder-form"
      data-embedder-form-presets-value="<%= EmbedderProvider.presets.to_json %>"
-     data-embedder-form-check-url-value="<%= key_source ? embedder_connection_check_path(key_source) : connection_check_embedders_path %>">
+     data-embedder-form-check-url-value="<%= connection_check_embedders_path %>"
+     data-embedder-form-new-connection-url-value="<%= new_connection_path %>">
   <div class="card-header">
     <h5 class="mb-0"><%= render 'embedders/icon' %> Embedder<%= render 'embedders/beta' %></h5>
   </div>
@@ -21,8 +19,6 @@
         </ul>
       </div>
     <% end %>
-
-    <%= hidden_field_tag :clone_of, clone_of.id if clone_of %>
 
     <div class="alert alert-light border small">
       <i class="bi bi-info-circle" aria-hidden="true"></i>
@@ -55,105 +51,132 @@
                   class: 'form-select',
                   data: { embedder_form_target: 'connection', action: 'change->embedder-form#changeConnection' } %>
             <div class="form-text">
-              A connection keeps the provider's URL and key in one place, so they're entered once and shared.
+              The connection holds the provider's URL, key and timeout, so they're entered once and shared.
               Only connections for the provider chosen above are listed.
               <%= link_to 'Manage connections', connections_path, target: '_blank', rel: 'noopener' %>.
-              Choose none to enter the URL and key here instead.
+            </div>
+            <% if embedder.connection.nil? && embedder.persisted? && embedder.service_url.present? %>
+              <div class="alert alert-warning small mt-2 mb-0" role="alert">
+                <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+                <strong>This embedder uses the old, deprecated configuration and needs to be migrated to a connection.</strong>
+                It is still set up with its own URL, <code><%= embedder.service_url %></code>, and its own key, stored on
+                the embedder itself. That way of configuring embedders is going away: those settings can no longer be edited
+                here, and they will be removed once embedders have been moved to connections. Until then it keeps working
+                unchanged. To migrate it, choose a connection above (or create one for
+                <%= embedder.provider_definition&.label || embedder.provider %>); the connection's URL, key and timeout then
+                replace the embedder's own, and you can't go back to them.
+              </div>
+            <% end %>
+            <div class="alert alert-warning small mt-2 mb-0" <%= 'hidden' if embedder_connection_offered?(embedder) %>
+                 data-embedder-form-target="noConnections">
+              There is no connection for this provider yet.
+              <%= link_to "Create a #{embedder.provider_definition&.label || embedder.provider} connection",
+                          new_connection_path(service: embedder.provider), target: '_blank', rel: 'noopener',
+                          data: { embedder_form_target: 'newConnectionLink' } %>
             </div>
             <div class="alert alert-light border small mt-2 mb-0" hidden data-embedder-form-target="connectionInfo"></div>
           </div>
         </div>
 
-        <div class="row mb-3" data-embedder-form-target="serviceUrlRow">
-          <%= form.label :service_url, 'URL', class: 'col-sm-3 col-form-label' %>
-          <div class="col-sm-9">
-            <%= form.url_field :service_url, class: 'form-control', data: { embedder_form_target: 'serviceUrl' } %>
-          </div>
-        </div>
+        <%# Errors in a tab the person isn't looking at would be invisible, so open that one. %>
+        <% instructions_errors = (embedder.errors.attribute_names & %i[instruction input_template]).any? %>
+        <ul class="nav nav-tabs mb-3" id="embedder-tabs" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button class="nav-link <%= 'active' unless instructions_errors %>" id="embedder-model-tab" type="button" role="tab"
+                    data-bs-toggle="tab" data-bs-target="#embedder-model" aria-controls="embedder-model"
+                    aria-selected="<%= !instructions_errors %>">Model</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link <%= 'active' if instructions_errors %>" id="embedder-instructions-tab" type="button" role="tab"
+                    data-bs-toggle="tab" data-bs-target="#embedder-instructions" aria-controls="embedder-instructions"
+                    aria-selected="<%= instructions_errors %>">Instructions</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="embedder-access-tab" type="button" role="tab"
+                    data-bs-toggle="tab" data-bs-target="#embedder-access" aria-controls="embedder-access"
+                    aria-selected="false">Access</button>
+          </li>
+        </ul>
 
-        <div class="row mb-3">
-          <%= form.label :model, class: 'col-sm-3 col-form-label' %>
-          <div class="col-sm-9">
-            <%= form.text_field :model, class: 'form-control', data: { embedder_form_target: 'model' } %>
-            <div class="form-text">
-              The model your documents were embedded with. Vectors from different models live in different
-              spaces, so a mismatch gives meaningless scores rather than an error.
-            </div>
-          </div>
-        </div>
-
-        <div class="row mb-3" data-embedder-form-target="apiKeyRow">
-          <%= form.label :api_key, 'API key', class: 'col-sm-3 col-form-label' %>
-          <div class="col-sm-9">
-            <%# Never rendered back: blank keeps the saved key. %>
-            <%= form.password_field :api_key, value: nil, autocomplete: 'off', class: 'form-control',
-                  placeholder: key_source&.api_key.present? ? 'Saved — leave blank to keep it' : '' %>
-            <div class="form-text" data-embedder-form-target="apiKeyHint"></div>
-          </div>
-        </div>
-
-        <div class="row mb-3">
-          <%= form.label :truncation, class: 'col-sm-3 col-form-label' %>
-          <div class="col-sm-9">
-            <%= form.select :truncation,
-                  [ [ 'None (full vector)', 'none' ],
-                    [ 'Native (provider returns N dimensions)', 'native' ],
-                    [ 'Client-side (keep first N, re-normalize)', 'client' ] ], {},
-                  class: 'form-select',
-                  data: { embedder_form_target: 'truncation', action: 'change->embedder-form#refresh' } %>
-            <div class="form-text">
-              Match how the index's vectors were sized: their dimension count, and whether they were shortened
-              by the provider (native) or cut and re-normalized afterwards (client-side). Search engines reject
-              a query vector of the wrong size.
-            </div>
-            <div class="form-text" data-embedder-form-target="truncationHint"></div>
-          </div>
-        </div>
-
-        <div class="row mb-3" data-embedder-form-target="dimensionsRow">
-          <%= form.label :dimensions, class: 'col-sm-3 col-form-label' %>
-          <div class="col-sm-9">
-            <%= form.number_field :dimensions, min: 1, class: 'form-control', data: { embedder_form_target: 'dimensions' } %>
-            <div class="form-text" data-embedder-form-target="dimensionsHint"></div>
-          </div>
-        </div>
-
-        <div data-embedder-form-target="instructionFields">
-          <div class="row mb-3">
-            <%= form.label :instruction, class: 'col-sm-3 col-form-label' %>
-            <div class="col-sm-9">
-              <%= form.textarea :instruction, rows: 2, class: 'form-control',
-                    placeholder: 'Given a web search query, retrieve relevant passages that answer the query' %>
-              <div class="form-text">
-                For instruction-following models such as Qwen3-Embedding. Leave blank to send the query as is.
+        <div class="tab-content">
+          <div class="tab-pane fade <%= 'show active' unless instructions_errors %>" id="embedder-model" role="tabpanel" aria-labelledby="embedder-model-tab" tabindex="0">
+            <div class="row mb-3">
+              <%= form.label :model, class: 'col-sm-3 col-form-label' %>
+              <div class="col-sm-9">
+                <%= form.text_field :model, class: 'form-control', data: { embedder_form_target: 'model' } %>
+                <div class="form-text">
+                  The model your documents were embedded with. Vectors from different models live in different
+                  spaces, so a mismatch gives meaningless scores rather than an error.
+                </div>
               </div>
             </div>
-          </div>
 
-          <div class="row mb-3">
-            <%= form.label :input_template, class: 'col-sm-3 col-form-label' %>
-            <div class="col-sm-9">
-              <%= form.textarea :input_template, rows: 2, class: 'form-control font-monospace',
-                    placeholder: EmbedderProvider::DEFAULT_INPUT_TEMPLATE %>
-              <div class="form-text">
-                What is actually sent: <code>{query}</code> is replaced by the query text and
-                <code>{instruction}</code> by the instruction above. Blank uses the placeholder when an
-                instruction is set.
+            <div class="row mb-3">
+              <%= form.label :truncation, class: 'col-sm-3 col-form-label' %>
+              <div class="col-sm-9">
+                <%= form.select :truncation,
+                      [ [ 'None (full vector)', 'none' ],
+                        [ 'Native (provider returns N dimensions)', 'native' ],
+                        [ 'Client-side (keep first N, re-normalize)', 'client' ] ], {},
+                      class: 'form-select',
+                      data: { embedder_form_target: 'truncation', action: 'change->embedder-form#refresh' } %>
+                <div class="form-text">
+                  Match how the index's vectors were sized: their dimension count, and whether they were shortened
+                  by the provider (native) or cut and re-normalized afterwards (client-side). Search engines reject
+                  a query vector of the wrong size.
+                </div>
+                <div class="form-text" data-embedder-form-target="truncationHint"></div>
               </div>
             </div>
-          </div>
-        </div>
 
-        <div class="row mb-3" data-embedder-form-target="timeoutRow">
-          <%= form.label :timeout, 'Timeout (s)', class: 'col-sm-3 col-form-label' %>
-          <div class="col-sm-3">
-            <%= form.number_field :timeout, min: 1, max: 600, class: 'form-control' %>
-          </div>
-        </div>
+            <div class="row mb-3" data-embedder-form-target="dimensionsRow">
+              <%= form.label :dimensions, class: 'col-sm-3 col-form-label' %>
+              <div class="col-sm-9">
+                <%= form.number_field :dimensions, min: 1, class: 'form-control', data: { embedder_form_target: 'dimensions' } %>
+                <div class="form-text" data-embedder-form-target="dimensionsHint"></div>
+              </div>
+            </div>
 
-        <div class="mb-3">
-          <%= render 'shared/team_picker', form: form, label: 'Teams to Share this Embedder With',
-                help_text: "Embedders are usable by anyone on a team they're shared with, and calls are made with this embedder's key. Leave unchecked to keep it private to you." %>
+          </div>
+
+          <div class="tab-pane fade <%= 'show active' if instructions_errors %>" id="embedder-instructions" role="tabpanel" aria-labelledby="embedder-instructions-tab" tabindex="0">
+            <p class="text-muted small mb-0" hidden data-embedder-form-target="noInstructions">
+              This provider's API takes the query as it is: there is no instruction or input template to set.
+            </p>
+            <div data-embedder-form-target="instructionFields">
+              <div class="row mb-3">
+                <%= form.label :instruction, class: 'col-sm-3 col-form-label' %>
+                <div class="col-sm-9">
+                  <%= form.textarea :instruction, rows: 2, class: 'form-control',
+                        placeholder: 'Given a web search query, retrieve relevant passages that answer the query' %>
+                  <div class="form-text">
+                    For instruction-following models such as Qwen3-Embedding. Leave blank to send the query as is.
+                  </div>
+                </div>
+              </div>
+
+              <div class="row mb-3">
+                <%= form.label :input_template, class: 'col-sm-3 col-form-label' %>
+                <div class="col-sm-9">
+                  <%= form.textarea :input_template, rows: 2, class: 'form-control font-monospace',
+                        placeholder: EmbedderProvider::DEFAULT_INPUT_TEMPLATE %>
+                  <div class="form-text">
+                    What is actually sent: <code>{query}</code> is replaced by the query text and
+                    <code>{instruction}</code> by the instruction above. Blank uses the placeholder when an
+                    instruction is set.
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="tab-pane fade" id="embedder-access" role="tabpanel" aria-labelledby="embedder-access-tab" tabindex="0">
+            <div class="mb-3">
+              <%= render 'shared/team_picker', form: form, label: 'Teams to Share this Embedder With',
+                    help_text: "Embedders are usable by anyone on a team they're shared with, and calls are made with its connection's key. Leave unchecked to keep it private to you." %>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -170,7 +193,7 @@
     <hr>
 
     <h5>Check connection</h5>
-    <p class="text-muted small">Embeds a sample query with the settings above, saved or not.</p>
+    <p class="text-muted small">Embeds a sample query through the connection above with the settings on this form, saved or not.</p>
     <div class="row g-2 align-items-center mb-3">
       <div class="col-sm-6">
         <input type="text" class="form-control" value="star wars" aria-label="Sample query"
@@ -178,8 +201,13 @@
       </div>
       <div class="col-auto">
         <button type="button" class="btn btn-primary" data-embedder-form-target="checkButton"
-                data-action="click->embedder-form#check">Check connection</button>
+                data-action="click->embedder-form#check" <%= 'disabled' unless embedder.connection_id %>>Check connection</button>
       </div>
+    </div>
+    <div class="form-text mb-3" data-embedder-form-target="checkHint" <%= 'hidden' if embedder.connection_id %>>
+      <i class="bi bi-info-circle" aria-hidden="true"></i>
+      There is nothing to check until the embedder has a connection. Choose one above, or
+      <%= link_to 'add a connection', new_connection_path(service: embedder.provider), target: '_blank', rel: 'noopener' %>.
     </div>
     <div data-embedder-form-target="checkResult" aria-live="polite"></div>
   </div>

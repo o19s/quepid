@@ -99,13 +99,28 @@ module Api
           assert_includes response.parsed_body['connection'].join, "isn't one you can use"
         end
 
-        test 'update can unlink the connection' do
+        test 'update can move to another connection but not unlink it' do
           embedder.update!(connection: connections(:openai))
 
           patch :update, params: { id: embedder.id, embedder: { connection_id: '' } }, format: :json
 
+          assert_response :bad_request
+          assert_includes response.parsed_body['connection'].join, 'can be changed but not removed'
+          assert_equal connections(:openai), embedder.reload.connection
+        end
+
+        test 'an embedder from before connections can be updated without one' do
+          patch :update, params: { id: embedder.id, embedder: { name: 'Renamed' } }, format: :json
+
           assert_response :ok
-          assert_nil embedder.reload.connection_id
+          assert_equal 'Renamed', embedder.reload.name
+        end
+
+        test 'create needs a connection or settings of its own' do
+          post :create, params: { embedder: { name: 'x', provider: 'openai', model: 'm' } }, format: :json
+
+          assert_response :bad_request
+          assert_includes response.parsed_body['connection'].join, 'is required'
         end
       end
     end

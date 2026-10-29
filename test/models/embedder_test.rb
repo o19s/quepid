@@ -321,6 +321,29 @@ class EmbedderTest < ActiveSupport::TestCase
       assert_equal 'cohere', embedder.reload.provider
     end
 
+    test 'a new embedder needs a connection, or settings of its own' do
+      embedder = Embedder.new(name: 'x', provider: 'openai', model: 'm', owner: owner)
+
+      assert_not embedder.valid?
+      assert_includes embedder.errors[:connection].join, 'is required'
+      assert_predicate build_embedder, :valid?
+    end
+
+    test 'an embedder on a connection can move to another, not back to its own settings' do
+      embedder = on_connection.tap(&:save!)
+      embedder.connection = nil
+
+      assert_not embedder.valid?
+      assert_includes embedder.errors[:connection].join, 'can be changed but not removed'
+    end
+
+    test 'an embedder from before connections can be saved without one' do
+      embedder = embedders(:openai_small)
+
+      assert_nil embedder.connection_id
+      assert embedder.update(name: 'Renamed')
+    end
+
     test 'deleting a connection unlinks its embedders instead of deleting them' do
       embedder = on_connection.tap(&:save!)
 

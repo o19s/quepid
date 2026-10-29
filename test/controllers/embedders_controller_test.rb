@@ -94,16 +94,17 @@ class EmbeddersControllerTest < ActionDispatch::IntegrationTest
     assert_equal 'sk-rotated', embedder.reload.api_key
   end
 
-  test 'a clone without a typed key keeps the source key' do
+  test 'a clone of an embedder on a connection keeps the connection' do
+    embedder.update!(connection: connections(:openai))
+
     get clone_embedder_url(embedder)
     assert_response :success
-    assert_select 'input[name=clone_of][value=?]', embedder.id.to_s
+    assert_select "select#embedder_connection_id option[selected][value='#{connections(:openai).id}']"
 
-    post embedders_url, params: { clone_of: embedder.id,
-                                  embedder: embedder_form_params(provider: 'openai', service_url: 'https://api.openai.com',
-                                                                 model: 'text-embedding-3-small', api_key: '') }
+    post embedders_url, params: { embedder: embedder_form_params(name: 'Clone', provider: 'openai', model: 'text-embedding-3-small',
+                                                                 connection_id: connections(:openai).id).except(:service_url, :api_key) }
 
-    assert_equal 'sk-test-openai', Embedder.last.api_key
+    assert_equal connections(:openai), Embedder.last.connection
   end
 
   test 'cannot see an embedder that is not shared with the user' do
@@ -217,13 +218,91 @@ class EmbeddersControllerTest < ActionDispatch::IntegrationTest
       assert_response :unprocessable_content
     end
 
-    test 'update moves an embedder onto a connection, and back off by choosing none' do
+    test 'update moves an embedder onto a connection, but not back to settings of its own' do
       # The form always posts the team boxes; without them saving unshares the embedder from the user's teams.
       patch embedder_url(embedder), params: { embedder: { connection_id: openai_connection.id, team_ids: [ team.id.to_s ] } }
       assert_equal openai_connection, embedder.reload.connection
 
       patch embedder_url(embedder), params: { embedder: { connection_id: '', team_ids: [ team.id.to_s ] } }
-      assert_nil embedder.reload.connection_id
+      assert_response :unprocessable_content
+      assert_select '.alert-danger', text: /can be changed but not removed/
+      assert_equal openai_connection, embedder.reload.connection
+    end
+
+    test 'an embedder from before connections keeps working and can be saved without one' do
+      assert_nil embedder.connection_id
+      assert_equal 'https://api.openai.com', embedder.service_url
+
+      patch embedder_url(embedder), params: { embedder: { name: 'Renamed', team_ids: [ team.id.to_s ] } }
+
+      assert_equal 'Renamed', embedder.reload.name
+      assert_nil embedder.connection_id
+      assert_equal 'sk-test-openai', embedder.api_key
+    end
+
+    test 'the form says an old embedder still uses its own URL and key, and has nothing to check yet' do
+      get edit_embedder_url(embedder)
+
+      assert_select '.alert-warning[role=alert]', text: /old, deprecated configuration and needs to be migrated to a connection/
+      assert_select '.alert-warning[role=alert]', text: %r{own URL, https://api\.openai\.com}
+      assert_select '.alert-warning[role=alert]', text: /choose a connection above/
+      assert_select 'button[data-embedder-form-target=checkButton][disabled]'
+      assert_select '[data-embedder-form-target=checkHint]:not([hidden])', text: /add a connection/
+    end
+
+    test 'the form has no URL, key or timeout fields: they come from the connection' do
+      get new_embedder_url
+
+      %w[service_url api_key timeout].each do |field|
+        assert_select "[name='embedder[#{field}]']", count: 0
+      end
+      assert_select 'select#embedder_connection_id'
+    end
+
+    test 'a new embedder needs a connection' do
+      assert_no_difference -> { Embedder.count } do
+        post embedders_url, params: { embedder: { name: 'No connection', provider: 'openai', model: 'text-embedding-3-small' } }
+      end
+
+      assert_response :unprocessable_content
+      assert_select '.alert-danger', text: /Connection is required/
+    end
+
+    test 'the Check connection button is enabled on an embedder that has a connection' do
+      embedder.update!(connection: openai_connection)
+
+      get edit_embedder_url(embedder)
+
+      assert_select 'button[data-embedder-form-target=checkButton]:not([disabled])'
+      assert_select '[data-embedder-form-target=checkHint][hidden]'
+    end
+
+    test 'the form has Model, Instructions and Access tabs, with the settings sorted into them' do
+      get new_embedder_url
+
+      assert_select 'ul#embedder-tabs button.nav-link', text: 'Model'
+      assert_select 'ul#embedder-tabs button.nav-link', text: 'Instructions'
+      assert_select 'ul#embedder-tabs button.nav-link', text: 'Access'
+      assert_select '#embedder-model input#embedder_model'
+      assert_select '#embedder-model select#embedder_truncation'
+      assert_select '#embedder-model input#embedder_dimensions'
+      assert_select '#embedder-instructions textarea#embedder_instruction'
+      assert_select '#embedder-instructions textarea#embedder_input_template'
+      assert_select "#embedder-access input[name='embedder[team_ids][]']"
+      # The name, provider and connection stay above the tabs; the check stays below them.
+      assert_select 'input#embedder_name'
+      assert_select 'select#embedder_provider'
+      assert_select 'select#embedder_connection_id'
+      assert_select '#embedder-tabs ~ * input#embedder_name', count: 0
+      assert_select '.tab-content input#embedder_name', count: 0
+    end
+
+    test 'an error in the instructions opens that tab' do
+      post embedders_url, params: { embedder: connection_embedder_params(provider: 'ollama', connection_id: connections(:shared_ollama).id, model: 'qwen3-embedding:0.6b', input_template: 'no placeholder') }
+
+      assert_response :unprocessable_content
+      assert_select 'button#embedder-instructions-tab.active'
+      assert_select '#embedder-instructions.show.active'
     end
 
     test 'a team member keeps an embedder on a connection they can no longer use when they only rename it' do

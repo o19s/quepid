@@ -19,7 +19,8 @@ class ConnectionsController < ApplicationController
   end
 
   def new
-    service = ConnectionService.find('openai')
+    # The embedder form links here with the service it wants a connection for.
+    service = ConnectionService.find(params.permit(:service)[:service]) || ConnectionService.find('openai')
     @connection = Connection.new(
       service:     service.key,
       base_url:    service.default_base_url,

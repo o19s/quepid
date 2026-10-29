@@ -311,14 +311,20 @@ Additive first, then removal.
   any team member can edit.
 - Deleting a user deletes their connections. Unlinking them would make them instance-wide.
 
-- **Embedders can use a connection.** `embedders.connection_id` is optional. The embedder form has a
-  Connection dropdown (active connections the user can use whose service makes embeddings); picking
-  one hides the provider, URL, key and timeout fields, which then come from the connection, and
-  follows its service for what the provider decides. Choosing none keeps the embedder's own URL and
-  key, so existing embedders are untouched (dual read; no backfill yet). The embedder API takes
-  `connection_id`. The fingerprint reads the effective provider and URL, so an embedder on a
-  connection has the same fingerprint as one with the same settings of its own, and changing the
-  connection's URL or service marks its embedders' vectors stale and re-vectorises their cases.
+- **Embedders use a connection.** `embedders.connection_id` is optional in the database. The embedder
+  form no longer has URL, key or timeout fields: they come from the connection chosen in a
+  Connection dropdown, which lists the active connections the user can use _for the embedder's
+  provider_ (an Ollama embedder offers only Ollama connections; with none, a link offers to create
+  one). The rest of the form is in three tabs, Model, Instructions and Access. The Check connection
+  button is disabled, with a hint to add a connection, until one is chosen. A new embedder needs a
+  connection; one can move to another connection but not back to settings of its own.
+  The embedder's own `service_url`, `api_key` and `timeout` columns are **kept**, and the API still
+  accepts them: an embedder made before connections has no connection and keeps working from them
+  (the form notes this and leaves them alone), until a later migration moves that data to
+  connections and drops the columns. The fingerprint reads the effective provider and URL, so an
+  embedder on a connection has the same fingerprint as one with the same settings of its own, and
+  changing the connection's URL or service marks its embedders' vectors stale and re-vectorises
+  their cases.
 - A connection can't be deleted while embedders use it (the UI says how many); deleting its owner's
   account deletes it and unlinks them. Switching a connection to a service that can't make
   embeddings is refused while embedders use it.
@@ -331,5 +337,6 @@ the connection owner's key. Embedders already work this way for their own keys, 
 alone; the fix is to allow an embedder to be shared only with teams that can also use its connection.
 
 Not built: renaming `LlmConnection` to `HttpClient` and building it from a `Connection`; moving
-AI judges onto connections; the backfill of existing embedders and judges; the rate limit (the field is stored, nothing
+AI judges onto connections; the migration of existing embedders' and judges' own settings to
+connections, and dropping those columns; the rate limit (the field is stored, nothing
 enforces it); search endpoints.
