@@ -1,0 +1,55 @@
+# Owned by doug and shared with `shared`, so random (a member) can use it but not change it.
+openai:
+  name:        OpenAI
+  service:     openai
+  base_url:    https://api.openai.com
+  auth_scheme: bearer
+  secret:      sk-test-openai
+  owner:       doug
+  teams:       shared
+
+# Owned by joey, shared with nobody: invisible to doug and random.
+private_ollama:
+  name:        Private Ollama
+  service:     ollama
+  base_url:    http://ollama:11434
+  auth_scheme: none
+  owner:       joey
+
+# No owner: usable by everyone, managed by administrators.
+instance_elasticsearch:
+  name:        Instance Elasticsearch
+  service:     elasticsearch
+  base_url:    http://elasticsearch:9200
+  auth_scheme: basic
+  secret:      elastic:changeme
+
+# A Voyage connection (embeddings only), owned by doug and shared with `shared`.
+voyage:
+  name:        Voyage
+  service:     voyage
+  base_url:    https://api.voyageai.com
+  auth_scheme: bearer
+  secret:      pa-test-voyage
+  timeout:     12
+  owner:       doug
+  teams:       shared
+
+# Anthropic cannot make embeddings.
+anthropic:
+  name:        Anthropic
+  service:     anthropic
+  base_url:    https://api.anthropic.com
+  auth_scheme: header
+  auth_header: x-api-key
+  secret:      sk-ant-test
+  owner:       doug
+
+# An Ollama connection, owned by doug and shared with `shared`.
+shared_ollama:
+  name:        Shared Ollama
+  service:     ollama
+  base_url:    http://ollama:11434
+  auth_scheme: none
+  owner:       doug
+  teams:       shared

@@ -30,6 +30,7 @@ module Api
       #         service_url: String,
       #         model: String,
       #         api_key: String,
+      #         connection_id: Integer,
       #         dimensions: Integer,
       #         truncation: String,
       #         instruction: String,
@@ -52,10 +53,13 @@ module Api
       #       "truncation": "native"
       #     }
       #   }]
+      #
+      # With connection_id the embedder takes its provider, URL, key and timeout from that
+      # connection (one the user can use whose service makes embeddings), and ignores its own.
       def create
         @embedder = current_user.owned_embedders.build(embedder_params.except(:team_ids))
 
-        if @embedder.save
+        if usable_connection? && @embedder.save
           apply_team_ids(@embedder, embedder_params[:team_ids]) if embedder_params.key?(:team_ids)
           respond_with @embedder
         else
@@ -69,7 +73,9 @@ module Api
         update_params = embedder_params.except(:team_ids)
         update_params = update_params.except(:api_key) if Embedder.keep_existing_key?(update_params[:api_key])
 
-        if @embedder.update(update_params)
+        @embedder.assign_attributes(update_params)
+
+        if usable_connection? && @embedder.save
           apply_team_ids(@embedder, embedder_params[:team_ids]) if embedder_params.key?(:team_ids)
           respond_with @embedder
         else
@@ -96,6 +102,16 @@ module Api
         kept = embedder.team_ids - user_team_ids
 
         embedder.team_ids = kept | selected
+      end
+
+      # See EmbeddersController#usable_connection?.
+      def usable_connection?
+        id = @embedder.connection_id
+        return true if id.nil? || id == @embedder.connection_id_was
+        return true if current_user.connections_involved_with.exists?(id: id)
+
+        @embedder.errors.add(:connection, "isn't one you can use")
+        false
       end
 
       def embedder_params

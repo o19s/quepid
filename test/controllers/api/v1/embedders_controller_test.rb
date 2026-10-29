@@ -74,6 +74,40 @@ module Api
 
         assert_response :no_content
       end
+
+      describe 'with a connection' do
+        let(:voyage) { connections(:voyage) }
+
+        test 'create on a connection returns its provider and URL, and masks the connection\'s key' do
+          post :create, params: { embedder: { name: 'On Voyage', model: 'voyage-3.5', connection_id: voyage.id } }, format: :json
+
+          assert_response :ok
+          body = response.parsed_body
+          assert_equal voyage.id, body['connection_id']
+          assert_equal 'voyage', body['provider']
+          assert_equal 'https://api.voyageai.com', body['service_url']
+          assert_equal Embedder::MASKED_API_KEY, body['api_key']
+          assert_not_includes response.body, 'pa-test-voyage'
+        end
+
+        test 'create refuses a connection the user cannot use' do
+          assert_no_difference -> { Embedder.count } do
+            post :create, params: { embedder: { name: 'x', model: 'm', connection_id: connections(:private_ollama).id } }, format: :json
+          end
+
+          assert_response :bad_request
+          assert_includes response.parsed_body['connection'].join, "isn't one you can use"
+        end
+
+        test 'update can unlink the connection' do
+          embedder.update!(connection: connections(:openai))
+
+          patch :update, params: { id: embedder.id, embedder: { connection_id: '' } }, format: :json
+
+          assert_response :ok
+          assert_nil embedder.reload.connection_id
+        end
+      end
     end
   end
 end

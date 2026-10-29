@@ -119,4 +119,129 @@ class EmbeddersControllerTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to embedders_url
   end
+
+  describe 'with a connection' do
+    let(:voyage) { connections(:voyage) }
+    let(:openai_connection) { connections(:openai) }
+
+    def connection_embedder_params overrides = {}
+      { name: 'On Voyage', provider: 'voyage', service_url: 'https://ignored.example', model: 'voyage-3.5',
+        connection_id: voyage.id, timeout: '30' }.merge(overrides)
+    end
+
+    test 'the connection field comes right below the provider' do
+      get new_embedder_url
+
+      labels = css_select('form label').map { |label| label['for'] }
+      assert_equal 'embedder_provider', labels[labels.index('embedder_connection_id') - 1]
+    end
+
+    test 'a new embedder, which starts on OpenAI, lists only the OpenAI connections' do
+      get new_embedder_url
+
+      assert_select 'select#embedder_connection_id option[value=?]', connections(:openai).id.to_s, text: 'OpenAI'
+      [ :voyage, :shared_ollama, :anthropic, :private_ollama, :instance_elasticsearch ].each do |other|
+        assert_select 'select#embedder_connection_id option[value=?]:not([disabled])', connections(other).id.to_s, count: 0
+      end
+      option = css_select("select#embedder_connection_id option[value='#{connections(:openai).id}']").first
+      assert_equal 'openai', option['data-service']
+      assert_equal 'https://api.openai.com', option['data-url']
+    end
+
+    test 'the other providers\' connections are still in the list, disabled, so changing the provider can enable them' do
+      get new_embedder_url
+
+      option = css_select("select#embedder_connection_id option[value='#{connections(:shared_ollama).id}']").first
+      assert option.key?('disabled')
+      assert_equal 'ollama', option['data-service']
+    end
+
+    test 'an Ollama embedder lists only the Ollama connections' do
+      ollama = Embedder.create!(name: 'Ollama', provider: 'ollama', service_url: 'http://ollama:11434',
+                                model: 'qwen3-embedding:0.6b', owner: user)
+
+      get edit_embedder_url(ollama)
+
+      assert_select 'select#embedder_connection_id option[value=?]', connections(:shared_ollama).id.to_s, text: 'Shared Ollama'
+      [ :openai, :voyage, :anthropic, :private_ollama ].each do |other|
+        assert_select 'select#embedder_connection_id option[value=?]:not([disabled])', connections(other).id.to_s, count: 0
+      end
+    end
+
+    test 'a Voyage embedder lists only the Voyage connections' do
+      voyage_embedder = Embedder.create!(name: 'Voyage', provider: 'voyage', service_url: 'https://api.voyageai.com',
+                                         model: 'voyage-3.5', api_key: 'pa-x', owner: user)
+
+      get edit_embedder_url(voyage_embedder)
+
+      assert_select 'select#embedder_connection_id option[value=?]', voyage.id.to_s
+      assert_select 'select#embedder_connection_id option[value=?]:not([disabled])', connections(:shared_ollama).id.to_s, count: 0
+      assert_select 'select#embedder_connection_id option[value=?]:not([disabled])', connections(:openai).id.to_s, count: 0
+    end
+
+    test 'create refuses a connection for another provider' do
+      assert_no_difference -> { Embedder.count } do
+        post embedders_url, params: { embedder: connection_embedder_params(provider: 'ollama', connection_id: voyage.id) }
+      end
+
+      assert_response :unprocessable_content
+      assert_select '.alert-danger', text: /is for Voyage AI, not Ollama/
+    end
+
+    test 'create saves an embedder on a connection that takes its provider and URL from it' do
+      assert_difference -> { Embedder.count }, 1 do
+        post embedders_url, params: { embedder: connection_embedder_params }
+      end
+
+      created = Embedder.order(:id).last
+      assert_redirected_to edit_embedder_url(created)
+      assert_equal voyage, created.connection
+      assert_equal 'voyage', created.provider
+      assert_equal 'https://api.voyageai.com', created.service_url
+    end
+
+    test 'create refuses a connection the user cannot use' do
+      assert_no_difference -> { Embedder.count } do
+        post embedders_url, params: { embedder: connection_embedder_params(connection_id: connections(:private_ollama).id) }
+      end
+
+      assert_response :unprocessable_content
+      assert_select '.alert-danger', text: /isn't one you can use/
+    end
+
+    test 'create refuses a connection that cannot make embeddings' do
+      assert_no_difference -> { Embedder.count } do
+        post embedders_url, params: { embedder: connection_embedder_params(connection_id: connections(:anthropic).id) }
+      end
+
+      assert_response :unprocessable_content
+    end
+
+    test 'update moves an embedder onto a connection, and back off by choosing none' do
+      # The form always posts the team boxes; without them saving unshares the embedder from the user's teams.
+      patch embedder_url(embedder), params: { embedder: { connection_id: openai_connection.id, team_ids: [ team.id.to_s ] } }
+      assert_equal openai_connection, embedder.reload.connection
+
+      patch embedder_url(embedder), params: { embedder: { connection_id: '', team_ids: [ team.id.to_s ] } }
+      assert_nil embedder.reload.connection_id
+    end
+
+    test 'a team member keeps an embedder on a connection they can no longer use when they only rename it' do
+      embedder.update!(connection: openai_connection)
+      openai_connection.teams.clear
+
+      patch embedder_url(embedder), params: { embedder: { name: 'Renamed', connection_id: openai_connection.id } }
+
+      assert_equal 'Renamed', embedder.reload.name
+      assert_equal openai_connection, embedder.connection
+    end
+
+    test 'index shows which connection an embedder uses' do
+      embedder.update!(connection: openai_connection)
+
+      get embedders_url
+
+      assert_select 'td a[href=?]', connection_path(openai_connection), text: 'OpenAI'
+    end
+  end
 end

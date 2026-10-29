@@ -1,0 +1,186 @@
+<%# locals: (connection:, form:) %>
+<%# A saved connection is checked with its saved secret when the secret field is left blank --
+    see Connections::ChecksController. %>
+<% service = connection.service_definition %>
+<div class="card"
+     data-controller="connection-form"
+     data-connection-form-presets-value="<%= ConnectionService.presets.to_json %>"
+     data-connection-form-check-url-value="<%= connection.persisted? ? connection_check_path(connection) : check_connections_path %>">
+  <div class="card-header">
+    <h5 class="mb-0"><i class="bi bi-plug-fill" aria-hidden="true"></i> Connection</h5>
+  </div>
+  <div class="card-body">
+    <% if connection.errors.any? %>
+      <div class="alert alert-danger">
+        <p class="mb-1"><%= pluralize(connection.errors.count, 'error') %> prohibited this connection from being saved:</p>
+        <ul class="mb-0">
+          <% connection.errors.each do |error| %>
+            <li><%= error.full_message %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <div class="row">
+      <div class="col-md-7">
+        <div class="row mb-3">
+          <%= form.label :name, class: 'col-sm-3 col-form-label' %>
+          <div class="col-sm-9">
+            <%= form.text_field :name, class: 'form-control',
+                  placeholder: "#{service&.label || 'Service'} Connection",
+                  data: { connection_form_target: 'name' } %>
+            <div class="form-text">Optional. Left blank, it is called after the service, such as "OpenAI Connection".</div>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <%= form.label :service, class: 'col-sm-3 col-form-label' %>
+          <div class="col-sm-9">
+            <%= form.select :service, ConnectionService.select_options, {},
+                  class: 'form-select',
+                  data: { connection_form_target: 'service', action: 'change->connection-form#changeService' } %>
+          </div>
+        </div>
+
+        <%# Errors in a tab the person isn't looking at would be invisible, so open that one. %>
+        <% advanced_errors = (connection.errors.attribute_names & %i[extra_headers extra_headers_text timeout requests_per_minute]).any? %>
+        <ul class="nav nav-tabs mb-3" id="connection-tabs" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button class="nav-link <%= 'active' unless advanced_errors %>" id="connection-general-tab" type="button" role="tab"
+                    data-bs-toggle="tab" data-bs-target="#connection-general" aria-controls="connection-general"
+                    aria-selected="<%= !advanced_errors %>">General</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link <%= 'active' if advanced_errors %>" id="connection-advanced-tab" type="button" role="tab"
+                    data-bs-toggle="tab" data-bs-target="#connection-advanced" aria-controls="connection-advanced"
+                    aria-selected="<%= advanced_errors %>">Advanced</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="connection-access-tab" type="button" role="tab"
+                    data-bs-toggle="tab" data-bs-target="#connection-access" aria-controls="connection-access"
+                    aria-selected="false">Access</button>
+          </li>
+        </ul>
+
+        <div class="tab-content">
+          <div class="tab-pane fade <%= 'show active' unless advanced_errors %>" id="connection-general" role="tabpanel" aria-labelledby="connection-general-tab" tabindex="0">
+            <div class="row mb-3">
+              <%= form.label :base_url, 'URL', class: 'col-sm-3 col-form-label' %>
+              <div class="col-sm-9">
+                <%= form.url_field :base_url, class: 'form-control', data: { connection_form_target: 'baseUrl' } %>
+              </div>
+            </div>
+
+            <div class="row mb-3" data-connection-form-target="apiVersionRow">
+              <%= form.label :api_version, 'API version', class: 'col-sm-3 col-form-label' %>
+              <div class="col-sm-9">
+                <%= form.text_field :api_version, class: 'form-control', data: { connection_form_target: 'apiVersion' } %>
+                <div class="form-text">Sent with every call. Azure services need one; leave the default unless told otherwise.</div>
+              </div>
+            </div>
+
+            <div class="row mb-3">
+              <%= form.label :auth_scheme, 'Authentication', class: 'col-sm-3 col-form-label' %>
+              <div class="col-sm-9">
+                <%= form.select :auth_scheme, Connection::AUTH_SCHEME_LABELS.map { |key, label| [ label, key ] }, {},
+                      class: 'form-select',
+                      data: { connection_form_target: 'authScheme', action: 'change->connection-form#refresh' } %>
+              </div>
+            </div>
+
+            <div class="row mb-3" data-connection-form-target="authHeaderRow">
+              <%= form.label :auth_header, 'Header name', class: 'col-sm-3 col-form-label' %>
+              <div class="col-sm-9">
+                <%= form.text_field :auth_header, class: 'form-control font-monospace', placeholder: 'x-api-key',
+                      data: { connection_form_target: 'authHeader' } %>
+                <div class="form-text">The header the key is sent in.</div>
+              </div>
+            </div>
+
+            <div class="row mb-3" data-connection-form-target="secretRow">
+              <%= form.label :secret, data: { connection_form_target: 'secretLabel' }, class: 'col-sm-3 col-form-label' %>
+              <div class="col-sm-9">
+                <%# Never rendered back: blank keeps the saved secret. %>
+                <%= form.password_field :secret, value: nil, autocomplete: 'new-password', class: 'form-control',
+                      placeholder: connection.secret.present? ? "Saved (#{connection.masked_secret}) — leave blank to keep it" : '' %>
+                <div class="form-text" data-connection-form-target="secretHint"></div>
+              </div>
+            </div>
+
+            <hr>
+            <h5>Check connection</h5>
+            <p class="text-muted small">Asks the service something cheap with the settings on this form, saved or not, to see whether the URL and key work.</p>
+            <div class="mb-3">
+              <button type="button" class="btn btn-primary" data-connection-form-target="checkButton"
+                      data-action="click->connection-form#check">Check connection</button>
+          </div>
+          <div data-connection-form-target="checkResult" aria-live="polite"></div>
+          </div>
+
+          <div class="tab-pane fade <%= 'show active' if advanced_errors %>" id="connection-advanced" role="tabpanel" aria-labelledby="connection-advanced-tab" tabindex="0">
+            <div class="row mb-3">
+              <%= form.label :extra_headers_text, 'Extra headers', class: 'col-sm-3 col-form-label' %>
+              <div class="col-sm-9">
+                <%= form.textarea :extra_headers_text, rows: 3, class: 'form-control font-monospace',
+                      placeholder: "X-Team: search\nX-Trace: on" %>
+                <div class="form-text">One <code>Name: value</code> per line, sent with every request. Not for secrets.</div>
+              </div>
+          </div>
+
+          <div class="row mb-3">
+            <%= form.label :timeout, 'Timeout (s)', class: 'col-sm-3 col-form-label' %>
+            <div class="col-sm-3">
+              <%= form.number_field :timeout, min: 1, max: 600, class: 'form-control' %>
+            </div>
+          </div>
+
+          <div class="row mb-3">
+            <%= form.label :requests_per_minute, 'Requests / minute', class: 'col-sm-3 col-form-label' %>
+            <div class="col-sm-3">
+              <%= form.number_field :requests_per_minute, min: 0, class: 'form-control' %>
+            </div>
+            <div class="col-sm-12 offset-sm-3 form-text">
+              0 means no limit. Stored for when judges and embedders start using connections; nothing enforces it yet.
+            </div>
+          </div>
+
+          </div>
+
+          <div class="tab-pane fade" id="connection-access" role="tabpanel" aria-labelledby="connection-access-tab" tabindex="0">
+            <p class="text-muted small">Who can use this connection. Anyone it is shared with makes calls with its key, but never sees it and can't change the connection.</p>
+
+            <% if current_user.administrator? && (!connection.persisted? || connection.instance_wide?) %>
+              <div class="form-check mb-3">
+                <%= check_box_tag 'connection[instance_wide]', '1', connection.persisted? ? connection.instance_wide? : false,
+                      id: 'connection_instance_wide', class: 'form-check-input', disabled: connection.persisted? %>
+                <%= label_tag 'connection_instance_wide', 'Available to everyone on this instance', class: 'form-check-label' %>
+                <div class="form-text">An administrator manages it; everyone can use it without seeing the key. Can't be changed later.</div>
+              </div>
+            <% end %>
+
+            <% unless connection.persisted? && connection.instance_wide? %>
+              <div class="mb-3">
+                <%= render 'shared/team_picker', form: form, label: 'Teams to Share this Connection With',
+                      help_text: "Anyone on a team it's shared with can use this connection, and calls are made with its key, but they can't see or change it. Leave unchecked to keep it private to you." %>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-5">
+        <div class="fw-semibold mb-2">Service notes</div>
+        <%# One panel per service, shown for the chosen one: the help is server HTML. %>
+        <% ConnectionService.each do |definition| %>
+          <%= tag.div class: 'alert alert-info small', hidden: definition.key != service&.key,
+                      data: { connection_form_target: 'help', service: definition.key } do %><%== definition.help_html %><% end %>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <div class="card-footer">
+    <%= form.submit 'Save', class: 'btn btn-primary float-start' %>
+    <%= link_to 'Back to Connections', connections_path, class: 'btn btn-outline-secondary float-end' %>
+  </div>
+</div>

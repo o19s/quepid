@@ -49,6 +49,22 @@
         </div>
 
         <div class="row mb-3">
+          <%= form.label :connection_id, 'Connection', class: 'col-sm-3 col-form-label' %>
+          <div class="col-sm-9">
+            <%= form.select :connection_id, embedder_connection_options(embedder), {},
+                  class: 'form-select',
+                  data: { embedder_form_target: 'connection', action: 'change->embedder-form#changeConnection' } %>
+            <div class="form-text">
+              A connection keeps the provider's URL and key in one place, so they're entered once and shared.
+              Only connections for the provider chosen above are listed.
+              <%= link_to 'Manage connections', connections_path, target: '_blank', rel: 'noopener' %>.
+              Choose none to enter the URL and key here instead.
+            </div>
+            <div class="alert alert-light border small mt-2 mb-0" hidden data-embedder-form-target="connectionInfo"></div>
+          </div>
+        </div>
+
+        <div class="row mb-3" data-embedder-form-target="serviceUrlRow">
           <%= form.label :service_url, 'URL', class: 'col-sm-3 col-form-label' %>
           <div class="col-sm-9">
             <%= form.url_field :service_url, class: 'form-control', data: { embedder_form_target: 'serviceUrl' } %>
@@ -128,7 +144,7 @@
           </div>
         </div>
 
-        <div class="row mb-3">
+        <div class="row mb-3" data-embedder-form-target="timeoutRow">
           <%= form.label :timeout, 'Timeout (s)', class: 'col-sm-3 col-form-label' %>
           <div class="col-sm-3">
             <%= form.number_field :timeout, min: 1, max: 600, class: 'form-control' %>

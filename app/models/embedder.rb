@@ -11,6 +11,7 @@
 #  id             :bigint           not null, primary key
 #  api_key        :string(4000)
 #  archived       :boolean          default(FALSE), not null
+#  connection_id  :bigint
 #  dimensions     :integer
 #  input_template :text(65535)
 #  instruction    :text(65535)
@@ -27,6 +28,7 @@
 #
 # Indexes
 #
+#  index_embedders_on_connection_id    (connection_id)
 #  index_embedders_on_owner_id_and_id  (owner_id,id)
 #
 class Embedder < ApplicationRecord
@@ -49,7 +51,7 @@ class Embedder < ApplicationRecord
 
   # Fields the embedder form and API accept; controllers permit this plus their own extras
   # (e.g. :archived, :team_ids).
-  PERMITTED_PARAMS = [ :name, :provider, :service_url, :model, :api_key, :dimensions, :truncation, :instruction, :input_template, :timeout ].freeze
+  PERMITTED_PARAMS = [ :name, :provider, :service_url, :model, :api_key, :dimensions, :truncation, :instruction, :input_template, :timeout, :connection_id ].freeze
 
   # too late now!
   # rubocop:disable-next Rails/HasAndBelongsToMany
@@ -57,6 +59,10 @@ class Embedder < ApplicationRecord
                           join_table: 'teams_embedders'
 
   belongs_to :owner, class_name: 'User', optional: true
+
+  # Where to reach the provider and the key to use, kept once for everything that calls it
+  # (ADR 0005). Without one the embedder uses its own service_url, api_key and timeout.
+  belongs_to :connection, optional: true, inverse_of: :embedders
 
   # Deleting an embedder unlinks its cases; the vectors already stored on their
   # queries stay, and are recognisably stale by their fingerprint.
@@ -68,8 +74,9 @@ class Embedder < ApplicationRecord
 
   scope :not_archived, -> { where(archived: false) }
 
+  before_validation :take_provider_from_connection
   before_validation :drop_settings_the_provider_ignores
-  after_update_commit :revectorize_cases, if: -> { saved_changes.keys.intersect?(VECTOR_SETTINGS) }
+  after_update_commit :revectorize_cases, if: -> { saved_changes.keys.intersect?(VECTOR_SETTINGS + [ 'connection_id' ]) }
 
   validates :name, presence: true
   validates :provider, inclusion: { in: ->(_) { EmbedderProvider.keys }, message: 'is not a known provider' }
@@ -81,11 +88,38 @@ class Embedder < ApplicationRecord
   validates :dimensions, presence: { message: 'are required to truncate' }, unless: -> { 'none' == truncation }
   validates :timeout, numericality: { only_integer: true, greater_than: 0, less_than_or_equal_to: 600 }
   validate :native_truncation_supported
+  validate :connection_fits_and_is_usable
   validate :api_key_present_when_required
   validate :input_template_has_query
 
   def provider_definition
     @provider_definition ||= EmbedderProvider.find(provider)
+  end
+
+  # The provider is the embedder's own choice, and its connection has to be for that provider (a
+  # Voyage embedder can't use an Ollama connection). Left blank, it is the connection's.
+  def provider
+    super.presence || connection&.service
+  end
+
+  # With a connection, its URL and timeout are the embedder's; the embedder's own columns are
+  # what an embedder without one uses.
+  def service_url
+    connection ? connection.base_url : super
+  end
+
+  def timeout
+    connection ? connection.timeout : super
+  end
+
+  # The headers a request carries: the connection's (how its key is sent is its own business),
+  # or a bearer key for an embedder that keeps its own.
+  def request_headers
+    return connection.request_headers if connection
+
+    return {} if api_key.blank? || :none == provider_definition.auth_style
+
+    { 'Authorization' => "Bearer #{api_key}" }
   end
 
   def adapter
@@ -118,7 +152,7 @@ class Embedder < ApplicationRecord
   # Changes whenever one of VECTOR_SETTINGS changes; vectors stored with an older
   # fingerprint are stale (see QueryVectorStatus).
   def fingerprint
-    Digest::SHA256.hexdigest(VECTOR_SETTINGS.map { |attribute| self[attribute].to_s }.to_json)[0, 16]
+    Digest::SHA256.hexdigest(VECTOR_SETTINGS.map { |attribute| public_send(attribute).to_s }.to_json)[0, 16]
   end
 
   # Identifies the exact text sent for a query, so a stored vector can be checked
@@ -127,8 +161,10 @@ class Embedder < ApplicationRecord
     Digest::SHA256.hexdigest(render_input(text))[0, 16]
   end
 
+  # Whether a key is set, for the form and the API, which never show the key itself.
   def masked_api_key
-    api_key.present? ? MASKED_API_KEY : ''
+    key_set = connection ? connection.secret.present? : api_key.present?
+    key_set ? MASKED_API_KEY : ''
   end
 
   # Cases per embedder for list pages, in one grouped query.
@@ -146,6 +182,36 @@ class Embedder < ApplicationRecord
   end
 
   private
+
+  # An embedder created from just a connection takes that connection's provider.
+  def take_provider_from_connection
+    return unless connection && self[:provider].blank?
+
+    self[:provider] = connection.service
+    @provider_definition = nil
+  end
+
+  def connection_fits_and_is_usable
+    return unless connection
+
+    problem = connection_problem
+    errors.add(:connection, problem) if problem
+  end
+
+  # Why the connection can't be used, or nil. The first thing wrong is the one worth saying.
+  def connection_problem
+    label = connection.service_definition&.label || connection.service
+    return "to #{label} can't make embeddings" unless connection.service_definition&.capabilities&.include?('embeddings')
+    return "is for #{label}, not #{provider_definition&.label || provider}" if connection.service != provider
+
+    "isn't one you can use" unless connection_usable_by_owner?
+  end
+
+  # An unchanged connection stays allowed, so renaming an embedder never trips over access that
+  # was withdrawn later; picking a new one needs the owner to be able to use it.
+  def connection_usable_by_owner?
+    !connection_id_changed? || owner&.connections_involved_with&.exists?(id: connection_id)
+  end
 
   def revectorize_cases
     cases.find_each { |kase| VectorizeCaseQueriesJob.enqueue_for(kase) }
@@ -185,7 +251,7 @@ class Embedder < ApplicationRecord
 
   def api_key_present_when_required
     definition = provider_definition
-    return if definition.nil? || !definition.requires_key? || api_key.present?
+    return if connection || definition.nil? || !definition.requires_key? || api_key.present?
 
     errors.add(:api_key, "is required for #{definition.label}")
   end

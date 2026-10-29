@@ -5,11 +5,19 @@ import { apiFetch } from "api/fetch"
 // provider can use, fills in its defaults when the provider changes, and runs the Check connection
 // button against Embedders::ConnectionChecksController with the form's current values.
 //
+// An embedder on a Connection takes its URL, key and timeout from it, so choosing one hides those
+// fields. A connection is for one provider, so the connection list only offers the ones for the
+// chosen provider (each option carries its service, URL and label as data).
+//
 // presets come from EmbedderProvider.presets, keyed by provider.
 export default class extends Controller {
   static values = { presets: Object, checkUrl: String }
 
   static targets = [
+    "connection",
+    "connectionInfo",
+    "serviceUrlRow",
+    "timeoutRow",
     "provider",
     "serviceUrl",
     "model",
@@ -35,6 +43,18 @@ export default class extends Controller {
     return this.presetsValue[this.providerTarget.value] || {}
   }
 
+  // The chosen connection's option, or null when the embedder keeps its own URL and key.
+  get connection() {
+    if (!this.hasConnectionTarget) return null
+    const value = this.connectionTarget.value
+    if (!value) return null
+    return [...this.connectionTarget.options].find((option) => option.value === value) || null
+  }
+
+  changeConnection() {
+    this.refresh()
+  }
+
   // Switching provider replaces URL and model with its defaults: values typed for one
   // vendor are almost never right for another.
   changeProvider() {
@@ -53,7 +73,9 @@ export default class extends Controller {
     this.helpTargets.forEach((help) => {
       help.hidden = help.dataset.provider !== this.providerTarget.value
     })
-    this.apiKeyRowTarget.hidden = preset.uses_key === false
+    this.filterConnections()
+    this.refreshConnection()
+    this.apiKeyRowTarget.hidden = preset.uses_key === false || this.connection !== null
     if (this.hasApiKeyHintTarget) {
       this.apiKeyHintTarget.textContent = preset.requires_key
         ? `Required for ${preset.label}.`
@@ -76,6 +98,36 @@ export default class extends Controller {
       truncation === "native" && allowed.length > 0
         ? `${preset.label} accepts ${allowed.join(", ")}.`
         : ""
+  }
+
+  // Only the connections for the chosen provider can be picked. One that no longer fits the
+  // provider (it was changed after choosing) is dropped, so the form never posts a mismatch.
+  filterConnections() {
+    if (!this.hasConnectionTarget) return
+
+    const provider = this.providerTarget.value
+    ;[...this.connectionTarget.options].forEach((option) => {
+      if (!option.value) return
+      const fits = option.dataset.service === provider
+      option.hidden = !fits
+      option.disabled = !fits
+    })
+    if (this.connection && this.connection.disabled) this.connectionTarget.value = ""
+  }
+
+  // With a connection the fields it owns are hidden and a line says where they come from.
+  refreshConnection() {
+    const connection = this.connection
+    const owned = [this.serviceUrlRowTarget, this.timeoutRowTarget]
+    owned.forEach((row) => {
+      if (row) row.hidden = connection !== null
+    })
+    if (!this.hasConnectionInfoTarget) return
+
+    this.connectionInfoTarget.hidden = connection === null
+    if (connection) {
+      this.connectionInfoTarget.textContent = `${connection.dataset.serviceLabel} at ${connection.dataset.url}. The URL, key and timeout come from this connection.`
+    }
   }
 
   async check(event) {

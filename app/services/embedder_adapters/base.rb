@@ -86,9 +86,7 @@ module EmbedderAdapters
     end
 
     def headers
-      return {} if embedder.api_key.blank? || :none == embedder.provider_definition.auth_style
-
-      { 'Authorization' => "Bearer #{embedder.api_key}" }
+      embedder.request_headers
     end
 
     # `error` itself isn't always a nested object -- Ollama's is a plain string

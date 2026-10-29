@@ -1,0 +1,47 @@
+<%# A connection someone can use but not change: the details, never the secret. %>
+<div class="container centered-form">
+  <div class="card">
+    <div class="card-header">
+      <h5 class="mb-0"><i class="bi bi-plug-fill" aria-hidden="true"></i> <%= @connection.name %></h5>
+    </div>
+    <div class="card-body">
+      <dl class="row mb-0">
+        <dt class="col-sm-3">Service</dt>
+        <dd class="col-sm-9"><%= @connection.service_definition&.label || @connection.service %></dd>
+        <dt class="col-sm-3">URL</dt>
+        <dd class="col-sm-9"><code class="text-break"><%= @connection.base_url %></code></dd>
+        <dt class="col-sm-3">Authentication</dt>
+        <dd class="col-sm-9">
+          <%= Connection::AUTH_SCHEME_LABELS[@connection.auth_scheme] %>
+          <% if @connection.secret.present? %>
+            <span class="text-muted">&mdash; a secret is saved and can't be shown</span>
+          <% end %>
+        </dd>
+        <dt class="col-sm-3">Owner</dt>
+        <dd class="col-sm-9">
+          <%= @connection.instance_wide? ? 'Everyone on this instance' : @connection.owner.fullname %>
+        </dd>
+        <dt class="col-sm-3">Shared with</dt>
+        <dd class="col-sm-9"><%= @connection.teams.any? ? @connection.teams.map(&:name).to_sentence : 'No teams' %></dd>
+        <dt class="col-sm-3">Used by</dt>
+        <dd class="col-sm-9">
+          <% if @embedders.any? %>
+            <% @embedders.each do |embedder| %>
+              <div><%= link_to embedder.name, edit_embedder_path(embedder) %> <span class="text-muted small">embedder</span></div>
+            <% end %>
+          <% else %>
+            <span class="text-muted">Nothing you can see yet.</span>
+          <% end %>
+        </dd>
+      </dl>
+    </div>
+    <div class="card-footer">
+      <% if @connection.manageable_by?(current_user) %>
+        <%= link_to 'Edit', edit_connection_path(@connection), class: 'btn btn-primary float-start' %>
+      <% else %>
+        <span class="text-muted small float-start">Only the owner can change this connection.</span>
+      <% end %>
+      <%= link_to 'Back to Connections', connections_path, class: 'btn btn-outline-secondary float-end' %>
+    </div>
+  </div>
+</div>

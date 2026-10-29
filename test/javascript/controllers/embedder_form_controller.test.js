@@ -75,9 +75,126 @@ function buildController({ provider = "openai", truncation = "none" } = {}) {
   return controller
 }
 
+// A controller wired to a connection dropdown holding "none", a Voyage connection and two Ollama
+// ones, so the dropdown can be narrowed by provider.
+function buildConnectedController(options = {}) {
+  const controller = buildController(options)
+  const dropdown = document.createElement("select")
+  const none = document.createElement("option")
+  none.value = ""
+  dropdown.append(none)
+  ;[
+    ["7", "voyage", "https://api.voyageai.com", "Voyage AI"],
+    ["8", "ollama", "http://ollama:11434", "Ollama"],
+    ["9", "ollama", "http://gpu-box:11434", "Ollama"]
+  ].forEach(([id, service, url, label]) => {
+    const option = document.createElement("option")
+    option.value = id
+    option.dataset.service = service
+    option.dataset.url = url
+    option.dataset.serviceLabel = label
+    dropdown.append(option)
+  })
+  controller.hasConnectionTarget = true
+  controller.connectionTarget = dropdown
+  controller.hasConnectionInfoTarget = true
+  controller.connectionInfoTarget = document.createElement("div")
+  controller.serviceUrlRowTarget = document.createElement("div")
+  controller.timeoutRowTarget = document.createElement("div")
+  return controller
+}
+
+function offered(controller) {
+  return [...controller.connectionTarget.options]
+    .filter((option) => option.value && !option.disabled)
+    .map((option) => option.value)
+}
+
 describe("EmbedderFormController", () => {
   beforeEach(() => {
     vi.clearAllMocks()
+  })
+
+  describe("with a connection", () => {
+    it("keeps the URL, key and timeout fields when no connection is chosen", () => {
+      const controller = buildConnectedController({ provider: "ollama" })
+
+      controller.refresh()
+
+      expect(controller.serviceUrlRowTarget.hidden).toBe(false)
+      expect(controller.timeoutRowTarget.hidden).toBe(false)
+      expect(controller.apiKeyRowTarget.hidden).toBe(true) // Ollama takes no key
+      expect(controller.connectionInfoTarget.hidden).toBe(true)
+    })
+
+    it("lists only the connections for the chosen provider", () => {
+      const ollama = buildConnectedController({ provider: "ollama" })
+      ollama.refresh()
+      expect(offered(ollama)).toEqual(["8", "9"])
+
+      const voyage = buildConnectedController({ provider: "voyage" })
+      voyage.refresh()
+      expect(offered(voyage)).toEqual(["7"])
+
+      const openai = buildConnectedController({ provider: "openai" })
+      openai.refresh()
+      expect(offered(openai)).toEqual([])
+    })
+
+    it("narrows the list when the provider changes, and drops a connection that no longer fits", () => {
+      const controller = buildConnectedController({ provider: "ollama" })
+      controller.refresh()
+      controller.connectionTarget.value = "8"
+      controller.changeConnection()
+
+      controller.providerTarget.value = "voyage"
+      controller.changeProvider()
+
+      expect(offered(controller)).toEqual(["7"])
+      expect(controller.connectionTarget.value).toBe("")
+      expect(controller.serviceUrlRowTarget.hidden).toBe(false)
+    })
+
+    it("hides what the connection owns and says where it comes from", () => {
+      const controller = buildConnectedController({ provider: "ollama" })
+      controller.refresh()
+      controller.connectionTarget.value = "9"
+
+      controller.changeConnection()
+
+      expect(controller.serviceUrlRowTarget.hidden).toBe(true)
+      expect(controller.timeoutRowTarget.hidden).toBe(true)
+      expect(controller.apiKeyRowTarget.hidden).toBe(true)
+      expect(controller.connectionInfoTarget.hidden).toBe(false)
+      expect(controller.connectionInfoTarget.textContent).toContain(
+        "Ollama at http://gpu-box:11434"
+      )
+    })
+
+    it("hides the key field for a provider that takes one once a connection is chosen", () => {
+      const controller = buildConnectedController({ provider: "voyage" })
+      controller.refresh()
+      expect(controller.apiKeyRowTarget.hidden).toBe(false)
+
+      controller.connectionTarget.value = "7"
+      controller.changeConnection()
+
+      expect(controller.apiKeyRowTarget.hidden).toBe(true)
+    })
+
+    it("shows the fields again when the connection is cleared", () => {
+      const controller = buildConnectedController({ provider: "voyage" })
+      controller.refresh()
+      controller.connectionTarget.value = "7"
+      controller.changeConnection()
+
+      controller.connectionTarget.value = ""
+      controller.changeConnection()
+
+      expect(controller.serviceUrlRowTarget.hidden).toBe(false)
+      expect(controller.apiKeyRowTarget.hidden).toBe(false)
+      expect(controller.connectionInfoTarget.hidden).toBe(true)
+    })
   })
 
   it("shows only the fields the provider can use", () => {

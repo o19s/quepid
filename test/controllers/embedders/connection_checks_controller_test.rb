@@ -82,5 +82,29 @@ module Embedders
       assert_response :bad_gateway
       assert_match(/500/, response.parsed_body['error'])
     end
+
+    test 'checks an embedder on a connection with the connection\'s URL and key' do
+      stub = stub_request(:post, 'https://api.voyageai.com/v1/embeddings')
+        .with(headers: { 'Authorization' => 'Bearer pa-test-voyage' })
+        .to_return(status: 200, headers: { 'Content-Type' => 'application/json' },
+                   body: { data: [ { index: 0, embedding: Array.new(1024) { |i| i / 1024.0 } } ] }.to_json)
+
+      post connection_check_embedders_url, params: {
+        embedder: { connection_id: connections(:voyage).id, model: 'voyage-3.5', truncation: 'none' },
+      }
+
+      assert_response :success
+      assert_requested stub
+      assert_equal 1024, response.parsed_body['dimensions']
+    end
+
+    test 'will not check with a connection the user cannot use' do
+      post connection_check_embedders_url, params: {
+        embedder: { connection_id: connections(:private_ollama).id, model: 'm', truncation: 'none' },
+      }
+
+      assert_response :unprocessable_content
+      assert_match(/isn't one you can use/, response.parsed_body['error'])
+    end
   end
 end

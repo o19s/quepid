@@ -9,6 +9,7 @@ require 'test_helper'
 #  id             :bigint           not null, primary key
 #  api_key        :string(4000)
 #  archived       :boolean          default(FALSE), not null
+#  connection_id  :bigint
 #  dimensions     :integer
 #  input_template :text(65535)
 #  instruction    :text(65535)
@@ -25,6 +26,7 @@ require 'test_helper'
 #
 # Indexes
 #
+#  index_embedders_on_connection_id    (connection_id)
 #  index_embedders_on_owner_id_and_id  (owner_id,id)
 #
 class EmbedderTest < ActiveSupport::TestCase
@@ -196,5 +198,135 @@ class EmbedderTest < ActiveSupport::TestCase
 
     assert_not_includes raw, 'sk-secret'
     assert_equal 'sk-secret', embedder.reload.api_key
+  end
+
+  describe 'on a connection' do
+    let(:voyage) { connections(:voyage) }
+    let(:owner) { users(:doug) }
+
+    def on_connection attributes = {}
+      Embedder.new({ name: 'Voyage', model: 'voyage-3.5', owner: owner, connection: voyage }.merge(attributes))
+    end
+
+    test 'takes its URL and timeout from the connection, whatever was set on the embedder' do
+      embedder = on_connection(provider: 'voyage', service_url: 'https://elsewhere.example', timeout: 99)
+
+      assert_predicate embedder, :valid?
+      assert_equal 'https://api.voyageai.com', embedder.service_url
+      assert_equal 12, embedder.timeout
+    end
+
+    test 'left without a provider, takes the connection\'s' do
+      embedder = on_connection
+
+      assert_equal 'voyage', embedder.provider
+      assert_predicate embedder, :valid?
+      assert_equal 'voyage', embedder.provider_definition.key
+    end
+
+    test 'a connection for another provider is refused: a Voyage embedder cannot use an Ollama connection' do
+      embedder = on_connection(provider: 'voyage', connection: connections(:shared_ollama))
+
+      assert_not embedder.valid?
+      assert_includes embedder.errors[:connection].join, 'is for Ollama, not Voyage AI'
+    end
+
+    test 'an Ollama embedder accepts an Ollama connection and no other' do
+      assert_predicate on_connection(provider: 'ollama', connection: connections(:shared_ollama), model: 'qwen3-embedding:0.6b'), :valid?
+
+      [ :voyage, :openai ].each do |other|
+        embedder = on_connection(provider: 'ollama', connection: connections(other), model: 'm')
+        assert_not embedder.valid?, "an Ollama embedder accepted the #{other} connection"
+      end
+    end
+
+    test 'needs no key of its own, even for a provider that always requires one' do
+      assert_predicate on_connection(api_key: nil), :valid?
+    end
+
+    test 'sends the key the way the connection says' do
+      assert_equal({ 'Authorization' => 'Bearer pa-test-voyage' }, on_connection.request_headers)
+
+      voyage.update!(auth_scheme: 'header', auth_header: 'x-api-key')
+      assert_equal({ 'x-api-key' => 'pa-test-voyage' }, on_connection.request_headers)
+    end
+
+    test 'an embedder without a connection keeps using its own key' do
+      assert_equal({ 'Authorization' => 'Bearer sk-test' }, build_embedder.request_headers)
+      assert_empty build_embedder(provider: 'ollama', service_url: 'http://ollama:11434', api_key: nil).request_headers
+    end
+
+    test 'masks the connection\'s key, not its own' do
+      assert_equal Embedder::MASKED_API_KEY, on_connection(api_key: nil).masked_api_key
+      assert_equal '', on_connection(api_key: 'ignored', connection: connections(:private_ollama)).masked_api_key
+    end
+
+    test 'the connection must be able to make embeddings' do
+      embedder = on_connection(connection: connections(:anthropic))
+
+      assert_not embedder.valid?
+      assert_includes embedder.errors[:connection].join, "can't make embeddings"
+    end
+
+    test 'the owner must be able to use the connection' do
+      embedder = on_connection(owner: users(:joey))
+
+      assert_not embedder.valid?
+      assert_includes embedder.errors[:connection].join, "isn't one you can use"
+    end
+
+    test 'a team member can own an embedder on a connection shared with their team' do
+      assert_predicate on_connection(owner: users(:random)), :valid?
+    end
+
+    test 'the fingerprint follows the connection\'s URL, not its key' do
+      embedder = on_connection
+      before = embedder.fingerprint
+
+      voyage.update!(secret: 'pa-rotated')
+      assert_equal before, on_connection.fingerprint
+
+      voyage.update!(base_url: 'https://proxy.example')
+      assert_not_equal before, on_connection.fingerprint
+    end
+
+    test 'an embedder gives the same fingerprint on a connection as with the same settings of its own' do
+      own = build_embedder(provider: 'voyage', service_url: 'https://api.voyageai.com', model: 'voyage-3.5')
+
+      assert_equal own.fingerprint, on_connection.fingerprint
+    end
+
+    test 'changing the connection\'s URL re-vectorises the cases of its embedders' do
+      embedder = on_connection.tap(&:save!)
+      kase = cases(:shared_with_team)
+      kase.update!(embedder: embedder)
+
+      assert_enqueued_with(job: VectorizeCaseQueriesJob) do
+        voyage.update!(base_url: 'https://proxy.example')
+      end
+    end
+
+    test 'switching a connection to a service that cannot embed is refused while embedders use it' do
+      on_connection.save!
+
+      assert_not voyage.update(service: 'anthropic', auth_scheme: 'header', auth_header: 'x-api-key')
+      assert_includes voyage.errors[:service].join, "can't make embeddings"
+    end
+
+    test 'switching a connection to another embedding service moves its embedders with it' do
+      embedder = on_connection.tap(&:save!)
+
+      voyage.update!(service: 'cohere', base_url: 'https://api.cohere.com')
+
+      assert_equal 'cohere', embedder.reload.provider
+    end
+
+    test 'deleting a connection unlinks its embedders instead of deleting them' do
+      embedder = on_connection.tap(&:save!)
+
+      voyage.destroy
+
+      assert_nil embedder.reload.connection_id
+    end
   end
 end

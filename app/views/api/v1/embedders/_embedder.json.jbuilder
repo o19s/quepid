@@ -4,6 +4,7 @@ json.embedder_id    embedder.id
 json.name           embedder.name
 json.provider       embedder.provider
 json.service_url    embedder.service_url
+json.connection_id  embedder.connection_id
 json.model          embedder.model
 # Never the key itself: only whether one is set.
 json.api_key        embedder.masked_api_key
