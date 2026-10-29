@@ -117,7 +117,7 @@ Core toolbar opens the Stimulus **pick-scorer-core** modal (`#pickScorerModal`);
 
 - [ ] **Steps:**
   1. Expand a query, click **Missing Documents**.
-  2. For Solr, enter a plain Lucene query such as `id:123` in the initially blank finder. Confirm explanations still describe the original query. For Elasticsearch/OpenSearch, edit the pre-filled query parameters.
+  2. Edit the query parameters, which are pre-filled from the try's query (for Solr, e.g. `q=id:123`). Confirm explanations still describe the original query.
   3. Rate the found document inline.
      Open its rating popover with the keyboard and Tab to the rating choices and RESET; confirm focus stays inside the finder. Select a rating with Enter and confirm focus returns to that document's rebuilt rating button after saving. With the popover open, Escape dismisses the finder and removes the tip; check focus restoration to the launcher separately.
   4. Click **Reset to All Rated Docs**.
@@ -326,7 +326,7 @@ Navigation is covered by 4.17b; missing cases, tries and routes by 4.17c.
 ### 4.23 Search result rendering
 
 - [ ] **Steps:**
-  1. Expand a query on a case whose Displayed Fields include a title, plain-text fields, a URL field, an object/array field, and (if available) `thumb:`/`image:` fields with a prefix, an audio/video field, and a `translations:` field.
+  1. Expand a query on a case whose Displayed Fields include a title, plain-text fields, a URL field, an object/array field, and (if available) `thumb:`/`image:` fields with a prefix, an audio/video field, and a `translate:` field.
   2. Confirm the layout: rating badge left, content center, explain chart right (only when full explain is available).
   3. Click a result title to open the Detailed Document modal (6.11).
   4. Click the **Matches** link on a result (Solr/ES with explain).
