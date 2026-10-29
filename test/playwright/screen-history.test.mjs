@@ -7,6 +7,7 @@ import { execFileSync, spawn } from "node:child_process"
 import { once } from "node:events"
 import { fileURLToPath } from "node:url"
 import crypto from "node:crypto"
+import zlib from "node:zlib"
 import { runInNewContext } from "node:vm"
 import { nextCapturePath } from "./next-capture-path.mjs"
 import {
@@ -32,6 +33,33 @@ const fixture = path.join(
   path.dirname(fileURLToPath(import.meta.url)),
   "fixtures/capture-tooling.png"
 )
+
+// A solid-color RGB PNG, for captures that must look different from the fixture.
+function solidPng(directory, [r, g, b], width = 1280, height = 900) {
+  const chunk = (type, data) => {
+    const length = Buffer.alloc(4)
+    length.writeUInt32BE(data.length)
+    const crc = Buffer.alloc(4)
+    crc.writeUInt32BE(zlib.crc32(Buffer.concat([Buffer.from(type), data])))
+    return Buffer.concat([length, Buffer.from(type), data, crc])
+  }
+  const header = Buffer.alloc(13)
+  header.writeUInt32BE(width, 0)
+  header.writeUInt32BE(height, 4)
+  header.set([8, 2, 0, 0, 0], 8)
+  const row = Buffer.concat([Buffer.from([0]), Buffer.from(Array(width).fill([r, g, b]).flat())])
+  const file = path.join(directory, `solid-${r}-${g}-${b}.png`)
+  fs.writeFileSync(
+    file,
+    Buffer.concat([
+      Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+      chunk("IHDR", header),
+      chunk("IDAT", zlib.deflateSync(Buffer.concat(Array(height).fill(row)))),
+      chunk("IEND", Buffer.alloc(0))
+    ])
+  )
+  return file
+}
 
 function setup(t) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "quepid-screen-history-"))
@@ -171,13 +199,77 @@ test("staging or committing a deletion does not change the working-tree fingerpr
   assert.equal(fingerprint(root, options.paths), unstaged)
 })
 
-test("branches have independent histories", (t) => {
+test("a branch with no commits inherits no history", (t) => {
   const { root, record, git } = setup(t)
   record()
   git("symbolic-ref", "HEAD", "refs/heads/another")
   assert.deepEqual(readHistory(root).screens, {})
   git("symbolic-ref", "HEAD", "refs/heads/example")
   assert.equal(readHistory(root).screens["1.2/login"].versions.length, 1)
+})
+
+test("new branches inherit captures from commits they contain, not from sibling branches", (t) => {
+  const { root, record, git } = setup(t)
+  record()
+  git("branch", "feature")
+  git(
+    "-c",
+    "user.name=Test",
+    "-c",
+    "user.email=test@example.com",
+    "commit",
+    "--allow-empty",
+    "-m",
+    "Sibling"
+  )
+  record({ recapture: true })
+  assert.equal(readHistory(root).screens["1.2/login"].versions.length, 2)
+
+  git("symbolic-ref", "HEAD", "refs/heads/feature")
+  const inherited = readHistory(root)
+  assert.equal(inherited.branch, "feature")
+  assert.equal(inherited.screens["1.2/login"].versions.length, 1)
+  assert.equal(fs.existsSync(path.join(historyLocation(root).directory, "index.json")), false)
+
+  record({ recapture: true })
+  const own = readHistory(root).screens["1.2/login"]
+  assert.equal(own.versions.length, 2)
+  assert.equal(fs.existsSync(path.join(historyLocation(root).directory, "index.json")), true)
+  git("symbolic-ref", "HEAD", "refs/heads/example")
+  assert.equal(readHistory(root).screens["1.2/login"].versions.length, 2)
+})
+
+test("branches cut after a squash merge inherit captures taken before their base", (t) => {
+  const { root, record, git } = setup(t)
+  const commit = (message) =>
+    git(
+      "-c",
+      "user.name=Test",
+      "-c",
+      "user.email=test@example.com",
+      "commit",
+      "--allow-empty",
+      "-m",
+      message
+    )
+  commit("Feature work")
+  const featureCommit = git("rev-parse", "HEAD").toString().trim()
+  record({ capturedAt: Date.now() - 120_000 })
+  git("branch", "main", "HEAD~1")
+  git("symbolic-ref", "HEAD", "refs/heads/main")
+  commit("Squash merge")
+  git("update-ref", "refs/remotes/origin/main", "HEAD")
+  git("branch", "next")
+  git("branch", "sibling")
+
+  git("symbolic-ref", "HEAD", "refs/heads/sibling")
+  commit("Sibling work")
+  record({ recapture: true })
+
+  git("symbolic-ref", "HEAD", "refs/heads/next")
+  const versions = readHistory(root).screens["1.2/login"].versions
+  assert.equal(versions.length, 1)
+  assert.equal(versions[0].commit, featureCommit)
 })
 
 test("legacy can be attached once without replacing current or previous", (t) => {
@@ -232,6 +324,37 @@ test("tracker links resolve filenames and content freshness independently of las
   assert.equal(linkedScreenshotStatus(root, tracker())[0].previous.status, "available")
   fs.unlinkSync(path.join(root, linkedScreenshotStatus(root, tracker())[0].current.image))
   assert.equal(linkedScreenshotStatus(root, tracker())[0].current.status, "missing")
+})
+
+test("alternates name the default state they vary and must point at a default", (t) => {
+  const { root } = setup(t)
+  const withAlternates = (alternates) => {
+    const value = tracker()
+    Object.assign(value.parts["01"].scenarios[1.2], {
+      screenshots: {
+        "login-form": "1.2/login",
+        "login-error": "1.2/error",
+        "login-locked": "1.2/l"
+      },
+      alternates
+    })
+    return value
+  }
+  const rows = linkedScreenshotStatus(root, withAlternates({ "login-error": "login-form" }))
+  assert.deepEqual(
+    rows.map((row) => [row.state, row.variantOf]),
+    [
+      ["login-form", null],
+      ["login-error", "login-form"],
+      ["login-locked", null]
+    ]
+  )
+  for (const bad of [
+    { "login-error": "missing-state" },
+    { "unknown-state": "login-form" },
+    { "login-error": "login-form", "login-locked": "login-error" }
+  ])
+    assert.throws(() => linkedScreenshotStatus(root, withAlternates(bad)), /must vary a default/)
 })
 
 test("scenario mapping uses the linked ID, preserves extra dependencies and rejects unlinked states", (t) => {
@@ -429,7 +552,7 @@ test("source changes are advisory; approval belongs to the image and new capture
   assert.equal(screenshotReviews(root, tracker()).screens[0].status, "approved")
   assert.equal(screenshotReviews(root, tracker()).screens[0].captureStatus, "stale")
   assert.equal(approve(root).screens[0].status, "approved")
-  record()
+  record({ image: solidPng(root, [200, 30, 30]) })
   assert.equal(screenshotReviews(root, tracker()).screens[0].status, "needs_review")
   assert.throws(() => approve(root, true, prior), /displayed capture changed/)
   assert.equal(approve(root).screens[0].status, "approved")
@@ -552,12 +675,37 @@ test("review writes use the capture recorder lock and leave history unchanged on
   assert.deepEqual(readHistory(root), original)
 })
 
+test("captures that look the same keep their approval; any visible change needs review", (t) => {
+  const { root, record } = setup(t)
+  record()
+  approve(root)
+  const approvedAt = readHistory(root).screens["1.2/login"].approval.approvedAt
+  fs.writeFileSync(path.join(root, "app/view.html"), "Changed")
+  record()
+  let screen = readHistory(root).screens["1.2/login"]
+  assert.equal(screen.versions.length, 2)
+  assert.equal(screen.approval.approvedAt, approvedAt)
+  assert.equal(screen.approval.carriedFrom, screen.versions[0].capturedAt)
+  assert.equal(screenshotReviews(root, tracker()).screens[0].status, "approved")
+
+  record({ recapture: true })
+  assert.equal(screenshotReviews(root, tracker()).screens[0].status, "approved")
+
+  record({ recapture: true, image: solidPng(root, [30, 30, 200]) })
+  screen = readHistory(root).screens["1.2/login"]
+  assert.equal(screen.approval, undefined)
+  assert.equal(screenshotReviews(root, tracker()).screens[0].status, "needs_review")
+  record({ recapture: true })
+  assert.equal(screenshotReviews(root, tracker()).screens[0].status, "needs_review")
+})
+
 test("explicit recapture appends a revision at unchanged source, clears approval and preserves Legacy", (t) => {
   const { root, record } = setup(t)
   record({ legacyImage: fixture, legacyRef: "HEAD" })
   approve(root)
   const before = readHistory(root).screens["1.2/login"]
   record({
+    image: solidPng(root, [30, 160, 30]),
     recapture: true,
     expectedBranch: "example",
     expectedCurrent: before.versions.at(-1),
