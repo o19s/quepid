@@ -115,6 +115,11 @@ module Api
           assert_response :not_found
         end
 
+        test 'returns a not found error if the case does not exist' do
+          get :show, params: { case_id: Case.maximum(:id) + 1 }
+          assert_response :not_found
+        end
+
         test 'returns case info for a public case' do
           get :show, params: { case_id: public_case.id }
           assert_response :ok
@@ -734,6 +739,17 @@ module Api
           test 'can read the case' do
             get :show, params: { case_id: public_case.id }
             assert_response :ok
+          end
+
+          test 'is unauthorized to read a private case' do
+            get :show, params: { case_id: cases(:matt_case).id }
+            assert_response :unauthorized
+            assert_equal 'Unauthorized!', response.parsed_body['reason']
+          end
+
+          test 'is unauthorized to read a case that does not exist' do
+            get :show, params: { case_id: Case.maximum(:id) + 1 }
+            assert_response :unauthorized
           end
 
           test 'cannot update the case' do
