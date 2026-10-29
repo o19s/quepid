@@ -190,8 +190,15 @@ module Api
         @no_teams = false
         @no_scores = false
 
+        # Only the current user's metadata row: an unfiltered join returns the case once per
+        # user who has viewed it and orders by other users' last_viewed_at.
+        metadata_join = Case.sanitize_sql_array(
+          [ 'LEFT OUTER JOIN case_metadata ON case_metadata.case_id = cases.id AND case_metadata.user_id = ?',
+            current_user.id ]
+        )
+
         base_query.includes(:owner, :book).preload(:teams)
-          .left_outer_joins(:metadata) # this is slow!
+          .joins(metadata_join) # this is slow!
           .select('cases.*, case_metadata.last_viewed_at')
           # base_query already ends in .order(:updated_at) - .order here would just append to
           # that instead of taking over, so updated_at ASC would keep winning ties over the
