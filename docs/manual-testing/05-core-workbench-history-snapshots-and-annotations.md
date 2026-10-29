@@ -36,9 +36,11 @@ Core toolbar opens the Stimulus **take-snapshot-core** modal (`#takeSnapshotModa
   - [ ] Take a snapshot on a large case (many queries) — confirm the async/background behavior doesn't block the rest of the UI.
   - [ ] Take a snapshot against an Elasticsearch/OpenSearch case (not only Solr) — confirm capture, the Record Document Fields toggle's presence/absence, and later comparison behave as for Solr.
 
-### 5.3 Compare snapshots (diff)
+### 5.3 Compare snapshots: picker, apply and clear
 
 Rails owns the picker row template; Stimulus populates selections and dynamic options. Snapshot hydration, diff read renderer, per-query diff score badges, and case-level diff score row remain browser-owned. The explicit `snapshot-bridge` controller hands hydrated snapshots to the live-query runtime for diff scoring.
+
+How the diff results display is covered by 5.3b; failures and deleting a snapshot by 5.3c.
 
 - [ ] **Steps:**
   1. Click "Compare snapshots" (bar-chart icon) in the case toolbar.
@@ -48,16 +50,30 @@ Rails owns the picker row template; Stimulus populates selections and dynamic op
   5. Confirm additional score badges (per query, and per case) appear reflecting each chosen snapshot.
   6. Click the "x" on a row to clear just that selection.
   7. Click **Clear Comparison View** to disable all diffs at once.
-- **Expected:** Diff badges accurately reflect each snapshot's historical scores/results side-by-side with the live/current view.
+- **Expected:** The picker applies and clears comparisons as described, and per-query and per-case diff badges appear for each chosen snapshot.
 - **Edge cases:**
-  - [ ] Open a document rating popover in an expanded comparison, then refresh a different query. The original comparison controls and popover stay open.
-  - [ ] Compare two snapshots whose result *order* differs for the same query (re-rank between captures) — confirm the diff shows distinguishable ordering, not just matching sets. Repeat with a snapshot taken on a non-Solr engine.
-  - [ ] Force catalog load failure, close/reopen to retry; force apply/delete failure and retry with selections and delete confirmation retained. Cancel deletion, then confirm it on a disposable snapshot. Its option disappears from every picker immediately, other snapshots remain available, and reopening confirms persistence.
   - [ ] Select the same snapshot in two rows — confirm the inline warning "You have selected the same snapshot multiple times." appears.
   - [ ] The duplicate-snapshot warning starts with a bold "Warning:", as on Legacy.
   - [ ] Delay the snapshot list request, open the picker, and confirm "Loading available snapshots..." shows with the Update and Clear buttons disabled until the list arrives (not the "Fetching snapshot data" text, which is for applying a comparison).
   - [ ] Select a snapshot that's still being processed in the background — confirm a warning is shown and the UI doesn't present stale/partial data as if it were complete.
   - [ ] While fetching snapshot data, confirm the "Fetching snapshot data..." progress text shows and the footer buttons are disabled meanwhile.
+
+### 5.3b Compare snapshots: diff results display
+
+- [ ] **Steps:**
+  1. Apply a comparison of one or more snapshots (5.3) and expand a query.
+- **Expected:** Diff badges accurately reflect each snapshot's historical scores/results side-by-side with the live/current view.
+- **Edge cases:**
+  - [ ] Compare two snapshots whose result *order* differs for the same query (re-rank between captures) — confirm the diff shows distinguishable ordering, not just matching sets. Repeat with a snapshot taken on a non-Solr engine.
+  - [ ] Open a document rating popover in an expanded comparison, then refresh a different query. The original comparison controls and popover stay open.
+
+### 5.3c Compare snapshots: failures and deleting a snapshot
+
+- [ ] **Steps:**
+  1. Open the comparison picker (5.3).
+- **Expected:** Failures can be retried without losing selections, and a snapshot is deleted only after confirmation.
+- **Edge cases:**
+  - [ ] Force catalog load failure, close/reopen to retry; force apply/delete failure and retry with selections and delete confirmation retained. Cancel deletion, then confirm it on a disposable snapshot. Its option disappears from every picker immediately, other snapshots remain available, and reopening confirms persistence.
   - [ ] ⚠️ Click the trash icon next to a snapshot row inside this modal — this **deletes the snapshot itself**, not just the selection. Confirm the inline "Are you sure you want to delete this snapshot?" prompt appears before anything is destroyed, and that this is easy enough to notice (it's an easy action to trigger by accident since it's tucked inside a comparison-picker UI).
 
 ### 5.4 Annotations
