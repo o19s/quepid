@@ -58,13 +58,21 @@ module LlmJudgeAdapters
       { path: path, headers: headers, body: body_for(user_prompt, system_prompt) }
     end
 
+    # A model that refuses, runs out of tokens or answers in prose gives us text
+    # that is not a JSON object (or no text at all). That is a bad answer, not a
+    # bug, so it is raised as a RuntimeError -- which LlmService#perform_safe_judgement
+    # turns into an unrateable judgement -- rather than as JSON::ParserError, which
+    # would abort the whole judging run.
     def extract_judgement response_body
       parsed_content = JSON.parse(content_from(response_body))
+      raise TypeError, 'not a JSON object' unless parsed_content.is_a?(Hash)
 
       {
         explanation: parsed_content['explanation'],
         judgment:    parsed_content['judgment'],
       }
+    rescue JSON::ParserError, TypeError => e
+      raise "LLM response was not a JSON judgement (#{e.class}: #{e.message.truncate(80)})"
     end
 
     def user_prompt query_doc_pair
