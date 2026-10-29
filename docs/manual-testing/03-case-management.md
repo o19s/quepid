@@ -23,35 +23,18 @@ The Cases list page (`/cases`) is where you find, filter, create, import, archiv
   - [ ] Pagination — with enough cases to span multiple pages, confirm page controls work and filters persist across pages.
   - [ ] Confirm only cases you're "involved with" (own, or shared via a team you belong to) ever appear — log in as a second unrelated account and confirm you don't see the first account's private cases.
 
-### 3.2 Create a new case (setup wizard)
+### 3.2 Create a new case: launch, Welcome and Name
+
+The wizard's later steps are 3.2c (Endpoint), 3.2d (Display Fields and Queries) and 3.2e (Finish, landing and the product tour).
 
 - [ ] **Steps:**
   1. Click **Relevancy Cases > Create a case** in the top navbar dropdown (there's no standalone "New Case" button on the `/cases` list page itself), or the equivalent button inside an existing case's workbench.
-  2. A wizard modal opens automatically. As in the Angular wizard it has no title bar or Cancel footer: each step shows its own heading, an × in the corner asks to abandon the case, and the steps are dots along the bottom (green done, dark grey current), where a completed step's dot goes back to it. Step through: **Welcome** → **Name** (starts blank; enter a case name) → **Endpoint** (two accordion panels, both closed on arrival: **Create a new Search Endpoint** or **Use an existing Search Endpoint** (searchable Tom Select choices with engine icons); opening one closes the other, and opening Create drops a chosen existing endpoint. In Create, choose a search engine by its logo tile — Solr / Elasticsearch / OpenSearch / Vectara / Algolia / mapper-based engines such as Vespa and Qdrant / Static File / Search API — enter the endpoint URL, choose Proxy vs. CORS as appropriate, optionally use "ping it" to validate without leaving the step, and click **Continue** to validate) → **Display Fields** (Title and ID required, optional additional fields in a searchable multi-select) → **Queries** (add one or more queries; removable rows) → **Finish** ("That's It!").
-  3. Complete the wizard.
-- **Expected:** A new case is created and you land in its Core Workbench (Part 4), on its first try, connected to the chosen search endpoint.
+  2. A wizard modal opens automatically. As in the Angular wizard it has no title bar or Cancel footer: each step shows its own heading, an × in the corner asks to abandon the case, and the steps are dots along the bottom (green done, dark grey current), where a completed step's dot goes back to it. Step through: **Welcome** → **Name** (starts blank; enter a case name).
+- **Expected:** The wizard opens on Welcome and continues to the Endpoint step once a case name is entered.
 - **Edge cases:**
-  - [ ] On Display Fields, Title and ID use searchable Tom Select dropdowns: select a suggestion with the keyboard and confirm both values survive going back and forward. Type and add an undiscovered field (including a nested path such as `author.name`); confirm it remains selected and the custom Title/ID typo confirmation applies before continuing.
   - [ ] Leave the case name blank and try to proceed — should be blocked.
-  - [ ] Press Enter in the case name to continue, and in the Queries step's query input to add the query (staying on the step).
-  - [ ] Delay the query save after **Finish** — the wizard stays open with Finish disabled until settings, queries and onboarding status are saved. Force a query-save failure, then retry; the error stays in the wizard and navigation occurs only after success. Confirm a first-time tour starts on the loaded workspace and does not restart on reload; returning users receive no automatic tour.
-  - [ ] Existing endpoint choices exclude Static File endpoints without showing the old sharability warning.
-  - [ ] Enter an invalid/unreachable endpoint URL and use "ping it", then **Continue** — both stay on the Endpoint step and show the error plus that engine's troubleshooting: for Solr, the proxy quick fix (only while not proxying), a direct link to the URL with an external-link arrow icon, the `queryresponsewriter` curl command (including any basic-auth credential), and the troubleshooting wiki link; for Elasticsearch/OpenSearch, the proxy and CORS advice and the POST question. **Skip Validation** appears only after a connection failure (not after a mapper error).
-  - [ ] Choose the generic **Search API** engine — "Custom Mapper Required" appears and Continue is unavailable; **Use Mapper Wizard** deletes the draft case and opens the Mapper Wizard.
-  - [ ] Custom Headers: the None / API Key / Custom selector fills a starting template and the editor is read-only on None; choosing an existing endpoint that has headers shows them as Custom.
-  - [ ] Check each engine's per-engine hints: the URL-format tip, Basic Authentication hidden for Vectara/Algolia, and the "Static File endpoints are NOT sharable" note when the account has static endpoints.
-  - [ ] On Display Fields, the Title/ID inputs suggest discovered fields, and typing part of an additional field (optionally with `thumb:`) narrows the suggestions; clicking one adds a removable selection inside the multi-select. Confirm selected fields are not offered again, custom names can be typed and added, and removing a selection updates the saved fields. A Title or ID that validation did not discover asks "could be a typo" before continuing (not for Search API engines, whose fields come from the mapper); cancelling stays on the step.
-  - [ ] The API method select (JSONP / GET) appears only for Solr, inside the collapsed **Solr Configuration** section, and not at all when the instance requires proxying. Custom Headers, Basic Authentication and the proxy option sit in the collapsed **Advanced** section; other engines, including an existing mapper endpoint stored as `AUTO`, keep their method.
-  - [ ] Choose an existing Search API endpoint whose mapper throws on the response, defines no `numberOfResultsMapper` or `docsMapper`, or is not valid JavaScript — **Continue** stays on the Endpoint step with a mapper message and no **Skip Validation**. With a working mapper the fields found in the response appear as Title/ID suggestions.
-  - [ ] Choose an existing Search API endpoint: the Endpoint step asks only for a test query ("You'll configure the query pattern in a later step."). On the Query step, a **Query Pattern** box shows the endpoint URL and method and is seeded with the endpoint's test query (a one-line input for GET, a textarea otherwise); it warns until it contains `#$query##`, and when cleared shows "Query pattern is required." with Continue disabled.
-  - [ ] Choose an existing Search API endpoint with no saved test query — "Test query is required to validate the endpoint." shows and Continue stays disabled until one is entered; **ping it** stays available.
-  - [ ] Enter an HTTPS Quepid session pointed at an HTTP-only Solr endpoint — confirm the wizard surfaces the protocol-mismatch guidance (see also `core-overrides.css`/HTTPS notes for Solr JSONP in the project's engineering docs).
-  - [ ] Hit the protocol mismatch from a mapper-based tile (Vespa, Qdrant) and follow the reload link — the wizard reopens on the same tile, and before **Finish** the try's endpoint is a Search API endpoint carrying that preset and its mapper (it is not detached, and its engine is not the preset id). With `REQUIRE_PROXY_FOR_ALL_SEARCH_ENDPOINTS=true` the reload's endpoint fails validation, so the try keeps its previous endpoint instead of losing it (Legacy saved the try with no endpoint).
-  - [ ] Complete the wizard on an account whose `completed_case_wizard` flag is still `false` (the actual trigger — not tied to case count or account age; the flag only flips true once a wizard run is finished via **Finish**, so cancelling/dismissing earlier wizard runs leaves it eligible again) — confirm the product tour auto-starts shortly after the wizard completes.
-  - [ ] In the walkthrough, confirm the background uses gentle 20% shading and arrows touch target edges without overlapping them. Check Case Header, Case Score, and Add Query on desktop and narrow layouts; Exit/Close ends the tour.
+  - [ ] Press Enter in the case name to continue.
   - [ ] Visit `/cases/new` directly (no query param needed — it always creates a brand-new case immediately and redirects to `/case/:id/try/1?showWizard=true`) — confirm the wizard auto-triggers. Note: reloading that redirected URL re-triggers the wizard again each time, since `showWizard=true` stays in the URL and is never stripped client-side (`app/javascript/controllers/wizard_launcher_controller.js`) — this is current behavior, not a one-time trigger.
-
-- [ ] Choose Vespa with POST and a validation query such as `yql=select * from sources * where true&ranking.profile=bm25`; confirm validation sends separate named parameters and advances to Fields. Bare YQL and JSON request bodies should also validate.
 
 ### 3.2b Case wizard: Static CSV endpoint
 
@@ -70,6 +53,49 @@ The Cases list page (`/cases`) is where you find, filter, create, import, archiv
   - [ ] Confirm Add Query is disabled on the resulting case (4.2 edge case) and the Query tab shows the static-engine message (4.10).
 
   - [ ] Omit `Snapshot Time` from the static CSV; the import retains the server-generated snapshot timestamp. Snapshot-import metadata headers with spaces are rejected as document field names.
+
+### 3.2c Case wizard: Endpoint step
+
+- [ ] **Steps:**
+  1. Open the wizard as in 3.2 and continue past **Name**.
+  2. On **Endpoint** (two accordion panels, both closed on arrival: **Create a new Search Endpoint** or **Use an existing Search Endpoint** (searchable Tom Select choices with engine icons); opening one closes the other, and opening Create drops a chosen existing endpoint. In Create, choose a search engine by its logo tile — Solr / Elasticsearch / OpenSearch / Vectara / Algolia / mapper-based engines such as Vespa and Qdrant / Static File / Search API — enter the endpoint URL, choose Proxy vs. CORS as appropriate, optionally use "ping it" to validate without leaving the step, and click **Continue** to validate).
+- **Expected:** A reachable endpoint continues to Display Fields; failures stay on the step with that engine's troubleshooting.
+- **Edge cases:**
+  - [ ] Existing endpoint choices exclude Static File endpoints without showing the old sharability warning.
+  - [ ] Enter an invalid/unreachable endpoint URL and use "ping it", then **Continue** — both stay on the Endpoint step and show the error plus that engine's troubleshooting: for Solr, the proxy quick fix (only while not proxying), a direct link to the URL with an external-link arrow icon, the `queryresponsewriter` curl command (including any basic-auth credential), and the troubleshooting wiki link; for Elasticsearch/OpenSearch, the proxy and CORS advice and the POST question. **Skip Validation** appears only after a connection failure (not after a mapper error).
+  - [ ] Choose the generic **Search API** engine — "Custom Mapper Required" appears and Continue is unavailable; **Use Mapper Wizard** deletes the draft case and opens the Mapper Wizard.
+  - [ ] Custom Headers: the None / API Key / Custom selector fills a starting template and the editor is read-only on None; choosing an existing endpoint that has headers shows them as Custom.
+  - [ ] Check each engine's per-engine hints: the URL-format tip, Basic Authentication hidden for Vectara/Algolia, and the "Static File endpoints are NOT sharable" note when the account has static endpoints.
+  - [ ] The API method select (JSONP / GET) appears only for Solr, inside the collapsed **Solr Configuration** section, and not at all when the instance requires proxying. Custom Headers, Basic Authentication and the proxy option sit in the collapsed **Advanced** section; other engines, including an existing mapper endpoint stored as `AUTO`, keep their method.
+  - [ ] Choose an existing Search API endpoint whose mapper throws on the response, defines no `numberOfResultsMapper` or `docsMapper`, or is not valid JavaScript — **Continue** stays on the Endpoint step with a mapper message and no **Skip Validation**. With a working mapper the fields found in the response appear as Title/ID suggestions.
+  - [ ] Choose an existing Search API endpoint: the Endpoint step asks only for a test query ("You'll configure the query pattern in a later step."). On the Query step, a **Query Pattern** box shows the endpoint URL and method and is seeded with the endpoint's test query (a one-line input for GET, a textarea otherwise); it warns until it contains `#$query##`, and when cleared shows "Query pattern is required." with Continue disabled.
+  - [ ] Choose an existing Search API endpoint with no saved test query — "Test query is required to validate the endpoint." shows and Continue stays disabled until one is entered; **ping it** stays available.
+  - [ ] Enter an HTTPS Quepid session pointed at an HTTP-only Solr endpoint — confirm the wizard surfaces the protocol-mismatch guidance (see also `core-overrides.css`/HTTPS notes for Solr JSONP in the project's engineering docs).
+  - [ ] Hit the protocol mismatch from a mapper-based tile (Vespa, Qdrant) and follow the reload link — the wizard reopens on the same tile, and before **Finish** the try's endpoint is a Search API endpoint carrying that preset and its mapper (it is not detached, and its engine is not the preset id). With `REQUIRE_PROXY_FOR_ALL_SEARCH_ENDPOINTS=true` the reload's endpoint fails validation, so the try keeps its previous endpoint instead of losing it (Legacy saved the try with no endpoint).
+  - [ ] Choose Vespa with POST and a validation query such as `yql=select * from sources * where true&ranking.profile=bm25`; confirm validation sends separate named parameters and advances to Fields. Bare YQL and JSON request bodies should also validate.
+
+### 3.2d Case wizard: Display Fields and Queries
+
+- [ ] **Steps:**
+  1. Open the wizard and complete Name and Endpoint (3.2, 3.2c).
+  2. On **Display Fields**, choose Title and ID (required) and any optional additional fields in the searchable multi-select.
+  3. On **Queries**, add one or more queries; each row is removable.
+- **Expected:** The chosen fields and queries carry through to Finish.
+- **Edge cases:**
+  - [ ] On Display Fields, Title and ID use searchable Tom Select dropdowns: select a suggestion with the keyboard and confirm both values survive going back and forward. Type and add an undiscovered field (including a nested path such as `author.name`); confirm it remains selected and the custom Title/ID typo confirmation applies before continuing.
+  - [ ] On Display Fields, the Title/ID inputs suggest discovered fields, and typing part of an additional field (optionally with `thumb:`) narrows the suggestions; clicking one adds a removable selection inside the multi-select. Confirm selected fields are not offered again, custom names can be typed and added, and removing a selection updates the saved fields. A Title or ID that validation did not discover asks "could be a typo" before continuing (not for Search API engines, whose fields come from the mapper); cancelling stays on the step.
+  - [ ] Press Enter in the Queries step's query input to add the query (staying on the step).
+
+### 3.2e Case wizard: Finish, landing and product tour
+
+- [ ] **Steps:**
+  1. Complete the earlier steps (3.2 to 3.2d).
+  2. On **Finish** ("That's It!"), complete the wizard.
+- **Expected:** A new case is created and you land in its Core Workbench (Part 4), on its first try, connected to the chosen search endpoint.
+- **Edge cases:**
+  - [ ] Delay the query save after **Finish** — the wizard stays open with Finish disabled until settings, queries and onboarding status are saved. Force a query-save failure, then retry; the error stays in the wizard and navigation occurs only after success. Confirm a first-time tour starts on the loaded workspace and does not restart on reload; returning users receive no automatic tour.
+  - [ ] Complete the wizard on an account whose `completed_case_wizard` flag is still `false` (the actual trigger — not tied to case count or account age; the flag only flips true once a wizard run is finished via **Finish**, so cancelling/dismissing earlier wizard runs leaves it eligible again) — confirm the product tour auto-starts shortly after the wizard completes.
+  - [ ] In the walkthrough, confirm the background uses gentle 20% shading and arrows touch target edges without overlapping them. Check Case Header, Case Score, and Add Query on desktop and narrow layouts; Exit/Close ends the tour.
 
 ### 3.3 Import a case from JSON
 

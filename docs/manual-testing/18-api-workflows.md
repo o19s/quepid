@@ -8,6 +8,13 @@ The UI exercises many APIs, but it does not exercise every supported operation o
 
 Use disposable resources and test accounts for writes, particularly deletion and scorer replacement. Record created IDs and remove fixtures afterward; revoke test tokens. A source audit establishes what to test, not a passing result. If a check fails, retain the failure and compare historical behavior before calling it a migration regression.
 
+## Automated coverage
+
+Rails tests now check most of the request/response rules below, so a manual pass should spend its time on what they can't: agreement with the UI after reload, real search engines and background jobs running to completion, masked credentials against a live endpoint, and the in-app API Docs.
+
+- `test/integration/api_workflows_test.rb` drives the API with a Bearer token like an external client: form-style `archived` values and the over-30-case list (18.1), zero ratings and punctuated/leading-zero document IDs (18.3), bulk rating clears including the POST `delete` alias (18.3), one membership from a mixed-case email plus an ID (18.5), and user lookup by ID and escaped mixed-case email without secret fields (18.8).
+- Controller tests under `test/controllers/api/v1/` cover the rest of the API rules: owned/archived book filters and case metadata (18.1); try preview, ancestry, cloning and only-try deletion (18.2, with `test/integration/try_deletion_flow_test.rb`); query notes, options, positions, repeated rating deletion and bulk query create/delete (18.3); judgement upsert, anonymous judgements and `to_be_judged` (18.4); member add/remove and disabled invitations (18.5); `run_evaluation`, refresh and populate conflicts (18.6); scorer ownership, forced replacement and `force` values (18.7); and user prefix lookup and default-scorer reset (18.8).
+
 ## Test scenarios
 
 ### 18.1 Resource lists, boolean filters and recent-case metadata
@@ -91,8 +98,8 @@ Use disposable resources and test accounts for writes, particularly deletion and
 - [ ] **Steps:**
   1. GET `/api/users/current` with a disposable user's token; confirm the identity and counts belong to that user.
   2. GET `/api/users?prefix=<test email/name prefix>` using mixed case. Confirm prefix matching, no more than eight results, and an empty array when the prefix is omitted or matches nothing.
-  3. Read that test user through `/api/users/:id`, using their numeric ID and then mixed-case email. Confirm both resolve to the same user.
+  3. Read that test user through `/api/users/:id`, using their numeric ID and then mixed-case email. Confirm both resolve to the same user. Escape the email's dots as `%2E`: an unescaped dot is read as a format suffix, so `/api/users/a@example.com` looks up `a@example` and returns 404 (the same applies to member removal by email in 18.5).
   4. Update that user's `company` and `default_scorer_id` using the `user` envelope. Re-read through API and Profile/Scorers; verify the stored preferences. Set `default_scorer_id` to `0` and confirm the system default is restored.
-  5. On the same disposable account, set `completed_case_wizard` false/true and check the wizard's automatic tour eligibility (3.2). Restore the original preference afterward.
+  5. On the same disposable account, set `completed_case_wizard` false/true and check the wizard's automatic tour eligibility (3.2e). Restore the original preference afterward.
 - **Expected:** Lookup behavior agrees across numeric IDs and normalized emails; supported preferences persist. Missing users return JSON 404. Lookup responses must not contain password hashes, reset/invitation tokens or personal access tokens.
 - **Edge cases:** Use an inaccessible scorer and malformed update body; record the response and persisted default rather than assuming the Rails default-scorer form and API enforce identical validation. Restrict preference writes to the disposable user's own record.

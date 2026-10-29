@@ -34,19 +34,19 @@ Owner candidates are filename matches, not verified owners.
 | [15](#row-15) | `javascripts/components/frog_report/_modal.html` | branch | 25 | `frog_report_controller.js`, `shared/_dynamic_modal_templates.html.erb` | 6.9 | closed |
 | [16](#row-16) | `templates/views/detailedDoc.html` | branch | 24 | `detailed_document_modal.js`, `search_result_controller.js` | 6.11 | closed |
 | [17](#row-17) | `templates/views/pick_scorer.html` | branch | 21 | `pick_scorer_core_controller.js`, `scorer_list_template` | 4.8 | closed |
-| [18](#row-18) | `templates/views/queryDiffResults.html` | branch | 20 | `search_results_controller.js` (`renderDiffResults`) | 5.3 | closed |
+| [18](#row-18) | `templates/views/queryDiffResults.html` | branch | 20 | `search_results_controller.js` (`renderDiffResults`) | 5.3b | closed |
 | [19](#row-19) | `templates/views/stackedChart.html` | branch | 18 | `match_explain_controller.js`, `_query_list_templates.html.erb` | 4.23 | closed |
 | [20](#row-20) | `javascripts/components/move_query/_modal.html` | branch | 16 | `move_query_core_controller.js` | 4.4 | closed |
 | [21](#row-21) | `javascripts/components/browse_query/_modal.html` | branch (main-only) | 14 | `browse_query_controller.js` | 4.18 | closed |
 | [22](#row-22) | `javascripts/components/query_options/_modal.html` | branch | 13 | `query_options_core_controller.js` | 4.5 | closed |
 | [23](#row-23) | `javascripts/components/annotations/annotations.html` | branch | 12 | `_tune_relevance.html.erb` (annotations panel), `annotations_controller.js` | 5.4 | closed |
 | [24](#row-24) | `javascripts/components/annotation/annotation.html` | branch | 11 | `_annotation.html.erb`, `annotations_controller.js` | 5.4 | closed |
-| [25](#row-25) | `templates/views/customHeaders.html` | branch | 10 | `_wizard_modal.html.erb`, `wizard_controller.js` | 3.2 | closed |
+| [25](#row-25) | `templates/views/customHeaders.html` | branch | 10 | `_wizard_modal.html.erb`, `wizard_controller.js` | 3.2c | closed |
 | [26](#row-26) | `javascripts/components/annotation/_update.html` | branch | 8 | `_edit_annotation_modal.html.erb`, `annotations_controller.js` | 5.4 | closed |
 | [27](#row-27) | `templates/views/queryParamsHistory.html` | branch | 8 | `_tune_relevance.html.erb`, `tune_relevance_controller.js` | 4.13, 5.1 | closed |
 | [28](#row-28) | `javascripts/components/add_query/add_query.html` | branch | 6 | `add_query_controller.js`, `_queries.html.erb` | 4.2, 4.3 | closed |
 | [29](#row-29) | `javascripts/components/export_case/export_case.html` | branch | 6 | `_case_toolbar.html.erb` | 6.1 | closed |
-| [30](#row-30) | `templates/views/404.html` | branch | 6 | Rails 404 (`public/404.html`), `core/case_not_found.html.erb` | 4.17 | closed |
+| [30](#row-30) | `templates/views/404.html` | branch | 6 | Rails 404 (`public/404.html`), `core/case_not_found.html.erb` | 4.17c | closed |
 | [31](#row-31) | `templates/views/embed.html` | branch | 6 | `search_result_controller.js` (`embedField`) | 4.23 | closed |
 | [32](#row-32) | `templates/views/ratings/popover.html` | branch | 6 | `rating_popover_controller.js` | 4.6 | closed |
 | [33](#row-33) | `javascripts/components/debug_matches/debug_matches.html` | branch | 4 | `match_explain_controller.js` | 6.8 | closed |
