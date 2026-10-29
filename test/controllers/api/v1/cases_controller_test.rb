@@ -441,6 +441,21 @@ module Api
           end
         end
 
+        test "lists each case once and orders by the current user's last_viewed_at, not other users'" do
+          CaseMetadatum.create!(case: first_case, user: doug, last_viewed_at: 2.days.ago)
+          CaseMetadatum.create!(case: second_case, user: doug, last_viewed_at: 1.day.ago)
+          CaseMetadatum.create!(case: first_case, user: users(:random), last_viewed_at: 1.minute.ago)
+          CaseMetadatum.create!(case: first_case, user: users(:joe), last_viewed_at: 2.minutes.ago)
+
+          get :index
+
+          assert_response :ok
+          ids = response.parsed_body['all_cases'].pluck('case_id')
+
+          assert_equal ids.uniq, ids
+          assert_operator ids.index(second_case.id), :<, ids.index(first_case.id)
+        end
+
         test 'returns list of cases owned by user' do
           get :index
 
