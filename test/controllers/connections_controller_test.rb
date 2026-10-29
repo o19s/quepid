@@ -90,6 +90,9 @@ class ConnectionsControllerTest < ActionDispatch::IntegrationTest
     assert_select '#connection-advanced textarea#connection_extra_headers_text'
     assert_select '#connection-advanced input#connection_timeout'
     assert_select '#connection-advanced input#connection_requests_per_minute'
+    assert_select '#connection-advanced input#connection_retry_max[placeholder="3"]'
+    assert_select '#connection-advanced input#connection_retry_statuses_text[placeholder="429, 529"]'
+    assert_select '#connection-advanced input#connection_retry_interval'
     assert_select "#connection-access input[name='connection[team_ids][]']"
     # Only the name and the service stay above the tabs.
     assert_select 'input#connection_name'

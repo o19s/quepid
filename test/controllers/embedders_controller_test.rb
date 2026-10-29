@@ -244,10 +244,21 @@ class EmbeddersControllerTest < ActionDispatch::IntegrationTest
       get edit_embedder_url(embedder)
 
       assert_select '.alert-warning[role=alert]', text: /old, deprecated configuration and needs to be migrated to a connection/
-      assert_select '.alert-warning[role=alert]', text: %r{own URL, https://api\.openai\.com}
-      assert_select '.alert-warning[role=alert]', text: /choose a connection above/
+      assert_select '.alert-warning[role=alert] a[data-bs-toggle=collapse]', text: 'Details'
+      assert_select '.alert-warning .collapse#embedder-legacy-details', text: /choose a connection above/
+      assert_select '#embedder-legacy-details dd', text: 'https://api.openai.com'
+      assert_select '#embedder-legacy-details dd', text: /only the owner can see it/
+      assert_select '#embedder-legacy-details', text: /sk-test-openai/, count: 0
       assert_select 'button[data-embedder-form-target=checkButton][disabled]'
       assert_select '[data-embedder-form-target=checkHint]:not([hidden])', text: /add a connection/
+    end
+
+    test 'the owner of an old embedder sees its key in the details, to copy into a connection' do
+      embedder.update_column :owner_id, user.id
+
+      get edit_embedder_url(embedder)
+
+      assert_select '#embedder-legacy-details dd code', text: 'sk-test-openai'
     end
 
     test 'the form has no URL, key or timeout fields: they come from the connection' do

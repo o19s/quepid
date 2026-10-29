@@ -52,7 +52,8 @@ class Connection < ApplicationRecord
 
   # Fields the connection form accepts; the controller permits these plus :team_ids.
   PERMITTED_PARAMS = [ :name, :service, :base_url, :auth_scheme, :auth_header, :secret, :timeout,
-                       :requests_per_minute, :api_version, :extra_headers_text ].freeze
+                       :requests_per_minute, :api_version, :extra_headers_text,
+                       :retry_max, :retry_statuses_text, :retry_interval ].freeze
 
   # What a check found. status is :ok (the service accepted the credentials), :reachable (it
   # answered, but the check can't tell whether the credentials work), :rejected (401 or 403) or
@@ -91,6 +92,7 @@ class Connection < ApplicationRecord
   validate :secret_present_when_required
   validate :basic_secret_has_user_and_password
   validate :extra_headers_are_a_flat_object
+  validate :retry_settings_are_sensible
   validate :service_still_makes_embeddings, on: :update
 
   # Every connection the user may use: their own, those shared with a team of theirs, and the
@@ -135,6 +137,51 @@ class Connection < ApplicationRecord
 
   def api_version= value
     self.options = (options || {}).merge('api_version' => value.presence).compact
+  end
+
+  # How a call retries when the service says "later" (LlmConnection's defaults apply to whatever
+  # is left blank): how many times, on which HTTP statuses, and the base seconds between tries,
+  # which double each time. Kept in options, so nothing changes in the table.
+  def retry_max
+    options&.dig('retry_max')
+  end
+
+  def retry_max= value
+    set_option 'retry_max', value.to_s.strip.presence&.to_i
+  end
+
+  def retry_interval
+    options&.dig('retry_interval')
+  end
+
+  def retry_interval= value
+    set_option 'retry_interval', value.to_s.strip.presence&.to_f
+  end
+
+  def retry_statuses
+    options&.dig('retry_statuses')
+  end
+
+  # The statuses as the form edits them: "429, 529".
+  def retry_statuses_text
+    retry_statuses&.join(', ')
+  end
+
+  def retry_statuses_text= text
+    @retry_statuses_text_error = nil
+    words = text.to_s.split(/[\s,]+/).compact_blank
+    if words.any? { |word| !word.match?(/\A\d+\z/) }
+      @retry_statuses_text_error = 'must be HTTP status codes separated by commas, such as "429, 529"'
+      return
+    end
+
+    set_option 'retry_statuses', words.empty? ? nil : words.map(&:to_i)
+  end
+
+  # What to hand LlmConnection.build: only what this connection sets, so the rest stay the
+  # defaults there.
+  def retry_options
+    { max: retry_max, retry_statuses: retry_statuses, interval: retry_interval }.compact
   end
 
   # extra_headers as the form edits them: one "Name: value" per line.
@@ -250,6 +297,19 @@ class Connection < ApplicationRecord
     return unless 'basic' == auth_scheme && secret.present?
 
     errors.add(:secret, 'must be in user:password format for basic auth') unless secret.include?(':')
+  end
+
+  def set_option key, value
+    self.options = (options || {}).merge(key => value).compact
+  end
+
+  def retry_settings_are_sensible
+    errors.add(:retry_statuses_text, @retry_statuses_text_error) if @retry_statuses_text_error
+    errors.add(:retry_max, 'must be a whole number from 0 to 10') if retry_max && !retry_max.between?(0, 10)
+    errors.add(:retry_interval, 'must be from 0 to 60 seconds') if retry_interval && !retry_interval.between?(0, 60)
+    return if retry_statuses.blank? || retry_statuses.all? { |status| status.between?(100, 599) }
+
+    errors.add(:retry_statuses_text, 'must be HTTP status codes from 100 to 599')
   end
 
   def extra_headers_are_a_flat_object

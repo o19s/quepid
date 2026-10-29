@@ -183,6 +183,53 @@ class ConnectionTest < ActiveSupport::TestCase
     end
   end
 
+  describe 'retry settings' do
+    test 'are left to the defaults until set' do
+      connection = build
+
+      assert_nil connection.retry_max
+      assert_nil connection.retry_statuses
+      assert_nil connection.retry_interval
+      assert_empty connection.retry_options
+    end
+
+    test 'are kept in options, and only what is set overrides the defaults' do
+      connection = build(retry_max: '5', retry_statuses_text: '429, 503 ,529', retry_interval: '0.5')
+
+      assert_predicate connection, :valid?
+      assert_equal({ max: 5, retry_statuses: [ 429, 503, 529 ], interval: 0.5 }, connection.retry_options)
+      assert_equal '429, 503, 529', connection.retry_statuses_text
+
+      connection.retry_statuses_text = ''
+      connection.retry_interval = ''
+      assert_equal({ max: 5 }, connection.retry_options)
+    end
+
+    test '0 retries is a setting, not blank' do
+      assert_equal({ max: 0 }, build(retry_max: '0').retry_options)
+    end
+
+    test 'are checked' do
+      assert_not build(retry_max: '11').valid?
+      assert_not build(retry_max: '-1').valid?
+      assert_not build(retry_interval: '61').valid?
+      assert_not build(retry_statuses_text: '429, later').valid?
+      assert_not build(retry_statuses_text: '99').valid?
+    end
+
+    test 'an embedder on the connection retries as it says, and one with its own settings uses the defaults' do
+      voyage = connections(:voyage)
+      voyage.update!(retry_max: 1, retry_statuses_text: '503', retry_interval: 0)
+      embedder = Embedder.new(name: 'V', provider: 'voyage', model: 'voyage-3.5', owner: users(:doug), connection: voyage)
+      stub = stub_request(:post, /api\.voyageai\.com/).to_return(status: 503, body: '{}')
+
+      assert_raises(EmbedderAdapters::Error) { embedder.embed('star wars') }
+      assert_requested stub, times: 2
+
+      assert_empty Embedder.new(service_url: 'http://x').retry_options
+    end
+  end
+
   describe '#check' do
     let(:url) { 'https://api.openai.com/v1/models' }
 

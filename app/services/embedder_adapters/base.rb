@@ -82,7 +82,7 @@ module EmbedderAdapters
     end
 
     def connection
-      LlmConnection.build(url: embedder.service_url)
+      LlmConnection.build(url: embedder.service_url, retry_options: embedder.retry_options)
     end
 
     def headers

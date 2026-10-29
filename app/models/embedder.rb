@@ -125,6 +125,11 @@ class Embedder < ApplicationRecord
     { 'Authorization' => "Bearer #{api_key}" }
   end
 
+  # The connection's retry settings; none for an embedder with its own, which uses the defaults.
+  def retry_options
+    connection ? connection.retry_options : {}
+  end
+
   def adapter
     provider_definition.adapter_class.new(self)
   end

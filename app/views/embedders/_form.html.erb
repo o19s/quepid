@@ -59,12 +59,37 @@
               <div class="alert alert-warning small mt-2 mb-0" role="alert">
                 <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
                 <strong>This embedder uses the old, deprecated configuration and needs to be migrated to a connection.</strong>
-                It is still set up with its own URL, <code><%= embedder.service_url %></code>, and its own key, stored on
-                the embedder itself. That way of configuring embedders is going away: those settings can no longer be edited
-                here, and they will be removed once embedders have been moved to connections. Until then it keeps working
-                unchanged. To migrate it, choose a connection above (or create one for
-                <%= embedder.provider_definition&.label || embedder.provider %>); the connection's URL, key and timeout then
-                replace the embedder's own, and you can't go back to them.
+                <a href="#embedder-legacy-details" data-bs-toggle="collapse" role="button"
+                   aria-expanded="false" aria-controls="embedder-legacy-details">Details</a>
+                <div class="collapse mt-2" id="embedder-legacy-details">
+                  <p>
+                    It is still set up with its own URL and key, stored on the embedder itself. That way of configuring
+                    embedders is going away: those settings can no longer be edited here, and they will be removed once
+                    embedders have been moved to connections. Until then it keeps working unchanged.
+                  </p>
+                  <p>
+                    To migrate it, choose a connection above, or create one for
+                    <%= embedder.provider_definition&.label || embedder.provider %> with the values below. The
+                    connection's URL, key and timeout then replace the embedder's own, and you can't go back to them.
+                  </p>
+                  <dl class="row mb-0">
+                    <dt class="col-sm-3">URL</dt>
+                    <dd class="col-sm-9"><code class="user-select-all"><%= embedder.service_url %></code></dd>
+                    <dt class="col-sm-3">Timeout</dt>
+                    <dd class="col-sm-9"><%= embedder.timeout %> s</dd>
+                    <% if embedder.api_key.present? %>
+                      <dt class="col-sm-3">Key</dt>
+                      <dd class="col-sm-9">
+                        <%# Only the owner sees it: the embedder may be shared with people who aren't meant to. %>
+                        <% if embedder.owner_id == current_user.id %>
+                          <code class="user-select-all text-break"><%= embedder.api_key %></code>
+                        <% else %>
+                          Set (<%= embedder.masked_api_key %>); only the owner can see it.
+                        <% end %>
+                      </dd>
+                    <% end %>
+                  </dl>
+                </div>
               </div>
             <% end %>
             <div class="alert alert-warning small mt-2 mb-0" <%= 'hidden' if embedder_connection_offered?(embedder) %>

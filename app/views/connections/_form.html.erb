@@ -43,7 +43,7 @@
         </div>
 
         <%# Errors in a tab the person isn't looking at would be invisible, so open that one. %>
-        <% advanced_errors = (connection.errors.attribute_names & %i[extra_headers extra_headers_text timeout requests_per_minute]).any? %>
+        <% advanced_errors = (connection.errors.attribute_names & %i[extra_headers extra_headers_text timeout requests_per_minute retry_max retry_statuses_text retry_interval]).any? %>
         <ul class="nav nav-tabs mb-3" id="connection-tabs" role="tablist">
           <li class="nav-item" role="presentation">
             <button class="nav-link <%= 'active' unless advanced_errors %>" id="connection-general-tab" type="button" role="tab"
@@ -131,6 +131,43 @@
             <%= form.label :timeout, 'Timeout (s)', class: 'col-sm-3 col-form-label' %>
             <div class="col-sm-3">
               <%= form.number_field :timeout, min: 1, max: 600, class: 'form-control' %>
+            </div>
+          </div>
+
+          <div class="row mb-3">
+            <%= form.label :retry_max, 'Retries', class: 'col-sm-3 col-form-label' %>
+            <div class="col-sm-3">
+              <%= form.number_field :retry_max, min: 0, max: 10, class: 'form-control',
+                    placeholder: LlmConnection::RETRY_OPTIONS[:max] %>
+            </div>
+            <div class="col-sm-12 offset-sm-3 form-text">
+              How many times a call is repeated when the service says to try later. Blank uses the default
+              (<%= LlmConnection::RETRY_OPTIONS[:max] %>); 0 never retries.
+            </div>
+          </div>
+
+          <div class="row mb-3">
+            <%= form.label :retry_statuses_text, 'Retry on', class: 'col-sm-3 col-form-label' %>
+            <div class="col-sm-5">
+              <%= form.text_field :retry_statuses_text, class: 'form-control font-monospace',
+                    placeholder: LlmConnection::RETRY_STATUSES.join(', ') %>
+            </div>
+            <div class="col-sm-12 offset-sm-3 form-text">
+              HTTP statuses that mean "try later", separated by commas. Blank uses the default
+              (<%= LlmConnection::RETRY_STATUSES.join(', ') %>). A timeout or a dropped connection is never
+              retried: the request may already have been done, and repeating it could be paid for twice.
+            </div>
+          </div>
+
+          <div class="row mb-3">
+            <%= form.label :retry_interval, 'Wait (s)', class: 'col-sm-3 col-form-label' %>
+            <div class="col-sm-3">
+              <%= form.number_field :retry_interval, min: 0, max: 60, step: 0.5, class: 'form-control',
+                    placeholder: LlmConnection.configured_interval %>
+            </div>
+            <div class="col-sm-12 offset-sm-3 form-text">
+              Seconds before the first retry; each one waits twice as long as the one before. Blank uses the default
+              (<%= LlmConnection.configured_interval %>).
             </div>
           </div>
 

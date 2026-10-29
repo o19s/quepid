@@ -188,7 +188,15 @@ A connection can have several users: one OpenAI connection can back an AI judge 
 - `LlmConnection` is renamed `HttpClient` (it is a Faraday client, not a record, and would
   otherwise sit beside the `Connection` model with a near-identical name). It builds a client
   _from a `Connection`_: base URL, auth headers by `auth_scheme`, extra headers, timeout, and the
-  existing retry on 429/529. Embedder adapters already use it, and keep doing so.
+  retry. Embedder adapters already use it, and keep doing so.
+- **Retries are the client's defaults, which a connection can override** in its Advanced tab:
+  how many times (default 3), on which HTTP statuses (default 429 and 529), and the base wait
+  (default `LLM_RETRY_INTERVAL`, doubling each time). Blank means the default, so a connection
+  states only what differs: a local Ollama can say 0, a rate-limited cloud key can say more. The
+  settings live in `options`. A timeout or a dropped connection is never retried, whatever the
+  setting: the request may have been done, and repeating it could be paid for twice. What a
+  consumer does once retries run out (a judge marks the pair unrateable and may escalate; an
+  embedder's job fails) stays with the consumer.
 - `requests_per_minute` is enforced per connection across all callers, because vendors limit per
   key. The mechanism is the one the search endpoint proxy already uses for its limit; this ADR
   does not choose how to share the counter across processes (§5).
@@ -207,19 +215,41 @@ their credentials and `extra_headers` covers `custom_headers`. A later ADR shoul
 `search` capability and a rule that decides when a connection's secret may be sent to a browser
 (for instance, never; a search endpoint using a connection is always proxied).
 
-## 3. Migration
+## 3. Migration: a deprecation period, then a clean-up
 
-Additive first, then removal.
+The old settings are not removed when connections arrive. Moving a consumer onto connections goes
+through three stages, and a consumer is only cleaned up once the stage before it is done:
 
-1. **Create `connections` and the registry.** No behaviour change; the old classes read through.
-2. **Backfill.** One connection per existing embedder and one per AI judge that has a key or URL,
-   owned by the same user and shared with the same teams. No deduplication: secrets are encrypted
-   non-deterministically, so equal keys cannot be found by comparing columns. A later
-   "merge duplicates" step (a rake task, then a button) can compare in memory.
-3. **Dual read.** Consumers read the connection, falling back to their old columns while those
-   still hold data. New writes go to the connection only.
-4. **Drop the old columns** (`embedders.api_key`, `service_url`, `timeout`; `users.llm_key`; the
-   connection keys inside `judge_options`) one release later, after checking nothing reads them.
+1. **Additive.** Create `connections` and the registry. No behaviour change; the old provider
+   classes read through.
+2. **Deprecation period.** The old way of configuring a consumer is _deprecated_, not removed.
+   - The old columns stay in the database and stay optional (`embedders.service_url`, `api_key`,
+     `timeout`; later `users.llm_key` and the connection keys inside `judge_options`). Nothing is
+     deleted, so nothing that works today stops working.
+   - The UI stops editing them. A consumer configured the old way keeps running from them,
+     unchanged, and says so on its own screen: the embedder form shows a warning that this is the
+     deprecated configuration and that it has to be migrated by choosing a connection.
+   - New consumers have to use a connection, and one that has a connection can change it but not
+     go back to its own settings. The old way can only shrink during this period.
+   - The API keeps accepting the old fields for the same period, so existing integrations are not
+     broken at the same time.
+3. **Migration, then clean-up.** When the deprecation period ends (the consumers that matter have
+   been moved), a data migration turns each remaining consumer's own settings into a connection,
+   and a later migration drops the columns and the fallback code.
+   - **Data migration.** One connection per consumer that still has a URL or key, owned by the
+     same user and shared with the same teams. Equal ones are not merged in the migration: secrets
+     are encrypted non-deterministically, so they can't be compared by column. Where several
+     consumers of one owner have the same service, URL and key, the migration compares them in
+     memory and reuses one connection. A consumer with no owner is skipped, since nobody could
+     use a connection made for it.
+   - **Clean-up.** Drop the old columns; delete the fallback in the model (`service_url`,
+     `timeout` and `request_headers` reading the consumer's own columns) and the notice; remove the
+     old fields from the API.
+
+Clean-up is a separate, later change, made only after the data migration has run everywhere. Doing
+the three together would force every consumer onto a connection at once, with no way back if a
+backfill got a URL or key wrong; the deprecation period keeps the old settings as the source of
+truth until the new ones have been seen to work.
 
 ## 4. Consequences
 
@@ -261,24 +291,40 @@ Additive first, then removal.
 
 ## 6. Open points
 
+Settled by what was built:
+
+- **Timeout:** only the connection's. A consumer has no override; the embedder form has no timeout
+  field.
+- **Who may create an instance-wide connection:** administrators only, and it can't be changed
+  afterwards. They also manage it.
+- **Names:** the model and the UI both say "Connection".
+
+Still open:
+
 - How the per-connection rate limit is shared across web and job processes (the database, the
-  cache, or only a soft per-process limit to start).
-- Whether to allow a per-consumer timeout override, or only the connection's.
+  cache, or only a soft per-process limit to start). The field is stored and shown; nothing enforces
+  it, and the form says so.
+- Sharing: an embedder can be shared with teams its connection isn't shared with, so their members
+  spend the connection owner's key (see §9). Either restrict an embedder's teams to those that can
+  use its connection, or accept it as embedders' own keys already behave.
+- Whether a team member may use a connection only through a consumer, as now, or also see where it
+  points (today they see the URL, never the key).
 - Services with more than one secret (a cloud provider with a key id and a secret). Out of scope;
   `extra_headers` and `options` are not a place for secrets.
-- Who may create an instance-wide connection: administrators only, to start.
 - Search endpoints (§2.7): the `search` capability and when a secret may reach a browser.
-- Names, if "Connection" proves too broad in the UI: the model stays `Connection`, the label can
-  change.
+- When the data migration and the clean-up (§3) run, and whether the migration reuses one
+  connection for consumers of one owner with the same service, URL and key (§3 says yes).
 
 ## 7. Phasing
 
-1. `Connection`, `ConnectionService` and `HttpClient`; old classes read through. No visible change.
-2. Embedders move onto connections: picker, inline create in the embedder form, backfill.
-3. AI judges move onto connections.
-4. A Connections page; rate limits; instance-wide connections; the Ollama container as one.
-5. Drop the old columns.
-6. Search endpoints, under their own ADR.
+1. `Connection` and `ConnectionService`; the old provider classes read through. Done.
+2. A Connections page; instance-wide connections; the Check connection button. Done.
+3. Embedders move onto connections: a picker on the form, new ones require a connection, old ones
+   keep working and are warned about (the deprecation period, §3). Done.
+4. AI judges move onto connections, the same way. Not started.
+5. `HttpClient` replaces `LlmConnection`, built from a connection; rate limits enforced. Not started.
+6. The data migration, then, separately, dropping the old columns (§3).
+7. Search endpoints, under their own ADR.
 
 ## 8. Tests
 
@@ -320,8 +366,8 @@ Additive first, then removal.
   connection; one can move to another connection but not back to settings of its own.
   The embedder's own `service_url`, `api_key` and `timeout` columns are **kept**, and the API still
   accepts them: an embedder made before connections has no connection and keeps working from them
-  (the form notes this and leaves them alone), until a later migration moves that data to
-  connections and drops the columns. The fingerprint reads the effective provider and URL, so an
+  (the form notes this and leaves them alone), until the data migration and clean-up described in §3
+  have run. The fingerprint reads the effective provider and URL, so an
   embedder on a connection has the same fingerprint as one with the same settings of its own, and
   changing the connection's URL or service marks its embedders' vectors stale and re-vectorises
   their cases.
