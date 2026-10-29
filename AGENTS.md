@@ -136,8 +136,8 @@ Follow [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md) for development conventions.
 
 - Use the [`manual-testing` skill](.agents/skills/manual-testing/SKILL.md) to run, sample, compare and record scenarios.
 - Before starting work that touches a tracked path, or when asked to do a manual testing pass: run `bin/manual_test_status` (plain `ruby`, no Docker/Rails boot needed) to see what's due — never run, stale (> `policy.default_max_age_days`, default 90), or whose `paths` changed (committed **or uncommitted**) since `last_run`.
-- After changing code, check whether any tracked `paths` match your diff (`bin/manual_test_status` will surface it as "uncommitted changes in ...").
-- Age-expired scenarios (flagged solely because `last_run` is past `default_max_age_days`, with no path change involved) are also yours to act on, not just report: when a session touching this repo notices one via `bin/manual_test_status`, drive it through Playwright MCP and update `tracking.yml` in that same session — don't wait to be asked, and don't leave it sitting as a report for a human to run later.
+- After changing code, check whether any tracked `paths` match your diff (`bin/manual_test_status` marks those scenarios DUE), and handle any changed files it reports that no scenario tracks, as the skill describes.
+- Age-expired scenarios (flagged solely because `last_run` is past `default_max_age_days`, with no path change involved): when a session touching this repo notices them via `bin/manual_test_status`, propose a batch to the user (which scenarios, and roughly what each drives) and run it only once they agree. Driving scenarios costs time and tokens and mutates the shared dev database, so don't start one unasked.
 - **Feature parity, not just staleness:** the checks above only re-verify scenarios that *already exist*. When a PR adds, removes, or materially changes user-facing functionality, also update the prose itself, in the same PR:
     - add a new numbered scenario (with `paths`) for new functionality,
     - delete/mark obsolete the scenario for removed functionality,
