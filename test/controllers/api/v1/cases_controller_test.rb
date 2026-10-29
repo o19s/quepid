@@ -104,6 +104,11 @@ module Api
           assert_response :not_found
         end
 
+        test 'returns a not found error if the case does not exist' do
+          get :show, params: { case_id: Case.maximum(:id) + 1 }
+          assert_response :not_found
+        end
+
         test 'returns case info for a public case' do
           get :show, params: { case_id: public_case.id }
           assert_response :ok
@@ -430,6 +435,21 @@ module Api
           end
         end
 
+        test "lists each case once and orders by the current user's last_viewed_at, not other users'" do
+          CaseMetadatum.create!(case: first_case, user: doug, last_viewed_at: 2.days.ago)
+          CaseMetadatum.create!(case: second_case, user: doug, last_viewed_at: 1.day.ago)
+          CaseMetadatum.create!(case: first_case, user: users(:random), last_viewed_at: 1.minute.ago)
+          CaseMetadatum.create!(case: first_case, user: users(:joe), last_viewed_at: 2.minutes.ago)
+
+          get :index
+
+          assert_response :ok
+          ids = response.parsed_body['all_cases'].pluck('case_id')
+
+          assert_equal ids.uniq, ids
+          assert_operator ids.index(second_case.id), :<, ids.index(first_case.id)
+        end
+
         test 'returns list of cases owned by user' do
           get :index
 
@@ -723,6 +743,17 @@ module Api
           test 'can read the case' do
             get :show, params: { case_id: public_case.id }
             assert_response :ok
+          end
+
+          test 'is unauthorized to read a private case' do
+            get :show, params: { case_id: cases(:matt_case).id }
+            assert_response :unauthorized
+            assert_equal 'Unauthorized!', response.parsed_body['reason']
+          end
+
+          test 'is unauthorized to read a case that does not exist' do
+            get :show, params: { case_id: Case.maximum(:id) + 1 }
+            assert_response :unauthorized
           end
 
           test 'cannot update the case' do

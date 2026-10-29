@@ -67,7 +67,7 @@ describe("QscoreQueryController", () => {
     QscoreQueryController.prototype.connect.call(controller)
 
     expect(valueEl.textContent).toBe("75.00")
-    expect(element.querySelector(".score-state").textContent).toBe("of 100.00")
+    expect(element.querySelector(".score-state")).toBeNull()
     expect(element.style.backgroundColor).not.toBe("")
   })
 

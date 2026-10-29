@@ -12,10 +12,7 @@ module Api
 
       # Snapshots of a public case can be read without logging in; creating or deleting them requires a user.
       def authenticate_api!
-        if [ :index, :show ].include?(action_name.to_sym)
-          set_case
-          return true if @case&.public?
-        end
+        return true if [ :index, :show ].include?(action_name.to_sym) && public_case_readable?
 
         super
       end

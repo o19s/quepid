@@ -43,6 +43,17 @@ module Api
 
     protected
 
+    # For actions that let a public case be read without logging in. A case that
+    # isn't found is not public, so authentication proceeds: a caller without
+    # credentials gets 401 whether the case is private or missing, and a signed-in
+    # caller reaches the usual 404.
+    def public_case_readable?
+      set_case
+      @case&.public? || false
+    rescue ActiveRecord::RecordNotFound
+      false
+    end
+
     def set_default_response_format
       request.format = :json unless params[:format]
     end
