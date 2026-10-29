@@ -390,6 +390,18 @@ a blank credential: hidden-credential deployments rely on it.
 
 ---
 
+### [PREEXISTING] P1 I0 C2 — Personal access tokens are stored and shown in usable form
+
+**Location:** `app/controllers/concerns/api_key_authenticatable.rb:31`, `app/views/profiles/_personal_access_tokens.html.erb:12,27`, `app/controllers/api_keys_controller.rb#create`, `app/models/api_key.rb`, `lib/tasks/user.thor:131`
+
+`ApiKey` HMACs the token into `token_digest` on create, but the raw `SecureRandom.hex` token is then discarded, and the authenticator matches the bearer value directly with `find_by token_digest: http_token`. The digest is therefore the credential: anyone who can read `api_keys` (database, backup, replica) can use every token, and the Profile page shows each key's digest on every visit, not once at creation. The model's own `authenticate_by_token!`, which hashes the bearer first, is unused. Found in manual pass 2026-10-28 (17.4: "No token is exposed in the response body or page markup").
+
+Hashing was meant to protect stored tokens from the start. In the review of #756 (`a4d48f8c`, 2023-06-15), @mkr commented on the migration: "Should we use store hashed tokens right from the beginning. Does not seem to be too much effort looking at https://keygen.sh/blog/how-to-implement-api-key-authentication-in-rails-without-devise/." Eric Pugh replied "Ugh.. Okay @mkr I will do the right thing..... SIgh" and added the HMAC in the model, but the lookup and the Profile display kept using the stored value. Neither has changed since.
+
+**Fix direction:** Authenticate with `HMAC(bearer)`. A one-time data migration that sets each `token_digest` to `HMAC(token_digest)` keeps every token users and scripts hold today working (irreversible). Show a new token only once after creation, list keys on Profile without the secret, and have the thor task print the raw token. Update `api_workflows_test.rb` and `api/api_controller_test.rb`, which send `token_digest` as the bearer, and the 32-character examples in `docs/operating_documentation.md`.
+
+---
+
 ### [PREEXISTING] P1 I0 C2 — Outbound HTTPS certificate verification is disabled globally
 
 **Location:** `app/services/http_client_service.rb:91-101`
@@ -506,6 +518,18 @@ One warning (the JSON template) still covers template names derived from `file_f
 
 ## [PREEXISTING] P2 — Security
 
+### [PREEXISTING] P2 I0 C1 — Search endpoint API returns `basic_auth_credential` in clear text
+
+**Decision needed:** Is returning the stored credential to any client that can read the endpoint acceptable, given that direct-from-browser search needs it?
+
+**Location:** `app/views/api/v1/search_endpoints/_search_endpoint.json.jbuilder` (`api_basic_auth_credential`)
+
+**Observed:** Manual pass 2026-10-28 (18.7). Added in `35249934` (2023-10-24, #855); `dc2f46af` (2026-03-24) made it nil when `REQUIRE_PROXY_WITH_BASIC_AUTH_CREDENTIALS` is on and the full credential "for direct browser connections" otherwise. This is documented, intended behavior, so it is a design question and not a bug. Omitting it for everyone would break direct search against endpoints with credentials.
+
+**Options:** keep and document the flag as the supported mitigation; or return it only to users who can edit the endpoint.
+
+---
+
 ### [PREEXISTING] P2 I0 C1 — Password reset enumerates accounts
 
 **Observed:** Unknown email → "email was not found"; known email → neutral "you will receive…" message.
@@ -538,6 +562,24 @@ that rely on any non-empty value enabling detailed errors will change behavior.
 ---
 
 ## [PREEXISTING] P2 — Product bugs
+
+### [PREEXISTING] P3 I0 C1 — Small UI defects from the 2026-10-28 manual pass
+
+Each was recorded in `tracking.yml` as unchanged since merge-base, except where noted. Fix opportunistically; the first three are worth doing soon.
+
+- **11.9** After a fractional-position error the re-rendered Position input keeps `2.5` with no `min`/`step`, so the browser rejects a corrected integer ("nearest valid values are 2.5 and 3.5"). Reset the value or add `step="1"`.
+- **14.5** An admin can lock their own account from their own show page and is logged out immediately with no warning, so recovery needs another admin. Hide or confirm **Lock** on one's own page. A locked user's next HTML request also returns raw JSON `{"reason":"Locked"}`.
+- **12.10** The TypeSafe Jev Minimum confidence input has `step=0.1`, so the browser blocks saving values like `0.95` that the preview accepts.
+- **14.3** Admin Users CSV/JSON export ignores the active filter (the links omit `q`; the endpoint honors it). `index.json.jbuilder` line 6 puts a debug key `bob` in every JSON user.
+- **14.9** A long unbroken word in an announcement overflows the viewport (needs `overflow-wrap`). The dev DB also holds about 21 leftover live "Playwright announcement" rows from e2e runs.
+- **16.4** The Import ratings modal title is an `h5`, not passing `title_tag: :h2` like Export and Judgements, which gives a moderate `heading-order` violation.
+- **11.2** The `;` shortcut's hint label shows `SC` (`judgement_helper` key `sc`, since 2025-12).
+- **10.5** The "N rated query/doc pairs" badge counts judgements, not pairs (10 shown for 6 rated pairs).
+- **10.6d** The Rating label's `for=book_rating` does not match `select#rating`.
+- **10.8** The import error box renders under both upload forms, not only the one submitted.
+- **11.7** Judgement Stats resets redirect to the book Overview, not back to Judgement Stats.
+
+---
 
 ### [PREEXISTING] P3 I0 C1 — Book settings 422 page loses the scorer and the settings tab
 
@@ -654,6 +696,71 @@ and scores, so keep it separate from behavior-preserving cleanup.
 ---
 
 ## [PREEXISTING] P1 — Backend correctness and authorization
+
+### [PREEXISTING] P2 I0 C2 — Admin user delete leaves ownerless cases and books
+
+**Decision needed:** Is leaving ownerless cases and books after a user is deleted the intended contract, or should they be removed or reassigned? Scenario 14.8 currently documents "nullified (not deleted) if shared with a team, and survive".
+
+**Location:** `app/models/user.rb` (`has_many :cases` and `has_many :books`, both `dependent: :nullify`), `Admin::UsersController#destroy`
+
+**Observed:** Manual pass 2026-10-28 (`findings-2026-10-28.md`, 14.8): deleting a user as admin left case `1067525580` and books `1071057366` and `1071057364` with no owner. Nothing in the app lists or cleans them up, and it is unknown whether they were shared with a team. The `nullify` is long-standing: cases since `85d8e52f` (#359, 2021-07-31, with the comment "sometimes a case belongs to a team, so don't just delete it"), books since `56c1c483` (#916, 2024-01-17). Not compared against pre-deangularization `main`.
+
+**Options:** keep `nullify` for team-shared records only and destroy private ones; reassign to the deleting admin or a team member; or keep as is and document it.
+
+---
+
+### [PREEXISTING] P2 I0 C1 — Case lists order by, and duplicate on, other users' view metadata
+
+**Decision needed:** Confirm the "recently viewed" ordering is meant to be per user. The intentional reading I can construct ("most recently viewed by anyone", for team activity) has no support in the code or docs, and the duplicates have no plausible purpose.
+
+**Location:** `app/controllers/api/v1/cases_controller.rb` (`fetch_full_cases`); likely also `app/controllers/home_controller.rb` (`show`) and `app/controllers/concerns/authentication/current_case_manager.rb` (`recent_cases`)
+
+**Observed:** Manual pass 2026-10-28 (`findings-2026-10-28.md`, 18.1): `GET /api/cases` left-joined `case_metadata` with no user filter, so a case appeared once per metadata row from any user (`oscmember` got ids `[6, 6, 586, 586, 473]`) and other users' `last_viewed_at` changed the ordering. Eric Pugh introduced the unfiltered join in `379e5bf3` (2023-08-24, #795); later commits (`05f687cf`, `383fef60`, `5557449d`) kept its shape. Not compared against pre-deangularization `main`.
+
+**Current state:** `fetch_full_cases` now joins only the current user's metadata row (uncommitted, with a test in `cases_controller_test.rb`). `HomeController#show` and `recent_cases` use `.includes(:metadata)` with the same unfiltered `case_metadata.last_viewed_at` ordering. They probably have the same cross-user ordering problem, but this is untested and unchanged.
+
+**Fix direction:** Confirm the two other callers with a test where another user has a newer view, then filter them the same way, or extract one shared per-user "recently viewed" scope.
+
+---
+
+### [PREEXISTING] P1 I0 C1 — Book collaborators can run an AI judge they cannot access
+
+**Decision needed:** Should a book collaborator be able to run (or cancel) an AI judge that the book owner assigned to the book but that the collaborator does not own and that is not shared with them via a team? Running spends the judge owner's LLM key.
+
+**Location:** `app/controllers/books_controller.rb` (`run_judge_judy`, `cancel_judge_judy`), `Book#working_ai_judge`
+
+**Observed:** Manual pass 2026-10-28 (`findings-2026-10-28.md`, 12.8): `working_ai_judge` only checks that the judge is assigned to the book or on call for it, so any collaborator on the book could run another user's judge. `run_judge_judy` came with `3e38c655` (Eric Pugh, 2025-01-15), when judges were communal. The ownership model (`c468d18f`, `4a9065db`, 2026-09-23) never added a per-user check to the run action. Not compared against pre-deangularization `main`.
+
+**Current state:** Deferred pending a product decision; existing run and cancel behavior is preserved. Decide whether assigning a judge to a book authorizes its collaborators to run it, and how that relates to automatic runs and escalation. `AiJudge.for_user(current_user)` also grants prompt/configuration editing, so sharing a judge with a team is not a run-only permission. Document the agreed contract in scenario 12.8 before changing authorization or run controls.
+
+---
+
+### [PREEXISTING] P2 I0 C1 — API accepts invalid input with 200, or fails with 500
+
+**Location:** `app/controllers/api/v1/queries_controller.rb` and `bulk/queries_controller.rb` (query create), `queries/positions_controller.rb`, `scorers_controller.rb`, `books_controller.rb` (create), `users_controller.rb` (update)
+
+**Observed:** Manual pass 2026-10-28 (`findings-2026-10-28.md`, 18.3, 18.7, 18.8). The classification found each code path unchanged by the migration.
+- Blank `query_text` is accepted: single create returns 200, bulk create stores `""` and `"  "`.
+- Moving a query with an invalid sibling id returns 500 instead of 4xx.
+- A scorer created with scale `'abc'` returns 200 and stores `[]` (strong params `scale: []` plus `sanitized_params.delete(:scale)`; the `ScaleValidator` branch only covers the HTML form's `scale_list`).
+- Forced scorer delete with a nonexistent `replacement_scorer_id` returns 500.
+- `POST /api/books` with a nonexistent `scorer_id` returns 200 and creates a book with an empty scale. Replayed on Legacy `8ceb99e9` 2026-10-28: same 200 and `scale=[]`.
+- `PUT /api/users/:id` accepts params without the `user` envelope (18.8).
+
+**Fix direction:** A presence validation on `Query#query_text` (check no import flow relies on blank names first), `RecordNotFound` handling that renders 4xx for the sibling and replacement ids, a scale validation shared with the form path, and a 400 for an unknown `scorer_id`. Each is a few lines with a controller test; batch them in one PR.
+
+---
+
+
+### [PREEXISTING] P2 I1 C1 — Bulk ratings accept values outside the scorer scale
+
+**Location:** `app/controllers/api/v1/bulk_ratings_controller.rb`, `app/models/rating.rb`
+
+**Observed:** Source inspection: the controller does an unchecked `rating.save` and `Rating` has no scale validation, before or after the migration, which only changed judgement syncing after the save (`JudgementSync.from_ratings`). Out-of-scale values can feed straight into case scores. This API path has not been verified by the recorded 11.8 run: that run exercised `BulkJudgeController#save` and `Judgement`, confirming the separate [book-scale validation finding](#preexisting-p2-i1-c3--judgement-rating-not-validated-against-books-scale-outside-ai-judging).
+
+**Fix direction:** Validate against the case scorer's scale in `Rating` or the controller and report the rejected rows. Related to [Judgement rating not validated against book's scale](#preexisting-p2-i1-c3--judgement-rating-not-validated-against-books-scale-outside-ai-judging), and the same question about legitimate off-scale values applies.
+
+---
 
 ### [PREEXISTING] P1 I0 C1 — Book update saves memberships even when the update fails
 
@@ -844,6 +951,12 @@ Mutant (`config/mutant.yml`) found code no test can reach through the public ent
 Jobs set status strings before working and clear them only on success, so a failure can leave a book permanently busy and leave uploaded blobs in place. Several import paths use `find_or_create_by` plus later updates, vulnerable to duplicate work from retries or concurrent requests. Related to the anonymous-judgement re-import entry above.
 
 **Fix direction:** `ensure`/failure transitions for status and blob cleanup; deliberate retry/discard policy; idempotency via unique constraints or an explicit import identity. Test a failed job followed by retry, and a duplicate submission.
+
+Scenario 18.6 (2026-10-28) also showed two simultaneous populate PUTs both getting
+204: `populate_controller.rb` checks `@book.populate_job.present?` and sets it later,
+a check-then-set race unchanged by the migration (which only swapped the inline
+update for `@book.queue_job(:populate)`). A unique-per-book job guard or an atomic
+`update_all` conditional on a blank status would close it.
 
 The shared lifecycle scope also includes `ExportBookJob` and
 `Book#queue_job`: queueing sets “queued”, each job sets “started”, and each
@@ -1039,9 +1152,15 @@ Scenario 15.8 reproduced one rating POST when A was pressed immediately after
 **I Can't Tell**, before the modal acquired `show`; the audit retained rating 0.
 Typing and settled-modal exclusions pass. Current `judgement_rating_controller.js`
 and Legacy `8ceb99e9`'s inline judging handler both guard only `.modal.show` before
-scheduling a delayed click (source comparison only; no historical live replay).
+scheduling a delayed click. Live replay 2026-10-28 on Legacy `8ceb99e9` (:3001) and
+Current, cancelling the form submit to avoid writing judgements: pressing A then
+opening **I Can't Tell** within 500 ms submits rating 0 on both; pressing A with the
+modal settled open submits nothing on both; clicking the A button directly while the
+modal is open submits on both (`rate` has no modal check). Not a migration regression.
 Guard the opening transition and cancel/recheck pending shortcut timers when the
-modal opens; verify that cancelling the modal creates no judgement.
+modal opens, and have `rate` ignore clicks while a modal is open; verify that
+cancelling the modal creates no judgement. The finding's "edit loss" half was never
+described and has not been reproduced.
 
 ### [MIGRATION-FOLLOWUP] P2 I1 C2 — Classify concurrent case-evaluation deadlock
 
