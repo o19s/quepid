@@ -8,10 +8,7 @@ module Api
 
       # A public case can be read without logging in; changing it still requires a user.
       def authenticate_api!
-        if :show == action_name.to_sym
-          set_case
-          return true if @case&.public?
-        end
+        return true if :show == action_name.to_sym && public_case_readable?
 
         super
       end
