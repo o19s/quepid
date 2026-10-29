@@ -75,7 +75,7 @@ export default class extends Controller {
     this.refreshConnection()
     this.instructionFieldsTarget.hidden = !preset.supports_instructions
     if (this.hasNoInstructionsTarget)
-      this.noInstructionsTarget.hidden = !!preset.supports_instructions
+      this.noInstructionsTarget.hidden = Boolean(preset.supports_instructions)
 
     const nativeOption = this.truncationTarget.querySelector("option[value='native']")
     if (nativeOption) nativeOption.disabled = !preset.supports_dimensions
@@ -107,7 +107,7 @@ export default class extends Controller {
       option.hidden = !fits
       option.disabled = !fits
     })
-    if (this.connection && this.connection.disabled) this.connectionTarget.value = ""
+    if (this.connection?.disabled) this.connectionTarget.value = ""
   }
 
   refreshConnection() {
