@@ -23,6 +23,7 @@
             <tr>
               <th>Name</th>
               <th>Provider</th>
+              <th>Connection</th>
               <th>Model</th>
               <th>Dimensions</th>
               <th>Owner</th>
@@ -40,6 +41,13 @@
                   <% end %>
                 </td>
                 <td><%= embedder.provider_definition&.label || embedder.provider %></td>
+                <td>
+                  <% if embedder.connection %>
+                    <%= link_to embedder.connection.name, connection_path(embedder.connection) %>
+                  <% else %>
+                    <span class="text-muted">&mdash;</span>
+                  <% end %>
+                </td>
                 <td><code><%= embedder.model %></code></td>
                 <td>
                   <% if embedder.dimensions %>

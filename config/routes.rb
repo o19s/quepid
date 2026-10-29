@@ -119,6 +119,17 @@ Rails.application.routes.draw do
     resource :connection_check, only: :create, module: :embedders
   end
 
+  resources :connections do
+    # A check runs the form's current values in memory: a collection route serves the unsaved
+    # form, a member route one that is saved (and can fall back on its saved secret).
+    collection do
+      post 'check', to: 'connections/checks#create', as: :check
+    end
+    resource :check, only: :create, module: :connections
+    # Whether the saved connection answers right now, for the list's status column.
+    resource :status, only: :show, module: :connections
+  end
+
   resources :teams, only: [] do
     resources :ai_judges, controller: :ai_judges, except: [ :index ] do
       get :clone, on: :member

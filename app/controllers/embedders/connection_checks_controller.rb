@@ -11,7 +11,7 @@ module Embedders
 
     def create
       embedder = build_embedder
-      unless embedder.valid?
+      unless usable_connection?(embedder) && embedder.valid?
         render json: { error: embedder.errors.full_messages.to_sentence }, status: :unprocessable_content
         return
       end
@@ -29,10 +29,22 @@ module Embedders
       attributes = attributes.except(:api_key) if saved && Embedder.keep_existing_key?(attributes[:api_key])
 
       embedder = saved ? saved.dup : Embedder.new
+      # The one checking is who would use the connection.
+      embedder.owner ||= current_user
       embedder.assign_attributes(attributes)
       # Testing before naming it is fine; the name doesn't affect the request.
       embedder.name = 'Untitled' if embedder.name.blank?
       embedder
+    end
+
+    # The same rule as saving: a check sends the connection's key, so it has to be one the user can use.
+    def usable_connection? embedder
+      id = embedder.connection_id
+      return true if id.nil? || id == embedder.connection_id_was
+      return true if current_user.connections_involved_with.exists?(id: id)
+
+      embedder.errors.add(:connection, "isn't one you can use")
+      false
     end
 
     def embedder_params

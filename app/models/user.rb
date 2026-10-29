@@ -127,6 +127,14 @@ class User < ApplicationRecord
            inverse_of:  :owner,
            dependent:   :nullify
 
+  # Destroyed, not nullified: a connection with no owner is instance-wide, so unlinking would
+  # hand a deleted user's secret to everyone.
+  has_many :owned_connections,
+           class_name:  'Connection',
+           foreign_key: :owner_id,
+           inverse_of:  :owner,
+           dependent:   :destroy
+
   # too late now!
   # rubocop:disable-next Rails/HasAndBelongsToMany
   has_and_belongs_to_many :teams,
@@ -304,6 +312,12 @@ class User < ApplicationRecord
   # All the embedders the user owns or that are shared with one of their teams.
   def embedders_involved_with
     Embedder.for_user(self)
+  end
+
+  # All the connections the user can use: their own, those shared with one of their teams, and the
+  # instance-wide ones. Changing one is narrower; see Connection#manageable_by?.
+  def connections_involved_with
+    Connection.usable_by(self)
   end
 
   def locked?

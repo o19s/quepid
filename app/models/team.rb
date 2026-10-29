@@ -46,6 +46,9 @@ class Team < ApplicationRecord
   has_and_belongs_to_many :embedders,
                           join_table: 'teams_embedders'
 
+  has_and_belongs_to_many :connections,
+                          join_table: 'teams_connections'
+
   # rubocop:enable Rails/HasAndBelongsToMany
 
   # Validations

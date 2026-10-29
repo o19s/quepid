@@ -74,6 +74,55 @@ module Api
 
         assert_response :no_content
       end
+
+      describe 'with a connection' do
+        let(:voyage) { connections(:voyage) }
+
+        test 'create on a connection returns its provider and URL, and masks the connection\'s key' do
+          post :create, params: { embedder: { name: 'On Voyage', model: 'voyage-3.5', connection_id: voyage.id } }, format: :json
+
+          assert_response :ok
+          body = response.parsed_body
+          assert_equal voyage.id, body['connection_id']
+          assert_equal 'voyage', body['provider']
+          assert_equal 'https://api.voyageai.com', body['service_url']
+          assert_equal Embedder::MASKED_API_KEY, body['api_key']
+          assert_not_includes response.body, 'pa-test-voyage'
+        end
+
+        test 'create refuses a connection the user cannot use' do
+          assert_no_difference -> { Embedder.count } do
+            post :create, params: { embedder: { name: 'x', model: 'm', connection_id: connections(:private_ollama).id } }, format: :json
+          end
+
+          assert_response :bad_request
+          assert_includes response.parsed_body['connection'].join, "isn't one you can use"
+        end
+
+        test 'update can move to another connection but not unlink it' do
+          embedder.update!(connection: connections(:openai))
+
+          patch :update, params: { id: embedder.id, embedder: { connection_id: '' } }, format: :json
+
+          assert_response :bad_request
+          assert_includes response.parsed_body['connection'].join, 'can be changed but not removed'
+          assert_equal connections(:openai), embedder.reload.connection
+        end
+
+        test 'an embedder from before connections can be updated without one' do
+          patch :update, params: { id: embedder.id, embedder: { name: 'Renamed' } }, format: :json
+
+          assert_response :ok
+          assert_equal 'Renamed', embedder.reload.name
+        end
+
+        test 'create needs a connection or settings of its own' do
+          post :create, params: { embedder: { name: 'x', provider: 'openai', model: 'm' } }, format: :json
+
+          assert_response :bad_request
+          assert_includes response.parsed_body['connection'].join, 'is required'
+        end
+      end
     end
   end
 end

@@ -5,25 +5,33 @@ import { apiFetch } from "api/fetch"
 // provider can use, fills in its defaults when the provider changes, and runs the Check connection
 // button against Embedders::ConnectionChecksController with the form's current values.
 //
+// The URL, key and timeout come from the embedder's Connection, so they aren't on this form. A
+// connection is for one provider, so the connection list only offers the ones for the chosen
+// provider (each option carries its service, URL and label as data), and when there are none a
+// link offers to create one for that provider.
+//
 // presets come from EmbedderProvider.presets, keyed by provider.
 export default class extends Controller {
-  static values = { presets: Object, checkUrl: String }
+  static values = { presets: Object, checkUrl: String, newConnectionUrl: String }
 
   static targets = [
+    "connection",
+    "connectionInfo",
+    "noConnections",
+    "newConnectionLink",
     "provider",
-    "serviceUrl",
     "model",
-    "apiKeyRow",
-    "apiKeyHint",
     "truncation",
     "truncationHint",
     "dimensionsRow",
     "dimensions",
     "dimensionsHint",
     "instructionFields",
+    "noInstructions",
     "help",
     "checkText",
     "checkButton",
+    "checkHint",
     "checkResult"
   ]
 
@@ -35,11 +43,22 @@ export default class extends Controller {
     return this.presetsValue[this.providerTarget.value] || {}
   }
 
-  // Switching provider replaces URL and model with its defaults: values typed for one
-  // vendor are almost never right for another.
+  // The chosen connection's option, or null while none is chosen.
+  get connection() {
+    if (!this.hasConnectionTarget) return null
+    const value = this.connectionTarget.value
+    if (!value) return null
+    return [...this.connectionTarget.options].find((option) => option.value === value) || null
+  }
+
+  changeConnection() {
+    this.refresh()
+  }
+
+  // Switching provider replaces the model with its default: a model typed for one vendor is
+  // almost never right for another.
   changeProvider() {
     const preset = this.preset
-    this.serviceUrlTarget.value = preset.service_url || ""
     this.modelTarget.value = preset.model || ""
     if (!preset.supports_dimensions && this.truncationTarget.value === "native") {
       this.truncationTarget.value = "none"
@@ -53,13 +72,10 @@ export default class extends Controller {
     this.helpTargets.forEach((help) => {
       help.hidden = help.dataset.provider !== this.providerTarget.value
     })
-    this.apiKeyRowTarget.hidden = preset.uses_key === false
-    if (this.hasApiKeyHintTarget) {
-      this.apiKeyHintTarget.textContent = preset.requires_key
-        ? `Required for ${preset.label}.`
-        : "Optional."
-    }
+    this.refreshConnection()
     this.instructionFieldsTarget.hidden = !preset.supports_instructions
+    if (this.hasNoInstructionsTarget)
+      this.noInstructionsTarget.hidden = Boolean(preset.supports_instructions)
 
     const nativeOption = this.truncationTarget.querySelector("option[value='native']")
     if (nativeOption) nativeOption.disabled = !preset.supports_dimensions
@@ -76,6 +92,49 @@ export default class extends Controller {
       truncation === "native" && allowed.length > 0
         ? `${preset.label} accepts ${allowed.join(", ")}.`
         : ""
+  }
+
+  // Only the connections for the chosen provider can be picked. One that no longer fits the
+  // provider (it was changed after choosing) is dropped, so the form never posts a mismatch.
+  // With none to pick, a link offers to create one for this provider.
+  filterConnections() {
+    if (!this.hasConnectionTarget) return
+
+    const provider = this.providerTarget.value
+    ;[...this.connectionTarget.options].forEach((option) => {
+      if (!option.value) return
+      const fits = option.dataset.service === provider
+      option.hidden = !fits
+      option.disabled = !fits
+    })
+    if (this.connection?.disabled) this.connectionTarget.value = ""
+  }
+
+  refreshConnection() {
+    this.filterConnections()
+    if (!this.hasConnectionTarget) return
+
+    const connection = this.connection
+    const anyToPick = [...this.connectionTarget.options].some(
+      (option) => option.value && !option.disabled
+    )
+
+    if (this.hasNoConnectionsTarget) this.noConnectionsTarget.hidden = anyToPick
+    if (this.hasNewConnectionLinkTarget) {
+      const label = this.preset.label || this.providerTarget.value
+      this.newConnectionLinkTarget.textContent = `Create a ${label} connection`
+      this.newConnectionLinkTarget.href = `${this.newConnectionUrlValue}?service=${encodeURIComponent(this.providerTarget.value)}`
+    }
+    // There is nothing to check without a connection: the check goes through it.
+    this.checkButtonTarget.disabled = connection === null
+    if (this.hasCheckHintTarget) this.checkHintTarget.hidden = connection !== null
+
+    if (!this.hasConnectionInfoTarget) return
+
+    this.connectionInfoTarget.hidden = connection === null
+    if (connection) {
+      this.connectionInfoTarget.textContent = `${connection.dataset.serviceLabel} at ${connection.dataset.url}. The URL, key and timeout come from this connection.`
+    }
   }
 
   async check(event) {
