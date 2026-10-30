@@ -21,7 +21,7 @@
               <th>Dataset</th>
               <th>Scorer</th>
               <th>Indexed in</th>
-              <th>Queries</th>
+              <th>Queries<sup><a href="#queries-note" aria-label="Note 1: sampled cases">(1)</a></sup></th>
               <th title="Distinct documents rated in the case or listed in its judgement book">Documents</th>
               <th>Created</th>
               <th></th>
@@ -59,7 +59,9 @@
                       Loading in the background
                     </span>
                   <% else %>
-                    <%= @query_counts.fetch(kase.id, 0) %>
+                    <%# A sample shows how much of the dataset it is: "10 / 137". %>
+                    <% total = DatasetCatalog.find(link.dataset.key)&.query_total %>
+                    <%= link.sample_size && total ? "#{@query_counts.fetch(kase.id, 0)} / #{total}" : @query_counts.fetch(kase.id, 0) %>
                   <% end %>
                 </td>
                 <td>
@@ -86,6 +88,10 @@
           </tbody>
         </table>
       </div>
+      <p id="queries-note" class="small text-muted mb-0">
+        <sup>(1)</sup> For a case made from a sample of a dataset, the number of queries it has is shown over how many the
+        dataset has, like <strong>4 / 10</strong>. A case made from the whole dataset shows just its number of queries.
+      </p>
     <% else %>
       <p class="text-muted mb-0">
         You haven't made a case from a dataset yet. Use <strong>Create new</strong> to pick a dataset and make one.

@@ -20,7 +20,7 @@ class DatasetCasesController < ApplicationController
     sample = sample_size(dataset)
     case_name = params[:case_name].presence || default_name(dataset, sample)
     scorer = chosen_scorer(dataset)
-    link = make_case(dataset, case_name, scorer)
+    link = make_case(dataset, case_name, scorer, sample)
     LoadDatasetCaseJob.perform_later(link, case_name, scorer, sample)
     redirect_to dataset_cases_path, notice: "Creating #{case_name}: its queries from #{dataset.name} are loading in the background."
   rescue ScorerRefused, SampleRefused => e
@@ -101,11 +101,11 @@ class DatasetCasesController < ApplicationController
     scorer
   end
 
-  # The empty case, linked to the dataset as pending.
-  def make_case dataset, case_name, scorer
+  # The empty case, linked to the dataset as pending, remembering if it is only a sample of it.
+  def make_case dataset, case_name, scorer, sample
     ActiveRecord::Base.transaction do
       kase = Case.create!(case_name: case_name, owner: current_user, scorer: scorer)
-      CaseToDataset.create!(dataset: Dataset.for(current_user, dataset.key), case: kase)
+      CaseToDataset.create!(dataset: Dataset.for(current_user, dataset.key), case: kase, sample_size: sample)
     end
   end
 

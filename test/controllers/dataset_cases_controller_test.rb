@@ -197,7 +197,8 @@ class DatasetCasesControllerTest < ActionDispatch::IntegrationTest
     kase.tries.first.update!(search_endpoint: endpoint)
     get dataset_cases_url
 
-    [ 'Case', 'Dataset', 'Scorer', 'Indexed in', 'Queries', 'Documents', 'Created' ].each { |heading| assert_select 'th', text: heading }
+    [ 'Case', 'Dataset', 'Scorer', 'Indexed in', 'Documents', 'Created' ].each { |heading| assert_select 'th', text: heading }
+    assert_select 'th', text: /\AQueries/
     assert_select 'td a[href=?]', edit_scorer_path(scorer), text: scorer.name
     assert_select 'td a[href=?]', search_endpoint_path(endpoint), text: 'Chorus'
   end
@@ -373,6 +374,42 @@ class DatasetCasesControllerTest < ActionDispatch::IntegrationTest
 
     assert_equal "#{ImdbDataset::CASE_NAME} (sample of 4)", kase.case_name
     assert_equal 4, enqueued_jobs.last[:args].last
+  end
+
+  test 'create remembers that a case is only a sample, and not when it is the whole dataset' do
+    post dataset_cases_url, params: { dataset: 'imdb', sample_size: '4' }
+    post dataset_cases_url, params: { dataset: 'imdb', sample_size: ImdbDataset::QUERIES.size.to_s }
+    post dataset_cases_url, params: { dataset: 'imdb' }
+
+    assert_equal [ 4, nil, nil ], CaseToDataset.order(:id).last(3).map(&:sample_size)
+  end
+
+  test 'the queries header points to a note about how a sampled case is shown' do
+    link_case('imdb', name: 'One')
+    get dataset_cases_url
+
+    assert_select 'th a[href="#queries-note"]', text: '(1)'
+    assert_select 'p#queries-note', text: %r{For a case made from a sample of a dataset.*shown over how many the dataset has, like 4 / 10}m
+  end
+
+  test 'there is no queries note when there are no cases to explain' do
+    get dataset_cases_url
+
+    assert_select 'p#queries-note', count: 0
+  end
+
+  test 'index shows a sample as loaded over total, and a whole dataset as a plain number' do
+    sample = link_case('imdb', name: 'Sample')
+    CaseToDataset.find_by(case: sample).update!(sample_size: 3)
+    3.times { |i| sample.queries.create!(query_text: "q#{i}") }
+    whole = link_case('imdb', name: 'Whole')
+    ImdbDataset::QUERIES.each { |text| whole.queries.create!(query_text: text) }
+    get dataset_cases_url
+
+    rows = css_select('tbody tr').index_by { |row| row.at_css('td a').text }
+
+    assert_equal "3 / #{ImdbDataset::QUERIES.size}", rows['Sample'].css('td')[4].text.squish
+    assert_equal ImdbDataset::QUERIES.size.to_s, rows['Whole'].css('td')[4].text.squish
   end
 
   test 'create keeps a name the user typed when sampling' do
