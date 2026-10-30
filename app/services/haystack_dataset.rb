@@ -33,8 +33,9 @@ class HaystackDataset
   def populate kase, case_name: nil, scorer: nil, sample: nil
     @sample = sample
     import_case(kase)
-    book = import_book(Book.new)
-    kase.update!({ book: book, case_name: case_name.presence, scorer: scorer }.compact)
+    # Straight away, not after the book: that import is the slow part, and the case shows the export's name until then.
+    kase.update!({ case_name: case_name.presence, scorer: scorer }.compact)
+    kase.update!(book: import_book(Book.new))
     kase
   end
 

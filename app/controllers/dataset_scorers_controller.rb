@@ -12,13 +12,8 @@ class DatasetScorersController < ApplicationController
 
   private
 
-  # A scorer is a dataset's own when its name starts with the dataset's name and it has exactly its scale and
-  # labels, which is what Create scorer makes; what follows the name is the template it was copied from.
   def row_for scorer, cases
-    dataset = DatasetCatalog::ENTRIES.find do |entry|
-      entry.scale_labels.present? && scorer.name.to_s.start_with?("#{entry.name} ") &&
-        scorer.scale == entry.scale && scorer.scale_with_labels == entry.scale_labels
-    end
+    dataset = DatasetScorer.dataset_of(scorer)
     return unless dataset
 
     Row.new(scorer: scorer, dataset: dataset, based_on: scorer.name.delete_prefix("#{dataset.name} "), cases: cases)

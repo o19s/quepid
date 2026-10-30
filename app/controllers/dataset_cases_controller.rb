@@ -15,12 +15,12 @@ class DatasetCasesController < ApplicationController
   # Makes the case at once and has a background job fill it in with the dataset's queries.
   def create
     dataset = DatasetCatalog.find(params.fetch(:dataset, nil))
-    return redirect_to(dataset_cases_path, alert: 'Pick a dataset that is available.') unless dataset&.available
+    return redirect_to(dataset_cases_path, alert: 'Pick a dataset that is available.', status: :see_other) unless dataset&.available
 
     sample = sample_size(dataset)
     case_name = params[:case_name].presence || default_name(dataset, sample)
     scorer = chosen_scorer(dataset)
-    link = make_case(dataset, case_name, scorer, sample)
+    link = CaseToDataset.start!(owner: current_user, dataset_key: dataset.key, case_name: case_name, scorer: scorer, sample_size: sample)
     LoadDatasetCaseJob.perform_later(link, case_name, scorer, sample)
     redirect_to dataset_cases_path, notice: "Creating #{case_name}: its queries from #{dataset.name} are loading in the background."
   rescue ScorerRefused, SampleRefused => e
@@ -34,29 +34,14 @@ class DatasetCasesController < ApplicationController
   def destroy
     link = CaseToDataset.joins(:dataset).where(datasets: { owner_id: current_user.id }).find(params.expect(:id))
     kase = link.case
-    return redirect_to(dataset_cases_path, alert: "#{kase.case_name} is still loading: uninstall it when that has finished.") if link.in_progress?
-    return redirect_to(dataset_cases_path, alert: "#{kase.case_name} belongs to someone else, so it cannot be uninstalled from here.") unless kase.owner_id == current_user.id
+    return redirect_to(dataset_cases_path, alert: "#{kase.case_name} is still loading: uninstall it when that has finished.", status: :see_other) if link.in_progress?
+    return redirect_to(dataset_cases_path, alert: "#{kase.case_name} belongs to someone else, so it cannot be uninstalled from here.", status: :see_other) unless kase.owner_id == current_user.id
 
     case_name = kase.case_name
     kase.really_destroy
     Analytics::Tracker.track_case_deleted_event(current_user, kase)
     link.destroy
     redirect_to dataset_cases_path, notice: "Uninstalled #{case_name}: the case was deleted."
-  end
-
-  # Initiate indexing for one case: points the case's own search endpoint at one of the user's endpoints, where the
-  # dataset is already hosted. Quepid cannot index the documents itself yet, so it does not index anything.
-  def endpoint
-    link = CaseToDataset.joins(:dataset).where(datasets: { owner_id: current_user.id }).find(params.expect(:id))
-    kase = link.case
-    return redirect_to(dataset_cases_path, alert: "#{kase.case_name} is still loading: try again when that has finished.") if link.in_progress?
-    return redirect_to(dataset_cases_path, alert: "#{kase.case_name} belongs to someone else, so its search endpoint cannot be changed from here.") unless kase.owner_id == current_user.id
-
-    endpoint = current_user.search_endpoints_involved_with.not_archived.find_by(id: params.fetch(:search_endpoint_id, nil))
-    return redirect_to(dataset_cases_path, alert: 'Pick a search endpoint you can use.') unless endpoint
-
-    kase.tries.first.update!(search_endpoint: endpoint)
-    redirect_to dataset_cases_path, notice: "#{kase.case_name} now searches #{endpoint.fullname}."
   end
 
   private
@@ -68,7 +53,7 @@ class DatasetCasesController < ApplicationController
     @links = links.to_a
     case_ids = @links.map(&:case_id)
     @query_counts = Query.where(case_id: case_ids).group(:case_id).count
-    @document_counts = document_counts(case_ids)
+    @document_counts = CaseToDataset.document_counts(case_ids)
     # The search endpoint a case uses is its latest try's.
     @endpoints = Try.where(case_id: case_ids).includes(:search_endpoint).order(try_number: :desc).group_by(&:case_id)
       .transform_values { |tries| tries.first.search_endpoint }
@@ -112,34 +97,5 @@ class DatasetCasesController < ApplicationController
     raise ScorerRefused, "#{scorer.name} can't rate every label in #{dataset.name}: pick a scorer with a wider scale." unless dataset.accepts?(scorer)
 
     scorer
-  end
-
-  # The empty case, linked to the dataset as pending, remembering if it is only a sample of it.
-  def make_case dataset, case_name, scorer, sample
-    ActiveRecord::Base.transaction do
-      kase = Case.create!(case_name: case_name, owner: current_user, scorer: scorer)
-      CaseToDataset.create!(dataset: Dataset.for(current_user, dataset.key), case: kase, sample_size: sample)
-    end
-  end
-
-  # Distinct documents per case: those rated in it plus those in its judgement book's query-document pairs.
-  # One UNION in SQL, so a big case isn't loaded into Ruby to be counted.
-  def document_counts case_ids
-    return {} if case_ids.empty?
-
-    sql = ActiveRecord::Base.sanitize_sql_array([ <<~SQL.squish, case_ids, case_ids ])
-      SELECT docs.case_id, COUNT(DISTINCT docs.doc_id)
-      FROM (
-        SELECT queries.case_id AS case_id, ratings.doc_id AS doc_id
-          FROM ratings INNER JOIN queries ON queries.id = ratings.query_id
-          WHERE queries.case_id IN (?)
-        UNION
-        SELECT cases.id AS case_id, query_doc_pairs.doc_id AS doc_id
-          FROM cases INNER JOIN query_doc_pairs ON query_doc_pairs.book_id = cases.book_id
-          WHERE cases.id IN (?)
-      ) docs
-      GROUP BY docs.case_id
-    SQL
-    ActiveRecord::Base.connection.select_rows(sql).to_h { |case_id, count| [ case_id.to_i, count.to_i ] }
   end
 end

@@ -133,7 +133,7 @@
 <% selected = @open_dataset || @datasets.first %>
 <% modal_body = capture do %>
   <%= form_with url: dataset_cases_path, method: :post, id: 'new-dataset-case-form',
-                data: { turbo: false, controller: 'dataset-case-form', dataset_case_form_open_value: @open_dataset.present? } do |form| %>
+                data: { controller: 'dataset-case-form', dataset_case_form_open_value: @open_dataset.present? } do |form| %>
     <div class="mb-3">
       <%= form.label :dataset, 'Dataset', for: 'dataset_case_dataset', class: 'form-label' %>
       <select name="dataset" id="dataset_case_dataset" class="form-select"
@@ -196,7 +196,7 @@
   <% modal_body = capture do %>
     <% if @search_endpoints.any? %>
       <%# The action is set by script to the case's own, and it only looks: a GET, so there is no token to go stale. %>
-      <%= form_with url: '#', method: :get, id: 'initiate-indexing-form', data: { turbo: false, initiate_indexing_target: 'form' } do %>
+      <%= form_with url: '#', method: :get, id: 'initiate-indexing-form', data: { initiate_indexing_target: 'form' } do %>
         <p>
           Choose the search endpoint <strong data-initiate-indexing-target="caseName">this case</strong> should use. You will see the
           index definition Quepid would make there, and decide whether to create it. Nothing is sent until you do.

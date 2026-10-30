@@ -108,19 +108,21 @@ Rails.application.routes.draw do
   resources :ai_judges
 
   resources :datasets, only: [ :index ] do
-    post :scorer, on: :member
+    resource :scorer, only: :create, module: :datasets
   end
   resources :dataset_cases, only: [ :index, :create, :destroy ] do
-    post :endpoint, on: :member
+    resource :search_endpoint, only: :update, module: :dataset_cases
     # The index definition for a case's dataset on a search endpoint: shown first (show), made when agreed to (create).
     resource :index, only: [ :show, :create ], controller: 'dataset_case_indexes' do
-      # For engines Quepid cannot create the index in: the user has deployed it, and now starts loading the documents.
-      post :documents
-      # Is an index of this name already on the endpoint? Only asks.
-      get :availability
-      # Loading by the browser, for endpoints only it can reach: the documents to send, and how far it has got.
-      get :stream
-      post :progress
+      scope module: :dataset_case_indexes do
+        # Is an index of this name already on the endpoint? Only asks.
+        resource :availability, only: :show
+        # The documents to load: show streams them to a browser that loads them itself; create is for engines Quepid cannot
+        # create the index in, where the user has deployed it and now starts loading.
+        resource :documents, only: [ :show, :create ]
+        # How far the browser has got in loading the documents.
+        resource :progress, only: :update
+      end
     end
   end
   resources :dataset_scorers, only: [ :index ]

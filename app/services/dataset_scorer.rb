@@ -13,6 +13,15 @@ class DatasetScorer
     "#{dataset.name} #{template_name}"
   end
 
+  # The dataset a scorer was made for, if any: its name starts with the dataset's name and it has exactly its scale and
+  # labels, which is what Create scorer makes; what follows the name is the template it was copied from.
+  def self.dataset_of scorer
+    DatasetCatalog::ENTRIES.find do |entry|
+      entry.scale_labels.present? && scorer.name.to_s.start_with?("#{entry.name} ") &&
+        scorer.scale == entry.scale && scorer.scale_with_labels == entry.scale_labels
+    end
+  end
+
   # The communal scorers that can be a template.
   def self.templates
     Scorer.communal.order(:name)

@@ -107,6 +107,24 @@ class LoadDatasetCaseJobTest < ActiveJob::TestCase
     assert_equal user, first_try.search_endpoint.owner
   end
 
+  test 'a Haystack case has the name the user gave it from the start, not only once the slow book import is done' do
+    Scorer.find_or_create_by!(name: 'nDCG@10') { |scorer| scorer.assign_attributes(scale: (0..3).to_a, communal: true, code: 'setScore(1);') }
+    link = pending_link('haystack')
+    name_while_importing_the_book = nil
+    original = HaystackDataset.instance_method(:import_book)
+    HaystackDataset.send(:define_method, :import_book) do |*args|
+      name_while_importing_the_book = link.case.reload.case_name
+      original.bind_call(self, *args)
+    end
+
+    LoadDatasetCaseJob.perform_now(link, 'My own name', nil)
+
+    assert_equal 'My own name', name_while_importing_the_book
+    assert_equal 'My own name', link.case.reload.case_name
+  ensure
+    HaystackDataset.send(:define_method, :import_book, original) if original
+  end
+
   test 'a second Haystack case reuses the endpoint the first one attached' do
     Scorer.find_or_create_by!(name: 'nDCG@10') { |scorer| scorer.assign_attributes(scale: (0..3).to_a, communal: true, code: 'setScore(1);') }
     first = pending_link('haystack')

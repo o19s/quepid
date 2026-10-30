@@ -1,6 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
-import { apiFetch } from "api/fetch"
-import { serviceFetch } from "utils/service_fetch"
+import { getJson } from "api/json"
+import { serviceFetch } from "api/service_fetch"
 
 // A box for editing a JSON definition: says whether it is valid as it is typed, keeps the Create button off
 // until it is, can tidy it up, and can put the proposed definition back.
@@ -48,7 +48,7 @@ export default class extends Controller {
   // The index to use: the endpoint's own keeps its name, a new one is named by the user.
   choose(event) {
     if (!this.hasNameTarget) return
-    const isNew = "1" === event.target.value
+    const isNew = "true" === event.target.value
     this.nameTarget.readOnly = !isNew
     if (this.hasAvailabilityButtonTarget) this.availabilityButtonTarget.hidden = !isNew
     this.clearAvailability()
@@ -85,14 +85,10 @@ export default class extends Controller {
     }
   }
 
-  async askServer(name) {
+  askServer(name) {
     const url = new URL(this.availabilityUrlValue, window.location.origin)
     url.searchParams.set("index_name", name)
-    const response = await apiFetch(url, {
-      headers: { Accept: "application/json" },
-      credentials: "same-origin"
-    })
-    return response.json()
+    return getJson(url.toString())
   }
 
   async askService(name) {

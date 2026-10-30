@@ -142,7 +142,7 @@ class DatasetsControllerTest < ActionDispatch::IntegrationTest
     ap = create_ap
     get datasets_url
 
-    assert_select 'form#create-scorer-form-haystack[action=?]', scorer_dataset_path('haystack') do
+    assert_select 'form#create-scorer-form-haystack[action=?]', dataset_scorer_path('haystack') do
       assert_select 'select[name=template_id] option', count: Scorer.communal.count
       assert_select 'select[name=template_id] option[selected][value=?]', ap.id.to_s, text: 'AP@10'
     end
@@ -150,7 +150,7 @@ class DatasetsControllerTest < ActionDispatch::IntegrationTest
 
   test 'the create scorer dialog leaves out the templates the user already made a scorer from' do
     ap = create_ap
-    post scorer_dataset_url('haystack'), params: { template_id: ap.id }
+    post dataset_scorer_url('haystack'), params: { template_id: ap.id }
     get datasets_url
 
     assert_select '#createScorer-haystack select[name=template_id] option', text: 'AP@10', count: 0
@@ -160,7 +160,7 @@ class DatasetsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'index disables create scorer when the user has a scorer from every template' do
-    Scorer.communal.find_each { |template| post scorer_dataset_url('haystack'), params: { template_id: template.id } }
+    Scorer.communal.find_each { |template| post dataset_scorer_url('haystack'), params: { template_id: template.id } }
     get datasets_url
 
     assert_select 'span[title=?]', 'You already have a scorer from every communal scorer', count: 1
@@ -171,7 +171,7 @@ class DatasetsControllerTest < ActionDispatch::IntegrationTest
     template = create_ap
 
     assert_difference 'Scorer.count', 1 do
-      post scorer_dataset_url('haystack'), params: { template_id: template.id }
+      post dataset_scorer_url('haystack'), params: { template_id: template.id }
     end
 
     scorer = Scorer.order(:id).last
@@ -193,8 +193,8 @@ class DatasetsControllerTest < ActionDispatch::IntegrationTest
     ap = create_ap
 
     assert_difference 'Scorer.count', 2 do
-      post scorer_dataset_url('haystack'), params: { template_id: ndcg.id }
-      post scorer_dataset_url('haystack'), params: { template_id: ap.id }
+      post dataset_scorer_url('haystack'), params: { template_id: ndcg.id }
+      post dataset_scorer_url('haystack'), params: { template_id: ap.id }
     end
 
     mine = Scorer.where(owner: user).where('name LIKE ?', 'Haystack Rating Party %').order(:name)
@@ -205,10 +205,10 @@ class DatasetsControllerTest < ActionDispatch::IntegrationTest
 
   test 'create scorer does not make the same scorer twice' do
     ap = create_ap
-    post scorer_dataset_url('haystack'), params: { template_id: ap.id }
+    post dataset_scorer_url('haystack'), params: { template_id: ap.id }
 
     assert_no_difference 'Scorer.count' do
-      post scorer_dataset_url('haystack'), params: { template_id: ap.id }
+      post dataset_scorer_url('haystack'), params: { template_id: ap.id }
     end
 
     assert_match(/already have the scorer/, flash[:notice])
@@ -219,9 +219,9 @@ class DatasetsControllerTest < ActionDispatch::IntegrationTest
     own = Scorer.create!(name: 'Mine', owner: user, scale: [ 0, 1 ])
 
     assert_no_difference 'Scorer.count' do
-      post scorer_dataset_url('haystack')
-      post scorer_dataset_url('haystack'), params: { template_id: 0 }
-      post scorer_dataset_url('haystack'), params: { template_id: own.id }
+      post dataset_scorer_url('haystack')
+      post dataset_scorer_url('haystack'), params: { template_id: 0 }
+      post dataset_scorer_url('haystack'), params: { template_id: own.id }
     end
 
     assert_redirected_to datasets_url
@@ -232,8 +232,8 @@ class DatasetsControllerTest < ActionDispatch::IntegrationTest
     ap = create_ap
 
     assert_no_difference 'Scorer.count' do
-      post scorer_dataset_url('imdb'), params: { template_id: ap.id }
-      post scorer_dataset_url('esci'), params: { template_id: ap.id }
+      post dataset_scorer_url('imdb'), params: { template_id: ap.id }
+      post dataset_scorer_url('esci'), params: { template_id: ap.id }
     end
 
     assert_redirected_to datasets_url

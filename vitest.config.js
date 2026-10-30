@@ -60,6 +60,10 @@ export default defineConfig({
       },
       { find: "api/fetch", replacement: path.resolve(repoRoot, "app/javascript/api/fetch.js") },
       {
+        find: "api/service_fetch",
+        replacement: path.resolve(repoRoot, "app/javascript/api/service_fetch.js")
+      },
+      {
         find: "api/http_error",
         replacement: path.resolve(repoRoot, "app/javascript/api/http_error.js")
       },

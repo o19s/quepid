@@ -87,7 +87,7 @@
 <% @datasets.select { |dataset| @templates_left.key?(dataset.key) && @templates_left[dataset.key].any? }.each do |dataset| %>
   <% left = @templates_left[dataset.key] %>
   <% modal_body = capture do %>
-    <%= form_with url: scorer_dataset_path(dataset.key), method: :post, id: "create-scorer-form-#{dataset.key}", data: { turbo: false } do |form| %>
+    <%= form_with url: dataset_scorer_path(dataset.key), method: :post, id: "create-scorer-form-#{dataset.key}" do |form| %>
       <p>
         Makes a scorer for <strong><%= dataset.name %></strong> with exactly its labels
         (<%= dataset.labels %>), as a copy of a communal scorer. Which one should it be based on?

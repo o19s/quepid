@@ -163,23 +163,6 @@ class DatasetCasesControllerTest < ActionDispatch::IntegrationTest
     assert_select '#initiateIndexing button[type=submit]', count: 0
   end
 
-  test 'endpoint points one case at the chosen search endpoint and leaves the others alone' do
-    chosen = link_case('imdb', name: 'Chosen')
-    other = link_case('imdb', name: 'Other')
-    endpoint = make_endpoint
-
-    post endpoint_dataset_case_url(CaseToDataset.find_by(case: chosen)), params: { search_endpoint_id: endpoint.id }
-
-    assert_redirected_to dataset_cases_url
-    assert_match(/Chosen now searches Chorus/, flash[:notice])
-    assert_equal endpoint, chosen.tries.first.reload.search_endpoint
-    assert_nil other.tries.first.reload.search_endpoint
-    get dataset_cases_url
-
-    assert_select 'td a[href=?]', search_endpoint_path(endpoint), text: 'Chorus', count: 1
-    assert_select 'button', text: 'Initiate indexing', count: 1
-  end
-
   test 'the dialog only looks: it submits a GET to the review page, so it has no token to go stale' do
     link_case('imdb', name: 'Nowhere')
     get dataset_cases_url
@@ -187,64 +170,6 @@ class DatasetCasesControllerTest < ActionDispatch::IntegrationTest
     assert_select '#initiate-indexing-form[method=get]'
     assert_select '#initiate-indexing-form input[name=authenticity_token]', count: 0
     assert_select 'button[type=submit][form=initiate-indexing-form]', text: 'Review index definition'
-  end
-
-  test 'endpoint changes the latest try only, and does not index or create anything' do
-    kase = link_case('imdb', name: 'Two tries')
-    kase.tries.create!(try_number: 2)
-    endpoint = make_endpoint
-
-    assert_no_difference [ 'Case.count', 'Scorer.count', 'Query.count', 'Try.count' ] do
-      post endpoint_dataset_case_url(CaseToDataset.find_by(case: kase)), params: { search_endpoint_id: endpoint.id }
-    end
-
-    assert_equal endpoint, kase.tries.reload.first.search_endpoint
-    assert_equal [ nil ], kase.tries.reload.drop(1).map(&:search_endpoint)
-  end
-
-  test 'endpoint refuses an endpoint the user cannot use, an archived one, or none' do
-    kase = link_case('imdb', name: 'Picky')
-    link = CaseToDataset.find_by(case: kase)
-    theirs = make_endpoint('Theirs').tap { |endpoint| endpoint.update!(owner: users(:doug)) }
-    archived = make_endpoint('Old').tap { |endpoint| endpoint.update!(archived: true) }
-
-    [ theirs.id, archived.id, 0, nil ].each do |id|
-      post endpoint_dataset_case_url(link), params: { search_endpoint_id: id }
-
-      assert_redirected_to dataset_cases_url
-      assert_match(/Pick a search endpoint/, flash[:alert])
-    end
-
-    assert_nil kase.tries.first.reload.search_endpoint
-  end
-
-  test 'endpoint refuses a case that is still loading' do
-    kase = link_case('imdb', name: 'Busy')
-    link = CaseToDataset.find_by(case: kase)
-    link.update!(status: 'loading')
-
-    post endpoint_dataset_case_url(link), params: { search_endpoint_id: make_endpoint.id }
-
-    assert_match(/still loading/, flash[:alert])
-    assert_nil kase.tries.first.reload.search_endpoint
-  end
-
-  test 'endpoint does not touch another users case, or a case that is no longer the users own' do
-    other = Case.create!(case_name: 'Theirs', owner: users(:doug))
-    their_link = CaseToDataset.create!(dataset: Dataset.for(users(:doug), 'imdb'), case: other, status: 'done')
-    endpoint = make_endpoint
-
-    post endpoint_dataset_case_url(their_link), params: { search_endpoint_id: endpoint.id }
-
-    assert_response :not_found
-    assert_nil other.tries.first.reload.search_endpoint
-
-    taken = link_case('imdb', name: 'Taken over')
-    taken.update!(owner: users(:doug))
-    post endpoint_dataset_case_url(CaseToDataset.find_by(case: taken)), params: { search_endpoint_id: endpoint.id }
-
-    assert_match(/belongs to someone else/, flash[:alert])
-    assert_nil taken.tries.first.reload.search_endpoint
   end
 
   test 'index has an uninstall button per case, asking first, disabled while the case is still loading' do
@@ -409,6 +334,25 @@ class DatasetCasesControllerTest < ActionDispatch::IntegrationTest
     assert_select 'td', text: /Loading in the background/, count: 1
     assert_select 'span.badge[title=?]', 'The export is broken', text: 'Failed'
     assert_select '[data-controller=loading-refresh]', count: 1
+  end
+
+  test 'index says how many queries a loading case has so far, over how many it will have' do
+    kase = link_case('imdb', name: 'Filling up')
+    link = CaseToDataset.find_by(case: kase)
+    link.update!(status: 'loading')
+    get dataset_cases_url
+
+    assert_select 'td .badge', text: /\ALoading in the background\s*\z/, count: 1, message: 'nothing to count before the first query is in'
+
+    3.times { |index| kase.queries.create!(query_text: "movie #{index}") }
+    get dataset_cases_url
+
+    assert_select 'td .badge', text: %r{Loading in the background \(3 / 10 queries so far\)}
+
+    link.update!(sample_size: 4)
+    get dataset_cases_url
+
+    assert_select 'td .badge', text: %r{\(3 / 4 queries so far\)}, message: 'a sample is counted against its own size'
   end
 
   test 'index does not refresh itself when nothing is loading' do

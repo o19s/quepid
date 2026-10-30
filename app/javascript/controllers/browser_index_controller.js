@@ -1,7 +1,9 @@
 import { Controller } from "@hotwired/stimulus"
 import { apiFetch } from "api/fetch"
+import { patchJson, postJson } from "api/json"
+import { serviceFetch } from "api/service_fetch"
 import { confirmDialog } from "utils/confirm_dialog"
-import { serviceFetch } from "utils/service_fetch"
+import { serverMessage } from "utils/error_message"
 
 // Creates the index and loads the documents from the browser, for a search endpoint that only the browser can reach
 // (not proxied by Quepid, maybe on localhost): the same way the case's own searches reach it. Quepid keeps the case,
@@ -13,6 +15,7 @@ export default class extends Controller {
     probe: Object,
     streamUrl: String,
     progressUrl: String,
+    endpointId: Number,
     confirm: String,
     batchSize: { type: Number, default: 500 }
   }
@@ -27,22 +30,19 @@ export default class extends Controller {
     this.say("Creating the index…", "text-muted")
     try {
       await this.createIndex()
-      const form = new FormData(this.element)
-      form.set("applied", "true")
-      const response = await apiFetch(this.element.action, {
-        method: "POST",
-        body: form,
-        headers: { Accept: "application/json" }
+      const form = Object.fromEntries(new FormData(this.element))
+      const { redirect, load, total } = await postJson(this.element.action, {
+        ...form,
+        applied: true
       })
-      if (!response.ok) throw new Error(await this.problem(response))
-      const { redirect, load, total } = await response.json()
       if (load) await this.load(total)
       this.running = false
       window.Turbo ? window.Turbo.visit(redirect) : (window.location = redirect)
     } catch (error) {
-      this.say(error.message, "text-danger")
+      const message = serverMessage(error, "Quepid could not set the case up.")
+      this.say(message, "text-danger")
       this.lock(false)
-      if (this.loading) await this.report("failed", this.sent, error.message)
+      if (this.loading) await this.report("failed", this.sent, message)
       this.running = false
     }
   }
@@ -51,11 +51,9 @@ export default class extends Controller {
   interrupted() {
     if (!this.running || !this.loading) return
     const data = new FormData()
+    data.set("_method", "patch")
     data.set("authenticity_token", this.token)
-    data.set(
-      "search_endpoint_id",
-      new URL(this.progressUrlValue, location.origin).searchParams.get("search_endpoint_id")
-    )
+    data.set("search_endpoint_id", this.endpointIdValue)
     data.set("status", "failed")
     data.set("documents_indexed", this.sent || 0)
     data.set("error", "The browser page was closed before the loading finished.")
@@ -213,19 +211,12 @@ export default class extends Controller {
   }
 
   async report(status, indexed, error = "") {
-    const data = new FormData()
-    data.set(
-      "search_endpoint_id",
-      new URL(this.progressUrlValue, location.origin).searchParams.get("search_endpoint_id")
-    )
-    data.set("status", status)
-    data.set("documents_indexed", indexed || 0)
-    data.set("error", error)
     try {
-      await apiFetch(this.progressUrlValue, {
-        method: "POST",
-        body: data,
-        headers: { "X-CSRF-Token": this.token }
+      await patchJson(this.progressUrlValue, {
+        search_endpoint_id: this.endpointIdValue,
+        status,
+        documents_indexed: indexed || 0,
+        error
       })
     } catch {
       // Quepid not answering must not stop the loading; the next report will say where it is.
@@ -246,15 +237,6 @@ export default class extends Controller {
     if (!this.hasMessageTarget) return
     this.messageTarget.textContent = message
     this.messageTarget.className = style
-  }
-
-  async problem(response) {
-    const text = await response.text()
-    const alert = new DOMParser().parseFromString(text, "text/html").querySelector(".alert")
-    return (
-      (alert ? alert.textContent : text).replace(/\s+/g, " ").trim().slice(0, 300) ||
-      `Quepid answered ${response.status}.`
-    )
   }
 
   lock(locked) {

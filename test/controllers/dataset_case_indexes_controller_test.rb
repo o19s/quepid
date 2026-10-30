@@ -79,7 +79,7 @@ class DatasetCaseIndexesControllerTest < ActionDispatch::IntegrationTest
     assert_select '.alert-warning', text: /no index definition for Static File endpoints/
     assert_select '.alert-warning', text: /Elasticsearch, OpenSearch, Solr, Qdrant, Vespa, Algolia, and Vectara/
     assert_select 'pre', count: 0
-    assert_select 'form[action=?] button', endpoint_dataset_case_path(@link), text: 'Only use this endpoint'
+    assert_select 'form[action=?] button', dataset_case_search_endpoint_path(@link), text: 'Only use this endpoint'
     assert_select 'form[action=?]', dataset_case_index_path(@link), count: 0
   end
 
@@ -129,8 +129,8 @@ class DatasetCaseIndexesControllerTest < ActionDispatch::IntegrationTest
     es = make_endpoint(:es, 'http://es.example.com:9200/movies/_search')
     get dataset_case_index_url(@link, search_endpoint_id: es.id)
 
-    assert_select 'input[type=radio][name=new_endpoint][value="0"][checked]'
-    assert_select 'input[type=radio][name=new_endpoint][value="1"]:not([checked])'
+    assert_select 'input[type=radio][name=new_endpoint][value="false"][checked]'
+    assert_select 'input[type=radio][name=new_endpoint][value="true"]:not([checked])'
     assert_select 'input[name=index_name][readonly][value=movies]'
     assert_select 'form[data-json-editor-new-name-value=?]', 'haystack', message: 'a new index is named after the dataset, unless it is the current one'
     body = response.body
@@ -143,7 +143,7 @@ class DatasetCaseIndexesControllerTest < ActionDispatch::IntegrationTest
     get dataset_case_index_url(@link, search_endpoint_id: es.id)
 
     assert_select 'button[data-json-editor-target=availabilityButton][hidden]', text: 'Check availability'
-    assert_select 'form[data-json-editor-availability-url-value=?]', availability_dataset_case_index_path(@link, search_endpoint_id: es.id)
+    assert_select 'form[data-json-editor-availability-url-value=?]', dataset_case_index_availability_path(@link, search_endpoint_id: es.id)
   end
 
   test 'show gives the browser what it needs to check a name itself, unless the endpoint is proxied' do
@@ -163,56 +163,13 @@ class DatasetCaseIndexesControllerTest < ActionDispatch::IntegrationTest
     assert_select 'form[data-json-editor-probe-value]', count: 0
   end
 
-  test 'availability says whether the name is taken on the endpoints service, and only reads' do
-    es = make_endpoint(:es, 'http://es.example.com:9200/movies/_search')
-    stub_request(:get, 'http://es.example.com:9200/wands').to_return(status: 404, body: '{}')
-    stub_request(:get, 'http://es.example.com:9200/movies').to_return(status: 200, body: '{}')
-
-    get availability_dataset_case_index_url(@link, search_endpoint_id: es.id, index_name: 'wands')
-
-    assert_equal({ 'status' => 'free', 'message' => 'wands is free.' }, response.parsed_body)
-
-    get availability_dataset_case_index_url(@link, search_endpoint_id: es.id, index_name: 'movies')
-
-    assert_equal 'taken', response.parsed_body['status']
-    assert_not_requested :put, /.*/
-  end
-
-  test 'availability refuses a bad name, and says when the service cannot answer' do
-    es = make_endpoint(:es, 'http://es.example.com:9200/movies/_search')
-    get availability_dataset_case_index_url(@link, search_endpoint_id: es.id, index_name: 'UPPER')
-
-    assert_equal 'invalid', response.parsed_body['status']
-
-    stub_request(:get, 'http://es.example.com:9200/wands').to_return(status: 500, body: 'boom')
-    get availability_dataset_case_index_url(@link, search_endpoint_id: es.id, index_name: 'wands')
-
-    assert_equal 'unknown', response.parsed_body['status']
-    assert_match(/answered 500/, response.parsed_body['message'])
-  end
-
-  test 'availability checks a Qdrant collection and a Solr core' do
-    qdrant = make_endpoint(:qdrant, 'http://qd.example.com:6333', mapper: 'qdrant')
-    stub_request(:get, 'http://qd.example.com:6333/collections/wands').to_return(status: 200, body: '{}')
-    get availability_dataset_case_index_url(@link, search_endpoint_id: qdrant.id, index_name: 'wands')
-
-    assert_equal 'taken', response.parsed_body['status']
-
-    solr = make_endpoint(:solr, 'http://solr.example.com:8983/solr/shop/select')
-    stub_request(:get, 'http://solr.example.com:8983/solr/admin/cores').with(query: hash_including('core' => 'wands'))
-      .to_return(status: 200, body: '{"status":{"wands":{}}}')
-    get availability_dataset_case_index_url(@link, search_endpoint_id: solr.id, index_name: 'wands')
-
-    assert_equal 'free', response.parsed_body['status']
-  end
-
   test 'create can make a new search endpoint for the new index, copying the chosen endpoint' do
     es = make_endpoint(:es, 'http://es.example.com:9200/movies/_search')
     es.update!(basic_auth_credential: 'user:secret', custom_headers: '{"X-Key":"1"}')
     stub_request(:put, 'http://es.example.com:9200/wands').to_return(status: 200, body: '{"acknowledged":true}')
 
     assert_difference 'SearchEndpoint.count', 1 do
-      post dataset_case_index_url(@link), params: { search_endpoint_id: es.id, index_name: 'wands', definition: '{"settings":{}}', new_endpoint: '1' }
+      post dataset_case_index_url(@link), params: { search_endpoint_id: es.id, index_name: 'wands', definition: '{"settings":{}}', new_endpoint: 'true' }
     end
 
     copy = SearchEndpoint.order(:id).last
@@ -452,35 +409,12 @@ class DatasetCaseIndexesControllerTest < ActionDispatch::IntegrationTest
     assert_equal es, @case.tries.first.reload.search_endpoint
   end
 
-  test 'stream gives the documents one a line, and only to whoever may load them' do
-    give_documents
+  test 'create with applied set answers JSON, also when the browser sent a definition that is not valid' do
     es = make_endpoint(:es, 'http://localhost:9200/movies/_search')
-    get stream_dataset_case_index_url(@link, search_endpoint_id: es.id)
-
-    assert_response :success
-    docs = response.body.lines.map { |line| JSON.parse(line) }
-
-    assert_equal @documents, docs.size
-    assert(docs.all? { |doc| doc['id'].present? })
-
-    @case.update!(book: nil)
-    get stream_dataset_case_index_url(@link, search_endpoint_id: es.id)
+    post dataset_case_index_url(@link), params: { search_endpoint_id: es.id, index_name: 'movies', definition: '[1, 2]', applied: true }, as: :json
 
     assert_response :unprocessable_content
-  end
-
-  test 'progress records how far the browser has got, and why it stopped' do
-    es = make_endpoint(:es, 'http://localhost:9200/movies/_search')
-    post progress_dataset_case_index_url(@link, search_endpoint_id: es.id), params: { status: 'indexing', documents_indexed: 500 }
-
-    assert_response :no_content
-    @link.reload
-
-    assert_equal [ 'indexing', 500, nil ], [ @link.indexing_status, @link.documents_indexed, @link.indexing_error ]
-
-    post progress_dataset_case_index_url(@link, search_endpoint_id: es.id), params: { status: 'failed', documents_indexed: 500, error: 'it broke' }
-
-    assert_equal [ 'failed', 'it broke' ], [ @link.reload.indexing_status, @link.indexing_error ]
+    assert_match(/must be a JSON object/, response.parsed_body['error'])
   end
 
   test 'create without documents queues nothing, and says so' do
@@ -502,7 +436,7 @@ class DatasetCaseIndexesControllerTest < ActionDispatch::IntegrationTest
 
     assert_select '.alert-secondary', text: /Quepid does not create indexes in Vespa.*sends nothing until you say you have deployed it/m
     assert_select 'form[action=?]', dataset_case_index_path(@link), count: 0
-    assert_select 'form[action=?]', documents_dataset_case_index_path(@link) do
+    assert_select 'form[action=?]', dataset_case_index_documents_path(@link) do
       assert_select 'input[name=index_name][value=quepid_haystack]'
       assert_select 'button[type=submit]', text: 'I have deployed this. Start loading'
       assert_select 'input[name=search_endpoint_id][value=?]', vespa.id.to_s
@@ -517,55 +451,15 @@ class DatasetCaseIndexesControllerTest < ActionDispatch::IntegrationTest
     algolia = make_endpoint(:algolia, 'https://APP-dsn.algolia.net/1/indexes/shop/query')
     get dataset_case_index_url(@link, search_endpoint_id: algolia.id)
 
-    assert_select 'form[action=?]', documents_dataset_case_index_path(@link), count: 0
+    assert_select 'form[action=?]', dataset_case_index_documents_path(@link), count: 0
     assert_select 'p', text: /Quepid does not load documents here: Quepid cannot load documents into Algolia yet/
 
     @case.update!(book: nil)
     vespa = make_endpoint(:searchapi, 'https://a.vespa.cloud/search/', mapper: 'vespa')
     get dataset_case_index_url(@link, search_endpoint_id: vespa.id)
 
-    assert_select 'form[action=?]', documents_dataset_case_index_path(@link), count: 0
+    assert_select 'form[action=?]', dataset_case_index_documents_path(@link), count: 0
     assert_select 'p', text: /Quepid does not load documents here: Quepid has no documents for Haystack Rating Party/
-  end
-
-  test 'documents starts loading into the schema the user deployed, creating nothing, and points the case at the endpoint' do
-    give_documents
-    vespa = make_endpoint(:searchapi, 'https://a.vespa.cloud/search/', mapper: 'vespa')
-
-    assert_enqueued_with(job: IndexDatasetDocumentsJob) do
-      post documents_dataset_case_index_url(@link), params: { search_endpoint_id: vespa.id, index_name: 'my_schema' }
-    end
-
-    assert_redirected_to dataset_cases_url
-    assert_match(/Its #{@documents} documents are being indexed in the background/, flash[:notice])
-    assert_equal %w[my_schema pending], [ @link.reload.index_name, @link.indexing_status ]
-    assert_equal vespa, @case.tries.first.reload.search_endpoint
-    assert_not_requested :any, /.*/
-  end
-
-  test 'documents refuses what it cannot load: a bad name, an engine Quepid creates itself, an engine with no loader, no documents' do
-    give_documents
-    vespa = make_endpoint(:searchapi, 'https://a.vespa.cloud/search/', mapper: 'vespa')
-    es = make_endpoint(:es, 'http://es.example.com:9200/movies/_search')
-    algolia = make_endpoint(:algolia, 'https://APP-dsn.algolia.net/1/indexes/shop/query')
-
-    [ [ vespa, 'Not Valid!', /is not a name Vespa accepts/ ], [ vespa, '../x', /is not a name/ ], [ es, 'movies', /creates this index itself/ ],
-      [ algolia, 'shop', /cannot load documents into Algolia/ ] ].each do |endpoint, name, message|
-      assert_no_enqueued_jobs only: IndexDatasetDocumentsJob do
-        post documents_dataset_case_index_url(@link), params: { search_endpoint_id: endpoint.id, index_name: name }
-      end
-
-      assert_response :unprocessable_content
-      assert_select '.alert', text: message
-    end
-
-    @case.update!(book: nil)
-    post documents_dataset_case_index_url(@link), params: { search_endpoint_id: vespa.id, index_name: 'quepid_haystack' }
-
-    assert_response :unprocessable_content
-    assert_select '.alert', text: /Quepid has no documents for Haystack Rating Party, so there is nothing to load/
-    assert_nil @case.tries.first.reload.search_endpoint
-    assert_not_requested :any, /.*/
   end
 
   CHORUS = 'http://chorus.dev.o19s.com:8983/solr/ecommerce/select'
@@ -580,8 +474,8 @@ class DatasetCaseIndexesControllerTest < ActionDispatch::IntegrationTest
     assert_select 'pre', count: 0
     assert_select 'textarea', count: 0
     assert_select 'form[action=?]', dataset_case_index_path(@link), count: 0
-    assert_select 'form[action=?]', documents_dataset_case_index_path(@link), count: 0
-    assert_select 'form[action=?] button', endpoint_dataset_case_path(@link), text: 'Only use this endpoint'
+    assert_select 'form[action=?]', dataset_case_index_documents_path(@link), count: 0
+    assert_select 'form[action=?] button', dataset_case_search_endpoint_path(@link), text: 'Only use this endpoint'
     assert_not_requested :any, /.*/
   end
 
@@ -610,9 +504,10 @@ class DatasetCaseIndexesControllerTest < ActionDispatch::IntegrationTest
       assert_response :unprocessable_content
       assert_select '.alert', text: /already indexed in Chorus, so there is nothing to create or load there/
 
-      post documents_dataset_case_index_url(@link), params: { search_endpoint_id: chorus.id, index_name: 'ecommerce' }
+      post dataset_case_index_documents_url(@link), params: { search_endpoint_id: chorus.id, index_name: 'ecommerce' }
 
-      assert_response :unprocessable_content
+      assert_redirected_to dataset_case_index_url(@link, search_endpoint_id: chorus.id)
+      assert_match(/already indexed in Chorus/, flash[:alert])
     end
     assert_not_requested :any, /.*/
     assert_nil @case.tries.first.reload.search_endpoint

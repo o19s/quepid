@@ -1,5 +1,7 @@
 import { buildControllerFixture } from "../support/controller_fixture"
 import { expect, it, vi } from "vitest"
+import { getJson } from "api/json"
+vi.mock("api/json", () => ({ getJson: vi.fn() }))
 import JsonEditorController from "controllers/json_editor_controller"
 
 function build(text = '{"a":1}') {
@@ -65,11 +67,11 @@ it("puts the proposed definition and name back", () => {
 it("keeps the endpoint's own index name fixed, and lets a new index be named", () => {
   const { controller, name } = build()
   name.value = "proposed"
-  controller.choose({ target: { value: "1" } })
+  controller.choose({ target: { value: "true" } })
   expect(name.readOnly).toBe(false)
   expect(name.value).toBe("wands")
   name.value = "mine"
-  controller.choose({ target: { value: "0" } })
+  controller.choose({ target: { value: "false" } })
   expect(name.readOnly).toBe(true)
   expect(name.value).toBe("proposed")
 })
@@ -93,16 +95,14 @@ it("shows the button for a new index only, and says what the server answered abo
       availabilityUrl: "/dataset_cases/1/index/availability?search_endpoint_id=2"
     }
   })
-  controller.choose({ target: { value: "0" } })
+  controller.choose({ target: { value: "false" } })
   expect(availabilityButton.hidden).toBe(true)
-  controller.choose({ target: { value: "1" } })
+  controller.choose({ target: { value: "true" } })
   expect(availabilityButton.hidden).toBe(false)
 
-  globalThis.fetch = vi.fn().mockResolvedValue({
-    json: async () => ({ status: "taken", message: "wands is already there." })
-  })
+  getJson.mockResolvedValue({ status: "taken", message: "wands is already there." })
   await controller.checkAvailability()
-  expect(globalThis.fetch.mock.calls[0][0].searchParams.get("index_name")).toBe("wands")
+  expect(getJson.mock.calls[0][0]).toContain("index_name=wands")
   expect(availability.textContent).toBe("wands is already there.")
   expect(availability.classList.contains("text-danger")).toBe(true)
   controller.clearAvailability()
