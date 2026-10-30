@@ -1,4 +1,4 @@
-import { isEsLikeEngine, normalizeSearchEngine } from "utils/search_engines"
+import { isEsLikeEngine, normalizeSearchEngine, searcherEngine } from "utils/search_engines"
 
 /**
  * Helpers extracted from the live-query runtime.
@@ -204,7 +204,7 @@ export function createSearcherFromSettings({
     request.args,
     request.queryText,
     request.searcherOptions,
-    request.searchEngine
+    searcherEngine(request.searchEngine)
   )
 }
 

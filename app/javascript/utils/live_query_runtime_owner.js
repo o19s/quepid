@@ -692,7 +692,7 @@ export function createLiveQueryRuntimeOwner({
       queryId: queryId,
       settings: settings,
       selectedTry: settings.selectedTry,
-      supportedEngines: ["solr", "es", "os", "searchapi"],
+      supportedEngines: ["solr", "es", "os", "warpsearch", "searchapi"],
       previewArgs: function (tryNo, queryParams) {
         return domain.settings.previewArgs(tryNo, queryParams)
       },

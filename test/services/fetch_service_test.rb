@@ -729,6 +729,17 @@ class FetchServiceTest < ActiveSupport::TestCase
         assert_nil result['wt']
       end
 
+      it 'routes to OpenSearch params for WarpSearch endpoints' do
+        fetch_service = FetchService.new options
+        endpoint = MockEndpoint.new(search_engine: 'warpsearch')
+
+        result = fetch_service.send(:add_engine_specific_params, endpoint, atry, {})
+
+        assert_equal atry.number_of_rows.to_s, result['size']
+        assert_nil result['debug']
+        assert_nil result['wt']
+      end
+
       it 'returns params unchanged for SearchAPI endpoints' do
         fetch_service = FetchService.new options
 

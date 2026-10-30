@@ -6,6 +6,7 @@ class SearchEngineTest < ActiveSupport::TestCase
   it 'labels known engine ids and falls back to the id' do
     assert_equal 'Elasticsearch', SearchEngine.label('es')
     assert_equal 'Static File', SearchEngine.label(:static)
+    assert_equal 'WarpSearch', SearchEngine.label('warpsearch')
     assert_equal 'vespa', SearchEngine.label('vespa')
   end
 

@@ -67,7 +67,7 @@ class RunCaseEvaluationJob < ApplicationJob
       [ @fetch_service.extract_docs_from_response_body_for_solr(response_body), nil ]
     when :es
       [ @fetch_service.extract_docs_from_response_body_for_es(response_body), nil ]
-    when :os
+    when :os, :warpsearch
       [ @fetch_service.extract_docs_from_response_body_for_os(response_body), nil ]
 
     when :searchapi

@@ -1481,6 +1481,20 @@ describe("WizardController", () => {
       expect([...names].filter((name) => !known.includes(name))).toEqual([])
     })
 
+    it("shows WarpSearch guidance, not OpenSearch's, and hides Basic Auth for WarpSearch", () => {
+      const controller = mount({
+        step: STEPS.endpoint,
+        settings: { searchEngine: "warpsearch", supportsBasicAuth: false }
+      })
+
+      expect(controller.conditions()).toMatchObject({
+        warpsearch: true,
+        os: false,
+        es: false,
+        "basic-auth": false
+      })
+    })
+
     it("ignores a leftover URL's protocol for a static endpoint, whose URL import replaces", () => {
       const controller = mount({
         step: STEPS.endpoint,

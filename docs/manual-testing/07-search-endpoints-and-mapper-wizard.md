@@ -2,7 +2,7 @@
 
 ## Overview
 
-A Search Endpoint tells Quepid how to reach a search engine or search API (Solr, Elasticsearch, OpenSearch, Vectara, Algolia, a static file, or a fully custom "Search API") so cases can query it and read back results. The Mapper Wizard is an AI-assisted tool for building the custom JavaScript needed to translate a bespoke Search API's responses into what Quepid expects.
+A Search Endpoint tells Quepid how to reach a search engine or search API (Solr, Elasticsearch, OpenSearch, WarpSearch, Vectara, Algolia, a static file, or a fully custom "Search API") so cases can query it and read back results. The Mapper Wizard is an AI-assisted tool for building the custom JavaScript needed to translate a bespoke Search API's responses into what Quepid expects.
 
 **Where to find it:** Sidebar paper-plane icon, tooltip "Search Endpoints" → `/search_endpoints`.
 
@@ -28,7 +28,7 @@ below; mapper-based presets such as Vespa and Qdrant configure in the case wizar
 
 ### 7.2 Create a Search Endpoint — one per engine type
 
-Repeat for each: **Solr**, **Elasticsearch**, **OpenSearch**, **Vectara**, **Algolia**, **Static File**, **Search API**.
+Repeat for each: **Solr**, **Elasticsearch**, **OpenSearch**, **WarpSearch**, **Vectara**, **Algolia**, **Static File**, **Search API**.
 
 - [ ] **Steps:**
   1. Click **New Search Endpoint**.
@@ -227,3 +227,28 @@ See [Qdrant setup and request examples](../endpoints_qdrant.md).
   submits proxy true. Broader mapper generation/save checks remain in 7.7–7.10.
 - [ ] Restore the flag to false and restart: JSONP and proxy controls return.
   Remove disposable cases/endpoints and restore account onboarding state.
+
+### 7.14 WarpSearch: case creation, search and rated-document lookup
+
+Needs a WarpSearch collection and a `viewer` API key (see
+[WarpSearch endpoints](../endpoints_warpsearch.md)). Don't commit or capture the key.
+
+1. Start the case wizard on a disposable case. On Endpoint, choose **WarpSearch**
+   under **Create a new Search Endpoint**. Confirm the pre-filled
+   `https://api.warpsearch.io/compat/opensearch/YOUR_COLLECTION/_search` URL,
+   POST, Proxy enabled, Custom Headers pre-filled with
+   `{"Authorization": "Bearer ws_live_REPLACE_ME"}`, and no Basic Authentication field.
+2. Continue with the placeholder key: expect the WarpSearch troubleshooting list
+   (proxy, URL format, API key and role hints). Enter the real collection and key,
+   then Continue: expect the collection's fields on the Fields step.
+3. Pick `_id` and a title field, add a query, finish. Confirm the saved endpoint and
+   try both read **WarpSearch** (`search_engine: warpsearch`, not `os`), with the
+   WarpSearch icon in Search Endpoints and the endpoint picker. Results render, and
+   the Query Sandbox uses the JSON (OpenSearch DSL) editor.
+4. Rate a result and refresh: the rating persists. Open **Missing Documents**:
+   Already Rated Documents retrieves it. Enable **Show only rated**: only rated
+   docs appear (`terms` filter on the id field in the outgoing request).
+5. Take a snapshot and compare it with the live results. Run the case evaluation
+   from Tune Relevance and confirm a score is recorded with no "not supported" error.
+6. Delete the disposable case and any endpoint created solely for this check.
+

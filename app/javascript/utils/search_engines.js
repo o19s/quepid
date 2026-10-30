@@ -5,7 +5,11 @@
  * as an `engineLabels` Stimulus value.
  */
 
-const ES_LIKE_ENGINES = new Set(["es", "os"])
+// WarpSearch is a hosted engine queried through its OpenSearch-compatible API.
+const ES_LIKE_ENGINES = new Set(["es", "os", "warpsearch"])
+
+/** Engines splainer-search doesn't know by name, mapped to the engine whose API they speak. */
+const SEARCHER_ENGINE_ALIASES = { warpsearch: "os" }
 
 /** Engines that cannot look a doc up by id — snapshots must store document fields. */
 const NO_LOOKUP_BY_ID_ENGINES = new Set(["vectara", "searchapi"])
@@ -37,6 +41,32 @@ export function supportsLookupById(engineId) {
  */
 export function normalizeSearchEngine(engineId) {
   return engineId === "static" ? "solr" : engineId
+}
+
+/**
+ * The engine id splainer-search should build its searcher, validator or doc
+ * resolver for. Use it only at that boundary: the stored engine (e.g. `warpsearch`)
+ * must stay on the settings that get saved back to the try.
+ *
+ * @param {string | null | undefined} engineId
+ * @returns {string | null | undefined}
+ */
+export function searcherEngine(engineId) {
+  const engine = normalizeSearchEngine(engineId)
+  return SEARCHER_ENGINE_ALIASES[engine] || engine
+}
+
+/**
+ * A copy of `settings` whose `searchEngine` is the one splainer-search understands.
+ *
+ * @template {{ searchEngine?: string | null } | null | undefined} T
+ * @param {T} settings
+ * @returns {T}
+ */
+export function withSearcherEngine(settings) {
+  if (!settings) return settings
+  const engine = searcherEngine(settings.searchEngine)
+  return engine === settings.searchEngine ? settings : { ...settings, searchEngine: engine }
 }
 
 /**

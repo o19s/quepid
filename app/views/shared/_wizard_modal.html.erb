@@ -44,6 +44,7 @@
               <%= render 'shared/wizard_engine_tile', engine: 'solr' %>
               <%= render 'shared/wizard_engine_tile', engine: 'es' %>
               <%= render 'shared/wizard_engine_tile', engine: 'os' %>
+              <%= render 'shared/wizard_engine_tile', engine: 'warpsearch' %>
             </div>
             <div class="wizard-engine-row" data-wizard-target="mapperEngines">
               <%= render 'shared/wizard_engine_tile', engine: 'vectara' %>
@@ -270,6 +271,12 @@ star wars,1921,3, Star Wars: Return of the Jedi</pre>
               <li>Does your OpenSearch accept HTTP POST requests?</li>
               <li>Use the browser <i>Network Inspector</i> to see the actual request.</li>
               <li data-wizard-when="wiki">See the <a target="_blank" rel="noopener noreferrer" data-wizard-target="wikiLink">Troubleshooting OpenSearch and Quepid</a> wiki page for more help!</li> <%# herb:disable html-anchor-require-href %>
+            </ul>
+            <ul class="mb-0" data-wizard-when="warpsearch" hidden>
+              <li data-wizard-when="no-proxy"><strong>Quick fix:</strong> check <strong>Proxy requests through Quepid</strong> above. WarpSearch only answers browser requests from origins listed in your tenant's CORS settings.</li>
+              <li>Is the URL in the form <code>https://api.warpsearch.io/compat/opensearch/&lt;collection&gt;/_search</code>, with your collection's name?</li>
+              <li>Did you replace <code>ws_live_REPLACE_ME</code> in <strong>Custom Headers</strong> above with a WarpSearch API key? A <code>401</code> means the key is missing or wrong, and a <code>403</code> or <code>404</code> means the key has no <code>viewer</code> role on that collection.</li>
+              <li>Use the browser <i>Network Inspector</i> to see the actual request.</li>
             </ul>
             <ul class="mb-0" data-wizard-when="solr" hidden>
               <li data-wizard-when="no-proxy"><strong>Quick fix:</strong> check <strong>Proxy requests through Quepid</strong> above so Quepid's server talks to Solr instead of your browser. No Solr configuration changes required.</li>

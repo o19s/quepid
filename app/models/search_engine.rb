@@ -6,17 +6,21 @@
 # Stimulus controllers that name an engine. Mapper-based engines
 # (MapperBasedSearchEngine) all use the generic 'searchapi' id and carry their own name.
 #
+# WarpSearch ('warpsearch') is a hosted engine that speaks the OpenSearch API (its
+# /compat/opensearch endpoints), so everywhere it is handled exactly like 'os'.
+#
 # Per-engine behavior on the browser side (ES-like query DSL, lookup by id, treating
 # static as Solr) lives in app/javascript/utils/search_engines.js.
 module SearchEngine
   LABELS = {
-    'solr'      => 'Solr',
-    'es'        => 'Elasticsearch',
-    'os'        => 'OpenSearch',
-    'vectara'   => 'Vectara',
-    'algolia'   => 'Algolia',
-    'static'    => 'Static File',
-    'searchapi' => 'Search API',
+    'solr'       => 'Solr',
+    'es'         => 'Elasticsearch',
+    'os'         => 'OpenSearch',
+    'warpsearch' => 'WarpSearch',
+    'vectara'    => 'Vectara',
+    'algolia'    => 'Algolia',
+    'static'     => 'Static File',
+    'searchapi'  => 'Search API',
   }.freeze
 
   def self.label id

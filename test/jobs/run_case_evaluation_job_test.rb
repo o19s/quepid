@@ -90,4 +90,46 @@ class RunCaseEvaluationJobTest < ActiveJob::TestCase
       assert_includes snapshot_query.error, 'JavaScript execution error'
     end
   end
+
+  test 'evaluates a WarpSearch endpoint through its OpenSearch API with the API key header' do
+    WebMock.disable_net_connect!(allow_localhost: true)
+
+    acase = cases(:one)
+    atry = tries(:one)
+    acase.scorer = scorers(:'p@10')
+    acase.save!
+
+    search_url = 'https://api.warpsearch.io/compat/opensearch/books/_search'
+    search_request = stub_request(:post, search_url)
+      .with(headers: { 'Authorization' => 'Bearer ws_live_test' })
+      .to_return(
+        status:  200,
+        body:    {
+          hits: { total: { value: 1, relation: 'eq' }, hits: [ { _id: 'dune', _score: 1.0, _source: { title: 'Dune' } } ] },
+        }.to_json,
+        headers: { 'Content-Type' => 'application/json' }
+      )
+
+    atry.query_params = '{"query": {"match": {"title": "#$query##"}}}'
+    atry.search_endpoint = SearchEndpoint.create!(
+      name:           'WarpSearch books',
+      search_engine:  'warpsearch',
+      endpoint_url:   search_url,
+      api_method:     'POST',
+      custom_headers: '{"Authorization": "Bearer ws_live_test"}'
+    )
+    atry.save!
+
+    perform_enqueued_jobs do
+      RunCaseEvaluationJob.perform_now(acase, atry)
+    end
+
+    assert_requested search_request, times: acase.queries.count
+    snapshot_queries = acase.snapshots.last.snapshot_queries
+    assert_equal acase.queries.count, snapshot_queries.count
+    snapshot_queries.each do |snapshot_query|
+      assert_nil snapshot_query.error
+      assert_equal [ 'dune' ], snapshot_query.snapshot_docs.map(&:doc_id)
+    end
+  end
 end

@@ -3,13 +3,16 @@ import {
   isEsLikeEngine,
   normalizeSearchEngine,
   searchEngineLabel,
-  supportsLookupById
+  searcherEngine,
+  supportsLookupById,
+  withSearcherEngine
 } from "utils/search_engines"
 
 describe("search_engines", () => {
   it("treats Elasticsearch and OpenSearch as ES-like", () => {
     expect(isEsLikeEngine("es")).toBe(true)
     expect(isEsLikeEngine("os")).toBe(true)
+    expect(isEsLikeEngine("warpsearch")).toBe(true)
     expect(isEsLikeEngine("solr")).toBe(false)
     expect(isEsLikeEngine(undefined)).toBe(false)
   })
@@ -26,6 +29,32 @@ describe("search_engines", () => {
     expect(normalizeSearchEngine("es")).toBe("es")
     expect(normalizeSearchEngine("searchapi")).toBe("searchapi")
     expect(normalizeSearchEngine(undefined)).toBe(undefined)
+  })
+
+  it("keeps WarpSearch as its own engine id outside the searcher boundary", () => {
+    expect(normalizeSearchEngine("warpsearch")).toBe("warpsearch")
+    expect(supportsLookupById("warpsearch")).toBe(true)
+  })
+
+  it("builds searchers for WarpSearch and static cases with the engine whose API they speak", () => {
+    expect(searcherEngine("warpsearch")).toBe("os")
+    expect(searcherEngine("static")).toBe("solr")
+    expect(searcherEngine("es")).toBe("es")
+    expect(searcherEngine("searchapi")).toBe("searchapi")
+    expect(searcherEngine(undefined)).toBe(undefined)
+  })
+
+  it("copies settings with the searcher engine and leaves the original alone", () => {
+    const settings = { searchEngine: "warpsearch", searchUrl: "https://api.warpsearch.io" }
+    expect(withSearcherEngine(settings)).toEqual({
+      searchEngine: "os",
+      searchUrl: "https://api.warpsearch.io"
+    })
+    expect(settings.searchEngine).toBe("warpsearch")
+
+    const solr = { searchEngine: "solr" }
+    expect(withSearcherEngine(solr)).toBe(solr)
+    expect(withSearcherEngine(null)).toBe(null)
   })
 
   it("labels engine ids from the server-provided catalog, falling back to the id", () => {

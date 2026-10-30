@@ -6,7 +6,7 @@ import { isEsLikeEngine, normalizeSearchEngine } from "utils/search_engines"
  * runtime so the rules are unit-testable and independent of the UI stack.
  */
 
-const NATIVELY_RATED_DOCS_LOOKUP_ENGINES = new Set(["es", "os", "solr"])
+const NATIVELY_RATED_DOCS_LOOKUP_ENGINES = new Set(["es", "os", "warpsearch", "solr"])
 
 /**
  * Can this searchapi try look up rated docs? Only true when its mapper defines a
