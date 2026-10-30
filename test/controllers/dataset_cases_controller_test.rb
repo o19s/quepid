@@ -35,6 +35,49 @@ class DatasetCasesControllerTest < ActionDispatch::IntegrationTest
     assert_select 'button[data-bs-target=?]', '#newDatasetCase', text: /Create new/
   end
 
+  def make_endpoint name = 'Chorus'
+    SearchEndpoint.create!(owner: user, name: name, search_engine: :solr, api_method: 'JSONP', endpoint_url: "http://example.com/#{name}/select")
+  end
+
+  test 'index offers to initiate indexing for a case with no search endpoint, with a dialog to pick one' do
+    link_case('imdb', name: 'Nowhere')
+    chorus = make_endpoint
+    make_endpoint('Archived').update!(archived: true)
+    get dataset_cases_url
+
+    assert_select 'button[data-bs-target=?]', '#initiateIndexing-imdb', text: 'Initiate indexing', count: 1
+    assert_select 'form#initiate-indexing-form-imdb[action=?]', endpoint_dataset_path('imdb') do
+      assert_select 'select[name=search_endpoint_id] option[value=?]', chorus.id.to_s, text: 'Chorus'
+      assert_select 'select[name=search_endpoint_id] option', text: 'Archived', count: 0
+    end
+  end
+
+  test 'index has no initiate indexing button once the case, or its dataset, has an endpoint' do
+    with_own = link_case('imdb', name: 'Has its own')
+    with_own.tries.first.update!(search_endpoint: make_endpoint('Own'))
+    get dataset_cases_url
+
+    assert_select 'button', text: 'Initiate indexing', count: 0
+    assert_select '#initiateIndexing-imdb', count: 0
+
+    with_own.tries.first.update!(search_endpoint: nil)
+    hosted = make_endpoint('Hosted')
+    Dataset.for(user, 'imdb').update!(search_endpoint: hosted)
+    get dataset_cases_url
+
+    assert_select 'td a[href=?]', search_endpoint_path(hosted), text: 'Hosted'
+    assert_select 'button', text: 'Initiate indexing', count: 0
+  end
+
+  test 'the initiate indexing dialog points to creating a search endpoint when the user has none' do
+    link_case('imdb', name: 'Nowhere')
+    SearchEndpoint.for_user(user).update_all(archived: true) # whatever the fixtures gave this user
+    get dataset_cases_url
+
+    assert_select '#initiateIndexing-imdb a[href=?]', new_search_endpoint_path
+    assert_select '#initiateIndexing-imdb button[type=submit]', count: 0
+  end
+
   test 'index has an uninstall button per case, asking first, disabled while the case is still loading' do
     done = link_case('imdb', name: 'Done one')
     loading = link_case('imdb', name: 'Still loading')

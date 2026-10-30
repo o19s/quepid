@@ -41,10 +41,12 @@
                   <% end %>
                 </td>
                 <td>
-                  <% if (endpoint = @endpoints[kase.id]) %>
+                  <% endpoint = @endpoints[kase.id] || @dataset_endpoints[link.dataset.key] %>
+                  <% if endpoint %>
                     <%= link_to endpoint.name, search_endpoint_path(endpoint) %>
                   <% else %>
-                    <span class="text-muted">&mdash;</span>
+                    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
+                            data-bs-target="#initiateIndexing-<%= link.dataset.key %>">Initiate indexing</button>
                   <% end %>
                 </td>
                 <td>
@@ -152,3 +154,29 @@
   <button type="submit" form="new-dataset-case-form" class="btn btn-primary">Create case</button>
 <% end %>
 <%= render 'shared/modal_shell', id: 'newDatasetCase', title: 'Create a case from a dataset', body: modal_body, footer: modal_footer %>
+
+<%# One dialog per dataset that has a case with nowhere it is hosted yet. %>
+<% @links.reject { |link| @endpoints[link.case_id] || @dataset_endpoints[link.dataset.key] }.map { |link| link.dataset.key }.uniq.each do |key| %>
+  <% dataset = DatasetCatalog.find(key) %>
+  <% modal_body = capture do %>
+    <% if @search_endpoints.any? %>
+      <%= form_with url: endpoint_dataset_path(key), method: :post, id: "initiate-indexing-form-#{key}", data: { turbo: false } do %>
+        <p>
+          Choose the search endpoint <strong><%= dataset&.name || key %></strong> is hosted in. Quepid cannot index the
+          documents itself yet, so this only records where they are: it is then shown as "Indexed in" for the cases made from it.
+        </p>
+        <%= label_tag "search_endpoint_id_#{key}", 'Search endpoint', class: 'form-label' %>
+        <%= select_tag :search_endpoint_id, options_for_select(@search_endpoints.map { |endpoint| [ endpoint.name, endpoint.id ] }),
+                       id: "search_endpoint_id_#{key}", class: 'form-select' %>
+      <% end %>
+    <% else %>
+      <p class="mb-0">You have no search endpoints yet. <%= link_to 'Create one', new_search_endpoint_path %> first, then come back.</p>
+    <% end %>
+  <% end %>
+  <% modal_footer = capture do %>
+    <% if @search_endpoints.any? %>
+      <button type="submit" form="initiate-indexing-form-<%= key %>" class="btn btn-primary">Record endpoint</button>
+    <% end %>
+  <% end %>
+  <%= render 'shared/modal_shell', id: "initiateIndexing-#{key}", title: "Initiate indexing: #{dataset&.name || key}", body: modal_body, footer: modal_footer %>
+<% end %>

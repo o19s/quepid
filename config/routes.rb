@@ -109,6 +109,7 @@ Rails.application.routes.draw do
 
   resources :datasets, only: [ :index ] do
     post :scorer, on: :member
+    post :endpoint, on: :member
   end
   resources :dataset_cases, only: [ :index, :create, :destroy ]
   resources :dataset_scorers, only: [ :index ]

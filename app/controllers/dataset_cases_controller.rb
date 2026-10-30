@@ -8,21 +8,8 @@ class DatasetCasesController < ApplicationController
   # With ?dataset=key (the Datasets tab's Load to case) the create dialog opens on that dataset.
   def index
     CaseToDataset.drop_orphans_of(current_user)
-    links = CaseToDataset.joins(:dataset, :case).where(datasets: { owner_id: current_user.id }, cases: { archived: [ false, nil ] })
-      .includes(case: :scorer, dataset: []).order(created_at: :desc)
-    @links = links.to_a
-    case_ids = @links.map(&:case_id)
-    @query_counts = Query.where(case_id: case_ids).group(:case_id).count
-    @document_counts = document_counts(case_ids)
-    # The search endpoint a case uses is its latest try's.
-    @endpoints = Try.where(case_id: case_ids).includes(:search_endpoint).order(try_number: :desc).group_by(&:case_id)
-      .transform_values { |tries| tries.first.search_endpoint }
-    @datasets = DatasetCatalog.loadable_first.select(&:available)
-    @open_dataset = @datasets.find { |dataset| dataset.key == params.fetch(:dataset, nil) }
-    @scorers = current_user.scorers_involved_with.order(:name)
-    # The scorer the user built for each dataset with labels, if any (the dialog offers to create it otherwise).
-    @dataset_scorers = Dataset.where(owner: current_user).includes(:scorer).index_by(&:key).transform_values(&:scorer)
-    @default_scorer = current_user.default_scorer || Scorer.system_default_scorer
+    load_cases
+    load_dialogs
   end
 
   # Makes the case at once and has a background job fill it in with the dataset's queries.
@@ -58,6 +45,33 @@ class DatasetCasesController < ApplicationController
   end
 
   private
+
+  # The table: the user's live cases made from datasets, with what each row shows.
+  def load_cases
+    links = CaseToDataset.joins(:dataset, :case).where(datasets: { owner_id: current_user.id }, cases: { archived: [ false, nil ] })
+      .includes(case: :scorer, dataset: []).order(created_at: :desc)
+    @links = links.to_a
+    case_ids = @links.map(&:case_id)
+    @query_counts = Query.where(case_id: case_ids).group(:case_id).count
+    @document_counts = document_counts(case_ids)
+    # The search endpoint a case uses is its latest try's.
+    @endpoints = Try.where(case_id: case_ids).includes(:search_endpoint).order(try_number: :desc).group_by(&:case_id)
+      .transform_values { |tries| tries.first.search_endpoint }
+  end
+
+  # What the two dialogs need: Create new (datasets and scorers) and Initiate indexing (search endpoints).
+  def load_dialogs
+    @datasets = DatasetCatalog.loadable_first.select(&:available)
+    @open_dataset = @datasets.find { |dataset| dataset.key == params.fetch(:dataset, nil) }
+    @scorers = current_user.scorers_involved_with.order(:name)
+    @default_scorer = current_user.default_scorer || Scorer.system_default_scorer
+    records = Dataset.where(owner: current_user).includes(:scorer, :search_endpoint).index_by(&:key)
+    # The scorer the user built for each dataset with labels, if any (the dialog offers to create it otherwise).
+    @dataset_scorers = records.transform_values(&:scorer)
+    # Where each dataset is hosted, if the user said so: the fallback for a case that has no endpoint of its own.
+    @dataset_endpoints = records.transform_values(&:search_endpoint)
+    @search_endpoints = current_user.search_endpoints_involved_with.not_archived.order(:name)
+  end
 
   # The number of queries to load instead of all, or nil for all (also when the sample is as big as the dataset).
   def sample_size dataset
