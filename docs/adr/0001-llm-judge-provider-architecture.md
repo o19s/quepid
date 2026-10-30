@@ -1,6 +1,8 @@
 # ADR 0001 — LLM-as-Judge provider architecture: the adapter seam, Jev now, batch later
 
 - **Status:** Proposed
+- **Source:** upstream `957ab241`; historical design and implementation sequence.
+  See [current implementation status](#current-implementation-status) for corrections.
 - **Date:** 2026-09-21
 - **Affects:** `app/services/llm_service.rb`, `app/jobs/run_judge_judy_job.rb`,
   `app/controllers/ai_judges/prompts_controller.rb`, `app/views/ai_judges/_form.html.erb`
@@ -364,3 +366,30 @@ sample, not an opinion). Absent that, batch stays deferred.
   registry entry rather than letting the branches come back.
 - **A third non-chat provider.** If one arrives and `apply_response` cannot express it, revisit
   D1's two-method interface before adding a third method to every adapter.
+
+## Current implementation status
+
+The foundation, Jev and escalation are implemented. Batch remains a proposal;
+importing these documents does not schedule it. Earlier sections retain the
+upstream design history, including superseded extraction names and steps.
+
+- The registry is the single `LlmProvider` class in `app/models/llm_provider.rb`;
+  `LlmProviders` and coming-soon placeholders were removed. `batch?` is proposed,
+  not an implemented capability or guard (including B6 above).
+- Adapters and `JudgementFinalizer` receive `scale:`. `LlmService` also retains
+  legacy `book:` callers. Preview uses `AiJudges::WizardController#test_prompt`;
+  this branch also preserves the legacy prompt routes.
+- `BooksAiJudge` already exists with `auto_run`. `RunJudgeJudyJob` has a concurrency
+  limit per book/judge, durable cancellation and automatic continuations. Future escalation must
+  preserve those contracts; the risk register's original unlocked-job premise
+  does not apply.
+- Current manual scenarios are 12.10 for Jev, 12.6 for images, 12.7 for escalation
+  and 12.8 for ownership.
+
+Remaining upstream work and verification limits are in the
+[upstream integration plan](../todo/todo.md#migration-followup-upstream-integration-plan)
+and [remaining audit](../todo/todo.md#remaining-upstream-integration-audit).
+The earlier Batch 4 and final reconciliation ledgers are no longer present in the working tree.
+For test commands, use the existing server container per the
+[developer guide](../../DEVELOPER_GUIDE.md#iii-run-tests), rather than the
+historical `bin/docker r` examples.

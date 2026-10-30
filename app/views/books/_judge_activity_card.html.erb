@@ -1,0 +1,34 @@
+<%# locals: (book:, judge_activity:, available_ai_judges:) %>
+<%# ── Judge activity table with sparklines ────────────────────────────────── %>
+<div class="card mb-4">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h5 class="mb-0"><i class="bi bi-people"></i> Judge Activity</h5>
+    <small class="text-muted">Last 30 days</small>
+  </div>
+  <div class="card-body p-0">
+    <table class="table table-hover mb-0 align-middle" style="table-layout:fixed">
+      <thead class="table-light">
+        <tr>
+          <th style="width:35%">Judge</th>
+          <th class="text-end" style="width:10%">Judged</th>
+          <th class="text-end w-25">Last Active</th>
+          <th style="width:30%">Activity (30d)</th>
+        </tr>
+      </thead>
+      <tbody id="judge-activity-table"
+             data-controller="judge-activity-poll"
+             data-judge-activity-poll-url-value="<%= judge_activity_book_path(book) %>">
+        <%= render 'books/judge_activity_table_body', judge_activity: judge_activity, book: book, flashing_judge_id: nil %>
+      </tbody>
+    </table>
+  </div>
+  <% if available_ai_judges.any? %>
+    <div class="card-footer d-flex justify-content-between align-items-center flex-wrap gap-2">
+      <small class="text-muted">
+        <i class="bi bi-robot"></i>
+        These AI judges are available on your team: <strong><%= available_ai_judges.pluck(:name).to_sentence %></strong>
+      </small>
+      <%= link_to 'Add AI Judge to this Book', edit_book_path(book), class: 'btn btn-sm btn-outline-primary' %>
+    </div>
+  <% end %>
+</div>

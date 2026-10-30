@@ -2,8 +2,8 @@
   <div class="btn-toolbar mb-2 mb-md-0">
     <div class="btn-group me-2">
 
-      <%= link_to "Back to Scores", case_scores_path(@case), class: "btn btn-sm btn-outline-secondary"  %>
-      <%= link_to "Back to Case", case_core_path(@case), class: "btn btn-sm btn-outline-secondary"  %>
+      <%= link_to "Back to Scores", case_scores_path(@case), class: "btn btn-sm btn-outline-secondary" %>
+      <%= link_to "Back to Case", case_core_path(@case), class: "btn btn-sm btn-outline-secondary" %>
     </div>
   </div>
 <% end %>
@@ -13,28 +13,24 @@
 </p>
 
 <div class="card">
-  <div class="card-header">   
-    <%= form_tag(analytics_case_duplicate_scores_path(@case), { method: :get }) do %> 
+  <div class="card-header">
+    <%= form_tag(analytics_case_duplicate_scores_path(@case), { method: :get }) do %>
       <div class="mb-0 d-flex fs-6 justify-content-center">
-          
-
-        
-             
       </div>
     <% end %>
   </div>
-  
+
   <div class="card-body">
     <table class="table table-hover table-sm">
       <thead>
-        <tr>          
+        <tr>
           <th>Count</th>
           <th>Try ID</th>
           <th>Day</th>
           <th>Score</th>
         </tr>
       </thead>
-  
+
       <tbody>
       <% @duplicate_score_patterns.each do |dsp| %>
           <tr>
@@ -56,6 +52,6 @@
     </table>
   </div>
   <div class="card-footer d-flex justify-content-center">
-    
+
   </div>
 </div>

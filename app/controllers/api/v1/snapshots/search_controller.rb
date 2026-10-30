@@ -7,28 +7,27 @@ module Api
         before_action :set_case
         before_action :set_snapshot
 
-        # rubocop:disable Metrics/MethodLength
-        # rubocop:disable Metrics/AbcSize
-        # rubocop:disable Metrics/CyclomaticComplexity
-        # rubocop:disable Metrics/PerceivedComplexity
         def index
           @q = search_params[:q]
           @snapshot_docs = nil
 
           @q = @q.gsub(/\\(.)/, '\1') # Unescape Lucene-escaped special chars (e.g. \: \/ \? \-)
-          query = if '*:*' == @q
-                    # we have a match all query.
-                    @snapshot.snapshot_queries.first.query
+          select_snapshot_docs
+          paginate_snapshot_docs
 
-                  elsif @q.ends_with?(')') && @q.include?(':(') && ('lucene' == search_params[:defType])
-                    # We have a lookup docs by id query
-                    doc_ids = @q[(@q.index(':(') + 2)...@q.index(')')].split(' OR ')
-                    @snapshot_docs = @snapshot.snapshot_docs.where(doc_id: doc_ids)
+          @solr_params = {
+            q: @q,
+          }
+          @solr_params[:rows] = params[:rows] if params[:rows]
+          @solr_params[:start] = params[:start] if params[:start]
 
-                  else
-                    @snapshot.case.queries.find_by(query_text: @q)
-                  end
+          respond_with @snapshot
+        end
 
+        private
+
+        def select_snapshot_docs
+          query = find_snapshot_query
           if query && @snapshot_docs.nil?
             snapshot_query = @snapshot.snapshot_queries.find_by(query: query)
 
@@ -39,7 +38,24 @@ module Api
           elsif @snapshot_docs.nil?
             @snapshot_docs = []
           end
+        end
 
+        def find_snapshot_query
+          if '*:*' == @q
+            # we have a match all query.
+            @snapshot.snapshot_queries.first.query
+
+          elsif @q.ends_with?(')') && @q.include?(':(') && ('lucene' == search_params[:defType])
+            # We have a lookup docs by id query
+            doc_ids = @q[(@q.index(':(') + 2)...@q.index(')')].split(' OR ')
+            @snapshot_docs = @snapshot.snapshot_docs.where(doc_id: doc_ids)
+
+          else
+            @snapshot.case.queries.find_by(query_text: @q)
+          end
+        end
+
+        def paginate_snapshot_docs
           rows = params[:rows].to_i if params[:rows]
           start = params[:start].to_i if params[:start]
 
@@ -51,21 +67,7 @@ module Api
           elsif rows
             @snapshot_docs = @snapshot_docs.take rows if rows
           end
-
-          @solr_params = {
-            q: @q,
-          }
-          @solr_params[:rows] = params[:rows] if params[:rows]
-          @solr_params[:start] = params[:start] if params[:start]
-
-          respond_with @snapshot
         end
-        # rubocop:enable Metrics/MethodLength
-        # rubocop:enable Metrics/AbcSize
-        # rubocop:enable Metrics/CyclomaticComplexity
-        # rubocop:enable Metrics/PerceivedComplexity
-
-        private
 
         def search_params
           # Check if the 'q' parameter exists

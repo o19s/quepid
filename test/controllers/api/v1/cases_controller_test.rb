@@ -56,8 +56,30 @@ module Api
         end
 
         describe 'analytics' do
-          test 'posts event' do
-            expects_any_ga_event_call
+          test 'posts the regular case event for an existing case owner' do
+            login_user doug
+            count = doug.cases.count
+            assert_operator count, :>, 0
+            expects_any_ga_event_call 'cases:created_a_case', {
+              category: 'Cases',
+              action:   'Created a Case',
+              label:    'Another case',
+              value:    count + 1,
+            }
+
+            post :create, params: { case: { case_name: 'Another case' } }
+
+            assert_response :ok
+          end
+
+          test 'posts the first case event' do
+            assert_empty joe.cases
+            expects_any_ga_event_call 'cases:created_first_case', {
+              category: 'Cases',
+              action:   'Created First Case',
+              label:    joe.email,
+              value:    1,
+            }
 
             case_name = 'test case'
 
@@ -76,6 +98,17 @@ module Api
         let(:case_with_two_tries) { cases(:case_with_two_tries) }
         let(:joey)                { users(:joey) }
         let(:public_case)         { cases(:public_case) }
+
+        test 'includes the embedder_id' do
+          acase = cases(:shared_with_team)
+          acase.update!(embedder: embedders(:openai_small))
+          login_user users(:random)
+
+          get :show, params: { case_id: acase.id }
+
+          assert_response :ok
+          assert_equal embedders(:openai_small).id, response.parsed_body['embedder_id']
+        end
 
         test "returns a not found error if the case is not in the signed in user's case list" do
           get :show, params: { case_id: matt_case.id }
@@ -687,6 +720,75 @@ module Api
 
           one.reload
           assert_equal one.scorer, scorer
+        end
+      end
+
+      describe 'Changing a public case' do
+        let(:public_case) { cases(:public_case) }
+
+        describe 'when not logged in' do
+          before do
+            @controller = Api::V1::CasesController.new
+          end
+
+          test 'can read the case' do
+            get :show, params: { case_id: public_case.id }
+            assert_response :ok
+          end
+
+          test 'cannot update the case' do
+            patch :update, params: { case_id: public_case.id, case: { case_name: 'Hijacked' } }
+            assert_response :unauthorized
+
+            assert_equal 'Public Book', public_case.reload.case_name
+          end
+
+          test 'cannot delete the case' do
+            delete :destroy, params: { case_id: public_case.id }
+            assert_response :unauthorized
+
+            assert Case.exists?(public_case.id)
+          end
+
+          test 'cannot run an evaluation' do
+            post :run_evaluation, params: { case_id: public_case.id }
+            assert_response :unauthorized
+          end
+        end
+
+        describe 'when logged in as a user not involved with the case' do
+          test 'can read the case' do
+            get :show, params: { case_id: public_case.id }
+            assert_response :ok
+          end
+
+          test 'cannot update the case' do
+            patch :update, params: { case_id: public_case.id, case: { case_name: 'Hijacked' } }
+            assert_response :not_found
+
+            assert_equal 'Public Book', public_case.reload.case_name
+          end
+
+          test 'cannot archive the case' do
+            patch :update, params: { case_id: public_case.id, case: { archived: true } }
+            assert_response :not_found
+
+            public_case.reload
+            assert_not public_case.archived
+            assert_equal users(:random), public_case.owner
+          end
+
+          test 'cannot delete the case' do
+            delete :destroy, params: { case_id: public_case.id }
+            assert_response :not_found
+
+            assert Case.exists?(public_case.id)
+          end
+
+          test 'cannot run an evaluation' do
+            post :run_evaluation, params: { case_id: public_case.id }
+            assert_response :not_found
+          end
         end
       end
     end

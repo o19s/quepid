@@ -2,28 +2,16 @@
 
 # Pin npm packages by running ./bin/importmap
 
-pin 'application_modern'
-# Stimulus-only entry for the Angular core case layout (no Turbo).
-pin 'core_stimulus'
-pin '@hotwired/turbo-rails', to: 'turbo.min.js'
+pin 'application', preload: 'application'
+pin '@hotwired/turbo-rails', to: 'turbo.min.js', preload: true
 pin '@hotwired/stimulus', to: 'stimulus.min.js'
 pin '@hotwired/stimulus-loading', to: 'stimulus-loading.js'
-pin_all_from 'app/javascript/controllers', under: 'controllers'
-pin 'api/fetch', to: 'api/fetch.js'
-pin 'utils/quepid_root', to: 'utils/quepid_root.js'
-pin 'utils/bs_tooltip', to: 'utils/bs_tooltip.js'
-pin 'utils/bs_popover', to: 'utils/bs_popover.js'
-pin 'utils/bs_modal', to: 'utils/bs_modal.js'
-pin 'utils/dynamic_modal', to: 'utils/dynamic_modal.js'
-pin 'utils/json_explorer', to: 'utils/json_explorer.js'
-pin 'utils/text_paste', to: 'utils/text_paste.js'
-pin 'utils/count_up', to: 'utils/count_up.js'
-pin 'utils/share_case_teams', to: 'utils/share_case_teams.js'
-pin 'utils/status_message', to: 'utils/status_message.js'
-pin 'utils/destructive_form', to: 'utils/destructive_form.js'
-pin 'utils/case_csv', to: 'utils/case_csv.js'
-pin 'utils/download_file', to: 'utils/download_file.js'
-pin 'utils/stimulus_ui', to: 'utils/stimulus_ui.js'
+pin 'quepid_store', to: 'quepid_store.js'
+pin 'core_runtime', to: 'core_runtime.js'
+pin_all_from 'app/javascript/controllers', under: 'controllers', preload: 'application'
+pin_all_from 'app/javascript/utils', under: 'utils'
+pin_all_from 'app/javascript/stores', under: 'stores'
+pin_all_from 'app/javascript/api', under: 'api'
 
 pin 'local-time' # @3.0.3
 
@@ -32,7 +20,7 @@ pin 'vega-lite', to: 'vega-lite.js'
 pin 'vega-embed', to: 'vega-embed.js'
 # Shared entry point that loads the three above and exposes them as window
 # globals — pinned separately so pages that don't otherwise load
-# application_modern.js (analytics, the Angular core app) can load just this.
+# application.js (analytics and Rails pages) can load just this.
 pin 'vega_globals'
 
 pin 'ahoy', to: 'ahoy.js'
@@ -44,25 +32,32 @@ pin 'bootstrap', to: 'bootstrap.min.js' # @5.3.8
 pin '@popperjs/core', to: 'popper.min.js' # @2.11.8
 # Shared entry point that loads the two above and exposes them as window
 # globals — pinned separately so pages that don't otherwise load
-# application_modern.js (the Angular core app) can load just this.
+# application.js (the core case bundle) can load just this.
 pin 'bootstrap_globals'
 
+# Both page types import this shared editor; case pages fetch it through the ES-module bundle.
+# Keep eager editor preloads on the Rails entry point.
+# Scope application/controllers too, so their module preloads cannot pull in the editor indirectly.
 # CodeMirror 6 packages
-pin 'modules/editor', to: 'modules/editor.js'
-pin '@codemirror/lint', to: '@codemirror--lint.js' # @6.9.7
-pin '@codemirror/lang-json', to: '@codemirror--lang-json.js' # @6.0.2
-pin '@codemirror/language', to: '@codemirror--language.js' # @6.12.4
-pin '@codemirror/state', to: '@codemirror--state.js' # @6.7.1
-pin '@codemirror/view', to: '@codemirror--view.js' # @6.43.7
-pin '@lezer/common', to: '@lezer--common.js' # @1.5.2
-pin '@lezer/highlight', to: '@lezer--highlight.js' # @1.2.3
-pin '@lezer/json', to: '@lezer--json.js' # @1.0.3
-pin '@lezer/lr', to: '@lezer--lr.js' # @1.4.10
-pin '@marijn/find-cluster-break', to: '@marijn--find-cluster-break.js' # @1.0.3
-pin 'crelt' # @1.0.7
-pin 'style-mod' # @4.1.3
-pin 'w3c-keyname' # @2.2.8
-pin '@codemirror/lang-javascript', to: '@codemirror--lang-javascript.js' # @6.2.5
-pin '@codemirror/autocomplete', to: '@codemirror--autocomplete.js' # @6.20.3
-pin '@lezer/javascript', to: '@lezer--javascript.js' # @1.5.4
+pin 'modules/editor', to: 'modules/editor.js', preload: 'application'
+pin '@codemirror/lint', to: '@codemirror--lint.js', preload: 'application' # @6.9.7
+pin '@codemirror/lang-json', to: '@codemirror--lang-json.js', preload: 'application' # @6.0.2
+pin '@codemirror/language', to: '@codemirror--language.js', preload: 'application' # @6.13.1
+pin '@codemirror/state', to: '@codemirror--state.js', preload: 'application' # @6.7.6
+pin '@codemirror/view', to: '@codemirror--view.js', preload: 'application' # @6.43.15
+pin '@lezer/common', to: '@lezer--common.js', preload: 'application' # @1.5.4
+pin '@lezer/highlight', to: '@lezer--highlight.js', preload: 'application' # @1.2.5
+pin '@lezer/json', to: '@lezer--json.js', preload: 'application' # @1.0.3
+pin '@lezer/lr', to: '@lezer--lr.js', preload: 'application' # @1.4.11
+pin '@marijn/find-cluster-break', to: '@marijn--find-cluster-break.js', preload: 'application' # @1.0.4
+pin 'crelt', preload: 'application' # @1.0.7
+pin 'style-mod', preload: 'application' # @4.1.4
+pin 'w3c-keyname', preload: 'application' # @2.2.8
+pin '@codemirror/lang-javascript', to: '@codemirror--lang-javascript.js', preload: 'application' # @6.2.5
+pin '@codemirror/autocomplete', to: '@codemirror--autocomplete.js', preload: 'application' # @6.20.4
+pin '@codemirror/commands', to: '@codemirror--commands.js', preload: 'application' # @6.11.1
+pin '@lezer/javascript', to: '@lezer--javascript.js', preload: 'application' # @1.5.6
 pin 'party-js' # @2.2.0
+
+pin 'modules/search_endpoint_select', to: 'modules/search_endpoint_select.js'
+pin '@codemirror/streamparser', to: '@codemirror--streamparser.js', preload: 'application' # @6.0.0

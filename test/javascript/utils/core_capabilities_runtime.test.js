@@ -1,0 +1,170 @@
+import { createNativeFramework } from "utils/core_workspace_runtime"
+import { afterEach, describe, expect, it, vi } from "vitest"
+
+let testCapabilities
+
+vi.mock("utils/core_capability_access", async (importOriginal) => {
+  const original = await importOriginal()
+  return { getCoreCapabilities: () => testCapabilities || original.getCoreCapabilities() }
+})
+
+import {
+  getBootstrapCapabilities,
+  getSnapshotCapabilities,
+  getTuneRelevanceCapabilities,
+  getWizardCapabilities
+} from "utils/core_capabilities_runtime"
+
+describe("core runtime capabilities", () => {
+  afterEach(() => {
+    testCapabilities = undefined
+    document.body.innerHTML = ""
+    vi.restoreAllMocks()
+  })
+
+  it("uses the injected scheduler", () => {
+    const schedule = vi.fn((callback) => callback())
+    const framework = createNativeFramework({ schedule })
+    const callback = vi.fn()
+    framework.schedule(callback)
+    expect(callback).toHaveBeenCalledOnce()
+    expect(schedule).toHaveBeenCalledWith(callback)
+    expect(framework).not.toHaveProperty("applyAsync")
+  })
+
+  it("runs the native scheduler in a microtask and preserves callback rejection", async () => {
+    const framework = createNativeFramework()
+    const callback = vi.fn(() => "finished")
+    const pending = framework.schedule(callback)
+    expect(callback).not.toHaveBeenCalled()
+    await expect(pending).resolves.toBe("finished")
+    expect(callback).toHaveBeenCalledOnce()
+    const failure = new Error("scheduled failure")
+    await expect(
+      framework.schedule(() => {
+        throw failure
+      })
+    ).rejects.toBe(failure)
+  })
+
+  it("publishes named capabilities without exposing a service lookup to callers", async () => {
+    const services = {
+      settings: { editableSettings: vi.fn() },
+      navigation: { getCaseNo: vi.fn() },
+      fieldSpecSvc: {},
+      normalDocsSvc: {}
+    }
+    testCapabilities = { caseRuntime: { snapshots: services } }
+
+    await expect(getSnapshotCapabilities()).resolves.toBe(services)
+  })
+
+  it("does not resolve the removed live-query service for controllers", async () => {
+    const capabilities = await getBootstrapCapabilities()
+
+    expect(capabilities).toEqual(
+      expect.objectContaining({
+        core: expect.any(Object),
+        docCache: expect.any(Object)
+      })
+    )
+    expect(capabilities.core).toEqual(
+      expect.objectContaining({
+        user: expect.any(Object),
+        case: expect.any(Object),
+        settings: expect.any(Object),
+        navigation: expect.any(Object)
+      })
+    )
+    expect(capabilities.core).not.toHaveProperty("scoring")
+    expect(capabilities).not.toHaveProperty("liveQuery")
+  })
+
+  it.each([
+    ["bootstrap", getBootstrapCapabilities],
+    ["wizard", getWizardCapabilities]
+  ])("exposes the %s capability through the case runtime namespace", async (name, getter) => {
+    const capability = { marker: name }
+    testCapabilities = { caseRuntime: { [name]: capability } }
+
+    await expect(getter()).resolves.toBe(capability)
+  })
+
+  it("publishes named groups for snapshot, wizard, and tune capabilities", async () => {
+    const [snapshots, wizard, tuneRelevance] = await Promise.all([
+      getSnapshotCapabilities(),
+      getWizardCapabilities(),
+      getTuneRelevanceCapabilities()
+    ])
+
+    expect(snapshots.capability).toEqual(
+      expect.objectContaining({
+        settings: expect.any(Object),
+        navigation: expect.any(Object),
+        fieldSpec: expect.any(Object),
+        documents: expect.any(Object)
+      })
+    )
+    expect(wizard.capability).toEqual(
+      expect.objectContaining({
+        settings: expect.any(Object),
+        case: expect.any(Object),
+        endpoints: expect.any(Object),
+        mapper: expect.any(Object),
+        search: expect.any(Object),
+        user: expect.any(Object),
+        navigation: expect.any(Object),
+        documents: expect.any(Object)
+      })
+    )
+    expect(tuneRelevance.capability).toEqual(
+      expect.objectContaining({
+        settings: expect.any(Object),
+        endpoints: expect.any(Object),
+        search: expect.any(Object),
+        case: expect.any(Object),
+        navigation: expect.any(Object)
+      })
+    )
+  })
+
+  it("preserves the wizard completion request on the user capability", async () => {
+    const { capability } = await getWizardCapabilities()
+
+    expect(capability.user.shownIntroWizard).toEqual(expect.any(Function))
+  })
+
+  it.each([
+    ["bootstrap", getBootstrapCapabilities],
+    ["snapshots", getSnapshotCapabilities],
+    ["wizard", getWizardCapabilities],
+    ["tuneRelevance", getTuneRelevanceCapabilities]
+  ])(
+    "keeps %s access asynchronous and turns lookup errors into rejections",
+    async (name, getter) => {
+      const group = { marker: name }
+      testCapabilities = { caseRuntime: { [name]: group } }
+      const order = []
+      const pending = getter().then((value) => {
+        order.push("resolved")
+        expect(value).toBe(group)
+      })
+      order.push("caller")
+      expect(order).toEqual(["caller"])
+      await pending
+      expect(order).toEqual(["caller", "resolved"])
+
+      const failure = new Error("workspace unavailable")
+      testCapabilities = {
+        get caseRuntime() {
+          throw failure
+        }
+      }
+      let rejected
+      expect(() => {
+        rejected = getter()
+      }).not.toThrow()
+      await expect(rejected).rejects.toBe(failure)
+    }
+  )
+})

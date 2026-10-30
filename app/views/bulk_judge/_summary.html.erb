@@ -1,0 +1,27 @@
+<%# locals: (book:, only_unrated:, total_count:, rank_depth:, total_queries:, pagy:) %>
+<%
+  matched = "#{'unrated ' if only_unrated}#{'document'.pluralize(total_count)}"
+  scope = [ ("at rank ≤ #{rank_depth}" if rank_depth.present?),
+            "across #{pluralize(total_queries, 'query')}." ].compact.join(' ')
+%>
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <p class="text-muted mb-0">
+    <% if pagy.pages > 1 %>
+      Page <%= pagy.page %> of <%= pagy.pages %> -
+      Showing <%= pagy.from %> to <%= pagy.to %> of <%= total_count %> <%= matched %> <%= scope %>
+    <% else %>
+      Found <%= total_count %> <%= matched %> <%= scope %>
+    <% end %>
+    <br><small>Judgements are saved automatically as you click.</small>
+  </p>
+  <div>
+    <a class="btn btn-outline-secondary btn-sm" data-bs-toggle="collapse" href="#scoringGuidelinesCollapse" role="button" aria-expanded="false" aria-controls="scoringGuidelinesCollapse">
+      <i class="bi bi-info-circle"></i> Scoring Guidelines
+    </a>
+  </div>
+</div>
+<div class="collapse mb-3" id="scoringGuidelinesCollapse">
+  <div class="card card-body scoring-guidelines-content">
+    <%= render_markdown(book.effective_scoring_guidelines) %>
+  </div>
+</div>

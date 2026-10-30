@@ -64,8 +64,8 @@ module Api
       #     }
       #   }]
       def create
-        @query_doc_pair = @book.query_doc_pairs.find_or_create_by query_text: params[:query_doc_pair][:query_text],
-                                                                  doc_id:     params[:query_doc_pair][:doc_id]
+        @query_doc_pair = @book.find_or_create_query_doc_pair query_text: params[:query_doc_pair][:query_text],
+                                                              doc_id:     params[:query_doc_pair][:doc_id]
 
         update_params = query_doc_pair_params
         if @query_doc_pair.update update_params

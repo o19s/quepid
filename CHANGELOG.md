@@ -1,13 +1,54 @@
 # Changelog
 
-## 8.7.1 -- 2026-10-05
+## 8.8.0 -- 2026-10-26
 
-AI Judges can now "see" images!  Plus some small improvements.
+A HUGE milestone for Quepid: the case workbench is now free of AngularJS! This release also adds on-call AI Judges, a more usable mobile interface, and performance monitoring for self-hosted installations.
 
-* **AI Judges can now see images:** a chat-based AI Judge can send the case's/document's thumbnail image to the LLM alongside the query and document, with a per-judge "Judge with images" switch for text-only models and providers (Ollama, TypeSafe Jev) that don't support images. https://github.com/o19s/quepid/pull/1822 by @frutik.
-* **Faster case listing page:** the case listing no longer loads every score blindly, speeding up the page for books with a lot of history. https://github.com/o19s/quepid/pull/1823 by @epugh.
-* **Fixed key=value query params:** engines using a bare query param (like Vespa's YQL) now correctly handle explicit `key=value` parameter lists, instead of only JSON or fully bare text.
-* **Docker image now labeled for Kamal:** `Dockerfile.prod` adds a `service="quepid"` label, which [Kamal](https://kamal-deploy.org/) requires before it will deploy an image it didn't build itself.
+### 🚀 Goodbye AngularJS
+
+The core case workbench now uses Rails-rendered views, Stimulus, and vanilla JavaScript, completing the move away from AngularJS. Querying, rating, tuning relevance, importing ratings, and comparing snapshots all run on the new stack. The old AngularJS dependencies and build infrastructure are gone. https://github.com/o19s/quepid/pull/1842 by @davidshq.
+
+The migration also brings some everyday improvements:
+
+* **Searchable field and endpoint pickers:** Title, ID, Additional Display Fields, and Tune Relevance's Displayed Fields use Tom Select. Search endpoint choices show the search engine's icon.
+* **Clearer document details:** the Detailed Document View separates formatted fields from All Fields (JSON) in tabs. Links to the search engine name it when possible and include an external-link icon.
+* **A tidier tuning experience:** the Query Sandbox has a white background and splits query-string parameters onto separate lines. Tuning knobs accept typed values, including decimals and text.
+* **Consistent feedback:** save notices float above the footer without shifting the page, and successful notices disappear after three seconds. Confirmation dialogs and the case navigation dropdown also use consistent styling.
+* **Static File endpoints stay with their case:** they no longer appear as reusable endpoints in the case wizard and cannot be newly shared with teams. Share the source case to give teammates access instead.
+
+### 🤖 On-Call AI Judges
+
+An AI Judge can now escalate an answer it is unsure about to another judge. Configure an on-call judge to handle those pairs while the first judge continues with the rest. Judgements show the escalation relationship and explanations, so you can follow how a rating was reached. https://github.com/o19s/quepid/pull/1826 by @frutik.
+
+AI Judges can also send a document's thumbnail image alongside the query and document. A per-judge **Judge with images** switch lets you keep text-only models and providers on text alone. https://github.com/o19s/quepid/pull/1822 by @frutik.
+
+### 📱 Quepid on Smaller Screens
+
+The case workbench and admin pages now adapt better to mobile screens, with improvements to sidebars, toolbars, dialogs, and wide tables. https://github.com/o19s/quepid/pull/1830, https://github.com/o19s/quepid/pull/1831, and https://github.com/o19s/quepid/pull/1832 by @epugh.
+
+### 📊 Performance and Monitoring
+
+Administrators can inspect request, database query, job, and exception performance through Rails Pulse. Monitoring data stays in the application database. https://github.com/o19s/quepid/pull/1828 by @epugh.
+
+Large cases load faster and use less browser memory by building result details, such as explanation bars, when a query is expanded. The case listing also avoids loading every historical score. https://github.com/o19s/quepid/pull/1842 by @davidshq and https://github.com/o19s/quepid/pull/1823 by @epugh.
+
+### Improvements
+
+* Creating a book from a case now preselects that case's scorer. https://github.com/o19s/quepid/pull/1836 by @epugh.
+* CodeMirror is shared through importmap across the case workbench and management pages, removing the second copy from the case JavaScript bundle. https://github.com/o19s/quepid/pull/1846 by @epugh.
+* Production Docker images include the service label needed for Kamal deployments.
+* Dependencies: Ruby 4.0.9, Rails 8.1.4, ruby_llm 2.1.1, and updates to Ruby gems, importmap libraries, and JavaScript tooling, including Chokidar 6 and Happy DOM 21. https://github.com/o19s/quepid/pull/1814 and https://github.com/o19s/quepid/pull/1846.
+
+### Bugs Addressed
+
+* Compare Snapshots no longer opens empty for proxied Search API cases such as Qdrant and Vespa. Snapshots that record document fields also retain thumbnail and image fields. https://github.com/o19s/quepid/pull/1844 by @frutik.
+* Anthropic AI Judges handle responses with thinking blocks before the answer. Anthropic and OpenAI judges no longer send a fixed temperature setting that some models reject. https://github.com/o19s/quepid/pull/1840 by @alexcastgonz.
+* Vespa and other engines using bare query text correctly handle explicit `key=value` parameter lists.
+* Snapshot CSV imports handle quoted commas and legacy quoted queries, and reject malformed rows instead of silently importing only part of a file. If an earlier import dropped rows, consider re-importing it.
+* Background case evaluations use the same scorer helpers and document fields as the case page. Unscored queries are excluded from the case average instead of aborting evaluation. Scores may change from earlier server-side runs to match the case page.
+* Sample data setup correctly configures the Ollama judge and repopulates document fields when run again. https://github.com/o19s/quepid/pull/1838 by @epugh.
+
+Thanks @davidshq, @frutik, @alexcastgonz, and @epugh for contributing to this release!
 
 ## 8.7.0 -- 2026-10-02
 
@@ -915,7 +956,7 @@ Just to make life harder, the rating interface requires a live connection to you
 
 However that is no longer the case!
 
-![Quepid Human Rater Interface](./docs/rating-card-interface.png)
+![Quepid Human Rater Interface](./docs/images/rating-card-interface.png)
 
 This rating interface features:
  * You can have up to three independent ratings for every query/doc pair, opening the door to interesting measurements of rating quality.
@@ -1365,7 +1406,7 @@ We also did some housecleaning by ripping out some features that hadn't seen ado
 
 * We have simplified our queries that involve cases and users that are part of teams by making the simplifying assumption that all owners of teams are also members, which turns out to be true in practice.   We also have audited our use of `.includes` to load child objects (avoiding the N+1 problem), and used more `.preload` to try and deal with running out of temp space in our database.   https://github.com/o19s/quepid/pull/286 by @epugh.
 
-* Turns out we had a [ERD](docs/erd.png) diagram all along, but it was hidden.  Now you can see it on our [Data Mapping](docs/datamapping.md) page, plus we have how to recreate it documented and integrated.  https://github.com/o19s/quepid/pull/287 by @epugh.
+* Turns out we had a [ERD](docs/images/erd.png) diagram all along, but it was hidden.  Now you can see it on our [Data Mapping](docs/datamapping.md) page, plus we have how to recreate it documented and integrated.  https://github.com/o19s/quepid/pull/287 by @epugh.
 
 * Remove obscure `quepidIf.js` file that doesn't seem to do anything.  https://github.com/o19s/quepid/pull/293 by @worleydl.
 

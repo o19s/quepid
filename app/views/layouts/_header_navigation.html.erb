@@ -1,0 +1,50 @@
+<ul class="navbar-nav me-auto">
+  <%# The icon sidebar already covers these at lg and up (navbar-expand-lg keeps this
+      menu permanently inline there, not just inside the collapse); only mobile needs
+      them repeated here. %>
+  <li class="nav-item d-lg-none"><%= link_to "Dashboard", root_path, class: "nav-link" %></li>
+  <% %i[cases books].each do |section| %>
+    <% cases_menu = section == :cases %>
+    <% toggle_id = cases_menu ? 'dropdownCases' : 'dropdownBooks' %>
+    <li class="nav-item dropdown">
+      <%= tag.a href: '#', id: toggle_id, role: 'button', class: 'nav-link dropdown-toggle header-recents-toggle',
+                data: { bs_toggle: 'dropdown' }, aria: { expanded: 'false' } do %>
+        <span class="nav-label"><%= cases_menu ? 'Relevancy Cases' : 'Books' %></span>
+      <% end %>
+
+      <%= tag.ul class: 'dropdown-menu header-recents-menu',
+                 aria: { labelledby: toggle_id } do %>
+        <li class="text-muted">
+          <% recent_label = "RECENT #{section.to_s.upcase}" %>
+          <%= recent_label %>
+        </li>
+        <li><hr class="dropdown-divider"></li>
+
+        <% dropdown_url = if cases_menu
+             case_page ? dropdown_cases_core_path : dropdown_cases_path
+           else
+             case_page ? dropdown_books_core_path : dropdown_books_path
+           end %>
+        <turbo-frame id="dropdown_<%= section %>" src="<%= dropdown_url %>" loading="lazy">
+        </turbo-frame>
+
+        <li class="actions"><div class="d-grid gap-2">
+          <% navigation_options = case_page ? { data: { turbo: false }, target: '_self' } : {} %>
+          <% new_book_params = kase.present? ? { scorer_id: kase.scorer_id, team_ids: kase.teams.map(&:id), origin_case_id: kase.id } : {} %>
+          <%= link_to "View all #{section}", cases_menu ? cases_path : books_path,
+                      **navigation_options, class: 'btn btn-outline-secondary' %>
+          <%= link_to "Create a #{cases_menu ? 'case' : 'book'}", cases_menu ? case_new_path : new_book_path(new_book_params),
+                      **navigation_options, class: 'btn btn-success' %>
+        </div></li>
+      <% end %>
+    </li>
+  <% end %>
+
+  <li class="nav-item d-lg-none"><%= link_to "Search Endpoints", search_endpoints_path, class: "nav-link" %></li>
+  <% unless desktop_mode? %>
+    <li class="nav-item"><%= link_to "Teams", teams_path, class: "nav-link" %></li>
+  <% end %>
+  <li class="nav-item"><%= link_to "AI Judges", ai_judges_path, class: "nav-link" %></li>
+  <li class="nav-item"><%= link_to "Scorers", scorers_path, class: "nav-link" %></li>
+  <li class="nav-item"><a class="nav-link" href="<%= root_path %>notebooks/lab/index.html" target="_blank" rel="noopener noreferrer">Notebooks</a></li>
+</ul>

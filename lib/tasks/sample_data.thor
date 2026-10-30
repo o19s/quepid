@@ -62,6 +62,19 @@ class SampleData < Thor
                                                         custom_headers:                vespa_engine.custom_headers,
                                                         mapper_code:                   vespa_engine.mapper_code
 
+    # Same idea for Qdrant: its demo "tmdb" collection carries a 'dense' named vector
+    # (sentence-transformers/all-minilm-l6-v2, 384 dims -- see docs/endpoints_qdrant.md), so
+    # unlike Vespa's demo query_params (plain BM25) this is a real vector-search round-trip.
+    qdrant_engine = ::MapperBasedSearchEngine.find('qdrant')
+
+    qdrant_endpoint = ::SearchEndpoint.find_or_create_by search_engine:                 :searchapi,
+                                                         mapper_based_search_engine_id: qdrant_engine.id,
+                                                         endpoint_url:                  qdrant_engine.search_url,
+                                                         api_method:                    qdrant_engine.api_method,
+                                                         proxy_requests:                qdrant_engine.proxy_requests,
+                                                         custom_headers:                qdrant_engine.custom_headers,
+                                                         mapper_code:                   qdrant_engine.mapper_code
+
     print_step 'End of seeding search endpoints................'
 
     # Users
@@ -121,6 +134,7 @@ class SampleData < Thor
     search_api_endpoint.owner = realistic_activity_user
     static_endpoint.owner = realistic_activity_user
     vespa_endpoint.owner = realistic_activity_user
+    qdrant_endpoint.owner = realistic_activity_user
 
     statedecoded_solr_endpoint.save
     tmdb_solr_endpoint.save
@@ -128,6 +142,24 @@ class SampleData < Thor
     search_api_endpoint.save
     static_endpoint.save
     vespa_endpoint.save
+    qdrant_endpoint.save
+
+    # Embedders
+    print_step 'Seeding embedders................'
+
+    # Local Ollama, same host the AI judges use -- no API key needed. all-minilm is the same
+    # model (sentence-transformers/all-minilm-l6-v2, 384 dims) the Qdrant demo collection's
+    # 'dense' vector was built with, so the QDRANT CASE below gets real nearest-neighbour
+    # results instead of a vector no document was indexed against.
+    minilm_embedder = ::Embedder.find_or_create_by name: 'MiniLM Embedder (Ollama)' do |embedder|
+      embedder.provider    = 'ollama'
+      embedder.service_url = 'http://ollama:31434'
+      embedder.model       = 'all-minilm'
+      embedder.owner       = realistic_activity_user
+    end
+    print_step "Seeded embedder: name: #{minilm_embedder.name}, provider: #{minilm_embedder.provider}"
+
+    print_step 'End of seeding embedders................'
 
     ######################################
     # OSC Team Owner
@@ -208,7 +240,7 @@ class SampleData < Thor
     azure_anthropic_judge.judge_options = {
       llm_provider:    'azure_ai_foundry_anthropic',
       llm_service_url: 'https://YOUR-RESOURCE.services.ai.azure.com/anthropic',
-      llm_model:       'claude-3-5-haiku-20241022',
+      llm_model:       'claude-haiku-5-5',
       llm_timeout:     30,
       llm_api_version: '',
     }
@@ -322,6 +354,36 @@ class SampleData < Thor
     end
 
     print_case_info vespa_case
+
+    ######################################
+    # Qdrant Case (dense vector search)
+    ######################################
+
+    qdrant_case = realistic_activity_user.cases.find_or_create_by case_name: 'QDRANT CASE'
+    qdrant_try = qdrant_case.tries.latest
+    qdrant_params = {
+      field_spec:   "id:#{qdrant_engine.id_field}, title:#{qdrant_engine.title_field}, #{qdrant_engine.additional_fields.join(', ')}",
+      # The 'dense' named vector in the demo collection, not qdrant_engine.query_params'
+      # BM25 default -- this is what actually exercises the embedder's vector end to end.
+      query_params: '{"query": {"nearest": "#$qOption.query_vec##"}, "using": "dense", "with_payload": true, "limit": 10}',
+    }
+    qdrant_try.search_endpoint = qdrant_endpoint
+    qdrant_try.update qdrant_params
+
+    # Queries chosen per docs/endpoints_qdrant.md's own comparison: both share little or no
+    # vocabulary with their best dense matches, so the contrast with BM25 is visible.
+    [ 'space rebels fight the empire', 'killer robot from the future' ].each do |query_text|
+      qdrant_case.queries.find_or_create_by(query_text: query_text)
+    end
+
+    # Setting embedder directly (unlike picking one in the UI) doesn't itself enqueue a
+    # vectorisation run -- Api::V1::CaseEmbeddersController#update does that explicitly, so
+    # we do too, or the queries would sit at "pending" forever with nothing to unstick them.
+    qdrant_case.embedder = minilm_embedder
+    qdrant_case.save
+    ::VectorizeCaseQueriesJob.enqueue_for(qdrant_case)
+
+    print_case_info qdrant_case
 
     print_step 'End of seeding cases................'
 
@@ -745,6 +807,10 @@ class SampleData < Thor
 
   private
 
+  def seed_judge hash
+    ::AiJudge.find_by(name: hash[:name]) || ::AiJudge.create(hash)
+  end
+
   def seed_user hash
     if hash[:email] && ::User.by_email(hash[:email]).exists?
       ::User.by_email(hash[:email]).first
@@ -753,10 +819,6 @@ class SampleData < Thor
     else
       ::User.create hash
     end
-  end
-
-  def seed_judge hash
-    ::AiJudge.find_by(name: hash[:name]) || ::AiJudge.create(hash)
   end
 
   def unzip_file_in_memory zip_file

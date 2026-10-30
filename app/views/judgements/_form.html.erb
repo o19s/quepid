@@ -1,317 +1,152 @@
+<%# locals: (judgement:, query_doc_pair:, url_for_form:, book:, viewer:) %>
 <% content_for :debug_info do %>
   <!--
-  BOOK_ID: <%= @book.id %>
+  BOOK_ID: <%= book.id %>
   QUERY_DOC_PAIR_ID: <%= query_doc_pair.id %>
   JUDGEMENT_ID: <%= judgement.id %>
   JUDGEMENT USER ID: <%= judgement&.user_id %>
-  CURRENT USER ID: <%= @current_user.id %>
+  CURRENT USER ID: <%= viewer.id %>
   -->
 <% end %>
 
-<script>
-  function rate(rating, key_name) {
-      keyDown(key_name);
-      resetStylesExcept(key_name);
-      document.getElementById("judgement_rating").value = rating;
-      delay(100).then(() => (document.getElementsByName("commit")[0].click()));
-  }
-
-  function resetStyles() {
-      let keyboard_shortcuts_suffixes = ["a", "s", "d", "f", "g", "h", "j", "k", "l", "sc"];
-      keyboard_shortcuts_suffixes.forEach(suffix => {
-          const spanElement = document.getElementById("span-for-" + suffix);
-          const buttonElement = document.getElementById("button-for-" + suffix);
-
-          if (spanElement) {
-              spanElement.style.color = "gray";
-              spanElement.style.fontWeight = "normal";
-          }
-
-          if (buttonElement) {
-              buttonElement.classList.remove("btn-preselected");
-          }
-      });
-  }
-
-  function resetStylesExcept(except_suffix){
-      let keyboard_shortcuts_suffixes = ["a", "s", "d", "f", "g", "h", "j", "k", "l", "sc"];
-      keyboard_shortcuts_suffixes.forEach(suffix => {
-          if (suffix !== except_suffix) {
-              const spanElement = document.getElementById("span-for-" + suffix);
-              const buttonElement = document.getElementById("button-for-" + suffix);
-
-              if (spanElement) {
-                  spanElement.style.color = "gray";
-                  spanElement.style.fontWeight = "normal";
-              }
-
-              if (buttonElement) {
-                  buttonElement.classList.remove("btn-preselected");
-              }
-          }
-      });
-  }
-
-  function keyDown(suffix) {
-      resetStyles();
-      const spanElement = document.getElementById("span-for-" + suffix);
-      const buttonElement = document.getElementById("button-for-" + suffix);
-
-      if (spanElement) {
-          spanElement.style.color = "black";
-          spanElement.style.fontWeight = "bold";
-      }
-
-      if (buttonElement) {
-          buttonElement.classList.add("btn-preselected");
-      }
-  }
-
-  function delay(time) {
-      return new Promise(resolve => setTimeout(resolve, time));
-  }
-
-  function keyPressed(suffix) {
-      delay(500).then(() => {
-          const buttonElement = document.getElementById("button-for-" + suffix);
-          if (buttonElement) {
-              buttonElement.click();
-          }
-      });
-  }
-
-  // Function to check if modal is open
-  function isExplanationModalOpen() {
-      const modal = document.getElementById('explanationModal');
-      return modal && modal.classList.contains('show');
-  }
-
-  // Function to check if user is typing in a text field
-  function isTypingInTextField() {
-      const activeElement = document.activeElement;
-      const tagName = activeElement ? activeElement.tagName.toLowerCase() : '';
-      return tagName === 'input' || tagName === 'textarea';
-  }
-
-  document.addEventListener('keypress', function(e) {
-      // Skip if explanation modal is open or typing in a text field
-      if (isExplanationModalOpen() || isTypingInTextField()) {
-        return;
-      }
-
-      const keyCode = e.which || e.keyCode;
-
-      if (keyCode == 97 || keyCode == 65) {
-          keyPressed("a");
-      } else if (keyCode == 115 || keyCode == 83) {
-          keyPressed("s");
-      } else if (keyCode == 100 || keyCode == 68) {
-          keyPressed("d");
-      } else if (keyCode == 102 || keyCode == 70) {
-          keyPressed("f");
-      } else if (keyCode == 103 || keyCode == 71) {
-          keyPressed("g");
-      } else if (keyCode == 104 || keyCode == 72) {
-          keyPressed("h");
-      } else if (keyCode == 106 || keyCode == 74) {
-          keyPressed("j");
-      } else if (keyCode == 107 || keyCode == 75) {
-          keyPressed("k");
-      } else if (keyCode == 108 || keyCode == 76) {
-          keyPressed("l");
-      } else if (keyCode == 59 || keyCode == 186) {
-          keyPressed("sc");
-      }
-  });
-
-  document.addEventListener('keydown', function(e) {
-      // Skip if explanation modal is open or typing in a text field
-      if (isExplanationModalOpen() || isTypingInTextField()) {
-        return;
-      }
-
-      const keyCode = e.which || e.keyCode;
-
-      if (keyCode == 97 || keyCode == 65) {
-          keyDown("a");
-      } else if (keyCode == 115 || keyCode == 83) {
-          keyDown("s");
-      } else if (keyCode == 100 || keyCode == 68) {
-          keyDown("d");
-      } else if (keyCode == 102 || keyCode == 70) {
-          keyDown("f");
-      } else if (keyCode == 103 || keyCode == 71) {
-          keyDown("g");
-      } else if (keyCode == 104 || keyCode == 72) {
-          keyDown("h");
-      } else if (keyCode == 106 || keyCode == 74) {
-          keyDown("j");
-      } else if (keyCode == 107 || keyCode == 75) {
-          keyDown("k");
-      } else if (keyCode == 108 || keyCode == 76) {
-          keyDown("l");
-      } else if (keyCode == 59 || keyCode == 186) {
-          keyDown("sc");
-      }
-  });
-</script>
-
-
 <%
-  @show_keyboard_shortcuts = true
+  show_keyboard_shortcuts = true
   # Use enhanced JudgementHelper to generate rating buttons with scorer labels
-  @rating_buttons = generate_rating_buttons(@book)
+  rating_buttons = generate_rating_buttons(book)
 
-  @document_fields = query_doc_pair.document_fields
-
-  image_url = nil
-  if @document_fields.has_key?('thumb')
-    image_url = @document_fields['thumb']
-  elsif @document_fields.has_key?('image')
-    image_url = @document_fields['image']
-  end
-
+  image_url = query_doc_pair.image_url
 %>
 
-<%= form_for(judgement, url: url_for_form) do |form| %>
+<%= form_for(judgement, url: url_for_form, data: { controller: "judgement-rating", action: "keydown@document->judgement-rating#keydown turbo:submit-end->judgement-rating#cancel turbo:before-cache@document->judgement-rating#cancel" }) do |form| %>
   <%= render "shared/error_messages", record: judgement, subject: "judgement" %>
 
-  <% if judgement.user_id != @current_user.id %>
+  <% if judgement.user_id != viewer.id %>
     <div class="alert alert-warning" role="alert">
       This judgement was made by <%= judgement.user.fullname %>!
     </div>
   <% end %>
-  <%= render 'judgements/escalation_notice', judgement: judgement %>
-  <% if image_url %>
-  <div class="card mb-3" style="">
+  <%= render 'judgements/escalation_notice', judgement: judgement, book: book %>
+  <%= tag.div class: class_names('card', 'mb-3': image_url) do %>
     <div class="row g-0">
-      <div class="col-md-4 p-2">
-        <img src="<%= image_url %>" class="img-fluid rounded-start rounded-end" alt="Thumbnail Image">
-      </div>
-      <div class="col-md-8">
-  <% else %>
-  <div class="card">
+      <% if image_url %>
+        <div class="col-md-4 p-2">
+          <%= tag.img src: image_url.to_s, class: 'img-fluid rounded-start rounded-end', alt: 'Thumbnail Image' %>
+        </div>
+      <% end %>
+      <%= tag.div class: (image_url ? 'col-md-8' : 'col-12') do %>
+        <div class="card-body">
+          <h5 class="card-title">Query: <em><%= query_doc_pair.query_text %></em></h5>
+          <% if query_doc_pair.information_need %>
+            <h6 class="card-subtitle mb-2 text-muted">Information Need: <i><%= query_doc_pair.information_need %></i></h6>
+          <% end %>
+
+          <p>
+            <a class="card-link" data-bs-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
+              Scoring Guidelines
+            </a>
+          </p>
+          <div class="collapse pb-3" id="collapseExample">
+            <div class="card card-body scoring-guidelines-content">
+              <%= render_markdown(book.effective_scoring_guidelines) %>
+            </div>
+          </div>
+
+
+          <div class="float-end">
+            <%= button_tag 'I will Judge Later', type: 'submit', form: 'judge-later-form', class: 'btn btn-info m-1' %>
+            <br>
+            <button type="button" class="btn btn-warning m-1" data-bs-toggle="modal" data-bs-target="#explanationModal">
+              I Can't Tell
+            </button>
+          </div>
+
+          <div class="card-text">
+            <%= render 'query_doc_pairs/document_fields', document_fields: query_doc_pair.document_fields %>
+          </div>
+
+          <div class="mt-3">
+            <label for="judgement_explanation" class="form-label">Explanation (optional)</label>
+            <%= form.text_area :explanation, class: 'form-control', rows: 2, placeholder: 'Why did you choose this rating?' %>
+          </div>
+
+          <% if book.show_rank? %>
+            <p class="card-text">
+              <b>Document Rank: </b><%= judgement.query_doc_pair.position %>
+            </p>
+          <% end %>
+
+          <table class="p-1">
+            <% if show_keyboard_shortcuts %>
+
+              <tr>
+                <td></td>
+                <% rating_buttons.each do |b| %>
+                  <%
+                    button_classes = "btn "
+                    if judgement.rating == b["value"].to_i
+                      button_classes = button_classes + "btn-preselected "
+                    end
+                  %>
+                  <td class="p-1">
+
+                    <%= button_tag b["label"], type: 'button', data: { action: "judgement-rating#rate", judgement_rating_target: "button", judgement_rating_rating_param: b["value"], judgement_rating_key_param: b["key"][:name] }, style: "background-color: #{b['style']['background-color']}; color: black; border: 1px solid rgba(0,0,0,0.2); font-weight: 500;", class: button_classes, id:"button-for-#{b["key"][:name]}" %>
+                  </td>
+                <% end %>
+              </tr>
+              <tr>
+                <td><i class="bi-keyboard"></i></td>
+                <% rating_buttons.each do |b| %>
+                  <td class="text-center text-secondary p-1"><span data-judgement-rating-target="shortcut" data-key="<%= b["key"][:name] %>" class="<%= judgement.rating == b["value"].to_i ? 'fw-bold text-black' : '' %>" id="<%= "span-for-" + b["key"][:name].to_s %>"><%= b["key"][:display_name] %></span></td>
+                <% end %>
+              </tr>
+
+            <% else %>
+
+              <tr>
+                <% rating_buttons.each do |b| %>
+                  <%
+                    button_classes = "btn "
+                    if judgement.rating == b["value"].to_i
+                      button_classes = button_classes + "btn-preselected "
+                    end
+                  %>
+                  <td class="p-1">
+                    <%= button_tag b["label"], type: 'button', data: { action: "judgement-rating#rate", judgement_rating_target: "button", judgement_rating_rating_param: b["value"], judgement_rating_key_param: b["key"] }, style: "background-color: #{b['style']['background-color']}; color: black; border: 1px solid rgba(0,0,0,0.2); font-weight: 500;", class: button_classes, id:"button-for-"+b["key"].to_s %>
+                  </td>
+                <% end %>
+              </tr>
+
+            <% end %>
+          </table>
+
+
+        </div>
+      <% end %>
+    </div>
   <% end %>
 
-  <div class="card-body">
-    <h5 class="card-title">Query: <em><%= query_doc_pair.query_text %></em></h5>
-    <% if query_doc_pair.information_need %>
-      <h6 class="card-subtitle mb-2 text-muted">Information Need: <i><%= query_doc_pair.information_need %></i></h6>
-    <% end %>
-
-    <p>
-      <a class="card-link" data-bs-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
-        Scoring Guidelines
-      </a>
-    </p>
-    <div class="collapse pb-3" id="collapseExample">
-      <div class="card card-body scoring-guidelines-content">
-        <%= render_markdown(@book.effective_scoring_guidelines) %>
-      </div>
-    </div>
-
-
-    <div class="float-end">
-      <%= link_to 'I will Judge Later', book_query_doc_pair_judge_later_path(@book, query_doc_pair), class: 'btn btn-info m-1', role: 'button' %>
-      <br/>
-      <button type="button" class="btn btn-warning m-1" data-bs-toggle="modal" data-bs-target="#explanationModal">
-        I Can't Tell
-      </button>
-    </div>
-
-    <p class="card-text">
-      <%= render 'query_doc_pairs/document_fields', document_fields: @document_fields %>
-    </p>
-
-    <div class="mt-3">
-      <label for="judgement_explanation" class="form-label">Explanation (optional)</label>
-      <%= form.text_area :explanation, class: 'form-control', rows: 2, placeholder: 'Why did you choose this rating?' %>
-    </div>
-
-    <% if @book.show_rank? %>
-    <p class="card-text">
-      <b>Document Rank: </b><%= judgement.query_doc_pair.position %>
-    </p>
-    <% end %>
-
-    <% if @show_keyboard_shortcuts %>
-      <table class="padded">
-        <tr>
-          <td></td>
-          <% @rating_buttons.each do |b| %>
-            <%
-              @button_classes = "btn "
-              if judgement.rating == b["value"].to_i
-                @button_classes = @button_classes + "btn-preselected "
-              end
-            %>
-            <td class="padded">
-
-              <%= button_tag b["label"], type: 'button', onclick: "rate("+b["value"]+",\""+b["key"][:name].to_s+"\")", style: "background-color: #{b['style']['background-color']}; color: black; border: 1px solid rgba(0,0,0,0.2); font-weight: 500;", class: @button_classes, id:"button-for-#{b["key"][:name]}" %>
-            </td>
-          <% end %>
-        </tr>
-        <tr>
-          <td><i class="bi-keyboard"></i></td>
-          <% @rating_buttons.each do |b| %>
-              <td class="keyboard-shortcuts-td"><span class="<%= judgement.rating == b["value"].to_i ? 'fw-bold text-black' : '' %>" id=<%= "span-for-" + b["key"][:name].to_s %>><%= b["key"][:display_name]%></span></td>
-          <% end %>
-        </tr>
-      </table>
-    <% else %>
-      <table class="padded">
-        <tr>
-          <% @rating_buttons.each do |b| %>
-            <%
-              @button_classes = "btn "
-              if judgement.rating == b["value"].to_i
-                @button_classes = @button_classes + "btn-preselected "
-              end
-            %>
-            <td class="padded">
-              <%= button_tag b["label"], type: 'button', onclick: "rate("+b["value"]+",\""+ b["key"].to_s + "\")", style: "background-color: #{b['style']['background-color']}; color: black; border: 1px solid rgba(0,0,0,0.2); font-weight: 500;", class: @button_classes, id:"button-for-"+b["key"].to_s %>
-            </td>
-          <% end %>
-        </tr>
-      </table>
-    <% end %>
-
-
-  </div>
-  <% if image_url %>
-      </div>
-    </div>
-  </div>
-  <% else %>
-  </div>
-  <% end %>
-
-  <%= form.hidden_field :rating %>
+  <%= form.hidden_field :rating, data: { judgement_rating_target: "rating" } %>
   <%= form.hidden_field :query_doc_pair_id, :value => query_doc_pair.id %>
-  <%= form.submit class: 'd-none'%>
+  <%= form.submit class: 'd-none', data: { judgement_rating_target: "submit" } %>
 
 <% end %>
 
-<!-- Modal -->
-<div class="modal fade" id="explanationModal" tabindex="-1" aria-labelledby="explanationModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-right">
-    <%= form_for(judgement, url: book_query_doc_pair_unrateable_path(@book, query_doc_pair), data: { turbo: false }) do |f| %>
-    <div class="modal-content">
-      <div class="modal-header">
-        <h1 class="modal-title fs-5" id="explanationModalLabel">Record Explanation</h1>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <p>It is helpful (though optional) if you can record what makes this query/doc pair difficult to judge.</p>
-        <p>
-          <%= f.text_area :explanation, size: '44x2' %>
-        </p>
-      </div>
-      <div class="modal-footer">
-        <%= f.submit "Skip Judging",class: 'btn btn-primary' %>
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-      </div>
-     </div>
-     <% end %>
-  </div>
-</div>
+<%= form_with url: book_query_doc_pair_judge_later_path(book, query_doc_pair), method: :post,
+              html: { id: "judge-later-form" } do %>
+<% end %>
+
+<% modal_footer = nil %>
+<% modal_body = capture do %>
+  <%= form_for(judgement, url: book_query_doc_pair_unrateable_path(book, query_doc_pair),
+               html: { id: "explanation-form" }, data: { turbo: false }) do |f| %>
+    <p>It is helpful (though optional) if you can record what makes this query/doc pair difficult to judge.</p>
+    <p><%= f.text_area :explanation, size: '44x2' %></p>
+    <% modal_footer = capture do %>
+      <%= f.submit "Skip Judging", class: 'btn btn-primary', form: "explanation-form" %>
+    <% end %>
+  <% end %>
+<% end %>
+
+<%= render "shared/modal_shell", id: "explanationModal", title: "Record Explanation",
+                                 title_tag: :h1, title_class: "fs-5", dialog_class: "modal-dialog-right",
+                                 body: modal_body, footer: modal_footer %>

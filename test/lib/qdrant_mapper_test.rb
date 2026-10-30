@@ -35,7 +35,7 @@ class QdrantMapperTest < ActiveSupport::TestCase
   end
 
   # ratedDocsQueryParamsMapper isn't part of V8MapperExecutor's docs/count contract (only the
-  # browser calls it, via queriesSvc.buildSearchApiRatedDocsQueryParams), so call it directly.
+  # browser calls it, via query_service.buildSearchApiRatedDocsQueryParams), so call it directly.
   def rated_docs_query_params rated_ids, id_field
     context = MiniRacer::Context.new
     context.eval(mapper_code)
@@ -118,6 +118,27 @@ class QdrantMapperTest < ActiveSupport::TestCase
       params = rated_docs_query_params([ '007' ], 'sku')
 
       assert_equal [ '007' ], params['filter']['must'].first['match']['any']
+    end
+
+    it 'matches numeric payload ids alongside their string representation' do
+      params = rated_docs_query_params(%w[7 -8], 'movie_id')
+
+      assert_equal(
+        [
+          { 'key' => 'movie_id', 'match' => { 'any' => %w[7 -8] } },
+          { 'key' => 'movie_id', 'match' => { 'any' => [ 7, -8 ] } }
+        ],
+        params['filter']['must'].first['should']
+      )
+    end
+
+    it 'does not coerce leading-zero or unsafe integer payload keys' do
+      params = rated_docs_query_params(%w[007 9007199254740993], 'sku')
+
+      assert_equal(
+        [ { 'key' => 'sku', 'match' => { 'any' => %w[007 9007199254740993] } } ],
+        params['filter']['must']
+      )
     end
 
     # Qdrant defaults limit to 10, so a query with more than ten ratings would lose the rest.

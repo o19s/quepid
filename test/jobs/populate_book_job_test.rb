@@ -9,6 +9,35 @@ class PopulateBookJobTest < ActiveJob::TestCase
   let(:acase) { cases(:case_with_book) }
 
   describe 'populating an existing book' do
+    test 'copies query options into the book without the vectors' do
+      acase.queries.create!(query_text: 'vector query', options: {
+        'boost' => 2, 'query_vec' => [ 0.1 ], 'query_vec_meta' => { 'embedder_id' => 1 }, 'query_vec_error' => { 'message' => 'x' }
+      })
+      blob = DeferredPayload.stash!({ query_doc_pairs: [
+                                      { query_text: 'vector query', doc_id: 'doc_1', position: 0, document_fields: { title: 'Doc' } }
+                                    ] }, filename: 'populate_vectors.bin.zip')
+
+      PopulateBookJob.perform_now(book, acase, blob)
+
+      pair = book.query_doc_pairs.find_by(query_text: 'vector query')
+      assert_equal({ 'boost' => 2 }, pair.options)
+    end
+
+    test 'incremental sync at original result positions retains earlier document ranks' do
+      acase.queries.create!(query_text: 'incremental query')
+      book.query_doc_pairs.create!(query_text: 'incremental query', doc_id: 'doc_a', position: 1,
+                                   document_fields: { title: 'A' })
+      blob = DeferredPayload.stash!({ query_doc_pairs: [
+                                      { query_text: 'incremental query', doc_id: 'doc_b', position: 2, document_fields: { title: 'B' } },
+                                      { query_text: 'incremental query', doc_id: 'doc_c', position: 3, document_fields: { title: 'C' } }
+                                    ] }, filename: 'incremental_positions.bin.zip')
+
+      PopulateBookJob.perform_now(book, acase, blob)
+
+      assert_equal [ [ 'doc_a', 1 ], [ 'doc_b', 2 ], [ 'doc_c', 3 ] ],
+                   book.query_doc_pairs.where(query_text: 'incremental query').order(:doc_id).pluck(:doc_id, :position)
+    end
+
     test 'ensure that position value is unique per query' do
       # Position is only persisted mid-loop when the query still exists on the
       # case (see PopulateBookJob#perform); fix_duplicate_positions runs before

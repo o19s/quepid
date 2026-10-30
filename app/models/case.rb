@@ -16,14 +16,16 @@
 #  created_at                    :datetime         not null
 #  updated_at                    :datetime         not null
 #  book_id                       :integer
+#  embedder_id                   :bigint
 #  owner_id                      :integer
 #  scorer_id                     :integer
 #
 # Indexes
 #
-#  idx_owner_archived       (owner_id,archived)
-#  index_cases_book_id      (book_id)
-#  index_cases_on_owner_id  (owner_id)
+#  idx_owner_archived          (owner_id,archived)
+#  index_cases_book_id         (book_id)
+#  index_cases_on_embedder_id  (embedder_id)
+#  index_cases_on_owner_id     (owner_id)
 #
 # Foreign Keys
 #
@@ -38,6 +40,10 @@ class Case < ApplicationRecord
                           join_table: 'teams_cases'
 
   belongs_to :scorer, optional: true
+
+  # Turns each query's text into a vector (stored in the query's options as
+  # query_vec). Optional, and set per case only -- books have none.
+  belongs_to :embedder, optional: true
 
   belongs_to :owner,
              class_name: 'User', optional: true
@@ -69,6 +75,13 @@ class Case < ApplicationRecord
   has_many   :scores, -> { order(updated_at: :desc) },
              dependent:  :destroy,
              inverse_of: :case
+
+  # List endpoints use LatestCaseScores to restrict preloads to one row per case.
+  # The scores association owns deletion; this association only reads the latest row.
+  # rubocop:disable-next Rails/HasManyOrHasOneDependent
+  has_one :latest_score, -> {
+    order(updated_at: :desc, created_at: :desc, id: :desc)
+  }, class_name: 'Score', inverse_of: :case
 
   has_many   :snapshots,
              dependent: :destroy
@@ -118,6 +131,12 @@ class Case < ApplicationRecord
                         SQL
                       }
 
+  # Ratings per case for list pages, in one grouped query. Cases without
+  # ratings are absent from the returned hash.
+  def self.ratings_count_by_case_id case_ids
+    Rating.joins(:query).where(queries: { case_id: case_ids }).group('queries.case_id').count
+  end
+
   # Not proud of this method, but it's the only way I can get the dependent
   # objects of a Case to actually delete!
   def really_destroy
@@ -148,6 +167,9 @@ class Case < ApplicationRecord
       end
 
       self.scorer = original_case.scorer
+      # Only an embedder the cloning user can see: otherwise the clone would spend
+      # an API key that was never shared with them.
+      self.embedder = original_case.embedder if user.embedders_involved_with.exists?(id: original_case.embedder_id)
 
       save!
     end
@@ -185,6 +207,8 @@ class Case < ApplicationRecord
   end
 
   def last_score
+    return latest_score if association(:latest_score).loaded?
+
     scores.last_one
     # scores.last
     # scores.first

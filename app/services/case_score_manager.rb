@@ -31,23 +31,26 @@ class CaseScoreManager
     if score_data[:try_number]
       try = @the_case.tries.where(try_number: score_data[:try_number]).first
       # score_data.except!(:try_number)
+      reject_unknown_try!(score_data[:try_number]) if try.nil?
       score_data[:try_id] = try.id
     end
 
     @score = @the_case.scores.build score_data.except(:try_number)
-    saved = @score.save
-    if saved
-      # for some reason the scorer isn't doing the :touch on the parent case
-      @the_case.touch
-      return @score
-    end
-    # rubocop:enable Rails/SkipsModelValidations
-
-    @errors = @score.errors
-    raise ActiveRecord::RecordInvalid, @score
+    @score.save!
+    @score
   end
 
   private
+
+  # An unknown try_number is a client error, not a crash: surface it the same way other
+  # invalid scores are (RecordInvalid with errors) so the API answers 400 rather than 500.
+  def reject_unknown_try! try_number
+    score = @the_case.scores.build
+    score.errors.add(:try_number, "#{try_number} was not found for this case")
+    @errors = score.errors
+    @the_case.scores.delete(score)
+    raise ActiveRecord::RecordInvalid, score
+  end
 
   def empty_score? score_data
     return true if score_data[:score].blank?
@@ -62,7 +65,7 @@ class CaseScoreManager
 
     # we have an issue where the case_score.try_id table references tries.id and
     # the try doesn't exist. So the last_score.try is nil.  Maybe related to deleting a try?
-    return false if last_score&.try&.nil?
+    return false if last_score.try.nil?
     return false if last_score.try.try_number != score_data[:try_number].to_i
     return false if last_score.user_id != score_data[:user_id].to_i
     return false if last_score.scorer_id != score_data[:scorer_id].to_i
@@ -89,7 +92,7 @@ class CaseScoreManager
   end
 
   def same_number? last_score, score_data
-    last_score.score.to_i == score_data[:score].to_i
+    last_score.score.to_d == score_data[:score].to_d
   end
 
   def last_score_old? last_score
@@ -97,10 +100,8 @@ class CaseScoreManager
   end
 
   def added_query? last_score, score_data
-    return true  if last_score.nil? && !score_data.empty?
-    return false if last_score.nil? && score_data.empty?
-    return false if queries_empty?(last_score.queries) && queries_empty?(score_data[:queries])
     return false if queries_empty?(last_score.queries)
+    return true if queries_empty?(score_data[:queries])
 
     last_score_queries = {}
     score_data_queries = {}

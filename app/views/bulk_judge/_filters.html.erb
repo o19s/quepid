@@ -1,0 +1,54 @@
+<%# locals: (book:, query_text:, only_unrated:, available_positions:, rank_depth:, show_explanations:) %>
+<%= form_tag(book_judge_bulk_path(book), { method: :get }) do %>
+  <div class="mb-0 d-flex fs-6 align-items-center">
+    <div class="input-group flex-grow-0" style="width: 40%;">
+      <%= text_field_tag :query_text, query_text,
+          class: 'form-control form-control-sm',
+          placeholder: 'Enter query text to bulk judge',
+          id: 'query_text' %>
+      <%= button_tag type: 'submit', class: 'btn btn-sm btn-outline-secondary', id: 'button-addon2' do %>
+        <i class="bi bi-search-heart"></i> Filter
+      <% end %>
+    </div>
+
+    <div class="d-flex align-items-center ms-3 flex-fill">
+      <div class="form-check">
+        <%= hidden_field_tag :only_unrated, false, id: 'only_unrated_hidden' %>
+        <%= check_box_tag :only_unrated,
+            true,
+            only_unrated,
+            class: 'form-check-input',
+            id: 'only_unrated',
+            data: { controller: "auto-submit", action: "change->auto-submit#submit" } %>
+        <label class="form-check-label" for="only_unrated">
+          Unrated
+        </label>
+      </div>
+
+      <div class="d-flex align-items-center ms-4">
+        <label for="rank_depth" class="form-label me-2 mb-0 text-nowrap">Rank Depth:</label>
+        <%= select_tag :rank_depth,
+            options_for_select(
+              [['All', '']] + available_positions.map { |pos| ["#{pos}", pos] },
+              rank_depth
+            ),
+            class: 'form-select form-select-sm',
+            style: 'width: auto; min-width: 80px;',
+            data: { controller: "auto-submit", action: "change->auto-submit#submit" } %>
+      </div>
+
+      <div class="form-check ms-4">
+        <%= hidden_field_tag :show_explanations, false, id: 'show_explanations_hidden' %>
+        <%= check_box_tag :show_explanations,
+            true,
+            show_explanations,
+            class: 'form-check-input',
+            id: 'show_explanations',
+            data: { controller: "auto-submit", action: "change->auto-submit#submit" } %>
+        <label class="form-check-label" for="show_explanations">
+          Show Explanations
+        </label>
+      </div>
+    </div>
+  </div>
+<% end %>

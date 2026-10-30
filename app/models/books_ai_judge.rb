@@ -24,7 +24,7 @@
 class BooksAiJudge < ApplicationRecord
   belongs_to :book
   # rubocop:disable-next Rails/InverseOf -- User has no corresponding has_many; not needed on that side.
-  belongs_to :ai_judge, class_name: 'User', foreign_key: 'user_id'
+  belongs_to :ai_judge, class_name: 'AiJudge', foreign_key: 'user_id'
 
   scope :auto_run, -> { where(auto_run: true) }
 end

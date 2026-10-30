@@ -1,0 +1,32 @@
+<%# locals: (query_doc_pair:, judgement:, rating_buttons:) %>
+<% rated = judgement.persisted? && judgement.rating.present? %>
+<div class="rating-buttons mb-3">
+  <strong>Rate this document:</strong>
+  <div class="mt-2">
+    <div class="d-flex align-items-center">
+      <div class="rating-buttons-container d-flex flex-wrap align-items-center">
+        <% rating_buttons.each do |button| %>
+          <%
+            input_id = "judgement_#{query_doc_pair.id}_#{button['value']}"
+            checked = rated && judgement.rating.to_i.to_s == button['value'].to_s
+          %>
+          <%= radio_button_tag "judgement_#{query_doc_pair.id}", button['value'], checked,
+                               id: input_id,
+                               class: 'btn-check',
+                               data: {
+                                 action: 'click->bulk-judgement#saveRating',
+                                 query_doc_pair_id: query_doc_pair.id,
+                                 rating: button['value']
+                               } %>
+          <%= label_tag input_id, button['label'],
+                        class: class_names('btn', 'btn-preselected': checked),
+                        style: "background-color: #{button['style']['background-color']};" %>
+        <% end %>
+      </div>
+      <% if rated %>
+        <%= render 'bulk_judge/reset_button', query_doc_pair_id: query_doc_pair.id %>
+      <% end %>
+      <span id="status_<%= query_doc_pair.id %>" class="ms-2"></span>
+    </div>
+  </div>
+</div>

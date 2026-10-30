@@ -1,121 +1,104 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import JudgeActivityPollController from "controllers/judge_activity_poll_controller"
 
-function buildController(initialHtml) {
+function buildController() {
   const controller = Object.create(JudgeActivityPollController.prototype)
   controller.element = document.createElement("tbody")
-  controller.element.innerHTML = initialHtml
-  controller.urlValue = "/books/1/judge_activity"
+  controller.element.innerHTML = '<tr id="judge-row-7"></tr>'
+  document.body.append(controller.element)
+  controller.urlValue = "/books/1/judge_activity?existing=1"
   controller.intervalMsValue = 1000
   return controller
-}
-
-const ACTIVE_ROW = '<tr id="judge-row-7" data-actively-judging="true"></tr>'
-const INACTIVE_ROW = '<tr id="judge-row-7" data-actively-judging="false"></tr>'
-
-// A microtask tick lets the real MutationObserver's callback (which batches
-// via the microtask queue, not synchronously) run before assertions.
-function nextTick() {
-  return new Promise((resolve) => queueMicrotask(resolve))
 }
 
 describe("JudgeActivityPollController", () => {
   beforeEach(() => {
     vi.useFakeTimers()
-    global.Turbo = { renderStreamMessage: vi.fn() }
+    vi.stubGlobal("Turbo", { renderStreamMessage: vi.fn() })
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({ ok: true, text: async () => "<turbo-stream></turbo-stream>" })
+    )
   })
 
   afterEach(() => {
+    document.body.replaceChildren()
     vi.useRealTimers()
-    vi.restoreAllMocks()
+    vi.unstubAllGlobals()
   })
 
-  it("does not poll when nothing is actively judging on connect", async () => {
-    const controller = buildController(INACTIVE_ROW)
-    global.fetch = vi.fn()
-
+  it("recovers missed first-judge broadcasts even while the table is idle", async () => {
+    const controller = buildController()
     controller.connect()
-    await nextTick()
-    vi.advanceTimersByTime(5000)
-
-    expect(global.fetch).not.toHaveBeenCalled()
-    controller.disconnect()
-  })
-
-  it("polls while a row is actively judging, sends the known row ids, and applies the response via Turbo", async () => {
-    const controller = buildController(ACTIVE_ROW)
-    global.fetch = vi.fn().mockResolvedValue({ ok: true, text: () => Promise.resolve("<turbo-stream></turbo-stream>") })
-
-    controller.connect()
-    await nextTick()
-
     await vi.advanceTimersByTimeAsync(1000)
-    expect(global.fetch).toHaveBeenCalledTimes(1)
-    expect(global.fetch).toHaveBeenCalledWith("/books/1/judge_activity?known_judge_ids=7", {
-      headers: { Accept: "text/vnd.turbo-stream.html" }
-    })
-    expect(global.Turbo.renderStreamMessage).toHaveBeenCalledWith("<turbo-stream></turbo-stream>")
-
+    expect(fetch).toHaveBeenCalledTimes(1)
+    const [url] = fetch.mock.calls[0]
+    expect(url.searchParams.get("existing")).toBe("1")
+    expect(url.searchParams.get("known_judge_ids")).toBe("7")
+    expect(globalThis.Turbo.renderStreamMessage).toHaveBeenCalledWith(
+      "<turbo-stream></turbo-stream>"
+    )
     controller.disconnect()
   })
 
-  it("keeps polling across multiple intervals while still active", async () => {
-    const controller = buildController(ACTIVE_ROW)
-    global.fetch = vi.fn().mockResolvedValue({ ok: true, text: () => Promise.resolve("") })
-
+  it("keeps polling across intervals", async () => {
+    const controller = buildController()
     controller.connect()
-    await nextTick()
-
-    await vi.advanceTimersByTimeAsync(1000)
-    await vi.advanceTimersByTimeAsync(1000)
-    expect(global.fetch).toHaveBeenCalledTimes(2)
-
+    await vi.advanceTimersByTimeAsync(2000)
+    expect(fetch).toHaveBeenCalledTimes(2)
     controller.disconnect()
   })
 
-  it("stops polling once the row is no longer active", async () => {
-    const controller = buildController(ACTIVE_ROW)
-    global.fetch = vi.fn().mockResolvedValue({ ok: true, text: () => Promise.resolve("") })
-
+  it("polls as soon as a stream source subscribes, not on disconnect", async () => {
+    const source = document.createElement("turbo-cable-stream-source")
+    document.body.append(source)
+    const controller = buildController()
     controller.connect()
-    await nextTick()
-
-    controller.element.innerHTML = INACTIVE_ROW
-    await nextTick()
-
-    await vi.advanceTimersByTimeAsync(5000)
-    expect(global.fetch).not.toHaveBeenCalled()
-
+    source.setAttribute("connected", "")
+    await vi.advanceTimersByTimeAsync(0)
+    expect(fetch).toHaveBeenCalledTimes(1)
+    source.removeAttribute("connected")
+    await vi.advanceTimersByTimeAsync(0)
+    expect(fetch).toHaveBeenCalledTimes(1)
     controller.disconnect()
-  })
-
-  it("starts polling once a row becomes active later (e.g. a live broadcast update)", async () => {
-    const controller = buildController(INACTIVE_ROW)
-    global.fetch = vi.fn().mockResolvedValue({ ok: true, text: () => Promise.resolve("") })
-
-    controller.connect()
-    await nextTick()
-    vi.advanceTimersByTime(5000)
-    expect(global.fetch).not.toHaveBeenCalled()
-
-    controller.element.innerHTML = ACTIVE_ROW
-    await nextTick()
-
-    await vi.advanceTimersByTimeAsync(1000)
-    expect(global.fetch).toHaveBeenCalledTimes(1)
-
-    controller.disconnect()
+    source.setAttribute("connected", "")
+    await vi.advanceTimersByTimeAsync(0)
+    expect(fetch).toHaveBeenCalledTimes(1)
   })
 
   it("stops polling on disconnect", async () => {
-    const controller = buildController(ACTIVE_ROW)
-    global.fetch = vi.fn().mockResolvedValue({ ok: true, text: () => Promise.resolve("") })
-
+    const controller = buildController()
     controller.connect()
-    await nextTick()
     controller.disconnect()
-
     await vi.advanceTimersByTimeAsync(5000)
-    expect(global.fetch).not.toHaveBeenCalled()
+    expect(fetch).not.toHaveBeenCalled()
+  })
+
+  it("retries a failed request on the next interval", async () => {
+    fetch.mockRejectedValueOnce(new Error("offline"))
+    const controller = buildController()
+    controller.connect()
+    await vi.advanceTimersByTimeAsync(2000)
+    expect(fetch).toHaveBeenCalledTimes(2)
+    expect(globalThis.Turbo.renderStreamMessage).toHaveBeenCalledTimes(1)
+    controller.disconnect()
+  })
+
+  it("does not overlap slow requests or apply a response after leaving the page", async () => {
+    let complete
+    fetch.mockReturnValue(
+      new Promise((resolve) => {
+        complete = resolve
+      })
+    )
+    const controller = buildController()
+    controller.connect()
+    await vi.advanceTimersByTimeAsync(3000)
+    expect(fetch).toHaveBeenCalledTimes(1)
+    controller.disconnect()
+    controller.element.remove()
+    complete({ ok: true, text: async () => "late" })
+    await Promise.resolve()
+    expect(globalThis.Turbo.renderStreamMessage).not.toHaveBeenCalled()
   })
 })

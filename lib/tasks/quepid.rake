@@ -1,8 +1,6 @@
 # frozen_string_literal: true
 
 require 'colorize'
-require 'jshint/lint'
-
 # rubocop:disable-next Metrics/BlockLength
 namespace :test do
   desc 'Report failed tests from JUnit XML reports'
@@ -63,9 +61,6 @@ namespace :test do
     end
   end
 
-  desc 'Run js/karma tests (equivalent of karma:run)'
-  task 'js' => 'karma:run'
-
   desc 'Run Vitest unit tests for app/javascript (see vitest.config.js)'
   task vitest: :environment do
     puts '-' * 100
@@ -90,37 +85,17 @@ namespace :test do
     end
   end
 
-  desc 'Run all frontend tasks: test:vitest, test:js, test:jshint, test:eslint, test:stylelint'
+  desc 'Run all frontend tasks: test:vitest, test:eslint, test:stylelint'
   task frontend: :environment do
     Rake::Task['test:vitest'].invoke
-    Rake::Task['test:js'].invoke
-    Rake::Task['test:jshint'].invoke
     Rake::Task['test:eslint'].invoke
     Rake::Task['test:stylelint'].invoke
   end
 
-  desc 'Run jshint on js files using configuration .jshintrc'
-  task jshint: :environment do
-    puts '-' * 100
-    puts 'Starting JSHint tests'.yellow
-
-    linter = Jshint::Lint.new
-    linter.lint
-
-    if linter.errors?
-      puts 'JSHint tests failed!'.red
-      puts '-' * 100
-      exit false
-    else
-      puts 'JSHint tests passed!'.green
-      puts '-' * 100
-    end
-  end
-
-  desc 'Run ESLint on app/javascript (see eslint.config.mjs)'
+  desc 'Run ESLint, Prettier and the Playwright type check on first-party JavaScript (see eslint.config.mjs)'
   task eslint: :environment do
     puts '-' * 100
-    puts 'Starting ESLint (app/javascript)'.yellow
+    puts 'Starting ESLint (first-party JavaScript)'.yellow
 
     eslint = Rails.root.join('node_modules/.bin/eslint')
     unless eslint.executable?
@@ -129,7 +104,23 @@ namespace :test do
       exit false
     end
 
-    eslint_success = system(eslint.to_s, 'app/javascript', chdir: Rails.root.to_s)
+    eslint_paths = [
+      'app/javascript',
+      'test/javascript',
+      'test/playwright',
+      'scripts',
+      'config/javascript_lint_scope.mjs',
+      'eslint.config.mjs',
+      'stryker.config.mjs',
+      'build_css.js',
+      'audit_css.js',
+      'esbuild.config.js',
+      'vitest.config.js',
+      'lib',
+      'db/scorers',
+      'db/mapper_based_search_engines'
+    ]
+    eslint_success = system(eslint.to_s, *eslint_paths, chdir: Rails.root.to_s)
 
     prettier_script = Rails.root.join('scripts/javascript_lint.mjs')
     unless prettier_script.exist?
@@ -140,55 +131,49 @@ namespace :test do
 
     prettier_success = system('node', prettier_script.to_s, 'check', chdir: Rails.root.to_s)
 
-    if eslint_success && prettier_success
-      puts 'ESLint and Prettier checks passed!'.green
+    tsc = Rails.root.join('node_modules/.bin/tsc')
+    tsc_success = system(tsc.to_s, '-p', 'test/playwright/tsconfig.json', chdir: Rails.root.to_s)
+
+    if eslint_success && prettier_success && tsc_success
+      puts 'ESLint, Prettier and Playwright type checks passed!'.green
       puts '-' * 100
     else
-      puts 'ESLint or Prettier failed!'.red
+      puts 'ESLint, Prettier or Playwright type check failed!'.red
       puts '-' * 100
       exit false
     end
   end
 
-  desc 'Run stylelint on app/assets/stylesheets using .stylelintrc.json'
+  desc 'Run stylelint (.stylelintrc.json) and the Prettier check on app/assets/stylesheets'
   task stylelint: :environment do
     puts '-' * 100
-    puts 'Starting Stylelint'.yellow
+    puts 'Starting Stylelint and Prettier on CSS'.yellow
 
     stylelint = Rails.root.join('node_modules/.bin/stylelint')
-    unless stylelint.executable?
-      puts 'Stylelint not found; run: yarn install (or bin/docker r yarn install)'.red
+    prettier = Rails.root.join('node_modules/.bin/prettier')
+    unless stylelint.executable? && prettier.executable?
+      puts 'Stylelint or Prettier not found; run: yarn install (or bin/docker r yarn install)'.red
       puts '-' * 100
       exit false
     end
 
-    success = system(
-      stylelint.to_s,
-      'app/assets/stylesheets/**/*.css',
-      chdir: Rails.root.to_s
-    )
+    css_glob = 'app/assets/stylesheets/**/*.css'
+    stylelint_success = system(stylelint.to_s, css_glob, chdir: Rails.root.to_s)
+    prettier_success = system(prettier.to_s, '--check', css_glob, chdir: Rails.root.to_s)
 
-    if success
-      puts 'Stylelint passed!'.green
+    if stylelint_success && prettier_success
+      puts 'Stylelint and Prettier passed!'.green
       puts '-' * 100
     else
-      puts 'Stylelint failed!'.red
+      puts 'Stylelint or Prettier failed!'.red
       puts '-' * 100
       exit false
     end
   end
-end
-
-desc 'Run all Ruby, JavaScript, and CSS linters'
-task tidy: :environment do
-  Rake::Task['test:jshint'].invoke
-  Rake::Task['test:eslint'].invoke
-  Rake::Task['test:stylelint'].invoke
-  sh 'bundle exec rubocop'
 end
 
 namespace :erd do
-  desc 'Generate Entity Relationship Diagram image at docs/erd.png'
+  desc 'Generate Entity Relationship Diagram image at docs/images/erd.png'
   task image: :environment do
     # Framework/infrastructure tables that drown out our actual domain model in the diagram.
     # Excluding them keeps the Case/Query/Rating/Book story readable. New domain models show up
@@ -209,10 +194,10 @@ namespace :erd do
     # Render a PNG via Graphviz; Mermaid output is unreadably small for a schema this size.
     # Requires the ruby-graphviz gem and the graphviz system package (the `dot` binary).
     # docs/data_mapping.md embeds this image, so overwriting it here updates the doc in place.
-    system 'bundle exec erd --generator=graphviz --filename=docs/erd --filetype=png ' \
+    system 'bundle exec erd --generator=graphviz --filename=docs/images/erd --filetype=png ' \
            '--inheritance --direct ' \
            "--attributes=foreign_keys,content,inheritance --exclude=#{infrastructure.join(',')}"
 
-    puts 'Generated ERD diagram at docs/erd.png (embedded in docs/data_mapping.md)'
+    puts 'Generated ERD diagram at docs/images/erd.png (embedded in docs/data_mapping.md)'
   end
 end

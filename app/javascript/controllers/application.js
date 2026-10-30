@@ -4,6 +4,8 @@ const application = Application.start()
 
 // Configure Stimulus development experience
 application.debug = false
-window.Stimulus   = application
+// Kept global for debugging and for Playwright specs that look up controllers
+// with getControllerForElementAndIdentifier.
+window.Stimulus = application
 
 export { application }

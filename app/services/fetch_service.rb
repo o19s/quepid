@@ -81,7 +81,7 @@ class FetchService
 
     response['hits']['hits'].each_with_index do |doc_json, index|
       doc = {}
-      doc[:_id] = doc_json['_id']
+      doc[:id] = doc_json['_id']
       unless explain_json.nil?
         explain = explain_json[doc_json['id']]
         doc[:explain] = explain.to_json if explain.present?
@@ -106,56 +106,22 @@ class FetchService
     docs
   end
 
-  def setup_docs_for_query query, docs
-    results = []
-
-    return results if docs.blank?
-    return results if query.blank?
-
-    docs = normalize_docs_array docs
-    docs = docs.sort { |d1, d2| d1[:position].to_i <=> d2[:position].to_i }
-
-    docs.each_with_index do |doc, index|
-      doc[:explain] = doc[:explain].to_json if doc[:explain].is_a?(Hash)
-
-      doc_params = {
-        doc_id:     doc[:id],
-        explain:    doc[:explain],
-        position:   doc[:position] || (index + 1),
-        rated_only: doc[:rated_only] || false,
-        fields:     doc[:fields].presence&.to_json,
-      }
-      results << query.snapshot_docs.build(doc_params)
-    end
-
-    results
-  end
-
-  # This maybe should be split out into a snapshot_query and a snapshot_docs?
   def store_query_results query, docs, response_status, response_body, error: nil
-    snapshot_query = @snapshot.snapshot_queries.create(
-      query:             query,
-      number_of_results: docs.count,
-      response_status:   response_status,
-      error:             error
+    written_queries = SnapshotManager.new(@snapshot).write_queries(
+      query.id => {
+        docs:              docs,
+        number_of_results: docs.count,
+        response_status:   response_status,
+        error:             error,
+      }
     )
+    snapshot_query = written_queries.fetch(query.id)
     if @options[:track_web_requests]
       snapshot_query.create_web_request(
         response_status: response_status,
         response:        response_body
       )
     end
-    snapshot_manager = SnapshotManager.new(@snapshot)
-    query_docs = snapshot_manager.setup_docs_for_query(snapshot_query, docs)
-    if query_docs.any?
-      SnapshotDoc.insert_all(
-        query_docs.map do |doc|
-          doc.attributes.except('id')
-        end
-      )
-    end
-
-    snapshot_query.reload # without this we get duplicate sets of snapshot_docs
 
     snapshot_query
   end
@@ -189,9 +155,9 @@ class FetchService
   def score_snapshot snapshot, try, user
     queries_detail = {}
 
-    snapshot.snapshot_queries.each do |snapshot_query|
-      javascript_scorer = JavascriptScorer.new(Rails.root.join('lib/scorer_logic.js'))
+    javascript_scorer = JavascriptScorer.new
 
+    snapshot.snapshot_queries.each do |snapshot_query|
       # Prepare some items to score
       doc_ratings = {}
       snapshot_query.query.ratings.each do |rating|
@@ -200,16 +166,15 @@ class FetchService
 
       # Some Scorers will need access to the document data as well, so add that
       docs = snapshot_query.snapshot_docs.map do |snapshot_doc|
-        doc = { id: snapshot_doc.doc_id, rating: doc_ratings[snapshot_doc.doc_id] }
-        doc.merge(JSON.parse(snapshot_doc.fields)) if snapshot_doc.fields.present?
-        doc
+        fields = snapshot_doc.fields.present? ? JSON.parse(snapshot_doc.fields) : {}
+        fields.merge('id' => snapshot_doc.doc_id, 'rating' => doc_ratings[snapshot_doc.doc_id])
       end
 
       best_docs = snapshot_query.query.ratings.map do |rating|
         { id: rating.doc_id, rating: rating.rating }
       end
 
-      best_docs.sort_by! { |doc| doc[:rating] }.reverse
+      best_docs.sort_by! { |doc| -doc[:rating].to_f }
 
       # docs = [
       #  { id: 1, value: 10, rating: 3 },
@@ -221,7 +186,15 @@ class FetchService
         scorer = snapshot.scorer
         code = scorer.code
 
-        score = javascript_scorer.score(docs, best_docs, code)
+        score = javascript_scorer.score(
+          docs, best_docs, code,
+          scale: scorer.scale,
+          query: {
+            id:      snapshot_query.query_id,
+            total:   snapshot_query.number_of_results,
+            options: snapshot_query.query.options,
+          }
+        )
         # puts "the score is #{score}"
         # puts "nan?  #{score.nan?}" if score.is_a? Float
         if score.is_a?(Float) && score.nan?
@@ -247,20 +220,17 @@ class FetchService
         end
       rescue JavascriptScorer::ScoreError => e
         puts "Scoring failed: #{e.message}"
+        snapshot_query.update(score: nil)
       end
 
       queries_detail[snapshot_query.query_id] =
         { score: snapshot_query.score, text: snapshot_query.query.query_text }
     end
 
-    # Opportunity here to fix the averaging logic
-    # at the case level.
-    if queries_detail.any?
-      scores = queries_detail.values.map { |q| q[:score] }
-      average_score = scores.sum.to_f / scores.length
-    else
-      average_score = 0.0
-    end
+    # Unscored queries (scorer error, fail(), no results) are left out of the
+    # case average, as they are in the case UI.
+    scores = queries_detail.values.filter_map { |q| q[:score] }
+    average_score = scores.any? ? scores.sum.to_f / scores.length : 0.0
 
     score_data = {
       all_rated:  nil,
@@ -342,25 +312,19 @@ class FetchService
     response
   end
 
-  # Substitutes #$query## wherever it appears in a string value - not just when the whole
-  # value equals it, since some POST-body templates (e.g. Vespa's YQL: 'select * from movies
-  # where title contains "#$query##"') embed the placeholder inside a longer string rather
-  # than using it as a standalone value like ES's {"query": "#$query##"} does. The block form
-  # of gsub (not a plain replacement string) avoids Ruby treating a literal "\1"-style
-  # sequence in query_text as a backreference.
-  def replace_values data, query_text
-    if data.is_a?(Hash)
-      data.each do |key, value|
-        if value.is_a?(String)
-          data[key] = value.gsub('#$query##') { query_text }
-        elsif value.is_a?(Hash) || value.is_a?(Array)
-          replace_values(value, query_text)
-        end
-      end
-    elsif data.is_a?(Array)
-      data.each { |item| replace_values(item, query_text) }
-    end
-    data
+  # Fills the template's #$...## placeholders the way the browser does (QueryTemplate):
+  # #$query## anywhere in a string value -- some POST-body templates, e.g. Vespa's YQL
+  # 'select * from movies where title contains "#$query##"', embed it in a longer string --
+  # plus #$keywordN## and #$qOption.x## from the query's and try's options, so a template
+  # using the query's vector (#$qOption.query_vec##) works in background runs too.
+  # Replacements are literal text, never regex backreferences.
+  def replace_values data, query_text, q_option = {}
+    QueryTemplate.hydrate(data, QueryTemplate.parameters(query_text, q_option))
+  end
+
+  # What the browser passes as qOption: the try's options with the query's on top.
+  def q_option_for atry, query
+    atry.options.merge(query.options_hash)
   end
 
   # rubocop:disable Metrics/MethodLength
@@ -421,20 +385,6 @@ class FetchService
 
   private
 
-  # Not sure we need this!
-  def normalize_docs_array docs
-    return [] if docs.blank?
-
-    result = docs.map do |each|
-      each = each.to_unsafe_h if each.is_a?(ActionController::Parameters)
-      each = each.to_hash     if each.is_a?(ActiveSupport::HashWithIndifferentAccess)
-
-      each.presence&.symbolize_keys!
-    end.compact
-
-    result
-  end
-
   def create_error_response message
     Faraday::Response.new(
       status:           400,
@@ -493,7 +443,7 @@ class FetchService
   end
 
   def execute_get_request endpoint, atry, query
-    params = build_get_params(atry.args, query)
+    params = build_get_params(atry.args, query, q_option_for(atry, query))
     params = add_engine_specific_params(endpoint, atry, params)
     @http_client.get(params: params)
   end
@@ -542,12 +492,15 @@ class FetchService
     add_elasticsearch_params(atry, params)
   end
 
-  def build_get_params args, query
+  # A query string has no arrays or objects, so a value filled in whole (say a vector)
+  # is printed the way the browser's URL building prints it.
+  def build_get_params args, query, q_option = {}
+    parameters = QueryTemplate.parameters(query.query_text, q_option)
     params = {}
     args.each do |key, values|
       values.each do |val|
-        processed_val = val.gsub('#$query##', query.query_text)
-        params[key] = processed_val
+        filled = QueryTemplate.hydrate(val, parameters)
+        params[key] = filled.is_a?(String) ? filled : QueryTemplate.js_string(filled)
       end
     end
     params
@@ -555,12 +508,11 @@ class FetchService
 
   def execute_body_request method, _endpoint, atry, query
     # need to deal with number_of_rows here
-    body = prepare_request_body(atry.args, query)
+    body = prepare_request_body(atry.args, query, q_option_for(atry, query))
     @http_client.public_send(method, body: body)
   end
 
-  def prepare_request_body args, query
-    processed_args = replace_values(args, query.query_text)
-    processed_args.to_json
+  def prepare_request_body args, query, q_option = {}
+    replace_values(args, query.query_text, q_option).to_json
   end
 end

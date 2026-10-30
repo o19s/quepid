@@ -1,0 +1,161 @@
+import { buildControllerFixture } from "../support/controller_fixture"
+import { beforeEach, describe, expect, it } from "vitest"
+import QueryRowController from "controllers/query_row_controller"
+
+describe("QueryRowController", () => {
+  let controller
+
+  beforeEach(() => {
+    document.body.innerHTML = `
+      <div>
+        <span data-query-row-target="query"></span>
+        <img data-query-row-target="image" />
+        <span data-query-row-target="text"></span>
+        <span data-query-row-target="resultCount"></span>
+        <small data-query-row-target="resultLabel"></small>
+        <span data-query-row-target="querqy"></span>
+        <div data-query-row-target="header"></div>
+        <i data-query-row-target="toggle"></i>
+        <span data-query-row-target="vectorBadge" class="d-none"></span>
+      </div>
+    `
+    controller = buildControllerFixture(QueryRowController, {
+      element: document.body.firstElementChild,
+      overrides: {
+        hasTextTarget: true,
+        hasQueryTarget: true,
+        hasImageTarget: true,
+        hasResultCountTarget: true,
+        hasResultLabelTarget: true,
+        hasQuerqyTarget: true,
+        hasHeaderTarget: true,
+        hasToggleTarget: true,
+        hasVectorBadgeTarget: true,
+        hasStateValue: true
+      }
+    })
+    controller.queryTarget = controller.element.querySelector('[data-query-row-target="query"]')
+    controller.imageTarget = controller.element.querySelector('[data-query-row-target="image"]')
+    controller.textTarget = controller.element.querySelector('[data-query-row-target="text"]')
+    controller.resultCountTarget = controller.element.querySelector(
+      '[data-query-row-target="resultCount"]'
+    )
+    controller.resultLabelTarget = controller.element.querySelector(
+      '[data-query-row-target="resultLabel"]'
+    )
+    controller.querqyTarget = controller.element.querySelector('[data-query-row-target="querqy"]')
+    controller.headerTarget = controller.element.querySelector('[data-query-row-target="header"]')
+    controller.toggleTarget = controller.element.querySelector('[data-query-row-target="toggle"]')
+    controller.vectorBadgeTarget = controller.element.querySelector(
+      '[data-query-row-target="vectorBadge"]'
+    )
+    controller.vectorStatusValue = "none"
+    controller.vectorStatusReasonValue = ""
+    controller.queryTextValue = "Star Wars"
+    controller.queryIdValue = 42
+    controller.rankValue = 3
+    controller.numFoundValue = 1
+    controller.querqyTriggeredValue = true
+    controller.informationNeedValue = "Find space movies"
+    controller.stateValue = "searching"
+    controller.diffValue = true
+    controller.toggledValue = true
+  })
+
+  it("renders read-only row values", () => {
+    controller.render()
+
+    expect(controller.element.id).toBe("query-Star Wars")
+    expect(controller.element.getAttribute("rank")).toBe("3")
+    expect(controller.textTarget.textContent).toBe("Star Wars\u00a0")
+    expect(controller.imageTarget.classList.contains("d-none")).toBe(true)
+    expect(controller.queryTarget.getAttribute("data-bs-tooltip-title-value")).toBe(
+      "Info Need: Find space movies"
+    )
+    expect(controller.resultCountTarget.getAttribute("data-count-up-number-value")).toBe("1")
+    expect(controller.resultLabelTarget.textContent).toBe("Result")
+    expect(controller.querqyTarget.classList.contains("d-none")).toBe(false)
+    expect(controller.element.classList.contains("queryHeader_searching")).toBe(true)
+    expect(
+      controller.element
+        .querySelector('[data-query-row-target="header"]')
+        .classList.contains("diff-query-display")
+    ).toBe(true)
+    expect(
+      controller.element
+        .querySelector('[data-query-row-target="toggle"]')
+        .classList.contains("bi-caret-up-fill")
+    ).toBe(true)
+  })
+
+  it("dispatches a toggle intent", () => {
+    controller.dispatch = (name, options) => {
+      controller.dispatchName = name
+      controller.dispatchOptions = options
+    }
+
+    controller.toggle({ preventDefault: () => {} })
+
+    expect(controller.dispatchName).toBe("toggle")
+    expect(controller.dispatchOptions.detail.queryId).toBe(42)
+  })
+
+  it("uses plural result copy and hides the Querqy marker when inactive", () => {
+    controller.numFoundValue = 2
+    controller.querqyTriggeredValue = false
+    controller.render()
+    controller.stateValue = "error"
+    controller.stateValueChanged("error", "searching")
+    controller.diffValue = false
+    controller.toggledValue = false
+    controller.render()
+
+    expect(controller.resultLabelTarget.textContent).toBe("Results")
+    expect(controller.querqyTarget.classList.contains("d-none")).toBe(true)
+    expect(controller.element.classList.contains("queryHeader_searching")).toBe(false)
+    expect(controller.element.classList.contains("queryHeader_error")).toBe(true)
+    expect(
+      controller.element
+        .querySelector('[data-query-row-target="header"]')
+        .classList.contains("diff-query-display")
+    ).toBe(false)
+    expect(
+      controller.element
+        .querySelector('[data-query-row-target="toggle"]')
+        .classList.contains("bi-caret-down-fill")
+    ).toBe(true)
+  })
+
+  it("renders image queries as thumbnails instead of text", () => {
+    controller.queryTextValue = "https://example.test/poster.jpg?size=small"
+    controller.render()
+
+    expect(controller.imageTarget.classList.contains("d-none")).toBe(false)
+    expect(controller.imageTarget.src).toBe("https://example.test/poster.jpg?size=small")
+    expect(controller.textTarget.classList.contains("d-none")).toBe(true)
+  })
+
+  it("shows a vector badge with the reason only while the vector is not current", () => {
+    controller.render()
+    expect(controller.vectorBadgeTarget.classList.contains("d-none")).toBe(true)
+
+    controller.vectorStatusValue = "failed"
+    controller.vectorStatusReasonValue = "401 from OpenAI"
+    controller.render()
+    expect(controller.vectorBadgeTarget.classList.contains("d-none")).toBe(false)
+    expect(controller.vectorBadgeTarget.textContent).toBe("vectorisation failed")
+    expect(controller.vectorBadgeTarget.title).toBe("401 from OpenAI")
+    expect(controller.vectorBadgeTarget.classList.contains("bg-danger-subtle")).toBe(true)
+
+    controller.vectorStatusValue = "stale"
+    controller.render()
+    expect(controller.vectorBadgeTarget.textContent).toBe("vector outdated")
+    expect(controller.vectorBadgeTarget.classList.contains("bg-danger-subtle")).toBe(false)
+    expect(controller.vectorBadgeTarget.classList.contains("bg-warning-subtle")).toBe(true)
+
+    controller.vectorStatusValue = "current"
+    controller.render()
+    expect(controller.vectorBadgeTarget.classList.contains("d-none")).toBe(true)
+    expect(controller.vectorBadgeTarget.hasAttribute("title")).toBe(false)
+  })
+})

@@ -3,12 +3,6 @@
 repos:
   - repo: local
     hooks:
-      - id: jshint-staged
-        name: jshint
-        entry: bin/jshint-staged
-        language: script
-        files: \.js$
-        pass_filenames: true
       - id: eslint-staged
         name: eslint (app/javascript)
         entry: bin/eslint-staged
@@ -16,13 +10,13 @@ repos:
         files: ^app/javascript/.*\.js$
         pass_filenames: true
       - id: prettier-staged
-        name: prettier (app/javascript)
+        name: prettier (app/javascript, test/javascript, test/playwright, scripts)
         entry: bin/prettier-staged
         language: script
-        files: ^app/javascript/.*\.js$
+        files: ^((app|test)/javascript/.*\.js|(test/playwright|scripts)/.*\.(js|mjs|ts))$
         pass_filenames: true
       - id: stylelint-staged
-        name: stylelint
+        name: stylelint + prettier (app/assets/stylesheets)
         entry: bin/stylelint-staged
         language: script
         files: app/assets/stylesheets/.*\.css$

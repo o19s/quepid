@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_05_192545) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_24_233000) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -304,6 +304,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_05_192545) do
     t.integer "book_id"
     t.string "case_name", limit: 191
     t.datetime "created_at", precision: nil, null: false
+    t.bigint "embedder_id"
     t.integer "last_try_number"
     t.boolean "nightly"
     t.json "options"
@@ -312,6 +313,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_05_192545) do
     t.integer "scorer_id"
     t.datetime "updated_at", precision: nil, null: false
     t.index ["book_id"], name: "index_cases_book_id"
+    t.index ["embedder_id"], name: "index_cases_on_embedder_id"
     t.index ["owner_id", "archived"], name: "idx_owner_archived"
     t.index ["owner_id"], name: "index_cases_on_owner_id"
   end
@@ -323,6 +325,25 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_05_192545) do
     t.datetime "updated_at", precision: nil, null: false
     t.float "value"
     t.index ["try_id"], name: "try_id"
+  end
+
+  create_table "embedders", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
+    t.string "api_key", limit: 4000
+    t.boolean "archived", default: false, null: false
+    t.datetime "created_at", null: false
+    t.integer "dimensions"
+    t.text "input_template"
+    t.text "instruction"
+    t.string "model", null: false
+    t.string "name", null: false
+    t.json "options"
+    t.integer "owner_id"
+    t.string "provider", limit: 50, null: false
+    t.string "service_url", limit: 500
+    t.integer "timeout", default: 30, null: false
+    t.string "truncation", limit: 20, default: "none", null: false
+    t.datetime "updated_at", null: false
+    t.index ["owner_id", "id"], name: "index_embedders_on_owner_id_and_id"
   end
 
   create_table "judgements", charset: "utf8mb3", collation: "utf8mb3_unicode_ci", force: :cascade do |t|
@@ -392,6 +413,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_05_192545) do
     t.datetime "updated_at", null: false
     t.index ["revision"], name: "index_rails_pulse_deployments_on_revision"
     t.index ["started_at"], name: "index_rails_pulse_deployments_on_started_at"
+  end
+
+  create_table "rails_pulse_events", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
+    t.string "kind", null: false, comment: "What noticed it, e.g. writer_heartbeat"
+    t.string "subject", comment: "Who it is about: host:pid, rule name, job name, exception class"
+    t.string "outcome", null: false, comment: "sampled, triggered, clean, insufficient_data, ran"
+    t.decimal "value", precision: 15, scale: 6, comment: "The number behind it: requests dropped since the last sample, or the triggered metric value"
+    t.datetime "occurred_at", null: false
+    t.text "message"
+    t.text "metadata", comment: "JSON with the kind-specific detail"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["kind", "occurred_at"], name: "index_rp_events_on_kind_and_occurred_at"
+    t.index ["kind", "subject", "occurred_at"], name: "index_rp_events_on_kind_subject_and_occurred_at"
   end
 
   create_table "rails_pulse_exception_groups", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
@@ -495,7 +530,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_05_192545) do
     t.index ["query_id", "duration", "occurred_at"], name: "index_rails_pulse_operations_query_performance"
     t.index ["query_id", "occurred_at"], name: "index_rails_pulse_operations_on_query_and_time"
     t.index ["request_id"], name: "index_rails_pulse_operations_on_request_id"
-    t.check_constraint "(request_id IS NOT NULL) OR (job_run_id IS NOT NULL)", name: "rails_pulse_operations_request_or_job_run"
+    t.check_constraint "(`request_id` is not null) or (`job_run_id` is not null)", name: "rails_pulse_operations_request_or_job_run"
   end
 
   create_table "rails_pulse_queries", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
@@ -543,7 +578,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_05_192545) do
     t.string "controller_action", comment: "Rails controller and action handling this route (e.g., articles#show)"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index "(case when (controller_action is null) then path else NULL end)", name: "index_rails_pulse_routes_on_path_without_action", unique: true
+    t.index "(case when (`controller_action` is null) then `path` else NULL end)", name: "index_rails_pulse_routes_on_path_without_action", unique: true
     t.index ["controller_action", "path"], name: "index_rails_pulse_routes_on_controller_action_and_path", unique: true
     t.index ["path"], name: "index_rails_pulse_routes_on_path"
   end
@@ -805,6 +840,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_05_192545) do
     t.integer "team_id", null: false
     t.index ["case_id"], name: "index_teams_cases_on_case_id"
     t.index ["team_id"], name: "index_teams_cases_on_team_id"
+  end
+
+  create_table "teams_embedders", id: false, charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
+    t.bigint "embedder_id", null: false
+    t.bigint "team_id", null: false
+    t.index ["embedder_id", "team_id"], name: "index_teams_embedders_on_embedder_id_and_team_id", unique: true
+    t.index ["team_id"], name: "index_teams_embedders_on_team_id"
   end
 
   create_table "teams_members", primary_key: ["member_id", "team_id"], charset: "latin1", force: :cascade do |t|

@@ -24,6 +24,14 @@ class ScoresControllerTest < ActionController::TestCase
       assert_equal [ score_for_try_1, score_for_try_2 ].sort_by(&:id), assigns(:scores).to_a.sort_by(&:id)
     end
 
+    test 'row checkboxes submit with the delete form' do
+      get :index, params: { case_id: case_with_score.id }
+
+      assert_select 'form#delete-scores-form[action=?]', destroy_multiple_case_scores_path(case_with_score)
+      assert_select 'input[name="score_ids[]"]', count: 2
+      assert_select 'input[name="score_ids[]"]:not([form="delete-scores-form"])', count: 0
+    end
+
     test 'filters by scorer_id when provided' do
       other_scorer_score = scores(:score_for_first_try)
       other_scorer_score.update! case: case_with_score, scorer: scorers(:valid)
@@ -34,6 +42,15 @@ class ScoresControllerTest < ActionController::TestCase
       assert_equal [ other_scorer_score ], assigns(:scores).to_a
     end
 
+    test 'lists scores that have no scorer without crashing' do
+      score_for_try_1.update_column :scorer_id, nil
+
+      get :index, params: { case_id: case_with_score.id }
+
+      assert_response :ok
+      assert_not_includes assigns(:scorer_options).flatten, nil
+    end
+
     describe 'a case this user cannot access' do
       let(:matt_case) { cases(:matt_case) } # owned by a different user, not public, not shared with random
 
@@ -41,8 +58,8 @@ class ScoresControllerTest < ActionController::TestCase
         get :index, params: { case_id: matt_case.id }
 
         assert_response :not_found
-        # `check_case`'s JSON 404 is also :not_found -- pin the HTML page specifically so a
-        # regression back to that guard fails.
+        # `render_not_found_json`'s JSON 404 is also :not_found -- pin the HTML page specifically
+        # so a regression to the JSON response fails.
         assert_match "doesn't exist (404 Not found)", response.body
         assert_no_match 'Case not found!', response.body
       end

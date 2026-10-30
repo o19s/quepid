@@ -50,10 +50,13 @@ module Api
           # pairs above, and there's no unique index on queries to conflict-target anyway.
           Query.insert_all(queries_to_import)
           # rubocop:enable Rails/SkipsModelValidations
+          # insert_all skips callbacks, so the new queries' vectors are asked for here.
+          VectorizeCaseQueriesJob.enqueue_for(@case) if queries_to_import.any?
 
           @case.reload
-          @queries        = @case.queries.includes([ :ratings ])
-          @display_order  = @queries.map(&:id)
+          @queries          = @case.queries
+          @display_order    = @queries.map(&:id)
+          @ratings_by_query = Rating.rows_by_query(@display_order)
 
           respond_with @queries, @display_order
         end

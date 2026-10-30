@@ -1,35 +1,25 @@
-<%
-
-if document_fields.empty?
-  %>
+<%# locals: (document_fields:, except: %w[title thumb], compact: false) %>
+<%# compact: bold inline labels with long values kept on the label's line (bulk judge). %>
+<% if document_fields.empty? %>
   <%= sanitize document_fields.to_json %>
-  <%
-else
-  %>
-  <h5>
-  <%= sanitize document_fields['title'] %>
-  </h5>
+<% else %>
+  <% if (title = document_fields['title']).present? %>
+    <h5><%= sanitize title %></h5>
+  <% end %>
 
-  <%
-  document_fields.except('title').except('thumb').map do |field, value|
-    %>
+  <% document_fields.except(*except).each do |field, value| %>
     <p>
-      <span class="h6"><%= field.humanize.titleize %>:</span>
-    <% if value.is_a? String %>
-      <% if value.starts_with?('http') %>
-        <%= link_to value, value, target: "_blank", rel: "noopener noreferrer" %>
-      <% else if value.length > 110 then %>
-        <br/><%= sanitize value %>
-      <% else %>
-        <%= sanitize value %>
-      <% end %>        
-        
+      <%= tag.span "#{field.humanize.titleize}:", class: compact ? 'fw-bold' : 'h6' %>
+      <% if value.is_a? String %>
+        <% if value.starts_with?('http') %>
+          <%= link_to value, value, target: "_blank", rel: "noopener noreferrer" %>
+        <% else %>
+          <% if !compact && value.length > 110 %><br><% end %>
+          <%= sanitize value %>
+        <% end %>
+      <% elsif value.is_a? Array %>
+        <%= truncate(sanitize(value.size == 1 ? value.first : value.to_sentence), length: 1000) %>
       <% end %>
-    <% elsif value.is_a? Array %>
-      <%= (truncate(sanitize(value.size == 1 ? value.first : value.to_sentence), length: 1000)) %>
-    <% end %>
     </p>
-    <%
-  end
-end
-%>
+  <% end %>
+<% end %>

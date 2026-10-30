@@ -4,7 +4,7 @@
 
 A **Book** is Quepid's offline relevance-judgement workflow: a set of query/document pairs (**Query Doc Pairs**) that one or more people (or AI Judges) rate independently (**Judgements**). Judgements can later be synced back into a Case's ratings (Part 6.6). This part covers creating/configuring a book, its danger-zone maintenance tools, and import/export. Judging itself is covered in Part 11; AI Judges in Part 12.
 
-**Where to find it:** `/books`. Every book page shares a tab strip: **Overview, Query/Doc Pairs, Judgement Stats, Judgements, Import, Share book, Export, Settings**.
+**Where to find it:** `/books`. Every book page shares a tab strip: **Overview** and **Judge Overview**. Management pages also show **Judgement Stats, Query/Doc Pairs, Judgements, Import, Share book, Export, Settings**.
 
 ## Test scenarios
 
@@ -22,38 +22,44 @@ A **Book** is Quepid's offline relevance-judgement workflow: a set of query/docu
 
 ### 10.2 Create a new book
 
+- [ ] The AI Judges section explains eligibility independently of the book's selected teams, Auto-run, and on-call escalation. Auto-run on new pairs uses a switch. Show rank precedes Rank Depth; Rank Depth uses a compact150px input and explains the Bulk Judging default and coverage effect. A new book with no available judges shows the create-first/Settings guidance; available judges remain selectable during creation.
+
 - [ ] **Steps:**
-  1. Click **New Book**. Leave Name blank, submit — confirm a validation error re-renders the form.
+  1. Click **New Book**. Leave Name blank and submit: the browser's required-field check blocks it. Bypass browser validation and submit again — confirm a validation error re-renders the form. This is an intentional change. Both the historical baseline (`8ceb99e9`) and pre-branch `main` mark the Name field `required` in the browser, but `Book` had no presence validation, so a submission that bypassed the browser check saved a book with a blank name. `0439ee00` added `validates :name, presence: true` and a model test, so the server now rejects it too.
   2. Fill Name, check at least one team to share with, pick a **Rating Scale** (scorer), review/edit the auto-populated **Scoring Guidelines**, save.
 - **Expected:** Redirects to the new book's Overview with "Book was successfully created."
 - **Edge cases:**
-  - [ ] Create a book while belonging to zero teams — confirm the info alert + "Create a team" link appears in the Teams checklist area.
-  - [ ] Create a book from within a Case's "Judgements" flow (Part 6.6, passes `origin_case_id`) — confirm the "Case Integration" toggles (Link the Case, Case→Book auto-populate, Book→Case auto-populate) appear and function.
+  - [ ] Create a book while belonging to zero teams — confirm the team picker offers "Create a team" and the book can still be saved privately.
+  - [ ] Create a book from within a Case's "Judgements" flow (Part 6.6, passes `origin_case_id`) — confirm the "Case Integration" toggles appear, with the two sync directions indented beneath Enable Synchronization and a concise information banner, matching staging. Uncheck Link the Case: both sync switches disable; recheck it: their choices remain. Save checked and unchecked variants, verifying that unchecked creation preserves the case's existing book/settings. Set different sync choices, uncheck Link the Case and submit without a scale (bypass browser validation to reach the server). Confirm case context and choices survive validation; recheck linking and verify the original choices before correcting the scale and retrying.
   - [ ] Save without checking any team — confirm the book still saves (now effectively private to you) without erroring.
 
 ### 10.3 Edit book settings
 
 - [ ] **Steps:**
   1. Open an existing book's **Settings** tab.
-  2. Change Name, add/remove Teams, add/remove **AI Judges Assigned to this Book** checkboxes (see Part 12 for creating an AI Judge first), toggle **Show Rank of Documents when Judging**, toggle **Supports Implicit Judgements**, change **Rating Scale** and **Scoring Guidelines**.
+  2. Change Name, add/remove Teams, add/remove **AI Judges Assigned to this Book** checkboxes (see Part 12 for creating an AI Judge first), set per-judge **Auto-run on new pairs** and **Rank Depth**, toggle **Show Rank of Documents when Judging**, toggle **Supports Implicit Judgements**, change **Rating Scale** and **Scoring Guidelines**.
   3. Save, reload, confirm everything persisted.
-- **Expected:** All settings persist correctly.
+- **Expected:** All settings persist correctly. A successful update shows the green notice "Book was successfully updated."; an invalid update does not show a success notice.
 - **Edge cases:**
   - [ ] With an import or export file already attached, check "Delete Import File" / "Delete Export File" and save — confirm the file is purged and the checkbox becomes disabled afterward.
-  - [ ] As a member of only one of the book's several sharing teams, edit and save the book — confirm teams/AI-judges you can't see are preserved rather than silently removed (best tested with two accounts).
+  - [ ] As a member of only one of the book's several sharing teams, edit and save the book — confirm hidden teams and AI judges are preserved. AI judge checkboxes list judges you own or that are shared with your teams; hidden assignments and their auto-run flags must survive; saving the unchanged visible selection must succeed (best tested with two accounts).
   - [ ] Change the Rating Scale after judgements already exist on the old scale — confirm existing judgements still display sensibly rather than breaking.
+
+  - [ ] Submit a foreign team ID or an inaccessible/human AI judge ID in a create/update request — expect 404, no new book and no changes to existing memberships.
+
+  - [ ] Bypass browser required-field validation and submit a blank Name; expect a 422 Settings form with the validation error and ratings-remap section rendered. Reopen Settings and confirm the stored name is unchanged.
 
 ### 10.4 Book Overview / Show page
 
 - [ ] **Steps:**
-  1. Open a book's **Overview** tab. Confirm it shows: judgements-needed banner, AI judge info or call-to-action, Teams, Scale labels, Show Rank/Implicit Judgements flags, Related Cases, and Associated Files.
+  1. Open a book's **Overview** tab. Confirm Fully Judged (3+ judgements), Not Started and In Progress coverage; AI/human Judge Activity with counts, last-active time and 30-day charts; Linked Cases with sync-direction arrows; Book Settings and Associated Files. Coverage respects Rank Depth and updates on refresh; activity updates live.
   2. Click **Archive**, confirm the dialog, confirm.
   3. From the archived list, reopen it, click **Unarchive**, confirm.
 - **Expected:** Archive/unarchive work with the standard browser confirm dialog; the Archived badge and index-list membership update accordingly.
 - **Edge cases:**
-  - [ ] With legacy anonymous judgements present (`user: nil`), confirm the yellow "anonymous judgements" warning banner appears and links toward the Assign Anonymous tool (10.6b).
+  - [ ] With legacy anonymous judgements present (`user: nil`), confirm the yellow "anonymous judgements" warning banner appears and links toward the Assign Anonymous tool (10.6a).
   - [ ] With an import currently processing, confirm the red in-progress alert + manual **Refresh** link appears, and clicking Refresh updates the pair count once the job finishes.
-  - [ ] Confirm "AI Judges Available" only appears when the book's teams have an unassigned AI judge, and flips to "we have an AI Judge helping" text once one is assigned.
+  - [ ] Confirm unassigned accessible AI judges are offered and assigned judges are shown in activity even with zero judgements. Play opens the bounded/all-pairs modal; Refine Prompt appears only for judges you can edit. Linked-case arrows distinguish sends pairs, receives ratings, both and no auto-sync; running jobs pulse the matching direction.
 
 ### 10.5 Combine (merge) books
 
@@ -62,8 +68,10 @@ A **Book** is Quepid's offline relevance-judgement workflow: a set of query/docu
   2. Select one or more source books that have rated pairs (books with 0 rated pairs should be disabled/unselectable), click **Merge these Books into this Book**.
 - **Expected:** Notice "Combined N query/doc pairs." Query/doc pairs and averaged ratings (averaged per-user across the two books) appear in the target book.
 - **Edge cases:**
-  - [ ] Choose a source book whose scale doesn't match the target's — expect an alert naming the mismatched book, and no merge performed.
+  - [ ] Choose a source book whose scale doesn't match the target's — expect an alert stating the target scale, and no merge performed.
   - [ ] Confirm a book with 0 rated pairs truly can't be selected via the UI (disabled checkbox), not just discouraged.
+  - [ ] Submit an inaccessible or missing source id — expect a scoped 404 and no pairs or judgements merged, including from other selected sources.
+  - [ ] Force a pair, judgement or final book validation failure — expect an error alert and all merge writes rolled back; no merge update jobs should be enqueued.
 
 ### 10.6a Assign anonymous judgements/ratings to a user
 
@@ -90,6 +98,20 @@ A **Book** is Quepid's offline relevance-judgement workflow: a set of query/docu
 - **Edge cases:**
   - [ ] Run this with zero Judge Later judgements present — should still succeed, reporting 0 mapped.
 
+### 10.6e Remap judgement ratings
+
+- [ ] **Steps:**
+  1. On Settings > Danger Zone, scroll to **Remap Judgement Ratings**. Confirm one row per distinct rating value currently used by the book's judgements or its associated cases' ratings, each with a "Map To" number input pre-filled with the same value.
+  2. Change one or more targets (e.g. collapse a 0–3 scale to binary: 3→1, 2→1, 1→0), confirm the dialog, click **Remap Ratings**.
+  3. Open the Judgements tab and an associated Case's ratings (`/cases/:id/ratings`) and confirm the values changed.
+- **Expected:** Notice "Remapped N judgements and M case ratings."; both the book's judgements and all associated cases' ratings are remapped together.
+- **Edge cases:**
+  - [ ] Submit without changing any value — expect "No ratings changed." and no data touched.
+  - [ ] Chained mappings (e.g. 3→2 and 2→1 together) — confirm each original value maps exactly once (3 does not end up as 1).
+  - [ ] A book with no rated judgements or case ratings — the form shows "No rated judgements or case ratings found in this book." instead of a table.
+  - [ ] Blank a "Map To" input — that value is left unchanged rather than nulled.
+  - [ ] After remapping, confirm the book's Rating Scale (Settings) is **not** changed automatically; update it separately if the scale should change.
+
 ### 10.7 Import a new book from JSON
 
 - [ ] **Steps:**
@@ -108,19 +130,51 @@ A **Book** is Quepid's offline relevance-judgement workflow: a set of query/docu
 ### 10.8 Import additional data into an existing book
 
 - [ ] **Steps:**
-  1. On an existing book's **Import** tab, upload a JSON payload of additional `query_doc_pairs` (referencing existing `query_doc_pair_id`s, or new `query_text`/`doc_id` pairs to upsert).
-  2. Separately, upload an `all_judgements` payload (using `email` to attribute judgements to a user, and optionally a nested `query_doc_pair` object instead of an id).
-- **Expected:** Pairs/judgements are created or updated once the background job completes.
+  1. On an existing book's **Import** tab, confirm the heading identifies the book, Import is active and the Overview/Judge Overview tabs navigate correctly. Upload a JSON payload of additional `query_doc_pairs` (referencing existing `query_doc_pair_id`s, or new `query_text`/`doc_id` pairs to upsert).
+  2. Separately, upload the JSON from the same book's `/api/books/:id/judgements` endpoint, using its `judgements` envelope. Also check the legacy `all_judgements` envelope, `email` attribution, and both flat `query_text`/`doc_id` keys and a nested `query_doc_pair` object instead of an id.
+- **Expected:** Pairs/judgements are created or updated once the background job completes. Known judges upsert their own judgements; anonymous judgements remain separate.
 - **Edge cases:**
-  - [ ] Same JSON-validity and missing-file edge cases as 10.7 apply here too.
+  - [ ] Same JSON-validity edge cases as 10.7 apply here too. Submit each upload form without a file: both must show "You must select the file to be imported first." and queue no import.
+  - [ ] Upload an empty judgement array, only foreign/missing pair ids, or incomplete flat query/document keys — expect "No judgements could be imported", no queued import and no success notice. Ids must belong to this book.
+  - [ ] Upload only an explanation for an existing identified judge/pair — expect the explanation to update without changing its rating. Upload an invalid nested pair followed by a valid judgement — expect the valid row to import and the background job/attachment to clear, without saving the invalid pair.
   - [ ] Anonymous (`user_email`-less) judgements stay separate and unattributed on both upload forms — see 10.7's anonymous-judgement edge case.
 
 ### 10.9 Export a book
 
 - [ ] **Steps:**
   1. On the **Export** tab, click the judgement-data CSV link — confirm it downloads correctly.
-  2. Click **Export** (or **Re-Export** if one already exists) — confirm notice "Queued up export of book as file." and that revisiting the tab shows "currently being exported" status while the job runs.
-  3. Once complete, confirm a download link with a "created X ago" timestamp appears, and the button now reads **Re-Export**.
-  4. Click Export/Re-Export a second time immediately (before the first job finishes) — confirm it's blocked/disabled rather than queuing a duplicate job.
-  5. Follow the "Quepid APIs" link to the OAS docs page.
+  2. Click **Export** (or **Re-Export** if one already exists) — confirm you land back on the **Export** tab with notice "Queued up export of book as file." and "currently being exported" status while the job runs.
+  3. Without reloading, confirm the page updates itself when the job finishes: a download link with a "created X ago" timestamp appears, and the button now reads **Re-Export**.
+  4. Click that **Re-Export** button (rendered by the live update, not a reload) — confirm it queues a new export rather than erroring.
+  5. Click Export/Re-Export a second time immediately (before the first job finishes) — confirm it's blocked/disabled rather than queuing a duplicate job.
+  6. Follow the "Quepid APIs" link to the OAS docs page.
 - **Expected:** Exactly one export job runs at a time per book; the resulting JSON file is a valid, complete book export (good candidate for reuse as an import template, per Part 10.7).
+
+### 10.10 Judge Overview
+
+- [ ] **Steps:** Open **Judge Overview** before and after contributing a judgement. Check personal progress, remaining available pairs, the book's rubric and your 30-day activity chart. Follow **Start Judging** and **Bulk Judging**.
+- **Expected:** Personal progress and remaining pairs respect Rank Depth and the book's selection strategy; total contributions and the activity chart include the whole book. Completed/empty books disable judging links and explain what remains for other judges. Reload updates personal metrics.
+
+### 10.11 Delete a book
+
+⚠️ Use a disposable book containing rated and unrated pairs, attached import/export files, an assigned AI judge, and a linked disposable case.
+
+- [ ] **Steps:**
+  1. Open **Settings**, click **Delete Book**, and cancel the confirmation. Reload: the book, files, pairs and judgements remain.
+  2. Repeat and confirm. Verify the redirect to Books with "Book is deleted"; the book is absent from both active and archived lists and cannot be reopened.
+  3. Open the previously linked case and the AI Judges list.
+- **Expected:** The book and its pairs/judgements are removed. Its attachments are purged; the linked case, its existing ratings and the AI judge survive. The case's book association is cleared. This is permanent deletion, distinct from Archive (10.4).
+- **Edge cases:** Repeat with an empty book and with a book shared to a disposable team; check from a teammate's session that the deleted book is gone there too.
+
+### 10.12 Judgement aggregation and implicit ratings
+
+- [ ] **Steps:**
+  1. Link a disposable book to a case containing the same query/document pair. Enable Book → Case sync, use a 0–3 scale, and enable **Supports Implicit Judgements**.
+  2. Have one judge rate the pair 3; refresh case ratings and confirm 3. Add a second judge's rating of 0; refresh and confirm 1.5.
+  3. Disable implicit judgements, save and refresh ratings again: confirm the case rating rounds to 2 while the two original judgements remain 3 and 0.
+  4. Re-enable implicit judgements and add a third rating of 2: refresh and confirm 0 (the minimum of the three highest ratings). Import a fourth identified judge's rating of 3: confirm 2 (top three are 3, 3, 2).
+- **Expected:** One or two rateable judgements are averaged; three or more use the minimum of the top three. Explicit case ratings round the result; implicit ratings retain the fraction. The book's individual judgements remain available in the audit view.
+- **Edge cases:**
+  - [ ] Add an Unrateable or Judge Later judgement without a rating; it must not contribute a numeric zero to aggregation.
+  - [ ] Refresh with **Sync Queries** off/on for a book-only query: off leaves it absent from the case; on creates it with information need, notes and options (6.6). Repeating refresh must not duplicate queries or ratings.
+  - [ ] For a pair with no rateable judgements, refresh must not manufacture a zero rating or clear a previously stored case rating.

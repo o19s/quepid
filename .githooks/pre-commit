@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Run RuboCop, blocking ESLint (app/javascript) + Prettier (app/javascript, test/javascript,
+# test/playwright, scripts), and Stylelint + Prettier (app/assets/stylesheets).
+
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+cd "$ROOT"
+
+ruby_files=()
+modern_js_files=()
+css_files=()
+
+while IFS= read -r file; do
+  [[ -z "$file" ]] && continue
+
+  case "$file" in
+    *.rb)
+      ruby_files+=("$file")
+      ;;
+    *.css)
+      css_files+=("$file")
+      ;;
+  esac
+
+  # Candidate scripts anywhere; eslint-staged/prettier-staged filter to their scopes.
+  case "$file" in
+    *.js | *.mjs | *.ts)
+      modern_js_files+=("$file")
+      ;;
+  esac
+done < <(git diff --cached --name-only --diff-filter=ACM)
+
+if [[ ${#ruby_files[@]} -gt 0 ]]; then
+  bin/pre-commit-rubocop "${ruby_files[@]}"
+fi
+
+if [[ ${#modern_js_files[@]} -gt 0 ]]; then
+  bin/eslint-staged "${modern_js_files[@]}"
+  bin/prettier-staged "${modern_js_files[@]}"
+fi
+
+if [[ ${#css_files[@]} -gt 0 ]]; then
+  bin/stylelint-staged "${css_files[@]}"
+fi

@@ -1,36 +1,47 @@
 import { Controller } from "@hotwired/stimulus"
+import { copyText } from "utils/clipboard"
+import { createTemporaryFeedback } from "utils/temporary_feedback"
 
+const FEEDBACK_MS = 1500
+
+/**
+ * Copies a team invite link from a `link` Stimulus value.
+ * Uses `utils/clipboard` so HTTPS and plain-HTTP pages share one fallback path.
+ * Success and failure show briefly on the button itself, like other copy controls.
+ */
 export default class extends Controller {
   static values = { link: String }
+
+  disconnect() {
+    this.feedback?.cancel()
+  }
 
   copy(event) {
     event.preventDefault()
     const link = this.linkValue
     const btn = event.currentTarget
-    if (!link) { alert('No invite link available'); return }
-
-    const setCopied = (text) => {
-      const prev = btn.innerHTML
-      btn.innerHTML = text
-      setTimeout(() => { btn.innerHTML = prev }, 1500)
+    if (!link) {
+      this.showFeedback(btn, "No invite link")
+      return
     }
 
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(link).then(() => setCopied('Copied'), () => alert('Copy failed'))
-    } else {
-      const textarea = document.createElement('textarea')
-      textarea.value = link
-      textarea.style.position = 'fixed'
-      textarea.style.left = '-9999px'
-      document.body.appendChild(textarea)
-      textarea.select()
-      try {
-        document.execCommand('copy')
-        setCopied('Copied')
-      } catch (e) {
-        alert('Copy failed')
+    copyText(link).then(
+      () => this.showFeedback(btn, "Copied"),
+      () => this.showFeedback(btn, "Copy failed")
+    )
+  }
+
+  // Remembers the original label once, so repeated clicks still restore it.
+  showFeedback(btn, text) {
+    this.originalLabel ??= btn.innerHTML
+    this.feedback ??= createTemporaryFeedback(FEEDBACK_MS)
+    this.feedback.show(
+      () => {
+        btn.textContent = text
+      },
+      () => {
+        btn.innerHTML = this.originalLabel
       }
-      document.body.removeChild(textarea)
-    }
+    )
   }
 }

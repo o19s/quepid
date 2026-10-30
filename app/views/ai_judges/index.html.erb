@@ -1,9 +1,7 @@
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
   <h1><i class="bi bi-robot"></i> AI Judges</h1>
   <div class="btn-toolbar mb-2 mb-md-0">
-    <%= link_to new_ai_judge_path, class: 'btn btn-success' do %>
-      <i class="bi bi-plus-lg" aria-hidden="true"></i> Create AI Judge
-    <% end %>
+    <%= page_create_button 'Create AI Judge', new_ai_judge_path %>
   </div>
 </div>
 
@@ -61,17 +59,14 @@
                     <%= link_to edit_ai_judge_path(ai_judge), class: 'btn btn-link p-0 me-2', title: 'Edit', 'aria-label': 'Edit' do %>
                       <i class="bi bi-pencil" aria-hidden="true"></i>
                     <% end %>
-                    <button type="button"
-                            class="btn btn-link text-danger p-0"
-                            title="Delete"
-                            aria-label="Delete"
-                            data-controller="confirm-delete"
-                            data-action="click->confirm-delete#open"
-                            data-confirm-delete-url-value="<%= ai_judge_path(ai_judge) %>"
-                            data-confirm-delete-message-value="<%= h("Delete AI judge #{ai_judge.name}?") %>"
-                            data-confirm-delete-method-value="delete">
+                    <%= group_button_to ai_judge_path(ai_judge),
+                                        method: :delete,
+                                        button_class: "text-danger p-0",
+                                        title: "Delete",
+                                        aria: { label: "Delete" },
+                                        confirm: "Delete AI judge #{ai_judge.name}?" do %>
                       <i class="bi bi-x-circle" aria-hidden="true"></i>
-                    </button>
+                    <% end %>
                   </div>
                 </td>
               </tr>

@@ -1,0 +1,33 @@
+<%# locals: (kase:) %>
+<%# Core case workspace — list UI, query-state mutation through the temporary live-query adapter. %>
+<% modal_body = capture do %>
+  <div data-move-query-core-target="loading" class="text-center py-3">
+    <p>Loading cases, this won't take long!</p>
+    <i class="bi bi-arrow-repeat spintime" aria-hidden="true"></i>
+  </div>
+
+  <div data-move-query-core-target="empty" class="text-center d-none">
+    <p>Please create another case to move this query to first.</p>
+  </div>
+
+  <p data-move-query-core-target="caseListLabel" class="d-none">Select a case:</p>
+  <div data-move-query-core-target="caseList" class="list-group move-query-cases-list d-none"></div>
+<% end %>
+
+<% modal_footer = capture do %>
+  <button type="button" class="btn btn-success" disabled hidden
+          data-move-query-core-target="submitButton"
+          data-action="click->move-query-core#submit">Move</button>
+<% end %>
+
+<%= render "shared/modal_shell", id: "moveQueryModal", title: "Move Query to Another Case",
+                                 data: {
+                                   controller: "move-query-core",
+                                   action: "show.bs.modal->move-query-core#open",
+                                   move_query_core_cases_url_value: api_cases_path,
+                                   move_query_core_case_id_value: kase&.id,
+                                   move_query_core_query_command_bridge_outlet: "body"
+                                 },
+                                 title_data: { move_query_core_target: "title" },
+                                 footer: modal_footer,
+                                 body: modal_body %>

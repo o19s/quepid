@@ -12,7 +12,7 @@
 <% end %>
 
 <%= render "shared/modal_shell", id: "judging-modal-#{ai_judge.id}",
-                                 title: '<i class="bi bi-robot text-primary"></i> '.html_safe + "#{ai_judge.fullname} — Live Judging Activity",
+                                 title: safe_join([tag.i(class: "bi bi-robot text-primary"), " #{ai_judge.fullname} — Live Judging Activity"]),
                                  dialog_class: "modal-lg",
                                  footer: modal_footer,
                                  body: modal_body %>

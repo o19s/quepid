@@ -1,44 +1,27 @@
 /* Misc. */
- .border-bottom {
-	 border-bottom: 1px #aaa solid;
-}
- a.action-icon {
-	 color: #666;
-	 text-decoration: none;
-	 margin: 0 2px;
-}
- a.action-icon:hover {
-	 color: #999;
-}
- a.action-icon sup {
-	 top: -1em;
-	 font-size: 10px;
-}
- .query-help {
-	 font-size: 1.5em;
-}
- .full-screen-modal {
-	 height: 100%;
-	 z-index: 2050 !important;
-}
- .full-screen-modal .modal-dialog {
-	 height: calc(100% - 100px);
-	 width: calc(100% - 100px);
-	 /* BS5's .modal-dialog sets max-width: 500px (at the >=576px breakpoint);
-	    without overriding it here too, that cap wins over the width above
-	    and this modal never actually grows past the default small size. */
-	 max-width: calc(100% - 100px);
-}
- .full-screen-modal .modal-content {
-	 height: 100%;
-	 overflow: scroll;
+.query-help {
+  font-size: 1.5em;
 }
 
-/* BS3's default modal width was 600px; BS5's default is 500px, with no
-   built-in size between default and .modal-lg (800px). Restore the BS3
-   width for the "Select Scorer" modal, which used the plain default size. */
- .pick-scorer-modal .modal-dialog {
-	 max-width: 600px;
+/* Used by the match-explain Debug and Expand modals. */
+.full-screen-modal {
+  height: 100%;
+  z-index: 2050 !important;
+}
+
+.full-screen-modal .modal-dialog {
+  height: calc(100% - 100px);
+  width: calc(100% - 100px);
+
+  /* BS5's .modal-dialog sets max-width: 500px (at the >=576px breakpoint);
+	    without overriding it here too, that cap wins over the width above
+	    and this modal never actually grows past the default small size. */
+  max-width: calc(100% - 100px);
+}
+
+.full-screen-modal .modal-content {
+  height: 100%;
+  overflow: auto;
 }
 
 /* The wizard has no .modal-header, so its step headings (plain BS5 <h1>/<h2>
@@ -46,88 +29,173 @@
    flex row. At the shared 600px modal width, longer headings like "What
    Search Endpoint do you want to connect to?" run almost edge-to-edge and
    crowd the X. Give the wizard extra width so headings clear it. */
- .wizard-modal-window .modal-dialog {
-	 max-width: 700px;
+.wizard-modal-window .modal-dialog {
+  max-width: 700px;
 }
 
-/* BS5's h4 is 1.5rem vs BS3's 1.25x-base (~18px), and BS5's .list-group-item
-   uses looser padding, a lighter border, no border-collapsing margin, and
-   the BS5 primary blue for .active instead of BS3's. Restore the BS3 look
-   for the scorer/custom-scorer lists in this modal. */
- .pick-scorer-modal h4 {
-	 font-size: 18px;
-	 color: #333;
+/* Case wizard text, as in the Angular (Bootstrap 3) wizard: its Helvetica Neue font (BS5's system
+   font reads noticeably smaller at the same size), help text at full size rather than BS5's smaller
+   .form-text, and 30px step headings. */
+.wizard-modal-window .modal-content {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
- .pick-scorer-modal .list-group-item {
-	 padding: 10px 15px;
-	 margin-bottom: -1px;
-	 border-color: #ddd;
+.wizard-modal-window .form-text {
+  font-size: 1em;
 }
 
-/* .list-group-item.active's brand-blue color already comes from the
- * global rule in bootstrap5-compat.css (--bs-list-group-active-bg/
- * -border-color: var(--q-brand-blue)) — no need to repeat the hex here. */
-
-/* This modal uses .row purely as a scrollable wrapper, not a grid — but BS5's
-   .row still applies its negative gutter margin, and .row > * still applies
-   the compensating gutter padding to any direct child that doesn't cancel it
-   itself. .list-group cancels it (padding-left: 0 in its own component
-   style), so the list box ends up flush with .row's pulled-out edge while
-   the <h4> siblings (no such override) stay indented by the gutter, throwing
-   the headings and list boxes out of alignment. Zeroing both here keeps
-   every direct child flush with the modal's own padding. */
- .pick-scorer-modal .row {
-	 margin-left: 0;
-	 margin-right: 0;
+.wizard-modal-window .wizard-body > section > h2 {
+  font-size: 30px;
 }
 
- .pick-scorer-modal .row > * {
-	 padding-left: 0;
-	 padding-right: 0;
+/* Case wizard frame, as in the Angular wizard: a close button in the corner instead of a title bar,
+   and the steps as dots along the bottom (green done, dark grey current, light grey to come). */
+.wizard-body {
+  position: relative;
 }
 
-/* begin close button for modals in core app */
-/* Stolen from Bootstrap 5 */
-/* originally this was .btn-close, and mapping to .btn-core-close */
-.btn-core-close {
-  --bs-btn-close-color: #000;
-  --bs-btn-close-bg: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23000'%3e%3cpath d='M.293.293a1 1 0 0 1 1.414 0L8 6.586 14.293.293a1 1 0 1 1 1.414 1.414L9.414 8l6.293 6.293a1 1 0 0 1-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 0 1-1.414-1.414L6.586 8 .293 1.707a1 1 0 0 1 0-1.414z'/%3e%3c/svg%3e");
-  --bs-btn-close-opacity: 0.5;
-  --bs-btn-close-hover-opacity: 0.75;
-  --bs-btn-close-focus-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
-  --bs-btn-close-focus-opacity: 1;
-  --bs-btn-close-disabled-opacity: 0.25;
-  box-sizing: content-box;
-  width: 1em;
-  height: 1em;
-  padding: 0.25em 0.25em;
-  color: var(--bs-btn-close-color);
-  background: transparent var(--bs-btn-close-bg) center/1em auto no-repeat;
+/* Each step contains its floated Continue button, so the step dots keep their gap below it. */
+.wizard-body > section {
+  display: flow-root;
+}
+
+.wizard-query-input {
+  width: 250px;
+}
+
+.wizard-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  z-index: 1;
+}
+
+.wizard-body > section > h2:first-of-type {
+  padding-right: 2.5rem;
+}
+
+.wizard-steps {
+  clear: both;
+  display: flex;
+  justify-content: space-between;
+  list-style: none;
+  margin: 2rem 0 0;
+  padding: 0;
+  position: relative;
+}
+
+.wizard-steps::before {
+  content: "";
+  position: absolute;
+  top: 7px;
+  left: 8%;
+  right: 8%;
+  border-top: 1px solid #e6e6e6;
+}
+
+.wizard-steps li {
+  flex: 1 1 0;
+  text-align: center;
+  position: relative;
+}
+
+.wizard-step {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
   border: 0;
-  border-radius: 0.375rem;
-  opacity: var(--bs-btn-close-opacity);
+  background: none;
+  padding: 0;
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--q-gray);
 }
-.btn-core-close:hover {
-  color: var(--bs-btn-close-color);
-  text-decoration: none;
-  opacity: var(--bs-btn-close-hover-opacity);
+
+.wizard-step:disabled {
+  opacity: 1;
+  cursor: default;
 }
-.btn-core-close:focus {
-  outline: 0;
-  box-shadow: var(--bs-btn-close-focus-shadow);
-  opacity: var(--bs-btn-close-focus-opacity);
+
+.wizard-step-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #e6e6e6;
 }
-.btn-core-close:disabled, .btn-core-close.disabled {
-  pointer-events: none;
-  -webkit-user-select: none;
-  user-select: none;
-  opacity: var(--bs-btn-close-disabled-opacity);
+
+.wizard-step.done .wizard-step-dot {
+  background: #393;
 }
-/* BS5 pushes .btn-close to the far right of .modal-header via margin-left:
- * auto on the button itself (not justify-content: space-between on the
- * header, which our vendored bootstrap.css doesn't set). */
-.modal-header .btn-core-close {
-  margin: 5px 5px 0 auto;
+
+.wizard-step.active .wizard-step-dot {
+  background: var(--q-gray);
 }
-/* end close button for modals in core app */
+
+/* Case wizard Endpoint step: the "Create a new" / "Use an existing" accordion, as in the Angular wizard. */
+.wizard-endpoint-accordion {
+  border: 1px solid var(--bs-border-color);
+  border-radius: var(--bs-border-radius);
+  overflow: hidden;
+}
+
+.wizard-endpoint-panel + .wizard-endpoint-panel {
+  border-top: 1px solid var(--bs-border-color);
+}
+
+.wizard-endpoint-panel-heading {
+  padding: 0.75rem 1rem;
+  background: var(--bs-tertiary-bg);
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.wizard-endpoint-panel[open] > .wizard-endpoint-panel-heading {
+  border-bottom: 1px solid var(--bs-border-color);
+}
+
+.wizard-endpoint-panel-body {
+  padding: 1rem;
+}
+
+/* Case wizard — engine logo tiles (radio + logo), as in the Angular wizard. */
+.wizard-engine-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.wizard-engine-tile {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  cursor: pointer;
+}
+
+.wizard-engine-tile .form-check-input {
+  margin-top: 0;
+}
+
+.wizard-engine-logo {
+  height: 50px;
+  width: auto;
+  max-width: 150px;
+  object-fit: contain;
+}
+
+/* BS3 heading size and list-group padding/borders for the scorer lists.
+   The .active blue comes from the global rule in core-overrides.css. */
+.pick-scorer-modal h4 {
+  font-size: 18px;
+  color: #333;
+}
+
+.pick-scorer-modal .list-group-item {
+  padding: 10px 15px;
+  margin-bottom: -1px;
+  border-color: #ddd;
+}

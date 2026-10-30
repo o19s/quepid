@@ -1,87 +1,91 @@
 // Simplest CodeMirror 6 implementation
-import { EditorState } from "@codemirror/state";
-import { EditorView, lineNumbers } from "@codemirror/view";
-import { javascript } from "@codemirror/lang-javascript";
-import { json } from "@codemirror/lang-json";
-import { linter, lintGutter } from "@codemirror/lint";
-import { syntaxHighlighting, HighlightStyle } from "@codemirror/language";
-import { tags } from "@lezer/highlight";
+import { Compartment, EditorState, Transaction } from "@codemirror/state"
+import { EditorView, keymap, lineNumbers } from "@codemirror/view"
+import { defaultKeymap, history, historyKeymap, indentWithTab } from "@codemirror/commands"
+import { closeBrackets, closeBracketsKeymap } from "@codemirror/autocomplete"
+import { javascript } from "@codemirror/lang-javascript"
+import { json } from "@codemirror/lang-json"
+import { linter, lintGutter } from "@codemirror/lint"
+import { syntaxHighlighting, HighlightStyle, indentOnInput } from "@codemirror/language"
+import { tags } from "@lezer/highlight"
+import { isJsonEditorMode } from "utils/editor_mode"
+import { prettyPrintJson } from "utils/json_format"
 
 // Syntax highlighting theme - CodeMirror 5 default colors
 const highlightStyle = HighlightStyle.define([
   // Keywords
-  {tag: tags.keyword, color: "#708"},
-  
+  { tag: tags.keyword, color: "#708" },
+
   // Function names
-  {tag: tags.function(tags.variableName), color: "#00f"},
-  {tag: tags.function(tags.definition(tags.variableName)), color: "#00f"},
-  
+  { tag: tags.function(tags.variableName), color: "#00f" },
+  { tag: tags.function(tags.definition(tags.variableName)), color: "#00f" },
+
   // Variable names
-  {tag: tags.variableName, color: "#000"},
-  {tag: tags.definition(tags.variableName), color: "#00f"},
-  
+  { tag: tags.variableName, color: "#000" },
+  { tag: tags.definition(tags.variableName), color: "#00f" },
+
   // Types and class names
-  {tag: tags.typeName, color: "#085"},
-  {tag: tags.className, color: "#00f"},
-  
+  { tag: tags.typeName, color: "#085" },
+  { tag: tags.className, color: "#00f" },
+
   // Strings
-  {tag: tags.string, color: "#a11"},
-  
+  { tag: tags.string, color: "#a11" },
+
   // Numbers
-  {tag: tags.number, color: "#164"},
-  
+  { tag: tags.number, color: "#164" },
+
   // Booleans
-  {tag: tags.bool, color: "#708"},
-  
+  { tag: tags.bool, color: "#708" },
+
   // Comments
-  {tag: tags.comment, color: "#a50"},
-  {tag: tags.lineComment, color: "#a50"},
-  {tag: tags.blockComment, color: "#a50"},
-  
+  { tag: tags.comment, color: "#a50" },
+  { tag: tags.lineComment, color: "#a50" },
+  { tag: tags.blockComment, color: "#a50" },
+
   // Operators
-  {tag: tags.operator, color: "#000"},
-  {tag: tags.compareOperator, color: "#000"},
-  {tag: tags.arithmeticOperator, color: "#000"},
-  {tag: tags.logicOperator, color: "#000"},
-  
+  { tag: tags.operator, color: "#000" },
+  { tag: tags.compareOperator, color: "#000" },
+  { tag: tags.arithmeticOperator, color: "#000" },
+  { tag: tags.logicOperator, color: "#000" },
+
   // Punctuation and brackets
-  {tag: tags.punctuation, color: "#000"},
-  {tag: tags.bracket, color: "#997"},
-  {tag: tags.squareBracket, color: "#997"},
-  {tag: tags.paren, color: "#997"},
-  {tag: tags.brace, color: "#997"},
-  
+  { tag: tags.punctuation, color: "#000" },
+  { tag: tags.bracket, color: "#997" },
+  { tag: tags.squareBracket, color: "#997" },
+  { tag: tags.paren, color: "#997" },
+  { tag: tags.brace, color: "#997" },
+
   // JSON specific
-  {tag: tags.propertyName, color: "#a11"},
-  {tag: tags.separator, color: "#000"},
-  
+  { tag: tags.propertyName, color: "#a11" },
+  { tag: tags.separator, color: "#000" },
+
   // Special constructs
-  {tag: tags.regexp, color: "#e40"},
-  {tag: tags.escape, color: "#f50"},
-  {tag: tags.special(tags.string), color: "#f50"},
-  
+  { tag: tags.regexp, color: "#e40" },
+  { tag: tags.escape, color: "#f50" },
+  { tag: tags.special(tags.string), color: "#f50" },
+
   // Invalid/error highlighting
-  {tag: tags.invalid, color: "#f00"},
-  
+  { tag: tags.invalid, color: "#f00" },
+
   // Control flow
-  {tag: tags.controlKeyword, color: "#708"},
-  {tag: tags.operatorKeyword, color: "#708"},
-  
+  { tag: tags.controlKeyword, color: "#708" },
+  { tag: tags.operatorKeyword, color: "#708" },
+
   // Definitions
-  {tag: tags.definition(tags.function(tags.variableName)), color: "#00f"},
-  {tag: tags.definition(tags.propertyName), color: "#00f"},
-  
+  { tag: tags.definition(tags.function(tags.variableName)), color: "#00f" },
+  { tag: tags.definition(tags.propertyName), color: "#00f" },
+
   // Modules and imports
-  {tag: tags.moduleKeyword, color: "#708"},
-  {tag: tags.namespace, color: "#000"},
-  
+  { tag: tags.moduleKeyword, color: "#708" },
+  { tag: tags.namespace, color: "#000" },
+
   // Attributes (for future HTML/XML support)
-  {tag: tags.attributeName, color: "#00c"},
-  {tag: tags.attributeValue, color: "#a11"},
-  
+  { tag: tags.attributeName, color: "#00c" },
+  { tag: tags.attributeValue, color: "#a11" },
+
   // Meta information
-  {tag: tags.meta, color: "#555"}
-]);
+  { tag: tags.meta, color: "#555" }
+])
 
 // Basic styles for the editor
 const basicStyles = EditorView.theme({
@@ -139,202 +143,235 @@ const basicStyles = EditorView.theme({
   "&.cm-readonly .cm-gutters": {
     backgroundColor: "#e9ecef"
   }
-});
+})
 
 // JavaScript linter function
-const javascriptLinter = linter(view => {
-  const diagnostics = [];
-  const code = view.state.doc.toString();
-  
+const javascriptLinter = linter((view) => {
+  const diagnostics = []
+  const code = view.state.doc.toString()
+
   try {
     // Basic syntax check using Function constructor
-    new Function(code);
+    new Function(code)
   } catch (error) {
     // Parse error location from error message
-    const match = error.message.match(/line (\d+)/i);
-    const line = match ? parseInt(match[1]) - 1 : 0;
-    const pos = view.state.doc.line(Math.min(line + 1, view.state.doc.lines)).from;
-    
+    const match = error.message.match(/line (\d+)/i)
+    const line = match ? parseInt(match[1]) - 1 : 0
+    const pos = view.state.doc.line(Math.min(line + 1, view.state.doc.lines)).from
+
     diagnostics.push({
       from: pos,
       to: pos + 1,
       severity: "error",
       message: error.message,
       source: "javascript"
-    });
+    })
   }
-  
+
   // Basic lint checks
-  const lines = code.split('\n');
+  const lines = code.split("\n")
   lines.forEach((line, index) => {
-    const pos = view.state.doc.line(index + 1).from;
-    
+    const pos = view.state.doc.line(index + 1).from
+
     // Check for console.log (warning)
-    if (line.includes('console.log')) {
-      const start = pos + line.indexOf('console.log');
+    if (line.includes("console.log")) {
+      const start = pos + line.indexOf("console.log")
       diagnostics.push({
         from: start,
         to: start + 11,
         severity: "warning",
         message: "Consider removing console.log before production",
         source: "javascript"
-      });
+      })
     }
-    
+
     // Check for missing semicolons (warning)
-    const trimmed = line.trim();
-    if (trimmed && 
-        !trimmed.endsWith(';') && 
-        !trimmed.endsWith('{') && 
-        !trimmed.endsWith('}') &&
-        !trimmed.startsWith('//') &&
-        !trimmed.startsWith('*') &&
-        !trimmed.includes('if (') &&
-        !trimmed.includes('for (') &&
-        !trimmed.includes('while (') &&
-        !trimmed.includes('function ')) {
+    const trimmed = line.trim()
+    if (
+      trimmed &&
+      !trimmed.endsWith(";") &&
+      !trimmed.endsWith("{") &&
+      !trimmed.endsWith("}") &&
+      !trimmed.startsWith("//") &&
+      !trimmed.startsWith("*") &&
+      !trimmed.includes("if (") &&
+      !trimmed.includes("for (") &&
+      !trimmed.includes("while (") &&
+      !trimmed.includes("function ")
+    ) {
       diagnostics.push({
         from: pos + line.length - 1,
         to: pos + line.length,
         severity: "warning",
         message: "Missing semicolon",
         source: "javascript"
-      });
+      })
     }
-  });
-  
-  return diagnostics;
-});
+  })
+
+  return diagnostics
+})
 
 // JSON linter function
-const jsonLinter = linter(view => {
-  const diagnostics = [];
-  const code = view.state.doc.toString().trim();
-  
-  if (!code) return diagnostics;
-  
+const jsonLinter = linter((view) => {
+  const diagnostics = []
+  const code = view.state.doc.toString().trim()
+
+  if (!code) return diagnostics
+
   try {
-    JSON.parse(code);
+    JSON.parse(code)
   } catch (error) {
     // Try to extract position from error message
-    let pos = 0;
-    const match = error.message.match(/position (\d+)/i);
+    let pos = 0
+    const match = error.message.match(/position (\d+)/i)
     if (match) {
-      pos = parseInt(match[1]);
+      pos = parseInt(match[1])
     }
-    
+
     diagnostics.push({
       from: Math.min(pos, view.state.doc.length),
       to: Math.min(pos + 1, view.state.doc.length),
       severity: "error",
       message: error.message,
       source: "json"
-    });
+    })
   }
-  
-  return diagnostics;
-});
+
+  return diagnostics
+})
+
+// "text" is free-form input (e.g. Solr query params): no syntax mode and no linting.
+// JSON modes get JSON support; anything else keeps the historical JavaScript default.
+export function languageFor(mode) {
+  if (mode === "text") return []
+  return isJsonEditorMode(mode) ? json() : javascript()
+}
+
+export function linterFor(mode) {
+  if (mode === "text") return []
+  return isJsonEditorMode(mode) ? jsonLinter : javascriptLinter
+}
 
 /**
  * Create a CodeMirror editor from a textarea
  */
 export function fromTextArea(textarea, options = {}) {
-  const wrapper = document.createElement('div');
-  textarea.parentNode.insertBefore(wrapper, textarea);
-  textarea.style.display = 'none';
-  
-  // Choose language extension based on mode
-  let languageExtension;
-  let isJsonMode = false;
-  if (options.mode === 'javascript') {
-    languageExtension = javascript();
-  } else if (options.mode === 'application/json' || options.mode === 'json') {
-    languageExtension = json();
-    isJsonMode = true;
-  } else {
-    // Default to JavaScript
-    languageExtension = javascript();
-  }
-  
-  // Choose appropriate linter
-  let linterExtension;
-  if (options.mode === 'javascript') {
-    linterExtension = javascriptLinter;
-  } else if (options.mode === 'application/json' || options.mode === 'json') {
-    linterExtension = jsonLinter;
-  } else {
-    linterExtension = javascriptLinter; // Default to JavaScript linter
-  }
-  
+  const originalDisplay = textarea.style.display
+  let formatTimer
+  const wrapper = document.createElement("div")
+  textarea.parentNode.insertBefore(wrapper, textarea)
+  textarea.style.display = "none"
+
+  const languageExtension = languageFor(options.mode)
+  const linterExtension = linterFor(options.mode)
+
+  const languageCompartment = new Compartment()
+  const linterCompartment = new Compartment()
+
   // Create editor with minimal extensions including linting
   const extensions = [
     lineNumbers(),
     lintGutter(),
-    languageExtension,
-    linterExtension,
+    // Standard editing: undo/redo, auto-indent, bracket pairing, and Tab to
+    // indent. Outside modals, Esc then Tab moves focus out so keyboard users
+    // aren't trapped; inside a Bootstrap modal, Esc closes the modal instead.
+    history(),
+    indentOnInput(),
+    closeBrackets(),
+    keymap.of([...closeBracketsKeymap, ...defaultKeymap, ...historyKeymap, indentWithTab]),
+    languageCompartment.of(languageExtension),
+    linterCompartment.of(linterExtension),
     syntaxHighlighting(highlightStyle),
     basicStyles,
     // Additional enhancements
     EditorView.lineWrapping,
+    EditorView.updateListener.of((update) => {
+      if (update.docChanged) {
+        textarea.value = update.state.doc.toString()
+        options.onChange?.(textarea.value)
+      }
+    }),
     EditorState.tabSize.of(2)
-  ];
-  
+  ]
+
   // Add readOnly extension if specified
   if (options.readOnly) {
-    extensions.push(EditorView.editable.of(false));
+    extensions.push(EditorView.editable.of(false))
   }
-  
+
   const view = new EditorView({
     state: EditorState.create({
       doc: textarea.value,
       extensions: extensions
     }),
     parent: wrapper
-  });
-  
+  })
+
   // Apply size options if provided
   if (options.height) {
-    view.dom.style.height = typeof options.height === 'number' ? `${options.height}px` : options.height;
+    view.dom.style.height =
+      typeof options.height === "number" ? `${options.height}px` : options.height
   }
   if (options.width) {
-    view.dom.style.width = typeof options.width === 'number' ? `${options.width}px` : options.width;
+    view.dom.style.width = typeof options.width === "number" ? `${options.width}px` : options.width
   }
-  
+
   // Apply readOnly option if provided
   if (options.readOnly) {
-    view.dom.classList.add('cm-readonly');
+    view.dom.classList.add("cm-readonly")
   }
-  
+
   // Simple API matching what's used in the form
   const editor = {
     view,
+    destroy: () => {
+      clearTimeout(formatTimer)
+      textarea.value = editor.getValue()
+      textarea.form?.removeEventListener("submit", syncTextarea)
+      view.destroy()
+      wrapper.remove()
+      textarea.style.display = originalDisplay
+      delete textarea.editor
+    },
     getValue: () => view.state.doc.toString(),
+    // Loading content isn't a user edit, so keep it out of undo history:
+    // otherwise Ctrl+Z right after opening would blank the editor.
     setValue: (value) => {
       view.dispatch({
         changes: {
           from: 0,
           to: view.state.doc.length,
           insert: value || ""
-        }
-      });
+        },
+        annotations: Transaction.addToHistory.of(false)
+      })
+    },
+    setMode: (mode) => {
+      view.dispatch({
+        effects: [
+          languageCompartment.reconfigure(languageFor(mode)),
+          linterCompartment.reconfigure(linterFor(mode))
+        ]
+      })
     },
     setSize: (width, height) => {
       if (height) {
-        view.dom.style.height = typeof height === 'number' ? `${height}px` : height;
+        view.dom.style.height = typeof height === "number" ? `${height}px` : height
       }
       if (width) {
-        view.dom.style.width = typeof width === 'number' ? `${width}px` : width;
+        view.dom.style.width = typeof width === "number" ? `${width}px` : width
       }
     },
     formatJSON: () => {
-      const currentValue = view.state.doc.toString();
+      const currentValue = view.state.doc.toString()
       try {
         // Skip empty content
-        if (!currentValue.trim()) return true;
-        
+        if (!currentValue.trim()) return true
+
         // Parse and stringify with pretty formatting (2 space indentation)
-        const formatted = JSON.stringify(JSON.parse(currentValue), null, 2);
-        
+        const formatted = prettyPrintJson(currentValue)
+
         // Only update if the formatted content is different
         if (formatted !== currentValue) {
           // Update editor content
@@ -343,79 +380,39 @@ export function fromTextArea(textarea, options = {}) {
               from: 0,
               to: view.state.doc.length,
               insert: formatted
-            }
-          });
+            },
+            annotations: Transaction.addToHistory.of(false)
+          })
         }
-        return true;
+        return true
       } catch (e) {
-        console.error("JSON formatting failed:", e);
-        return false;
+        console.error("JSON formatting failed:", e)
+        return false
       }
     }
-  };
-  
-  // Store editor reference on textarea
-  textarea.editor = editor;
-  
-  // Update textarea before form submission
-  if (textarea.form) {
-    textarea.form.addEventListener('submit', () => {
-      textarea.value = editor.getValue();
-    });
   }
-  
+
+  // Store editor reference on textarea
+  textarea.editor = editor
+
+  // Update textarea before form submission
+  const syncTextarea = () => {
+    textarea.value = editor.getValue()
+  }
+  textarea.form?.addEventListener("submit", syncTextarea)
+
   // Automatically format JSON content if in JSON mode
-  if (isJsonMode && textarea.value.trim()) {
+  if (isJsonEditorMode(options.mode) && textarea.value.trim()) {
     try {
       // Only format if it's valid JSON
-      JSON.parse(textarea.value);
+      JSON.parse(textarea.value)
       // Format after a small delay to ensure editor is fully initialized
-      setTimeout(() => editor.formatJSON(), 0);
-    } catch (e) {
+      formatTimer = setTimeout(() => editor.formatJSON(), 0)
+    } catch {
       // If invalid JSON, don't attempt to format
-      console.log("Initial JSON content is invalid, skipping auto-formatting");
+      console.log("Initial JSON content is invalid, skipping auto-formatting")
     }
   }
-  
-  return editor;
-}
 
-// Helper function to simplify initialization
-export function whenReady(callback) {
-  function checkReady() {
-    if (typeof CodeMirror === 'undefined') {
-      setTimeout(checkReady, 100);
-      return;
-    }
-    
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', callback);
-    } else {
-      callback();
-    }
-  }
-  
-  checkReady();
-}
-
-// Helper function to format JSON string (internal use)
-function formatJSON(json) {
-  try {
-    // Skip empty content
-    if (!json || !json.trim()) return json;
-    
-    return JSON.stringify(JSON.parse(json), null, 2);
-  } catch (e) {
-    console.error("JSON formatting failed:", e);
-    return json;
-  }
-}
-
-// Setup global CodeMirror object for compatibility
-export function setupGlobalCodeMirror() {
-  window.CodeMirror = {
-    fromTextArea,
-    whenReady,
-    formatJSON
-  };
+  return editor
 }

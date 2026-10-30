@@ -5,6 +5,8 @@ require 'test_helper'
 module Api
   module V1
     class QueriesControllerTest < ActionController::TestCase
+      include ActiveJob::TestHelper
+
       let(:user) { users(:random) }
 
       before do
@@ -209,6 +211,41 @@ module Api
         end
       end
 
+      describe 'Adds a new query to a case with an embedder' do
+        let(:acase) { cases(:queries_case) }
+        let(:url)   { 'https://api.openai.com/v1/embeddings' }
+
+        before do
+          acase.update!(embedder: embedders(:openai_small))
+        end
+
+        test 'vectorises it before responding, so the first search has the vector' do
+          stub_request(:post, url).to_return(
+            status: 200, headers: { 'Content-Type' => 'application/json' },
+            body: { data: [ { index: 0, embedding: Array.new(512, 0.25) } ] }.to_json
+          )
+
+          assert_no_enqueued_jobs(only: VectorizeCaseQueriesJob) do
+            post :create, params: { case_id: acase.id, query: { query_text: 'star wars' } }
+          end
+
+          query = response.parsed_body['query']
+          assert_equal 512, query['options']['query_vec'].size
+          assert_equal 'current', query['vector_status']
+        end
+
+        test 'hands over to the background job when the embedder fails, without failing the request' do
+          stub_request(:post, url).to_timeout
+
+          assert_enqueued_with(job: VectorizeCaseQueriesJob) do
+            post :create, params: { case_id: acase.id, query: { query_text: 'star wars' } }
+          end
+
+          assert_response :ok
+          assert_equal 'failed', response.parsed_body['query']['vector_status']
+        end
+      end
+
       describe 'Fetches case queries' do
         let(:acase) { cases(:queries_case) }
 
@@ -221,6 +258,22 @@ module Api
 
           assert_equal(acase.queries.map(&:id), queries.map { |query| query['query_id'] })
           assert(queries.none? { |query| query.key?('arranged_at') || query.key?('arranged_next') })
+        end
+
+        test 'includes ratings, with the newest rating as modified_at' do
+          query = acase.queries.first
+          later = query.updated_at + 1.day
+          query.ratings.create!(doc_id: 'doc-a', rating: 3, updated_at: later)
+          query.ratings.create!(doc_id: 'doc-b', rating: nil)
+
+          get :index, params: { case_id: acase.id }
+
+          assert_response :ok
+
+          json = response.parsed_body['queries'].find { |q| q['query_id'] == query.id }
+
+          assert_equal({ 'doc-a' => 3.0, 'doc-b' => nil }, json['ratings'])
+          assert_equal later.to_i, Time.zone.parse(json['modified_at']).to_i
         end
       end
 

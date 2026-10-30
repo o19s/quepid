@@ -1,16 +1,9 @@
-<% title = capture do %>
-  Query Doc Pairs for <i class="bi bi-book"></i> <%= book_title(@book) %>
-<% end %>
-<%= page_header title do %>
-  <div class="btn-toolbar mb-2 mb-md-0">
-    <div class="btn-group me-2">
-      <%= link_to 'New Query Doc Pair', new_book_query_doc_pair_path, class: 'btn btn-sm btn-outline-secondary' %>
-      <%= link_to "Back to Book", @book, class: 'btn btn-sm btn-outline-secondary' %>
-    </div>
+<%= book_page_header @book, prefix: 'Query Doc Pairs for' do %>
+  <div class="btn-toolbar gap-2 mb-2 mb-md-0">
+    <%= page_create_button 'New Query Doc Pair', new_book_query_doc_pair_path %>
+    <%= link_to "Back to Book", @book, class: 'btn btn-sm btn-outline-secondary' %>
   </div>
 <% end %>
-
-<%= render 'books/tabs', book: @book %>
 
 <div class="card" data-controller="document-fields-modal">
   <div class="card-header">
@@ -21,8 +14,7 @@
           <%= text_field_tag :q, params[:q],
               class: 'form-control form-control-sm',
               placeholder: 'Filter by id, query, doc id, or document field contents',
-              id: 'q'
-          %>
+              id: 'q' %>
           <%= button_tag type: 'submit', class: 'btn btn-sm btn-outline-secondary', id: 'button-addon2' do %>
             <i class="bi bi-search-heart"></i>
           <% end %>
@@ -34,8 +26,7 @@
               @include_judgement_count,
               class: 'form-check-input',
               id: 'include_judgement_count',
-              onchange: 'this.form.submit()'
-          %>
+              data: { controller: "auto-submit", action: "change->auto-submit#submit" } %>
           <label class="form-check-label" for="include_judgement_count">Include Judgement Count</label>
         </div>
 
@@ -78,15 +69,15 @@
               <% if query_doc_pair.document_fields.present? %>
                 <% document_fields_json = query_doc_pair.document_fields.to_json %>
                 <%= truncate(document_fields_json, length: 90) %>
-                <a href="#"
-                   class="ms-1"
-                   data-action="click->document-fields-modal#show"
-                   data-document-fields="<%= document_fields_json %>"
-                   data-query-text="<%= query_doc_pair.query_text %>"
-                   data-doc-id="<%= query_doc_pair.doc_id %>"
-                   title="View full document fields">
+                <button type="button"
+                        class="btn btn-link p-0 border-0 ms-1 align-baseline"
+                        data-action="click->document-fields-modal#show"
+                        data-document-fields="<%= document_fields_json %>"
+                        data-query-text="<%= query_doc_pair.query_text %>"
+                        data-doc-id="<%= query_doc_pair.doc_id %>"
+                        title="View full document fields">
                   <i class="bi bi-info-circle-fill text-dark"></i>
-                </a>
+                </button>
               <% end %>
             </td>
           </tr>
@@ -100,24 +91,16 @@
   </div>
 
   <!-- Document Fields Modal -->
-  <div class="modal fade" id="documentFieldsModal" tabindex="-1" aria-labelledby="documentFieldsModalLabel" aria-hidden="true" data-document-fields-modal-target="modal">
-    <div class="modal-dialog modal-lg modal-dialog-scrollable">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="documentFieldsModalLabel">Document Fields</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <p class="text-muted mb-2">
-            <strong>Query:</strong> <span data-document-fields-modal-target="queryText"></span><br>
-            <strong>Doc ID:</strong> <span data-document-fields-modal-target="docId"></span>
-          </p>
-          <pre data-document-fields-modal-target="content" class="bg-light p-3 rounded" style="white-space: pre-wrap; word-wrap: break-word;"></pre>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        </div>
-      </div>
-    </div>
-  </div>
+  <% modal_body = capture do %>
+    <p class="text-muted mb-2">
+      <strong>Query:</strong> <span data-document-fields-modal-target="queryText"></span><br>
+      <strong>Doc ID:</strong> <span data-document-fields-modal-target="docId"></span>
+    </p>
+    <pre data-document-fields-modal-target="content" class="bg-light p-3 rounded" style="white-space: pre-wrap; word-wrap: break-word;"></pre>
+
+  <% end %>
+  <%= render "shared/modal_shell", id: "documentFieldsModal", title: "Document Fields",
+                             dialog_class: "modal-lg modal-dialog-scrollable",
+                             data: { document_fields_modal_target: "modal" },
+                             cancel_label: "Close", body: modal_body %>
 </div>

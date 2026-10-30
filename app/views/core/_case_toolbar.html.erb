@@ -1,0 +1,171 @@
+<%#
+  Server-rendered case-action toolbar for the core case page.
+
+  Each link's `data-*` attributes are server-rendered from case and try models.
+  Every one of those values is Rails model data that CoreController already has, so they are
+  rendered from `kase`/`a_try` directly.
+
+  This is deliberately NOT inside the `case_header` Turbo Frame: the case toolbar contains
+  live-query bridges, and Stimulus initializes the page once at bootstrap.
+
+  The case *name* is deliberately absent from these triggers. Each modal reads it live from the
+  header through `utils/case_header` when it opens, so a rename needs nothing copied or resynced
+  here.
+
+  Live query services remain behind the explicit core bootstrap boundary.
+%>
+<%#
+  `case-toolbar` is mounted on this wrapper so that it owns the hidden `actions` div below and
+  can un-hide it once the case runtime is ready (`showActions`). Its document-level rename,
+  scorer and header-stale listeners are live from first paint, before the actions are shown.
+%>
+<div
+  id="case-actions"
+  class="row"
+  data-controller="case-toolbar"
+  data-action="quepid:case-renamed@document->case-toolbar#handleCaseRenamed pick-scorer:selected@document->case-toolbar#handleScorerSelected quepid:case-header-stale@document->case-toolbar#handleHeaderStale"
+  data-case-toolbar-pane-outlet=".pane_container"
+  data-case-toolbar-header-url-value="<%= case_header_path(kase, try_number: a_try&.try_number) %>"
+>
+  <%#
+    The `hidden` gate is not client data binding - the attributes below are all server
+    rendered. It gates *visibility* only, and it has to stay until the snapshot, diff and export
+    flows stop depending on the client-side query runtime having loaded.
+
+    Without it the toolbar is clickable from the first paint, roughly 1.5s before the case runtime has
+    bootstrapped the case. "Create snapshot" clicked in that window posts with no query state
+    and hangs on "Snapshot Being Created" forever.
+  %>
+  <div class="col-sm-12" data-case-toolbar-target="actions" hidden>
+    <ul class="list-inline">
+      <li class="list-inline-item">
+        <i class="bi bi-card-list"></i>
+        <button
+          type="button"
+          class="btn btn-link p-0 border-0 align-baseline"
+          data-bs-toggle="modal"
+          data-bs-target="#pickScorerModal"
+          data-pick-scorer-core-id-value="<%= kase.id %>"
+          data-pick-scorer-core-current-scorer-id-value="<%= kase.scorer&.id %>"
+          data-pick-scorer-core-current-scorer-name-value="<%= kase.scorer&.name %>"
+        >
+          Select scorer
+        </button>
+      </li>
+      <li class="list-inline-item">
+        <%= render 'embedders/icon' %>
+        <button
+          type="button"
+          class="btn btn-link p-0 border-0 align-baseline"
+          data-bs-toggle="modal"
+          data-bs-target="#caseEmbedderModal"
+          data-case-embedder-core-id-value="<%= kase.id %>"
+        >Select embedder</button><%= render 'embedders/beta' %>
+      </li>
+      <li class="list-inline-item">
+        <i
+          class="bi bi-book-half"
+          aria-hidden="true"
+          title="Judgements"
+        ></i>
+        <button
+          type="button"
+          class="btn btn-link p-0 border-0 align-baseline"
+          data-bs-toggle="modal"
+          data-bs-target="#judgementsModal"
+          data-judgements-core-id-value="<%= kase.id %>"
+          data-judgements-core-book-id-value="<%= kase.book_id %>"
+          data-judgements-core-queries-count-value="<%= kase.queries.count %>"
+          data-judgements-core-auto-populate-book-pairs-value="<%= kase.auto_populate_book_pairs %>"
+          data-judgements-core-auto-populate-case-judgements-value="<%= kase.auto_populate_case_judgements %>"
+        >
+          Judgements
+        </button>
+      </li>
+      <li class="list-inline-item">
+        <i class="bi bi-camera-fill"></i>
+        <button
+          type="button"
+          class="btn btn-link p-0 border-0 align-baseline"
+          data-bs-toggle="modal"
+          data-bs-target="#takeSnapshotModal"
+          data-take-snapshot-core-id-value="<%= kase.id %>"
+          data-take-snapshot-core-field-spec-value="<%= a_try&.field_spec %>"
+          data-take-snapshot-core-search-engine-value="<%= a_try&.search_endpoint&.search_engine %>"
+          data-take-snapshot-core-mapper-engine-name-value="<%= a_try&.search_endpoint&.mapper_based_search_engine&.name %>"
+        >
+          Create snapshot
+        </button>
+      </li>
+      <li class="list-inline-item">
+          <i class="bi bi-bar-chart-fill" aria-hidden="true"></i>
+          <button
+            type="button"
+            class="btn btn-link p-0 border-0 align-baseline"
+            data-bs-toggle="modal"
+            data-bs-target="#diffModal"
+          >Compare snapshots</button>
+      </li>
+      <li class="list-inline-item">
+        <i class="bi bi-file-earmark-arrow-down" aria-hidden="true"></i>
+        <button type="button" class="btn btn-link p-0 border-0 align-baseline" data-bs-toggle="modal" data-bs-target="#importRatingsModal">Import</button>
+      </li>
+      <li class="list-inline-item">
+        <i
+          class="bi bi-share-fill"
+          aria-hidden="true"
+          title="Share Case"
+        ></i>
+        <button
+          type="button"
+          class="btn btn-link p-0 border-0 align-baseline"
+          data-bs-toggle="modal"
+          data-bs-target="#shareCaseModal"
+          data-share-case-core-id-value="<%= kase.id %>"
+        >Share case</button>
+      </li>
+      <li class="list-inline-item">
+        <i class="bi bi-copy" aria-hidden="true"></i>
+        <button
+          type="button"
+          class="btn btn-link p-0 border-0 align-baseline"
+          data-bs-toggle="modal"
+          data-bs-target="#cloneCaseModal"
+          data-clone-case-core-id-value="<%= kase.id %>"
+          data-clone-case-core-last-try-value="<%= kase.last_try_number %>"
+        >Clone</button>
+      </li>
+      <li class="list-inline-item">
+        <i class="bi bi-x-lg" aria-hidden="true"></i>
+        <button
+          type="button"
+          class="btn btn-link p-0 border-0 align-baseline"
+          data-bs-toggle="modal"
+          data-bs-target="#deleteCaseOptionsModal"
+          data-delete-case-options-core-id-value="<%= kase.id %>"
+        >Delete</button>
+      </li>
+      <li class="list-inline-item">
+        <i class="bi bi-file-earmark-arrow-up" aria-hidden="true"></i>
+        <button
+          type="button"
+          class="btn btn-link p-0 border-0 align-baseline"
+          data-bs-toggle="modal"
+          data-bs-target="#exportCaseModal"
+          data-export-case-core-id-value="<%= kase.id %>"
+          data-export-case-core-supports-detailed-export-value="true"
+        >Export</button>
+      </li>
+      <li class="list-inline-item" id="tune-relevance-link">
+        <i class="bi bi-wrench-adjustable"></i>
+        <button
+          type="button"
+          class="btn btn-link p-0 border-0 align-baseline"
+          data-action="click->case-toolbar#toggleTuneRelevance"
+        >
+          Tune Relevance
+        </button>
+      </li>
+    </ul>
+  </div>
+</div> <!-- end of #case-actions -->

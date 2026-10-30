@@ -1,8 +1,8 @@
 <%= page_header "Scorer Options" do %>
-  <div class="text-end">
+  <div class="d-flex align-items-center gap-3 mb-2 mb-md-0">
     <small class="text-muted">Communal: <strong><%= @communal_count %></strong></small>
-    &nbsp;&nbsp;
     <small class="text-muted">Custom: <strong><%= @custom_count %></strong></small>
+    <%= page_create_button 'New Scorer', new_scorer_path %>
   </div>
 <% end %>
 
@@ -36,26 +36,13 @@
         <p>We have two types of scorers, <i>Communal</i> that ship with Quepid and <i>Custom</i> which are scorers that you create and share with your teammates.</p>
 
         <div class="row mb-3">
-          <div class="col-md-3">
-            <div class="btn-group">
-              <%= link_to '+ Add New', new_scorer_path, class: 'btn btn-success btn-sm' %>
-            </div>
-          </div>
-
-          <div class="col-md-5 d-flex flex-wrap align-items-center gap-2">
-            <%= form_with url: scorers_path, method: :get, local: true, html: { class: 'd-flex align-items-center' } do %>
-              <div class="input-group">
-                <%= search_field_tag :q, @q.presence || params[:q], class: 'form-control form-control-sm', placeholder: 'Filter scorers' %>
-                <button class="btn btn-sm btn-outline-secondary" type="submit" title="Search">
-                  <i class="bi bi-search" aria-hidden="true"></i>
-                  <span class="visually-hidden">Search</span>
-                </button>
-              </div>
+          <div class="col-12 d-flex flex-wrap align-items-center gap-2">
+            <%= render layout: "shared/index_filters", locals: { url: scorers_path, variant: :inline, search_type: :search, search_value: @q.presence || params[:q], placeholder: "Filter scorers", search_label: "Search" } do %>
               <div class="btn-group ms-2" role="group" aria-label="Scorer type filter">
-                <%= check_box_tag 'scorer_type[]', 'communal', @scorer_type_list&.include?('communal'), class: 'btn-check', id: 'scorer-type-communal', onchange: 'this.form.submit()' %>
+                <%= check_box_tag 'scorer_type[]', 'communal', @scorer_type_list&.include?('communal'), class: 'btn-check', id: 'scorer-type-communal', data: { controller: "auto-submit", action: "change->auto-submit#submit" } %>
                 <%= label_tag 'scorer-type-communal', 'Communal', class: 'btn btn-outline-secondary btn-sm' %>
 
-                <%= check_box_tag 'scorer_type[]', 'custom', @scorer_type_list&.include?('custom'), class: 'btn-check', id: 'scorer-type-custom', onchange: 'this.form.submit()' %>
+                <%= check_box_tag 'scorer_type[]', 'custom', @scorer_type_list&.include?('custom'), class: 'btn-check', id: 'scorer-type-custom', data: { controller: "auto-submit", action: "change->auto-submit#submit" } %>
                 <%= label_tag 'scorer-type-custom', 'Custom', class: 'btn btn-outline-secondary btn-sm' %>
               </div>
             <% end %>
@@ -64,7 +51,7 @@
 
         <div class="row">
           <div class="col-12 mb-3">
-            <%= render partial: 'scorers/list' %>
+            <%= render partial: 'scorers/list', locals: { scorers: @scorers, pagy: @pagy } %>
           </div>
         </div>
 

@@ -12,11 +12,8 @@ class QueryDocPairsController < ApplicationController
     query = @book.query_doc_pairs
 
     if params[:q].present?
-      q = "%#{params[:q].to_s.downcase}%"
-      query = query.where(
-        'LOWER(query_text) LIKE ? OR query_doc_pairs.id = ? OR LOWER(doc_id) LIKE ? OR LOWER(document_fields) LIKE ?',
-        q, params[:q].to_i, q, q
-      )
+      query = query.search_by(params[:q], :query_text, :doc_id, :document_fields)
+        .or(query.where(id: params[:q].to_i))
     end
 
     # Eager load judgements count to avoid N+1 queries when showing the count
@@ -37,7 +34,7 @@ class QueryDocPairsController < ApplicationController
     @query_doc_pair = QueryDocPair.new query_doc_pair_params
     @book.query_doc_pairs << @query_doc_pair
     if @book.save
-      redirect_to book_query_doc_pair_path(@book, @query_doc_pair)
+      redirect_to book_query_doc_pair_path(@book, @query_doc_pair), status: :see_other
     else
       render action: :new, status: :unprocessable_content
     end
@@ -45,7 +42,7 @@ class QueryDocPairsController < ApplicationController
 
   def update
     if @query_doc_pair.update query_doc_pair_params
-      redirect_to book_query_doc_pair_path(@book, @query_doc_pair)
+      redirect_to book_query_doc_pair_path(@book, @query_doc_pair), status: :see_other
     else
       render action: :edit, status: :unprocessable_content
     end
@@ -53,7 +50,7 @@ class QueryDocPairsController < ApplicationController
 
   def destroy
     @query_doc_pair.destroy
-    redirect_to book_path(@book)
+    redirect_to book_path(@book), status: :see_other
   end
 
   private

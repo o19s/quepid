@@ -1,17 +1,26 @@
 import { Controller } from "@hotwired/stimulus"
 
 // This cell is freshly replaced on every judgement, which is exactly what
-// lets it carry fresh sparkline values to the judge-sparkline controller -
+// lets it carry fresh sparkline values to the judge-sparkline outlet -
 // that chart is never itself replaced (see broadcast_judge_activity_job.rb),
 // so this is the only way new data actually reaches its already-mounted view.
 export default class extends Controller {
-  static values = { judgeId: Number, sparkline: Array }
+  static values = { sparkline: Array }
+  static outlets = ["judge-sparkline"]
 
+  // Stimulus reads values before it connects outlets, so a freshly rendered
+  // cell delivers its values from judgeSparklineOutletConnected - which also
+  // covers a chart whose controller mounts after this cell.
   sparklineValueChanged(values) {
-    const chart = document.getElementById(`judge-sparkline-${this.judgeIdValue}`)
-    if (!chart) return
+    this.chart?.updateValues(values)
+  }
 
-    const controller = this.application.getControllerForElementAndIdentifier(chart, "judge-sparkline")
-    controller?.updateValues(values)
+  judgeSparklineOutletConnected(chart) {
+    this.chart = chart
+    chart.updateValues(this.sparklineValue)
+  }
+
+  judgeSparklineOutletDisconnected() {
+    this.chart = null
   }
 }

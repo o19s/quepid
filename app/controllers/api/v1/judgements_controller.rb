@@ -59,8 +59,7 @@ module Api
               @csv_array << row
             end
 
-            headers['Content-Disposition'] = "attachment; filename=\"book_#{@book.id}_judgements.csv\""
-            headers['Content-Type'] ||= 'text/csv'
+            send_data CsvExport.generate(@csv_array), filename: "book_#{@book.id}_judgements.csv", type: 'text/csv'
           end
         end
       end
@@ -75,14 +74,11 @@ module Api
       # @request_body_example basic judgement [Reference:#/components/examples/BasicJudgement]
       def create
         judgement_params = extract_judgement_params
-        @judgement = @book.judgements.find_or_create_by(
-          query_doc_pair_id: judgement_params[:query_doc_pair_id],
-          user_id:           judgement_params[:user]
-        )
+        user = User.find(judgement_params[:user_id]) if judgement_params[:user_id].present?
+        lookup = { query_doc_pair_id: judgement_params[:query_doc_pair_id], user: user }
+        @judgement = user ? @book.judgements.find_or_initialize_by(lookup) : @book.judgements.build(lookup)
         @judgement.rating = judgement_params[:rating] if judgement_params[:rating].present?
         @judgement.explanation = judgement_params[:explanation] if judgement_params[:explanation].present?
-
-        @judgement.user = User.find(judgement_params[:user_id]) if judgement_params[:user_id].present?
 
         @judgement.mark_unrateable if judgement_params[:unrateable]
 
@@ -112,11 +108,7 @@ module Api
       private
 
       def make_csv_safe str
-        if %w[- = + @].include?(str[0])
-          " #{str}"
-        else
-          str
-        end
+        CsvExport.field(str)
       end
 
       def extract_judgement_params

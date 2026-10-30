@@ -28,7 +28,6 @@ Rails.application.routes.draw do
 
   root 'home#show'
 
-  get 'home/sparklines', to: 'home#sparklines'
   get 'home/case_prophet/:case_id', to: 'home#case_prophet', as: :home_case_prophet
   get 'home/book_summary_detail/:book_id', to: 'home#book_summary_detail', as: :home_book_summary_detail
 
@@ -66,7 +65,7 @@ Rails.application.routes.draw do
   post 'users/signup' => 'users/signups#create'
 
   get 'login' => 'sessions#new'
-  get 'logout' => 'sessions#destroy'
+  delete 'logout' => 'sessions#destroy'
   get 'users/sign_in' => redirect('login') # Devise's conventional path; we use our own sessions controller
 
   resources :sessions, except: [ :edit, :show, :update ]
@@ -76,12 +75,26 @@ Rails.application.routes.draw do
   resources :scorers, only: [ :index, :new, :create, :edit, :update, :destroy ] do
     post :clone, on: :member
   end
+  resources :cases, only: [] do
+    resources :annotations, only: [ :create, :update, :destroy ], controller: :case_annotations
+    get 'modal_catalogs/sharing', to: 'core/modal_catalogs#sharing', as: :sharing_catalog
+    get 'modal_catalogs/books', to: 'core/modal_catalogs#books', as: :books_catalog
+  end
+  get 'modal_catalogs/scorers', to: 'core/modal_catalogs#scorers', as: :scorers_catalog
   post '/scorers/default' => 'scorers#update_default', as: :update_default_scorers
   post '/scorers/share' => 'scorers#share', as: :share_scorers
   post '/scorers/unshare' => 'scorers#unshare', as: :unshare_scorers
+  get 'share_modals/:record_type/:id' => 'share_modals#show', as: :share_modal,
+      constraints: { record_type: /case|book|scorer|search_endpoint/ }
 
   get '/dropdown/cases' => 'dropdown#cases'
   get '/dropdown/books' => 'dropdown#books'
+  # Core case page twins: same lists, but their links must do a hard browser
+  # navigation (see DropdownController::CORE_LINK_OPTIONS) instead of the
+  # Rails-page navbar's Turbo AJAX visit, which would leave the case app running
+  # against the old case underneath a silently-changed URL.
+  get '/dropdown/cases_core' => 'dropdown#cases_core'
+  get '/dropdown/books_core' => 'dropdown#books_core'
 
   # ai_judge_id is either a real id or the literal 'new' (mirrors the
   # mapper_wizard search_endpoint_id pattern above), since testing a prompt
@@ -94,14 +107,21 @@ Rails.application.routes.draw do
 
   resources :ai_judges
 
-  # Cloning starts from a specific team's context (the team page's "Clone"
-  # action) and posts the new judge back through that same team, so it's
-  # created with that team pre-selected/shared rather than owner-only.
+  resources :embedders do
+    member do
+      get 'clone'
+    end
+    # A check runs the form's current values in memory: a collection route serves the
+    # unsaved form, a member route one that is saved (and can fall back on its saved key).
+    collection do
+      post 'connection_check', to: 'embedders/connection_checks#create', as: :connection_check
+    end
+    resource :connection_check, only: :create, module: :embedders
+  end
+
   resources :teams, only: [] do
-    resources :ai_judges, only: [ :create ] do
-      member do
-        get :clone
-      end
+    resources :ai_judges, controller: :ai_judges, except: [ :index ] do
+      get :clone, on: :member
     end
   end
 
@@ -130,7 +150,7 @@ Rails.application.routes.draw do
       resources :judgements
       post 'unrateable' => 'judgements#unrateable'
       patch 'unrateable' => 'judgements#unrateable'
-      get 'judge_later' => 'judgements#judge_later'
+      post 'judge_later' => 'judgements#judge_later'
     end
     get 'judge' => 'judgements#new'
     get 'judge/bulk' => 'bulk_judge#new'
@@ -139,15 +159,15 @@ Rails.application.routes.draw do
     get 'skip_judging' => 'judgements#skip_judging'
     member do
       get 'judgement_stats'
-      get 'judge_overview'
-      get 'judge_activity'
       get 'export'
       patch 'combine'
       patch 'archive'
       patch 'unarchive'
       patch 'assign_anonymous'
       patch 'run_judge_judy/:ai_judge_id', action: :run_judge_judy, as: :run_judge_judy
-      delete 'cancel_judge_judy/:ai_judge_id', action: :cancel_judge_judy, as: :cancel_judge_judy
+      patch 'cancel_judge_judy/:ai_judge_id', action: :cancel_judge_judy, as: :cancel_judge_judy
+      get :judge_overview
+      get :judge_activity
       delete 'delete_ratings_by_assignee', action: :delete_ratings_by_assignee, as: :delete_ratings_by_assignee
       delete 'reset_unrateable/:user_id', action: :reset_unrateable, as: :reset_unrateable
       delete 'reset_judge_later/:user_id', action: :reset_judge_later, as: :reset_judge_later
@@ -185,6 +205,7 @@ Rails.application.routes.draw do
       post 'books/unshare' => 'teams#unshare_book', as: :unshare_book
       post 'search_endpoints/share' => 'teams#share_search_endpoint', as: :share_search_endpoint
       post 'search_endpoints/unshare' => 'teams#unshare_search_endpoint', as: :unshare_search_endpoint
+      post 'embedders/unshare' => 'teams#unshare_embedder', as: :unshare_embedder
     end
   end
 
@@ -204,9 +225,6 @@ Rails.application.routes.draw do
       resource :visibility, only: [ :update ], module: :cases
       resource :duplicate_scores, only: [ :show ], module: :cases
     end
-    get 'sparkline/vega_specification' => 'sparkline#vega_specification',
-        as: :sparkline_vega_specification
-    get 'sparkline/vega_data' => 'sparkline#vega_data', as: :sparkline_vega_data
   end
 
   namespace :admin do
@@ -269,6 +287,8 @@ Rails.application.routes.draw do
 
         # Case Scorers
         resources :scorers, only: [ :index, :update ], controller: :case_scorers
+        post 'embedders/vectorize' => 'case_embedders#vectorize', as: :embedders_vectorize
+        resources :embedders, only: [ :index, :update ], controller: :case_embedders
 
         # Case Queries
         resources :queries, except: [ :new, :edit, :show ] do
@@ -323,6 +343,7 @@ Rails.application.routes.draw do
       end
 
       resources :search_endpoints, except: [ :new, :edit ]
+      resources :embedders, except: [ :new, :edit ]
       resources :mapper_based_search_engines, only: [ :index ]
       resources :scorers, except: [ :new, :edit ]
 
@@ -334,6 +355,7 @@ Rails.application.routes.draw do
         resources :cases,   only: [ :index, :create, :destroy ], controller: :team_cases
         resources :books,   only: [ :index ], controller: :team_books
         resources :search_endpoints, only: [ :index ]
+        resources :embedders, only: [ :index ]
       end
 
       # Imports
@@ -348,7 +370,7 @@ Rails.application.routes.draw do
 
       # Exports
       namespace :export do
-        resources :books, only: [ :update ], param: :book_id
+        resources :books, only: [ :show, :update ], param: :book_id
         resources :cases, only: [ :show ], param: :case_id # should be post (:update)
         resources :ratings, only: [ :show ], param: :case_id # should be post (:update)
         namespace :queries do
@@ -372,10 +394,18 @@ Rails.application.routes.draw do
   delete '/cases/:id' => 'cases#destroy', as: :case
   delete '/cases/:id/queries' => 'cases#destroy_queries', as: :case_queries
 
-  # Routes handled by angular
+  # Routes handled by the case client
   get '/case/:id(/try/:try_number)'   => 'core#index', as: :case_core
   get '/cases/new'                    => 'core#new', as: :case_new
   get '/case'                         => 'core#index'
+
+  # Server-rendered case header on the core page. These re-render the
+  # `case_header` Turbo Frame in place rather than returning JSON, so a rename
+  # updates every place the name appears without a client-side model to sync.
+  get '/case/:id/header(/try/:try_number)' => 'core/case_header#show', as: :case_header
+  patch '/case/:id/header/case_name' => 'core/case_header#rename_case', as: :rename_case_header
+  patch '/case/:id/header/try_name/:try_number' => 'core/case_header#rename_try',
+        as: :rename_try_header
 
   # Static pages
   get '/cookies' => 'pages#show', defaults: { page: 'cookies' }

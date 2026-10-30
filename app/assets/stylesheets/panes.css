@@ -1,34 +1,73 @@
+/* Sized by the core layout's flex column (core-additions.css), so the panes end
+ * at the viewport's bottom edge whatever the header's height. Each pane is its
+ * own stacking context, so z-indexes inside one never compete with the other. */
 .pane_container {
-	 position: relative;
-	 overflow: hidden;
+  position: relative;
+  overflow: hidden;
 }
- .pane_main {
-	 display: block;
-	 float: left;
-	 height: calc(100% - 60px);
-	 left: 0;
-	 overflow-y: auto;
-	 position: fixed;
-	 width: 100%;
+
+.pane_main,
+.pane_east {
+  bottom: 0;
+  isolation: isolate;
+  overflow-y: auto;
+  position: absolute;
+  top: 0;
 }
- .pane_east {
-	 background: #333;
-	 display: none;
-	 height: calc(100% - 60px);
-	 min-width: 300px;
-	 overflow-y: auto;
-	 position: fixed;
+
+.pane_main {
+  display: flex;
+  flex-direction: column;
+  left: 0;
+  width: 100%;
 }
- .east-slider {
-	 background: none repeat scroll 0% 0% #ddd;
-	 border: 0px solid #bbb;
-	 cursor: col-resize;
-	 display: none;
-	 height: 100%;
-	 position: fixed;
-	 width: 6px;
-	 z-index: 99;
+
+/* Keep the existing pane footer visible without moving or duplicating its DOM. */
+.pane_main > * {
+  flex-shrink: 0;
 }
- .east-slider:hover {
-	 background: none repeat scroll 0% 0% #326414;
+
+/* Keep the shared footer at the bottom of the scrolling results pane. */
+.pane_main > footer {
+  position: sticky;
+  bottom: 0;
+  margin-top: auto;
+  z-index: 5;
+}
+
+/* Below ~750px (phones/small tablets, matching #main's breakpoint in
+ * core-additions.css) a sticky footer permanently eats a meaningful chunk of
+ * the already-scarce screen height. Let it scroll with the query list
+ * instead, same as the footer on every non-case page. */
+@media (width <= 749.98px) {
+  .pane_main > footer {
+    position: static;
+    margin-top: 0;
+  }
+}
+
+/* Keep the drawer's bottom actions above visible core error/notice banners. */
+.pane_east {
+  bottom: var(--core-flash-height, 0);
+  background: #333;
+  display: none;
+  min-width: 300px;
+}
+
+.east-slider {
+  background: none repeat scroll 0% 0% #ddd;
+  border: 0 solid #bbb;
+  bottom: var(--core-flash-height, 0);
+  cursor: col-resize;
+  display: none;
+  position: absolute;
+  top: 0;
+  touch-action: none;
+  user-select: none;
+  width: 6px;
+  z-index: 99;
+}
+
+.east-slider:hover {
+  background: none repeat scroll 0% 0% #326414;
 }

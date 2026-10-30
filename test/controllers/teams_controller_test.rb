@@ -9,6 +9,223 @@ class TeamsControllerTest < ActionDispatch::IntegrationTest
     login_user_for_integration_test @user
   end
 
+  test 'renders the suggestion row template the member autocomplete fills in' do
+    get team_path(@team)
+
+    assert_response :success
+    assert_select '[data-controller="team-member-autocomplete"] template[data-team-member-autocomplete-target="itemTemplate"]' do
+      assert_select '.autocomplete-item[data-action="click->team-member-autocomplete#select"]', count: 1 do
+        assert_select 'img.autocomplete-avatar', count: 1
+        assert_select '.autocomplete-details .autocomplete-name', count: 1
+        assert_select '.autocomplete-details .autocomplete-email', count: 1
+      end
+    end
+  end
+
+  test 'case list loads latest score summaries in one query and preserves displayed values' do
+    previous_bullet = Bullet.enable?
+    Bullet.enable = false
+    @team.cases.clear
+    3.times do |index|
+      kase = Case.create!(case_name: "Score summary #{index}", owner: @user)
+      @team.cases << kase
+      kase.scores.create!(score: 0.1, user: @user, updated_at: 2.days.ago)
+      kase.scores.create!(score: 0.5 + (index / 10.0), user: @user, updated_at: 1.day.ago)
+    end
+    unscored = Case.create!(case_name: 'Never scored', owner: @user)
+    @team.cases << unscored
+    score_queries = []
+    subscriber = lambda do |_name, _start, _finish, _id, payload|
+      sql = payload[:sql]
+      score_queries << sql if sql.match?(/\ASELECT.*(?:FROM|JOIN) [`"]?case_scores/i)
+    end
+
+    ActiveSupport::Notifications.subscribed(subscriber, 'sql.active_record') do
+      get team_path(@team)
+    end
+
+    assert_response :success
+    assert_equal 1, score_queries.size, score_queries.join("\n")
+    [ '0.500', '0.600', '0.700' ].each do |score|
+      assert_select 'td', text: score
+    end
+    assert_select 'td', text: 'Never Run'
+    assert_select 'td', text: @user.fullname, minimum: 3
+    assert_not score_queries.first.match?(/SELECT [`"]?case_scores[`"]?\.\*/i)
+  ensure
+    Bullet.enable = previous_bullet
+  end
+
+  test 'case, book, scorer and search endpoint lists load their counts without a query per row' do
+    other_team = Team.create!(name: 'Count sharing team')
+    @team.cases.clear
+    @team.books.clear
+    @team.scorers.clear
+    3.times do |index|
+      owner = User.create!(name: "Count owner #{index}", email: "count-owner-#{index}@example.com", password: 'password')
+      kase = Case.create!(case_name: "Counted case #{index}", owner: owner)
+      @team.cases << kase
+      other_team.cases << kase if index.zero?
+      (index + 1).times do |query_index|
+        query = kase.queries.create!(query_text: "counted #{index}-#{query_index}")
+        query.ratings.create!(doc_id: 'doc', rating: 1)
+      end
+
+      book = Book.create!(name: "Counted book #{index}", owner: owner)
+      @team.books << book
+      other_team.books << book if index.zero?
+      (index + 2).times do |pair_index|
+        pair = book.query_doc_pairs.create!(query_text: 'counted', doc_id: "doc-#{pair_index}")
+        pair.judgements.create!(rating: 1, user: owner)
+      end
+      book.cases << kase
+
+      scorer = Scorer.create!(name: "Counted scorer #{index}", owner: owner, scale: [ 0, 1 ])
+      @team.scorers << scorer
+      other_team.scorers << scorer if index.zero?
+      kase.update!(scorer: scorer)
+
+      endpoint = SearchEndpoint.create!(name: "Counted endpoint #{index}", owner: owner, search_engine: 'solr',
+                                        endpoint_url: "http://example.com/counted-#{index}", api_method: 'JSONP')
+      @team.search_endpoints << endpoint
+      other_team.search_endpoints << endpoint if index.zero?
+      kase.tries.first.update!(search_endpoint: endpoint)
+      kase.tries.create!(try_number: 2, search_endpoint: endpoint) if index.zero?
+    end
+    per_row_counts = []
+    subscriber = lambda do |_name, _start, _finish, _id, payload|
+      sql = payload[:sql]
+      per_row_counts << sql if sql.match?(/\ASELECT COUNT\(.*[`"]?(?:case_id|book_id|scorer_id|search_endpoint_id)[`"]? = (?:\d+|\?|\$\d+)\z/i)
+    end
+
+    ActiveSupport::Notifications.subscribed(subscriber, 'sql.active_record') do
+      get team_path(@team)
+    end
+
+    assert_response :success
+    assert_empty per_row_counts, per_row_counts.join("\n")
+    assert_select 'tr', text: /Counted case 0/ do
+      assert_select 'td:nth-child(4)', text: '1' # queries
+      assert_select 'td:nth-child(8)', text: '1' # judgements
+      assert_select '.badge', text: '2 Teams'
+    end
+    assert_select 'tr', text: /Counted case 2/ do
+      assert_select 'td:nth-child(4)', text: '3'
+      assert_select 'td:nth-child(8)', text: '3'
+      assert_select '.badge', text: '1 Teams'
+    end
+    assert_select 'tr', text: /Counted book 0/ do
+      assert_select '.badge', text: '2 Judgements'
+      assert_select '.badge', text: '1 Cases'
+      assert_select '.badge', text: '2 Teams'
+    end
+    assert_select 'tr', text: /Counted book 2/ do
+      assert_select '.badge', text: '4 Judgements'
+      assert_select '.badge', text: '1 Teams'
+    end
+    assert_select 'tr', text: /Counted scorer 0/ do
+      assert_select '.badge', text: '1 Cases'
+      assert_select '.badge', text: '2 Teams'
+    end
+    assert_select 'tr', text: /Counted scorer 1/ do
+      assert_select '.badge', text: '1 Teams'
+    end
+    assert_select 'tr', text: /Counted endpoint 0/ do
+      assert_select '.badge', text: '1 Cases' # two tries, one case
+      assert_select '.badge', text: '2 Teams'
+    end
+    assert_select 'tr', text: /Counted endpoint 1/ do
+      assert_select '.badge', text: '1 Cases'
+      assert_select '.badge', text: '1 Teams'
+    end
+  end
+
+  test 'invalid creation renders validation errors with a Turbo-compatible status' do
+    assert_no_difference 'Team.count' do
+      post teams_path, params: { team: { name: '' } }
+    end
+    assert_response :unprocessable_content
+    assert_select 'form[action=?] input.is-invalid', teams_path
+    assert_select '#error_explanation', /Name can't be blank/
+  end
+
+  test 'duplicate team names display the validation error and retain the entered name' do
+    post teams_path, params: { team: { name: @team.name } }
+    assert_response :unprocessable_content
+    assert_select '#error_explanation', /Name has already been taken/
+    assert_select 'input[name=?][value=?]', 'team[name]', @team.name
+  end
+
+  test 'successful creation redirects with see other' do
+    post teams_path, params: { team: { name: 'Drive team' } }
+    assert_response :see_other
+    assert_redirected_to team_path(Team.last)
+  end
+
+  test 'management forms stay on HTTPS behind a proxy' do
+    headers = { 'X-Forwarded-Proto' => 'https' }
+    get new_team_path, headers: headers
+    assert_response :success
+    assert_select 'form[action=?]', teams_path do |forms|
+      assert_not_equal 'false', forms.first['data-turbo']
+    end
+
+    post teams_path, params: { team: { name: '' } }, headers: headers
+    assert_response :unprocessable_content
+    assert_select 'form[action=?] input.is-invalid', teams_path
+
+    post teams_path, params: { team: { name: 'HTTPS Drive team' } }, headers: headers
+    assert_response :see_other
+    assert_equal "https://www.example.com#{team_path(Team.last)}", response.location
+  end
+
+  describe 'show sections' do
+    it 'paginates cases on their own page param and renders the pager' do
+      @team.cases.clear
+      (Pagy::OPTIONS[:limit] + 1).times { |index| @team.cases << Case.create!(case_name: "Paged case #{index}", owner: @user) }
+
+      Bullet.enable = false
+      get team_path(@team), params: { cases_page: 2 }
+      Bullet.enable = true
+
+      assert_response :success
+      assert_equal 2, assigns(:pagy_cases).page
+      assert_equal 1, assigns(:pagy_books).page
+      assert_equal 1, assigns(:cases).size
+      assert_select 'turbo-frame#team_lists nav a[href*="cases_page=1"][data-turbo-frame="team_lists"]'
+    end
+
+    it 'reloads the lists frame from each section filter form and sends other navigation to the page' do
+      Bullet.enable = false
+      get team_path(@team)
+      Bullet.enable = true
+
+      assert_response :success
+      assert_select 'turbo-frame#team_lists[target=_top][data-turbo-action=advance]' do
+        %w[cases books search_endpoints scorers].each do |section|
+          assert_select "form[data-turbo-frame=team_lists]:has(input[name=#{section}_q])"
+        end
+      end
+    end
+
+    it 'carries the other sections filters along in each filter form' do
+      Bullet.enable = false
+      get team_path(@team), params: { cases_q: 'foo', books_archived: '1' }
+      Bullet.enable = true
+
+      assert_response :success
+      assert_select 'form:has(input[name="cases_q"][type="text"])' do
+        assert_select 'input[type="hidden"][name="books_archived"][value="1"]'
+        assert_select 'input[type="hidden"][name="cases_q"]', count: 0
+      end
+      assert_select 'form:has(input[name="books_q"][type="text"])' do
+        assert_select 'input[type="hidden"][name="cases_q"][value="foo"]'
+        assert_select 'input[type="checkbox"][name="books_archived"][checked]'
+        assert_select 'input[type="hidden"][name="books_archived"]', count: 0
+      end
+    end
+  end
+
   describe 'cases search' do
     # `id` is an integer column. Matching it with LIKE made a search for "5"
     # return cases 15, 25 and 51 as well, and is a type error on PostgreSQL.
@@ -101,6 +318,17 @@ class TeamsControllerTest < ActionDispatch::IntegrationTest
       user_suggestion = suggestions.find { |s| s['email'] == autocomplete_user.email }
       assert_not_nil user_suggestion
       assert_equal 'autocomplete_user_1@example.com', user_suggestion['email']
+    end
+
+    it 'does not suggest users without an email (AI judges)' do
+      judge = users(:judge_judy)
+      shared_team = (@user.teams.to_a - [ @team ]).first
+      shared_team.members << judge unless shared_team.members.exists?(judge.id)
+
+      get suggest_members_team_path(@team), params: { query: 'judge judy' }
+
+      assert_response :success
+      assert_empty(response.parsed_body.select { |s| s['name'] == judge.name })
     end
 
     it 'excludes current team members from suggestions' do
@@ -313,6 +541,16 @@ class TeamsControllerTest < ActionDispatch::IntegrationTest
   end
 
   describe 'share_search_endpoint' do
+    it 'rejects sharing a static endpoint with a clear alert' do
+      endpoint = search_endpoints(:one)
+      endpoint.update_column(:search_engine, 'static')
+      original_teams = endpoint.team_ids
+      post share_search_endpoint_teams_path, params: { team_id: @team.id, search_endpoint_id: endpoint.id }
+      assert_redirected_to teams_path
+      assert_equal SearchEndpoint::TEAM_SHARING_MESSAGE, flash[:alert]
+      assert_equal original_teams.sort, endpoint.reload.team_ids.sort
+    end
+
     it 'shares a search endpoint the user has access to with one of their teams' do
       search_endpoint = search_endpoints(:one)
       assert_not @team.search_endpoints.exists?(search_endpoint.id)
@@ -343,6 +581,59 @@ class TeamsControllerTest < ActionDispatch::IntegrationTest
 
       assert_redirected_to teams_path
       assert_equal 'You do not have access to that search endpoint.', flash[:alert]
+    end
+  end
+
+  describe 'embedders' do
+    let(:shared_team) { teams(:shared) }
+    let(:embedder)    { embedders(:openai_small) }
+
+    it 'lists the embedders shared with the team, with how many cases use each' do
+      cases(:shared_with_team).update!(embedder: embedder)
+
+      # The page's cases and books lists trip Bullet on their own (as in 'cases search').
+      Bullet.enable = false
+      get team_path(shared_team)
+      Bullet.enable = true
+
+      assert_response :success
+      assert_select 'td a', text: embedder.name
+      assert_select 'td a', text: embedders(:private_ollama).name, count: 0
+      assert_select 'span.badge', text: '1 Case'
+      assert_select 'a[href=?]', new_embedder_path(team_id: shared_team.id)
+    end
+  end
+
+  describe 'unshare_embedder' do
+    let(:shared_team) { teams(:shared) }
+    let(:embedder)    { embedders(:openai_small) }
+
+    it 'unshares an embedder from the team, leaving the cases that use it alone' do
+      acase = cases(:shared_with_team)
+      acase.update!(embedder: embedder)
+      assert shared_team.embedders.exists?(embedder.id)
+
+      post unshare_embedder_teams_path, params: { team_id: shared_team.id, embedder_id: embedder.id }
+
+      assert_redirected_to teams_path
+      assert_not shared_team.reload.embedders.exists?(embedder.id)
+      assert_equal embedder.id, acase.reload.embedder_id
+      assert_match(/unshared from/, flash[:notice])
+    end
+
+    it 'sets an alert when the embedder is not shared with the team' do
+      assert_not @team.embedders.exists?(embedder.id)
+
+      post unshare_embedder_teams_path, params: { team_id: @team.id, embedder_id: embedder.id }
+
+      assert_redirected_to teams_path
+      assert_match(/is not shared with/, flash[:alert])
+    end
+
+    it 'denies an embedder the user has no access to' do
+      post unshare_embedder_teams_path, params: { team_id: shared_team.id, embedder_id: embedders(:private_ollama).id }
+
+      assert_match(/do not have access/, flash[:alert])
     end
   end
 
@@ -541,6 +832,27 @@ class TeamsControllerTest < ActionDispatch::IntegrationTest
   end
 
   describe 'remove_member' do
+    it 'redirects self-removal to the accessible teams list' do
+      delete member_team_path(@team, member_id: @user.id)
+
+      assert_response :see_other
+      assert_redirected_to teams_path
+      assert_not @team.reload.members.exists?(@user.id)
+      follow_redirect!
+      assert_response :ok
+    end
+
+    it 'does not redirect an inaccessible team back to itself' do
+      @team.members.delete(@user)
+
+      get team_path(@team), headers: { 'HTTP_REFERER' => team_url(@team) }
+
+      assert_response :see_other
+      assert_redirected_to teams_path
+      follow_redirect!
+      assert_response :ok
+    end
+
     it 'removes a member from the team' do
       shared_team = teams(:shared)
       member = users(:random)

@@ -27,28 +27,31 @@ class MapperBasedSearchEngine
   attribute :supports_pagination, :boolean, default: false
   # The query_params key names for page size / offset (e.g. Vespa's 'hits'/'offset').
   # Deliberately no default: an engine claiming supports_pagination without naming both
-  # of these is a config bug we want to surface (queriesSvc.js's paginate() refuses to
-  # guess a key name), not silently fall back to some other engine's convention.
+  # of these is a config bug we want to surface (splainer-search's
+  # searchApiSearcherPreprocessorSvc refuses to guess a key name), not silently fall back to
+  # some other engine's convention.
   attribute :pagination_hits_param,   :string
   attribute :pagination_offset_param, :string
   # Whether "Already Rated Documents" (the Find-and-Rate-Missing-Documents modal) and
   # "Show only rated" (the queries list toggle) can look up a query's already-rated doc IDs
   # directly. Not every search API has a query syntax Quepid can use to build a "just these
   # IDs" filter generically (unlike Solr's {!terms f=id} or ES's terms query), so this
-  # defaults to false rather than assume one - queriesCtrl.js/queries.html disable "Show only
-  # rated" and explain why when false. When true, mapper_file must define a
-  # ratedDocsQueryParamsMapper(ratedIds, idField) function (queriesSvc.js's
+  # defaults to false rather than assume one - queries_list_controller.js disables "Show only
+  # rated" and explains why when false. When true, mapper_file must define a
+  # ratedDocsQueryParamsMapper(ratedIds, idField) function (query_service.js's
   # buildSearchApiRatedDocsQueryParams evaluates it, passing the case's own id field -
   # fieldSpec.id - as idField) - the actual ID-filter query syntax is the mapper's job, same
   # as numberOfResultsMapper/docsMapper above.
   attribute :supports_rated_docs_lookup, :boolean, default: false
+  # Whether the mapper can provide a direct document URL for View Document.
+  attribute :supports_direct_document_lookup, :boolean, default: false
   attribute :search_url,          :string, default: ''
   attribute :url_format,          :string
   attribute :query_params,        :string
   # The query_params key to wrap bare (non-JSON) query text into when a user types plain
   # text directly into the Query Sandbox instead of JSON (e.g. Vespa's YQL: 'select * from
-  # ...' rather than '{"yql": "select * from ..."}'). Explicit key=value parameter
-  # lists are parsed separately, whether or not this is set - see Try#searchapi_args.
+  # ...' rather than '{"yql": "select * from ..."}'). Nil means this engine only accepts
+  # query_params as JSON - see Try#searchapi_args.
   attribute :bare_query_param,    :string
   attribute :custom_headers,      :string, default: ''
   attribute :header_type,         :string, default: 'None'
@@ -61,54 +64,58 @@ class MapperBasedSearchEngine
 
   DEFINITIONS = [
     {
-      id:                         'vespa',
-      name:                       'Vespa',
-      logo:                       'vespa',
-      api_method:                 'AUTO',
-      proxy_requests:             true,
-      supports_basic_auth:        false,
+      id:                              'vespa',
+      name:                            'Vespa',
+      logo:                            'vespa',
+      api_method:                      'AUTO',
+      proxy_requests:                  true,
+      supports_basic_auth:             false,
       # Vespa's query API takes hits/offset as plain top-level params alongside yql, so
-      # queriesSvc.js's paginate() can widen the request by bumping offset on each click.
-      supports_pagination:        true,
-      pagination_hits_param:      'hits',
-      pagination_offset_param:    'offset',
-      search_url:                 'https://a119b8dc.eb5f2dd2.z.vespa-app.cloud/search/',
-      url_format:                 'https://<app>.<tenant>.z.vespa-app.cloud/search/',
+      # the query runtime's paginate() can widen the request by bumping offset on each click.
+      supports_pagination:             true,
+      pagination_hits_param:           'hits',
+      pagination_offset_param:         'offset',
+      search_url:                      'https://a119b8dc.eb5f2dd2.z.vespa-app.cloud/search/',
+      url_format:                      'https://<app>.<tenant>.z.vespa-app.cloud/search/',
       # hits/offset are deliberately not baked in here — they'd show up in the editable
-      # Query Sandbox as if they were part of the query. queriesSvc.js's
-      # createSearcherFromSettings() injects them at request-build time instead (using
-      # pagination_hits_param/pagination_offset_param below), the same way it already
-      # injects Solr's echoParams=all without persisting it into query_params.
+      # Query Sandbox as if they were part of the query. query_service.js's
+      # createSearcherFromSettings() passes pagination_hits_param/pagination_offset_param
+      # (below) to splainer-search, which injects them at request-build time instead - the
+      # same way query_service.js injects Solr's echoParams=all without persisting it into
+      # query_params.
       #
       # api_method: 'AUTO' lets splainer-search pick GET or POST per request, based on the
       # hydrated query's length (searchApiSearcherPreprocessorSvc.js in splainer-search) -
       # a short query rides as a GET querystring (nicer to read/share), a long one (e.g.
       # ratedDocsQueryParamsMapper's "movie_id in (...)" list with many ratings) falls back
-      # to POST so it isn't truncated by URL-length limits. Try#searchapi_args accepts
-      # JSON, key=value parameter lists, or bare YQL and produces scalar parameter values
-      # for both GET and POST.
-      query_params:               '{"yql": "select * from movies where title contains \"#$query##\" or overview contains \"#$query##\"", "ranking.profile": "bm25"}',
-      bare_query_param:           'yql',
+      # to POST so it isn't truncated by URL-length limits. Try#searchapi_args only picks
+      # JsonArgParser (plain scalar values) over SolrArgParser (array-per-key values) when
+      # query_params starts with '{', so this has to be real JSON for that path - or, since
+      # bare_query_param above is set, plain YQL text typed directly into the Query Sandbox
+      # works too.
+      query_params:                    '{"yql": "select * from movies where title contains \"#$query##\" or overview contains \"#$query##\"", "ranking.profile": "bm25"}',
+      bare_query_param:                'yql',
       # Vespa's own document id (e.g. "id:movies:movies::603") isn't a queryable field in
       # this schema ("where id = ..." 400s with "Field 'id' does not exist" - confirmed
       # against the live endpoint), so id_field points at movie_id instead: the schema's own
       # attribute field, which IS filterable and happens to hold the same value as the local
-      # part of that envelope id. wizardModal.js builds field_spec as "id:#{id_field}, ..."
-      # from this, so every new Vespa case picks up movie_id as its doc id automatically -
-      # queriesSvc.js passes that same id_field (as fieldSpec.id) into
+      # part of that envelope id. wizard_contracts.js's buildFieldSpec() builds field_spec as
+      # "id:#{id_field}, ..." from this, so every new Vespa case picks up movie_id as its doc
+      # id automatically - query_service.js passes that same id_field (as fieldSpec.id) into
       # ratedDocsQueryParamsMapper (mapper_file below), so it filters on whatever field a
       # given case's field_spec actually names, not a value hardcoded in the mapper.
-      supports_rated_docs_lookup: true,
+      supports_rated_docs_lookup:      true,
+      supports_direct_document_lookup: false,
       # Read-only Vespa Cloud data-plane token for the o19s demo tenant; scoped to query
       # access only, so exposure is bounded to someone running extra queries against the
       # demo index, not writing/deleting data.
-      custom_headers:             { Authorization: 'Bearer vespa_cloud_TR8wpJb6M2x0TltmxqTdupqA20rcAI5tAEfqHWbvsx5' }.to_json,
-      header_type:                'Custom',
-      id_field:                   'movie_id',
-      title_field:                'title',
-      test_query:                 '{"yql": "select * from sources * where true"}',
-      additional_fields:          [ 'overview', 'cast', 'thumb:poster_path' ],
-      mapper_file:                'db/mapper_based_search_engines/vespa.js',
+      custom_headers:                  { Authorization: 'Bearer vespa_cloud_TR8wpJb6M2x0TltmxqTdupqA20rcAI5tAEfqHWbvsx5' }.to_json,
+      header_type:                     'Custom',
+      id_field:                        'movie_id',
+      title_field:                     'title',
+      test_query:                      '{"yql": "select * from sources * where true"}',
+      additional_fields:               [ 'overview', 'cast', 'thumb:poster_path' ],
+      mapper_file:                     'db/mapper_based_search_engines/vespa.js',
     },
     {
       id:                         'qdrant',
@@ -117,8 +124,8 @@ class MapperBasedSearchEngine
       api_method:                 'POST',
       # Qdrant enables CORS by default, but a self-hosted cluster is routinely on plain
       # http://host:6333 while Quepid is on https (mixed content), and the api-key header
-      # below is a real credential we don't want sitting in browser-visible JS. Proxying
-      # through Quepid solves both, same as Vespa.
+      # below is forwarded through Quepid, same as Vespa. Custom headers remain
+      # browser-visible; the demo key is deliberately scoped to read-only access.
       proxy_requests:             true,
       # Qdrant authenticates with its own 'api-key' header, not HTTP Basic.
       supports_basic_auth:        false,

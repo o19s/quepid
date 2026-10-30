@@ -36,6 +36,14 @@ class UpdateCaseRatingsJobTest < ActiveJob::TestCase
     assert_in_delta(3.0, rating.rating)
   end
 
+  test 'a batch of pairs from one book refreshes the Linked Cases card once' do
+    pairs = %w[DOC1 DOC2 DOC3].map { |doc_id| book.query_doc_pairs.create!(query_text: 'my search', doc_id: doc_id) }
+
+    assert_enqueued_jobs 1, only: BroadcastLinkedCasesJob do
+      UpdateCaseRatingsJob.perform_now(pairs.map(&:id))
+    end
+  end
+
   test 'a queued job whose query_doc_pair has since been deleted does not blow up the Linked Cases check' do
     query_doc_pair = QueryDocPair.create(query_text: 'my search', doc_id: 'DOC123456')
     book.query_doc_pairs << query_doc_pair

@@ -208,12 +208,12 @@ class LlmProvider
       adapter:             'LlmJudgeAdapters::Anthropic',
       auth_style:          :x_api_key,
       default_service_url: 'https://RESOURCE.services.ai.azure.com/anthropic',
-      default_model:       'claude-3-5-haiku-20241022',
+      default_model:       'claude-haiku-5-5',
       help_html:           <<~HTML.squish,
         <strong>Azure AI Foundry (Anthropic)</strong> &mdash; Claude models via
         Azure using the native Anthropic Messages API.<br>
         <b>URL:</b> <code>https://YOUR-RESOURCE.services.ai.azure.com/anthropic</code><br>
-        <b>Model:</b> e.g. <code>claude-3-5-haiku-20241022</code><br>
+        <b>Model:</b> e.g. <code>claude-haiku-5-5</code><br>
         <b>Key:</b> Azure AI services key (sent as <code>x-api-key</code> header)<br>
         <b>API Version:</b> Leave blank (the <code>anthropic-version</code> header is set automatically)
       HTML
@@ -237,11 +237,11 @@ class LlmProvider
       key:                 'google_gemini',
       label:               'Google Gemini',
       default_service_url: 'https://generativelanguage.googleapis.com/v1beta/openai',
-      default_model:       'gemini-2.0-flash',
+      default_model:       'gemini-3.8-flash',
       help_html:           <<~HTML.squish,
         <strong>Google Gemini</strong> &mdash; Uses the OpenAI-compatible endpoint.<br>
         <b>URL:</b> <code>https://generativelanguage.googleapis.com/v1beta/openai</code><br>
-        <b>Model:</b> e.g. <code>gemini-2.0-flash</code><br>
+        <b>Model:</b> e.g. <code>gemini-3.8-flash</code><br>
         <b>Key:</b> Your Google AI API key<br>
         <b>API Version:</b> Leave blank
       HTML
@@ -361,19 +361,6 @@ class LlmProvider
     scale_as_criteria?
   end
 
-  # Is this text one of the prompts Quepid ships for some *other* provider? That is a
-  # judge carrying instructions written for a different kind of model -- worth flagging,
-  # unlike text somebody wrote themselves, which is none of our business.
-  def stock_prompt_from_another_provider? text
-    return false if text.blank? || default_system_prompt.blank?
-
-    # A textarea posts CRLF, so stored text never matches a heredoc byte for byte.
-    text = normalize(text)
-    return false if text == normalize(default_system_prompt)
-
-    self.class.stock_system_prompts.any? { |prompt| normalize(prompt) == text }
-  end
-
   # The shape the AI Judge wizard (ai_judge_wizard_controller.js) expects for presets[key].
   def to_preset
     {
@@ -418,9 +405,5 @@ class LlmProvider
       'the judgement is marked unrateable instead of rated, with the numbers kept in the ' \
       'explanation -- and, if this judge wakes another when unsure, handed on to it. Leave ' \
       'blank to accept every answer.'
-  end
-
-  def normalize text
-    text.to_s.gsub(/\r\n?/, "\n").strip
   end
 end

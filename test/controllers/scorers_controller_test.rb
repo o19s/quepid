@@ -64,6 +64,23 @@ class ScorersControllerTest < ActionController::TestCase
         assert_equal scorer, assigns(:scorer)
       end
 
+      test 'renders saved scale labels and the label template the scale controller clones' do
+        scorer = scorers(:random_scorer)
+        scorer.update!(owner: user, scale: [ 0, 1 ], scale_with_labels: { '0' => 'Bad', '1' => 'Good' })
+
+        get :edit, params: { id: scorer.id }
+
+        assert_response :success
+        assert_select '[data-scorer-scale-target="scaleLabels"] label.scorer-scale-label', count: 2
+        assert_select '[data-scorer-scale-target="scaleLabels"] input[name="scorer[scale_with_labels][1]"][value="Good"]'
+        assert_select '[data-controller="scorer-scale"] template[data-scorer-scale-target="labelTemplate"]' do
+          assert_select 'label.scorer-scale-label', count: 1 do
+            assert_select '[data-scale-value]', count: 1
+            assert_select 'input.form-control', count: 1
+          end
+        end
+      end
+
       test 'cannot edit communal scorer' do
         get :edit, params: { id: communal_scorer.id }
 
@@ -80,6 +97,7 @@ class ScorersControllerTest < ActionController::TestCase
         get :edit, params: { id: communal_scorer.id }
 
         assert_response :success
+        assert_select 'link[rel=modulepreload][href*="codemirror--view"]', minimum: 1
         assert_equal communal_scorer, assigns(:scorer)
       end
 
@@ -165,8 +183,7 @@ class ScorersControllerTest < ActionController::TestCase
       end
 
       test 'can delete own custom scorer' do
-        scorer = scorers(:random_scorer)
-        scorer.update(owner: user)
+        scorer = Scorer.create!(name: 'Unused scorer', code: 'setScore(1);', owner: user, scale: [ 1, 2, 3 ])
 
         assert_difference 'Scorer.count', -1 do
           delete :destroy, params: { id: scorer.id }
@@ -174,6 +191,20 @@ class ScorersControllerTest < ActionController::TestCase
 
         assert_redirected_to scorers_path
         assert_equal 'Scorer deleted.', flash[:notice]
+      end
+
+      test 'cannot delete a scorer that a case uses' do
+        scorer = Scorer.create!(name: 'Used scorer', code: 'setScore(1);', owner: user, scale: [ 1, 2, 3 ])
+        kase = cases(:one)
+        kase.update!(scorer: scorer)
+
+        assert_no_difference 'Scorer.count' do
+          delete :destroy, params: { id: scorer.id }
+        end
+
+        assert_redirected_to edit_scorer_path(scorer)
+        assert_match(/Cannot delete the scorer because it is the default for 1 case/, flash[:alert])
+        assert_equal scorer.id, kase.reload.scorer_id
       end
 
       test 'cannot delete communal scorer' do
@@ -269,6 +300,139 @@ class ScorersControllerTest < ActionController::TestCase
         assert_equal user, cloned_scorer.owner
         assert_not cloned_scorer.communal
       end
+    end
+  end
+
+  describe 'update_default' do
+    before do
+      login_user user
+    end
+
+    test 'sets an accessible scorer as the user default' do
+      post :update_default, params: { default_scorer_id: custom_scorer.id }
+
+      assert_redirected_to scorers_path
+      assert_equal 'Default scorer updated.', flash[:notice]
+      assert_equal custom_scorer, user.reload.default_scorer
+    end
+
+    test 'rejects a missing scorer' do
+      post :update_default, params: { default_scorer_id: -1 }
+
+      assert_redirected_to scorers_path
+      assert_equal 'Scorer not found.', flash[:alert]
+    end
+
+    test 'rejects an inaccessible scorer' do
+      post :update_default, params: { default_scorer_id: scorers(:valid).id }
+
+      assert_redirected_to scorers_path
+      assert_equal 'You cannot select that scorer as default.', flash[:alert]
+      assert_not_equal scorers(:valid), user.reload.default_scorer
+    end
+
+    test 'reports a failed user save' do
+      user.define_singleton_method(:save) { false }
+      begin
+        post :update_default, params: { default_scorer_id: custom_scorer.id }
+      ensure
+        user.singleton_class.remove_method(:save)
+      end
+
+      assert_redirected_to scorers_path
+      assert_equal user.errors.full_messages.to_sentence, flash[:alert]
+    end
+  end
+
+  describe 'share' do
+    before do
+      login_user user
+    end
+
+    let(:team) { teams(:team_for_case_shared_with_owner) }
+    let(:shareable_scorer) { scorers(:random_scorer_1) }
+
+    test 'shares an accessible custom scorer with a team' do
+      assert_not team.scorers.exists?(shareable_scorer.id)
+
+      post :share, params: { team_id: team.id, scorer_id: shareable_scorer.id }
+
+      assert_response :see_other
+      assert_redirected_to scorers_path
+      assert_includes team.reload.scorers, shareable_scorer
+      assert_equal "#{shareable_scorer.name} shared with #{team.name}.", flash[:notice]
+    end
+
+    test 'reports an already-shared scorer' do
+      team.scorers << shareable_scorer unless team.scorers.exists?(shareable_scorer.id)
+
+      post :share, params: { team_id: team.id, scorer_id: shareable_scorer.id }
+
+      assert_response :see_other
+      assert_equal "#{shareable_scorer.name} is already shared with #{team.name}.", flash[:alert]
+    end
+
+    test 'rejects a missing team or scorer' do
+      post :share, params: { team_id: -1, scorer_id: shareable_scorer.id }
+
+      assert_redirected_to scorers_path
+      assert_equal 'Team or scorer not found.', flash[:alert]
+    end
+
+    test 'rejects an inaccessible scorer' do
+      post :share, params: { team_id: team.id, scorer_id: scorers(:valid).id }
+
+      assert_redirected_to scorers_path
+      assert_equal 'You do not have access to that scorer.', flash[:alert]
+    end
+
+    test 'rejects a communal scorer' do
+      post :share, params: { team_id: team.id, scorer_id: communal_scorer.id }
+
+      assert_redirected_to scorers_path
+      assert_equal 'Communal scorers are already available to everyone.', flash[:alert]
+    end
+  end
+
+  describe 'unshare' do
+    before do
+      login_user user
+    end
+
+    let(:team) { teams(:scorers_team) }
+    let(:shared_scorer) { scorers(:random_scorer_1) }
+
+    test 'removes a scorer from a team' do
+      assert_includes team.scorers, shared_scorer
+
+      post :unshare, params: { team_id: team.id, scorer_id: shared_scorer.id }
+
+      assert_response :see_other
+      assert_not team.reload.scorers.exists?(shared_scorer.id)
+      assert_equal "#{shared_scorer.name} unshared from #{team.name}.", flash[:notice]
+    end
+
+    test 'reports a scorer that is not shared with a team' do
+      post :unshare, params: { team_id: teams(:team_for_case_shared_with_owner).id, scorer_id: shared_scorer.id }
+
+      assert_response :see_other
+      assert_equal "#{shared_scorer.name} is not shared with Team for case shared with owner.", flash[:alert]
+    end
+
+    test 'rejects an inaccessible scorer without changing membership' do
+      inaccessible = scorers(:valid)
+      post :unshare, params: { team_id: team.id, scorer_id: inaccessible.id }
+
+      assert_redirected_to scorers_path
+      assert_equal 'You do not have access to that scorer.', flash[:alert]
+      assert_includes team.reload.scorers, shared_scorer
+    end
+
+    test 'rejects a communal scorer' do
+      post :unshare, params: { team_id: team.id, scorer_id: communal_scorer.id }
+
+      assert_redirected_to scorers_path
+      assert_equal 'Communal scorers are already available to everyone.', flash[:alert]
     end
   end
 end

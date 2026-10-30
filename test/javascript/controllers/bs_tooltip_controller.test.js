@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import BsTooltipController from "controllers/bs_tooltip_controller"
+import { buildControllerFixture } from "../support/controller_fixture"
 
 vi.mock("utils/bs_tooltip", () => ({
   createBsTooltip: vi.fn(() => ({ id: "tooltip-instance" })),
@@ -7,20 +8,13 @@ vi.mock("utils/bs_tooltip", () => ({
   disposeBsTooltip: vi.fn()
 }))
 
-import {
-  createBsTooltip,
-  disposeBsTooltip,
-  updateBsTooltipContent
-} from "utils/bs_tooltip"
+import { createBsTooltip, disposeBsTooltip, updateBsTooltipContent } from "utils/bs_tooltip"
 
 function buildController(element) {
-  const controller = Object.create(BsTooltipController.prototype)
-  controller.element = element
-  controller.titleValue = "Help"
-  controller.placementValue = "right"
-  controller.htmlValue = true
-  controller.delayValue = 500
-  return controller
+  return buildControllerFixture(BsTooltipController, {
+    element,
+    values: { title: "Help", placement: "right", html: true, delay: 500 }
+  })
 }
 
 describe("BsTooltipController", () => {
@@ -55,10 +49,7 @@ describe("BsTooltipController", () => {
 
     BsTooltipController.prototype.titleValueChanged.call(controller, "Updated")
 
-    expect(updateBsTooltipContent).toHaveBeenCalledWith(
-      { id: "tooltip-instance" },
-      "Updated"
-    )
+    expect(updateBsTooltipContent).toHaveBeenCalledWith({ id: "tooltip-instance" }, "Updated")
   })
 
   it("disposes the tooltip on disconnect", () => {

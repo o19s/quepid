@@ -1,6 +1,5 @@
 /**
- * Forces a browser download of in-memory content, replacing the AngularJS
- * export flows' `saveAs(blob, filename)` (FileSaver.js) calls.
+ * Forces a browser download of in-memory content.
  */
 export function downloadBlob(blob, filename) {
   const url = URL.createObjectURL(blob)

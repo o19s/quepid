@@ -1,11 +1,11 @@
 <%= turbo_stream.replace "notification-book-#{book.id}" do %>
-  <span id="notification-book-<%= book.id %>">    
+  <span id="notification-book-<%= book.id %>">
     <div class="alert alert-info" role="alert">
-      Judging by <i class="bi bi-robot"></i> <%= judge.name %> completed.  
+      Judging by <i class="bi bi-robot"></i> <%= judge.name %> completed.
       Please <%= link_to book_path(book) do %>
         reload the page
         <i
-          class="bi arrow-clockwise"
+          class="bi bi-arrow-clockwise"
           aria-hidden="true"
         ></i>
       <% end %>.

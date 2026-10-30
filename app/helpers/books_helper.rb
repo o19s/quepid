@@ -56,6 +56,19 @@ module BooksHelper
     "#{scale_display}#{labels_preview}"
   end
 
+  # Header shared by a book's pages: the book's title (after an optional prefix
+  # such as "Judgements for", and flagged when archived), the page's actions
+  # from the block, then the book's tabs.
+  def book_page_header(book, prefix: nil, &)
+    title = safe_join([
+      prefix,
+      tag.i(class: 'bi bi-book'),
+      book_title(book),
+      (tag.span('Archived', class: 'badge bg-warning') if book.archived?)
+    ].compact, ' ')
+    safe_join([ page_header(title, &), render('books/tabs', book: book) ], "\n")
+  end
+
   # True when the current page is part of the "Overview" tab family - the
   # Relevancy Engineer-facing pages nested as sub-tabs under Overview (as
   # opposed to Judge Overview and Calibration, which have no sub-tabs).
@@ -86,11 +99,6 @@ module BooksHelper
   # the viewer isn't actually allowed to add.
   def available_ai_judges_for_book book, user
     AiJudge.for_owner(user).where.not(id: book.ai_judges.select(:id))
-  end
-
-  # Returns true if there are AI judges available to add to this book
-  def available_ai_judges_for_book? book, user
-    available_ai_judges_for_book(book, user).exists?
   end
 
   # Returns a hash mapping scorer_id to scale_length for use in JavaScript

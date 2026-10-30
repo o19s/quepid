@@ -1,8 +1,7 @@
 <turbo-frame id="query_doc_pair_card">
-<p></p>
-<h2>Editing Judgement</h2>
+<h2 class="mt-3">Editing Judgement</h2>
 
-<%= render 'form', judgement: @judgement, query_doc_pair: @judgement.query_doc_pair, url_for_form: book_query_doc_pair_judgement_path(@book, @judgement.query_doc_pair, @judgement) %>
+<%= render 'form', book: @book, viewer: @current_user, judgement: @judgement, query_doc_pair: @judgement.query_doc_pair, url_for_form: book_query_doc_pair_judgement_path(@book, @judgement.query_doc_pair, @judgement) %>
 
 <br>
 
