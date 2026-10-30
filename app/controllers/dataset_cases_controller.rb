@@ -42,6 +42,21 @@ class DatasetCasesController < ApplicationController
     redirect_to dataset_cases_path, alert: "Could not create the case from #{dataset.name}: #{e.message}"
   end
 
+  # Uninstalls a dataset case: deletes the case, with its queries and ratings, and its link to the dataset. The
+  # book the dataset came with, and any scorers, are left alone: they may be in use elsewhere.
+  def destroy
+    link = CaseToDataset.joins(:dataset).where(datasets: { owner_id: current_user.id }).find(params.expect(:id))
+    kase = link.case
+    return redirect_to(dataset_cases_path, alert: "#{kase.case_name} is still loading: uninstall it when that has finished.") if link.in_progress?
+    return redirect_to(dataset_cases_path, alert: "#{kase.case_name} belongs to someone else, so it cannot be uninstalled from here.") unless kase.owner_id == current_user.id
+
+    case_name = kase.case_name
+    kase.really_destroy
+    Analytics::Tracker.track_case_deleted_event(current_user, kase)
+    link.destroy
+    redirect_to dataset_cases_path, notice: "Uninstalled #{case_name}: the case was deleted."
+  end
+
   private
 
   # The number of queries to load instead of all, or nil for all (also when the sample is as big as the dataset).

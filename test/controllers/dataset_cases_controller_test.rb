@@ -35,6 +35,87 @@ class DatasetCasesControllerTest < ActionDispatch::IntegrationTest
     assert_select 'button[data-bs-target=?]', '#newDatasetCase', text: /Create new/
   end
 
+  test 'index has an uninstall button per case, asking first, disabled while the case is still loading' do
+    done = link_case('imdb', name: 'Done one')
+    loading = link_case('imdb', name: 'Still loading')
+    CaseToDataset.find_by(case: loading).update!(status: 'loading')
+    get dataset_cases_url
+
+    link = CaseToDataset.find_by(case: done)
+
+    assert_select 'form[action=?][data-turbo-confirm*=?]', dataset_case_path(link), 'Uninstall Done one?' do
+      assert_select 'input[name=_method][value=delete]'
+      assert_select 'button', text: 'Uninstall'
+    end
+    assert_select 'button[disabled]', text: 'Uninstall', count: 1
+    assert_select 'span[title*=?]', 'uninstall it when that has finished', count: 1
+  end
+
+  test 'uninstall deletes the case, its queries and ratings and the link, but keeps the book and scorer' do
+    scorer = scorers(:'p@10')
+    book = books(:book_of_star_wars_judgements)
+    kase = link_case('imdb', name: 'Going away')
+    kase.update!(scorer: scorer, book: book)
+    query = kase.queries.create!(query_text: 'rambo')
+    query.ratings.create!(doc_id: 'a', rating: 1)
+    link = CaseToDataset.find_by(case: kase)
+
+    assert_difference [ 'Case.count', 'Query.count', 'Rating.count', 'CaseToDataset.count' ], -1 do
+      delete dataset_case_url(link)
+    end
+
+    assert_redirected_to dataset_cases_url
+    assert_match(/Uninstalled Going away/, flash[:notice])
+    assert Scorer.exists?(scorer.id)
+    assert Book.exists?(book.id)
+  end
+
+  test 'uninstall refuses a case that is still loading' do
+    kase = link_case('imdb', name: 'Busy')
+    link = CaseToDataset.find_by(case: kase)
+    link.update!(status: 'loading')
+
+    assert_no_difference [ 'Case.count', 'CaseToDataset.count' ] do
+      delete dataset_case_url(link)
+    end
+
+    assert_redirected_to dataset_cases_url
+    assert_match(/still loading/, flash[:alert])
+  end
+
+  test 'uninstall can clean up a case whose loading failed' do
+    kase = link_case('imdb', name: 'Broke')
+    link = CaseToDataset.find_by(case: kase)
+    link.update!(status: 'failed', error: 'boom')
+
+    assert_difference 'Case.count', -1 do
+      delete dataset_case_url(link)
+    end
+  end
+
+  test 'uninstall does not touch another users dataset case' do
+    other = Case.create!(case_name: 'Theirs', owner: users(:doug))
+    link = CaseToDataset.create!(dataset: Dataset.for(users(:doug), 'imdb'), case: other, status: 'done')
+
+    assert_no_difference [ 'Case.count', 'CaseToDataset.count' ] do
+      delete dataset_case_url(link)
+    end
+
+    assert_response :not_found
+  end
+
+  test 'uninstall refuses a case that is no longer the users own' do
+    kase = link_case('imdb', name: 'Taken over')
+    kase.update!(owner: users(:doug))
+    link = CaseToDataset.find_by(case: kase)
+
+    assert_no_difference [ 'Case.count', 'CaseToDataset.count' ] do
+      delete dataset_case_url(link)
+    end
+
+    assert_match(/belongs to someone else/, flash[:alert])
+  end
+
   test 'index quietly drops the links of cases that were deleted' do
     kept = link_case('imdb', name: 'Kept')
     deleted = link_case('imdb', name: 'Deleted')

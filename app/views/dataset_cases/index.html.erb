@@ -24,6 +24,7 @@
               <th>Queries</th>
               <th title="Distinct documents rated in the case or listed in its judgement book">Documents</th>
               <th>Created</th>
+              <th></th>
             </tr>
           </thead>
           <tbody>
@@ -67,6 +68,17 @@
                   <% end %>
                 </td>
                 <td><%= l link.created_at.to_date, format: :long %></td>
+                <td class="text-end text-nowrap">
+                  <% if link.in_progress? %>
+                    <span title="Still loading: uninstall it when that has finished">
+                      <button type="button" class="btn btn-sm btn-outline-secondary" disabled>Uninstall</button>
+                    </span>
+                  <% else %>
+                    <%= button_to 'Uninstall', dataset_case_path(link), method: :delete, class: 'btn btn-sm btn-outline-danger',
+                                  form: { data: { turbo_confirm: "Uninstall #{kase.case_name}? This deletes the case with its queries and ratings. " \
+                                                                 'The judgement book and scorers made for the dataset are kept.' } } %>
+                  <% end %>
+                </td>
               </tr>
             <% end %>
           </tbody>
