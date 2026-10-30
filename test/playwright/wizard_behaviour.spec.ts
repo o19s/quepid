@@ -245,7 +245,7 @@ test.describe("Case creation wizard behaviour", () => {
     ).toBeVisible()
   })
 
-  for (const name of ["solr", "es", "os", "searchapi"]) {
+  for (const name of ["solr", "es", "os", "warpsearch", "searchapi"]) {
     test(`shows ${name} troubleshooting on a connection failure and hides the proxy hints once proxying`, async ({
       page
     }) => {
@@ -257,7 +257,7 @@ test.describe("Case creation wizard behaviour", () => {
 
       const panel = wizard(page).locator('[data-wizard-when="url-invalid"]').first()
       await expect(panel).toBeVisible({ timeout: 20_000 })
-      for (const other of ["solr", "es", "os", "searchapi"]) {
+      for (const other of ["solr", "es", "os", "warpsearch", "searchapi"]) {
         await expect(panel.locator(`[data-wizard-when="${other}"]`)).toBeVisible({
           visible: other === name
         })
@@ -265,7 +265,8 @@ test.describe("Case creation wizard behaviour", () => {
       const hints = panel.locator(`[data-wizard-when="${name}"] [data-wizard-when="no-proxy"]`)
       await openSection(page, "Advanced")
       const proxy = page.locator("#wizardProxy")
-      // The proxy hints show only while requests are not proxied (Search API starts out proxied).
+      // The proxy hints show only while requests are not proxied (Search API and WarpSearch
+      // start out proxied).
       const proxiedAtStart = await proxy.isChecked()
       await expect(hints.first()).toBeVisible({ visible: !proxiedAtStart })
       if (name === "solr") {
@@ -626,7 +627,7 @@ test.describe("Case creation wizard behaviour", () => {
       "http(s?)://yourdomain.com:8983/<index>/select"
     )
     await expect(field(page, "basicAuth")).toBeVisible()
-    for (const name of ["algolia", "vectara"]) {
+    for (const name of ["algolia", "vectara", "warpsearch"]) {
       await engine(page, name)
       await expect(field(page, "basicAuth")).toBeHidden()
     }
@@ -640,7 +641,7 @@ test.describe("Case creation wizard behaviour", () => {
     await openSection(page, "Solr Configuration")
     await expect(apiMethod).toBeVisible()
     await expect(apiMethod.locator("option")).toHaveText(["JSONP", "GET"])
-    for (const name of ["es", "os", "vectara", "algolia", "searchapi"]) {
+    for (const name of ["es", "os", "warpsearch", "vectara", "algolia", "searchapi"]) {
       await engine(page, name)
       await expect(apiMethod, name).toBeHidden()
     }

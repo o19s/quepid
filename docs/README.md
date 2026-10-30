@@ -28,7 +28,7 @@
 |-----|---------|
 | [`database.md`](./database.md), [`running_with_postgresql.md`](./running_with_postgresql.md) | Database operations and PostgreSQL compatibility |
 | [`docker_images.md`](./docker_images.md) | Docker image build and release notes |
-| [`endpoints_solr.md`](./endpoints_solr.md), [`endpoints_opensearch.md`](./endpoints_opensearch.md) | Search endpoint configuration and provider behavior |
+| [`endpoints_solr.md`](./endpoints_solr.md), [`endpoints_opensearch.md`](./endpoints_opensearch.md), [`endpoints_warpsearch.md`](./endpoints_warpsearch.md), [`endpoints_qdrant.md`](./endpoints_qdrant.md) | Search endpoint configuration and provider behavior |
 | [`jupyterlite.md`](./jupyterlite.md) | Notebook setup and analytics integration |
 | [`examples/external_eval/README.md`](./examples/external_eval/README.md) | External evaluation workflow and API example |
 

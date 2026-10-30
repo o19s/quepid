@@ -60,6 +60,28 @@ const defaultSettings = {
     basicAuthCredential: "reader:reader",
     supportsBasicAuth: true
   },
+  // WarpSearch's OpenSearch-compatible API. It requires an API key (sent as a header,
+  // Basic auth isn't accepted) and only allows browser origins its tenant lists, so
+  // requests go through Quepid's proxy by default.
+  warpsearch: {
+    queryParams:
+      '{\n  "query": {\n    "multi_match": {\n      "query": "#$query##",\n      "fields": ["*"]\n    }\n  }\n}',
+    escapeQuery: true,
+    apiMethod: "POST",
+    customHeaders: '{\n  "Authorization": "Bearer ws_live_REPLACE_ME"\n}',
+    headerType: "Custom",
+    fieldSpec: "id:_id",
+    idField: "_id",
+    titleField: "",
+    additionalFields: [],
+    numberOfRows: 10,
+    searchEngine: "warpsearch",
+    searchUrl: "https://api.warpsearch.io/compat/opensearch/YOUR_COLLECTION/_search",
+    urlFormat: "https://api.warpsearch.io/compat/opensearch/<collection>/_search",
+    proxyRequests: true,
+    basicAuthCredential: "",
+    supportsBasicAuth: false
+  },
   vectara: {
     queryParams:
       '{\n  "query": [{\n    "query": "#$query##",\n    "start": 0,\n    "numResults": 10,\n    "corpusKey": [{\n      "corpusId": 1,\n      "lexicalInterpolationConfig": { "lambda": 0.025 },\n      "dim": []\n    }]\n  }]\n}',
@@ -179,7 +201,8 @@ export function createSettingsCatalog() {
       currentDefaults[engine.id] = engine
     },
     supportsLookupById,
-    supportsEscapeQuery: (searchEngine) => ["solr", "es", "os"].includes(searchEngine),
+    supportsEscapeQuery: (searchEngine) =>
+      ["solr", "es", "os", "warpsearch"].includes(searchEngine),
     troubleshootingWikiUrl: (searchEngine, mapperBasedSearchEngineId) => {
       const page =
         troubleshootingPages[mapperBasedSearchEngineId] || troubleshootingPages[searchEngine]

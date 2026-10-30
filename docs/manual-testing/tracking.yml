@@ -1086,6 +1086,13 @@ parts:
         notes: "Covered live via Playwright MCP on Current :3000: temporary required-proxy flag enabled and same server restarted; Edit hides proxy/JSONP, hiddenfalse tamper422 retains name/error, correctedtrue303. Mapper hides switch. Wizard rejects existingTMDBSolr, accepts disposable proxyGET endpoint, validates then finishes1query case1067525021 retaining endpoint1048858388/GET/proxytrue. Original.env exact bytes restored and same server restarted; proxy/JSONP controls return. Not covered live: new/unreachable endpoint validation, incompatible mid-try Finish or mapper save matrix, or Legacy/diff-baseline replay. Unresolved earlier failure evidence: Prior archived/dummy-credential endpoint reuse failure classified2026-10-19 as inherited lookup behavior from#1705, not required-proxy regression (after-angular-removal.md); clean fixture did not retest it."
         paths: ["config/initializers/customize_quepid.rb", "app/models/search_endpoint.rb", "app/helpers/application_helper.rb", "app/views/search_endpoints/_form.html.erb", "app/views/shared/_wizard_modal.html.erb", "app/javascript/controllers/wizard_controller.js", "app/views/mapper_wizards/show.html.erb", "app/views/mapper_wizards/_mapper_editor.html.erb"]
 
+      "7.14":
+        title: "WarpSearch: case creation, search and rated-document lookup"
+        last_run: null
+        result: null
+        notes: null
+        paths: ["app/models/search_engine.rb", "app/javascript/utils/search_engines.js", "app/javascript/utils/settings_catalog_runtime.js", "app/javascript/utils/core_workspace_runtime.js", "app/javascript/utils/query_service.js", "app/javascript/controllers/wizard_controller.js", "app/views/shared/_wizard_modal.html.erb", "app/models/try.rb", "app/services/fetch_service.rb", "app/jobs/run_case_evaluation_job.rb", "public/images/warpsearch.png", "public/images/warpsearch-icon.png", "docs/endpoints_warpsearch.md"]
+
   "08":
     file: 08-scorers.md
     scenarios:

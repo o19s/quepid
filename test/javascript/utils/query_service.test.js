@@ -48,6 +48,35 @@ describe("query service helpers", () => {
     )
   })
 
+  it("creates a WarpSearch searcher as OpenSearch without changing the try's engine", () => {
+    const createSearcher = vi.fn(() => ({ type: "os" }))
+    const filterToRatings = vi.fn(() => ({ terms: { _id: ["1"] } }))
+    const settings = {
+      searchEngine: "warpsearch",
+      selectedTry: {
+        args: { query: "books" },
+        searchUrl: "https://api.warpsearch.io/compat/opensearch/books/_search"
+      },
+      createFieldSpec: () => ({ id: "_id" })
+    }
+    const query = { queryText: "books", options: {}, filterToRatings }
+
+    createSearcherFromSettings({
+      settings,
+      query,
+      options: { filterToRated: true },
+      isEsOrOs: true,
+      evaluateMapper: vi.fn(),
+      createSearcher
+    })
+
+    expect(settings.searchEngine).toBe("warpsearch")
+    expect(createSearcher.mock.calls[0][2]).toEqual({
+      query: { bool: { should: "books", filter: { terms: { _id: ["1"] } } } }
+    })
+    expect(createSearcher.mock.calls[0][5]).toBe("os")
+  })
+
   it("passes rated filters to the framework-free searcher boundary", () => {
     const createSearcher = vi.fn(() => ({ type: "es" }))
     const filterToRatings = vi.fn(() => ({ terms: { id: ["1"] } }))

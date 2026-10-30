@@ -698,6 +698,7 @@ export default class extends Controller {
       solr: engine === "solr",
       es: engine === "es",
       os: engine === "os",
+      warpsearch: engine === "warpsearch",
       searchapi: engine === "searchapi",
       "mapper-required": mapperRequired,
       "can-validate": !mapperRequired && !tls,

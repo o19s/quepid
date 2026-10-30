@@ -39,6 +39,7 @@ describe("rated_docs", () => {
     it("is true for engines with a native id-filter syntax", () => {
       expect(supportsRatedDocsLookup({ searchEngine: "es" })).toBe(true)
       expect(supportsRatedDocsLookup({ searchEngine: "os" })).toBe(true)
+      expect(supportsRatedDocsLookup({ searchEngine: "warpsearch" })).toBe(true)
       expect(supportsRatedDocsLookup({ searchEngine: "solr" })).toBe(true)
     })
 
@@ -67,7 +68,10 @@ describe("rated_docs", () => {
   })
 
   describe("buildRatedDocsFilter", () => {
-    it("builds a terms query for es and os", () => {
+    it("builds a terms query for es, os and warpsearch", () => {
+      expect(
+        buildRatedDocsFilter({ searchEngine: "warpsearch", idField: "_id", ratedIds: ["a"] })
+      ).toEqual({ terms: { _id: ["a"] } })
       expect(
         buildRatedDocsFilter({ searchEngine: "es", idField: "id", ratedIds: ["a", "b"] })
       ).toEqual({ terms: { id: ["a", "b"] } })

@@ -113,6 +113,22 @@ describe("settings catalog defaults", () => {
       searchUrl: "https://quepid-opensearch.dev.o19s.com:9000/tmdb/_search",
       urlFormat: "http(s?)://yourdomain.com:9200/<index>/_search"
     },
+    warpsearch: {
+      ...common,
+      searchEngine: "warpsearch",
+      apiMethod: "POST",
+      headerType: "Custom",
+      customHeaders: '{\n  "Authorization": "Bearer ws_live_REPLACE_ME"\n}',
+      fieldSpec: "id:_id",
+      idField: "_id",
+      titleField: "",
+      additionalFields: [],
+      proxyRequests: true,
+      basicAuthCredential: "",
+      supportsBasicAuth: false,
+      searchUrl: "https://api.warpsearch.io/compat/opensearch/YOUR_COLLECTION/_search",
+      urlFormat: "https://api.warpsearch.io/compat/opensearch/<collection>/_search"
+    },
     vectara: {
       ...common,
       searchEngine: "vectara",
@@ -183,9 +199,9 @@ describe("settings catalog defaults", () => {
     const defaults = createSettingsCatalog().defaultSettings()
     expect(defaults.searchapi.mapperCode).toContain("docsMapper")
     expect(defaults.searchapi.mapperCode).toContain("numberOfResultsMapper")
-    for (const engine of ["vectara", "algolia"])
+    for (const engine of ["warpsearch", "vectara", "algolia"])
       expect(() => JSON.parse(defaults[engine].customHeaders)).not.toThrow()
-    for (const engine of ["es", "os", "vectara", "algolia"])
+    for (const engine of ["es", "os", "warpsearch", "vectara", "algolia"])
       expect(() => JSON.parse(defaults[engine].queryParams)).not.toThrow()
     expect(defaults.solr.queryParams).toBe("q=#$query##\n&tie=1.0")
   })
@@ -252,9 +268,9 @@ describe("settings catalog defaults", () => {
     expect(catalog.troubleshootingWikiUrl("searchapi", "vespa")).toContain("Vespa")
   })
 
-  it("limits escapeQuery support to solr, es and os", () => {
+  it("limits escapeQuery support to solr, es, os and warpsearch", () => {
     const catalog = createSettingsCatalog()
-    for (const engine of ["solr", "es", "os"])
+    for (const engine of ["solr", "es", "os", "warpsearch"])
       expect(catalog.supportsEscapeQuery(engine)).toBe(true)
     for (const engine of ["vectara", "algolia", "static", "searchapi", ""]) {
       expect(catalog.supportsEscapeQuery(engine)).toBe(false)

@@ -357,6 +357,25 @@ class TryTest < ActiveSupport::TestCase
       try = tries(:es_try)
       assert_equal 'tmdb', try.index_name_from_search_url
     end
+
+    test 'reads the collection name from a WarpSearch url' do
+      try = Try.new(search_endpoint: SearchEndpoint.new(
+        search_engine: 'warpsearch',
+        endpoint_url:  'https://api.warpsearch.io/compat/opensearch/books/_search'
+      ))
+      assert_equal 'books', try.index_name_from_search_url
+    end
+  end
+
+  describe 'Args for a WarpSearch endpoint' do
+    test 'parses the query params as OpenSearch JSON' do
+      try = Try.new(
+        query_params:    '{"query": {"match": {"title": "#$query##"}}}',
+        search_endpoint: SearchEndpoint.new(search_engine: 'warpsearch')
+      )
+      assert_equal({ 'query' => { 'match' => { 'title' => '#$query##' } } }, try.args)
+      assert_equal try.os_args, try.args
+    end
   end
 
   describe 'tracking history of tries' do

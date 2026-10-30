@@ -71,7 +71,7 @@ class Try < ApplicationRecord
         static_args
       when 'es'
         es_args
-      when 'os'
+      when 'os', 'warpsearch'
         os_args
       when 'vectara'
         vectara_args
@@ -233,7 +233,7 @@ class Try < ApplicationRecord
   def index_name_from_search_url
     # NOTE: currently all supported engines have the index name as second to last element, refactor when this changes
     case search_endpoint.search_engine
-    when 'solr', 'es', 'os'
+    when 'solr', 'es', 'os', 'warpsearch'
       search_endpoint.endpoint_url.split('/')[-2]
     end
   end

@@ -454,7 +454,7 @@ class FetchService
       add_solr_params(atry, params)
     when :es
       add_elasticsearch_params(atry, params)
-    when :os
+    when :os, :warpsearch
       add_opensearch_params(atry, params)
     else
       # SearchAPI and unknown engines use custom parameters only, no engine-specific additions

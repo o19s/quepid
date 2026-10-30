@@ -46,7 +46,7 @@ Quepid is a **search relevance evaluation platform** (cases, queries, ratings, b
 | Open bugs and hardening | [`todo/after-angular-removal.md`](./todo/after-angular-removal.md) (pre-existing), [`todo/todo.md`](./todo/todo.md) (migration) |
 | Encryption | [`ENCRYPTION_SETUP.md`](./ENCRYPTION_SETUP.md) |
 | Deployment and ops | [`operating_documentation.md`](./operating_documentation.md) |
-| Solr / OpenSearch endpoint notes | [`endpoints_solr.md`](./endpoints_solr.md), [`endpoints_opensearch.md`](./endpoints_opensearch.md) |
+| Solr / OpenSearch / WarpSearch endpoint notes | [`endpoints_solr.md`](./endpoints_solr.md), [`endpoints_opensearch.md`](./endpoints_opensearch.md), [`endpoints_warpsearch.md`](./endpoints_warpsearch.md) |
 | **Per-table schema (columns, associations)** | **this doc §3** |
 | **HTML Rails routes (non-API)** | **this doc §20.5** |
 | **Edge-case business rules** | **this doc [Edge Cases](#edge-cases-and-business-rules)** |
@@ -188,7 +188,7 @@ erDiagram
 | id | bigint | PK |
 | owner_id | integer | FK to users |
 | name | string | Display name |
-| search_engine | string(50) | solr, es, os, searchapi, static, vectara, algolia |
+| search_engine | string(50) | solr, es, os, warpsearch, searchapi, static, vectara, algolia |
 | endpoint_url | string(500) | Base URL |
 | api_method | string | GET, POST, PUT, JSONP |
 | basic_auth_credential | string | Base64 user:pass |
