@@ -26,19 +26,19 @@ class JsonHelperTest < ActionView::TestCase
     assert_equal json_string, format_json(json_string)
   end
 
-  test 'format_json_for_display pretty-prints a JSON string' do
-    result = format_json_for_display('{"api-key":"abc","limit":1}')
+  test 'pretty_print_if_json pretty-prints a JSON string' do
+    result = pretty_print_if_json('{"api-key":"abc","limit":1}')
 
     assert_equal "{\n  \"api-key\": \"abc\",\n  \"limit\": 1\n}", result
   end
 
-  test 'format_json_for_display leaves a non-JSON string as-is' do
-    assert_equal 'q=star wars&rows=10', format_json_for_display('q=star wars&rows=10')
-    assert_equal '42', format_json_for_display('42')
+  test 'pretty_print_if_json leaves a non-JSON string as-is' do
+    assert_equal 'q=star wars&rows=10', pretty_print_if_json('q=star wars&rows=10')
+    assert_equal '42', pretty_print_if_json('42')
   end
 
-  test 'format_json_for_display formats a hash like format_json' do
-    assert_equal format_json({ 'a' => 1 }), format_json_for_display({ 'a' => 1 })
-    assert_equal '', format_json_for_display(nil)
+  test 'pretty_print_if_json formats a hash like format_json' do
+    assert_equal format_json({ 'a' => 1 }), pretty_print_if_json({ 'a' => 1 })
+    assert_equal '', pretty_print_if_json(nil)
   end
 end

@@ -25,24 +25,24 @@ module JsonHelper
     JSON.pretty_generate(json_data)
   end
 
-  # Like format_json, but a String that holds JSON is pretty-printed too, for
+  # Like format_json, but accepts any value: a String that holds JSON is pretty-printed too, for
   # read-only display. Mapper-based engines (Qdrant, Vespa) store custom headers as
   # a JSON string, and a Search API test query is often JSON. Anything that does
   # not parse as a JSON object or array is returned as-is.
   #
   # Examples:
-  #   format_json_for_display('{"api-key":"abc"}')
+  #   pretty_print_if_json('{"api-key":"abc"}')
   #   # => "{\n  \"api-key\": \"abc\"\n}"
   #
-  #   format_json_for_display('q=star wars')
+  #   pretty_print_if_json('q=star wars')
   #   # => 'q=star wars'
   #
-  def format_json_for_display json_data
-    return format_json(json_data) unless json_data.is_a?(String)
+  def pretty_print_if_json value
+    return format_json(value) unless value.is_a?(String)
 
-    parsed = JSON.parse(json_data)
-    parsed.is_a?(Hash) || parsed.is_a?(Array) ? JSON.pretty_generate(parsed) : json_data
+    parsed = JSON.parse(value)
+    parsed.is_a?(Hash) || parsed.is_a?(Array) ? JSON.pretty_generate(parsed) : value
   rescue JSON::ParserError
-    json_data
+    value
   end
 end
