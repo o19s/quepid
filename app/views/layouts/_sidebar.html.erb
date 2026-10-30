@@ -37,7 +37,7 @@
           <%= render 'embedders/icon', size: '1.5rem', style: "color: #{make_active?({path: 'embedder'}) ? 'white' : 'cornflowerblue'};" %>
         <% end %>
       </li>
-      <%= render "layouts/sidebar_item", url: datasets_path, label: "Datasets", icon: "bi-database",
+      <%= render "layouts/sidebar_item", url: datasets_path, label: "Datasets", tooltip: "Datasets β", icon: "bi-database",
                  active: make_active?({path: 'dataset'}), data: { turbo_prefetch: false } %>
       <% unless desktop_mode? %>
         <%= render "layouts/sidebar_item", url: teams_path, label: "Teams", icon: "bi-people-fill",

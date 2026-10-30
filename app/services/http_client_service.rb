@@ -41,12 +41,13 @@ class HttpClientService
   end
 
   # Perform a GET request
+  # @param path [String] Send to this path of the same host instead of the URL's own
   # @param params [Hash] Additional query parameters
   # @param body [String] Optional request body
   # @return [Faraday::Response]
-  def get params: {}, body: nil
+  def get params: {}, body: nil, path: nil
     connection.get do |req|
-      req.path = @uri.path.presence || '/'
+      req.path = path || @uri.path.presence || '/'
       apply_timeouts(req)
       apply_url_query_params(req)
       params.each { |key, value| req.params[key] = value }

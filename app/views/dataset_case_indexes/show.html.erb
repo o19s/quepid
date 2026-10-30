@@ -37,21 +37,61 @@
 <% else %>
   <% if @definition.applicable? %>
     <%# The definition is a form: the user may edit the name and the JSON before agreeing. %>
-    <%= form_with url: dataset_case_index_path(@link), method: :post, data: { turbo: false, controller: 'json-editor',
-                                                                              json_editor_original_value: @proposed.text,
-                                                                              json_editor_original_name_value: @proposed.index_name } do %>
+    <%# Turbo handles this submit, not the browser, so that it asks first (data-turbo-confirm): turning Turbo off skips the question. %>
+    <%= form_with url: dataset_case_index_path(@link), method: :post,
+                  data: { controller: 'json-editor browser-index', action: 'submit->browser-index#submit pagehide@window->browser-index#interrupted',
+                          json_editor_original_value: @proposed.text, json_editor_original_name_value: @proposed.index_name, json_editor_new_name_value: suggested_new_name,
+                          json_editor_availability_url_value: availability_dataset_case_index_path(@link, search_endpoint_id: @endpoint.id),
+                          json_editor_probe_value: (probe = DatasetIndex::Availability.browser_probe(@endpoint).to_json unless @endpoint.proxy_requests),
+                          browser_index_probe_value: probe,
+                          browser_index_stream_url_value: stream_dataset_case_index_path(@link, search_endpoint_id: @endpoint.id),
+                          browser_index_progress_url_value: progress_dataset_case_index_path(@link, search_endpoint_id: @endpoint.id),
+                          browser_index_confirm_value: "Create the #{@definition.label} index on #{@endpoint.fullname} with this definition#{' and start indexing the documents from this page' if @loadable}?",
+                          turbo_confirm: "Create the #{@definition.label} index on #{@endpoint.fullname} with this definition#{' and start indexing the documents' if @loadable}?" } do %>
       <%= hidden_field_tag :search_endpoint_id, @endpoint.id %>
+      <%# First the index: the endpoint's own, or a new one on the same service; only then its definition. %>
+      <% can_copy = DatasetIndex.builder_for(@endpoint).respond_to?(:url_with_index) && DatasetIndex.builder_for(@endpoint).index_name_from(@endpoint.endpoint_url) %>
+      <% new_index = !can_copy || '1' == params[:new_endpoint] %>
+      <div class="card mb-3">
+        <div class="card-header">Which index?</div>
+        <div class="card-body">
+          <% if can_copy %>
+            <div class="form-check">
+              <%= radio_button_tag :new_endpoint, '0', !new_index, class: 'form-check-input', data: { action: 'json-editor#choose' } %>
+              <%= label_tag :new_endpoint_0, class: 'form-check-label' do %>
+                Use the index <strong><code><%= @proposed.index_name %></code></strong> of <strong><%= @endpoint.fullname %></strong>, exactly as it is
+              <% end %>
+            </div>
+            <div class="form-check mb-3">
+              <%= radio_button_tag :new_endpoint, '1', new_index, class: 'form-check-input', data: { action: 'json-editor#choose' } %>
+              <%= label_tag :new_endpoint_1, class: 'form-check-label' do %>
+                Create a new index on the same service
+              <% end %>
+              <div class="form-text">
+                Quepid saves a new search endpoint that reuses all the connection details of <%= @endpoint.fullname %> and names the new index
+                in its address; <%= @endpoint.fullname %> itself stays as it is, and <%= @kase.case_name %> searches the new one.
+              </div>
+            </div>
+          <% end %>
+          <%= label_tag :index_name, 'Index name', class: 'form-label' %>
+          <div class="input-group">
+            <%= text_field_tag :index_name, @edited_name || (can_copy && new_index ? suggested_new_name : @proposed.index_name), class: 'form-control font-monospace',
+                               required: true, readonly: !new_index, data: { json_editor_target: 'name', action: 'input->json-editor#clearAvailability' } %>
+            <% if DatasetIndex::Availability.supports?(@endpoint) %>
+              <button type="button" class="btn btn-outline-secondary" <%= 'hidden' unless new_index %>
+                      data-json-editor-target="availabilityButton" data-action="json-editor#checkAvailability">Check availability</button>
+            <% end %>
+          </div>
+          <div class="form-text" data-json-editor-target="availability" aria-live="polite"></div>
+        </div>
+      </div>
+
       <div class="card mb-3">
         <div class="card-header">The index definition for <%= @definition.label %>: edit it if you want to change it</div>
         <div class="card-body">
           <% if @definition.note.present? %>
             <p class="text-muted small"><%= @definition.note %></p>
           <% end %>
-          <div class="mb-3">
-            <%= label_tag :index_name, 'Index name', class: 'form-label' %>
-            <%= text_field_tag :index_name, @edited_name || @proposed.index_name, class: 'form-control font-monospace', required: true,
-                               data: { json_editor_target: 'name' } %>
-          </div>
           <%= label_tag :definition, 'Definition (JSON)', class: 'form-label' %>
           <%= text_area_tag :definition, @edited_text || @proposed.text, rows: 24, spellcheck: false, class: 'form-control font-monospace',
                             style: 'font-size: .85rem;', data: { json_editor_target: 'input', action: 'input->json-editor#check' } %>
@@ -78,8 +118,11 @@
             <% end %>
           </p>
           <%= button_tag(@loadable ? 'Create index and start indexing the data' : 'Create the index', type: 'submit', class: 'btn btn-primary',
-                         data: { json_editor_target: 'submit',
-                                 turbo_confirm: "Create the #{@definition.label} index on #{@endpoint.fullname} with this definition#{' and start indexing the documents' if @loadable}?" }) %>
+                         data: { json_editor_target: 'submit', browser_index_target: 'submit' }) %>
+          <div class="mt-3" data-browser-index-target="progress" hidden>
+            <div class="progress mb-2" style="height: .6rem;"><div class="progress-bar" data-browser-index-target="bar" style="width: 0%;"></div></div>
+            <div data-browser-index-target="message" aria-live="polite"></div>
+          </div>
         </div>
       </div>
     <% end %>
@@ -129,7 +172,8 @@
   <div class="card mb-3">
     <div class="card-body">
       <% if @loadable %>
-        <%= form_with url: documents_dataset_case_index_path(@link), method: :post, data: { turbo: false } do %>
+        <%= form_with url: documents_dataset_case_index_path(@link), method: :post,
+                      data: { turbo_confirm: "Load #{number_with_delimiter(@documents)} documents into #{@endpoint.fullname}? Is the definition deployed there?" } do %>
           <%= hidden_field_tag :search_endpoint_id, @endpoint.id %>
           <p class="mb-2">
             Deployed it? Quepid will load the <strong><%= number_with_delimiter(@documents) %> documents</strong> of <%= @entry.name %> into
@@ -140,8 +184,7 @@
             <%= label_tag :index_name, 'Name you deployed it as', class: 'input-group-text' %>
             <%= text_field_tag :index_name, @edited_name || @proposed.index_name, class: 'form-control font-monospace', required: true %>
           </div>
-          <%= button_tag 'I have deployed this. Start loading', type: 'submit', class: 'btn btn-primary',
-                         data: { turbo_confirm: "Load #{number_with_delimiter(@documents)} documents into #{@endpoint.fullname}? Is the definition deployed there?" } %>
+          <%= button_tag 'I have deployed this. Start loading', type: 'submit', class: 'btn btn-primary' %>
         <% end %>
       <% else %>
         <p class="mb-0 text-muted">Quepid does not load documents here: <%= @no_documents_because %>. Load them with <%= @definition.label %>'s own tools once the definition is deployed.</p>

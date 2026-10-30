@@ -12,6 +12,15 @@ module DatasetIndex
       nil
     end
 
+    # The endpoint's URL pointed at another index: /tmdb/_search with "wands" is /wands/_search, and /_search gains one.
+    def self.url_with_index url, name
+      uri = URI.parse(url.to_s)
+      uri.path = uri.path.sub(%r{\A/(?:[^/_][^/]*/)?_search}, "/#{name}/_search")
+      uri.to_s
+    rescue URI::InvalidURIError
+      nil
+    end
+
     # Lowercase, no spaces or / \ * ? " < > | , #, and not starting with - _ +.
     def self.valid_name? name
       name.match?(/\A[a-z0-9][a-z0-9._-]*\z/) && name.bytesize <= 255

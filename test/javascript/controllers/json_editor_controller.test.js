@@ -1,5 +1,5 @@
 import { buildControllerFixture } from "../support/controller_fixture"
-import { expect, it } from "vitest"
+import { expect, it, vi } from "vitest"
 import JsonEditorController from "controllers/json_editor_controller"
 
 function build(text = '{"a":1}') {
@@ -11,7 +11,7 @@ function build(text = '{"a":1}') {
   const submit = document.createElement("button")
   const controller = buildControllerFixture(JsonEditorController, {
     targets: { input, name, status, submit },
-    values: { original: '{"original":true}', originalName: "proposed" }
+    values: { original: '{"original":true}', originalName: "proposed", newName: "wands" }
   })
   return { controller, input, name, status, submit }
 }
@@ -60,4 +60,75 @@ it("puts the proposed definition and name back", () => {
   expect(input.value).toBe('{"original":true}')
   expect(name.value).toBe("proposed")
   expect(submit.disabled).toBe(false)
+})
+
+it("keeps the endpoint's own index name fixed, and lets a new index be named", () => {
+  const { controller, name } = build()
+  name.value = "proposed"
+  controller.choose({ target: { value: "1" } })
+  expect(name.readOnly).toBe(false)
+  expect(name.value).toBe("wands")
+  name.value = "mine"
+  controller.choose({ target: { value: "0" } })
+  expect(name.readOnly).toBe(true)
+  expect(name.value).toBe("proposed")
+})
+
+it("shows the button for a new index only, and says what the server answered about the name", async () => {
+  const availability = document.createElement("div")
+  const availabilityButton = document.createElement("button")
+  const name = document.createElement("input")
+  name.value = "wands"
+  const controller = buildControllerFixture(JsonEditorController, {
+    targets: {
+      input: document.createElement("textarea"),
+      name,
+      status: document.createElement("span"),
+      availability,
+      availabilityButton
+    },
+    values: {
+      originalName: "haystack",
+      newName: "wands",
+      availabilityUrl: "/dataset_cases/1/index/availability?search_endpoint_id=2"
+    }
+  })
+  controller.choose({ target: { value: "0" } })
+  expect(availabilityButton.hidden).toBe(true)
+  controller.choose({ target: { value: "1" } })
+  expect(availabilityButton.hidden).toBe(false)
+
+  globalThis.fetch = vi.fn().mockResolvedValue({
+    json: async () => ({ status: "taken", message: "wands is already there." })
+  })
+  await controller.checkAvailability()
+  expect(globalThis.fetch.mock.calls[0][0].searchParams.get("index_name")).toBe("wands")
+  expect(availability.textContent).toBe("wands is already there.")
+  expect(availability.classList.contains("text-danger")).toBe(true)
+  controller.clearAvailability()
+  expect(availability.textContent).toBe("")
+})
+
+it("asks the service itself from the browser when the endpoint is not proxied", async () => {
+  const availability = document.createElement("div")
+  const name = document.createElement("input")
+  name.value = "wands"
+  const controller = buildControllerFixture(JsonEditorController, {
+    targets: {
+      input: document.createElement("textarea"),
+      name,
+      status: document.createElement("span"),
+      availability
+    },
+    values: { probe: { origin: "http://localhost:9200", engine: "es", headers: { "X-Key": "1" } } }
+  })
+  globalThis.fetch = vi.fn().mockResolvedValue({ ok: false, status: 404 })
+  await controller.checkAvailability()
+  expect(globalThis.fetch.mock.calls[0][0]).toBe("http://localhost:9200/wands")
+  expect(globalThis.fetch.mock.calls[0][1].headers).toEqual({ "X-Key": "1" })
+  expect(availability.textContent).toBe("wands is free.")
+
+  globalThis.fetch = vi.fn().mockRejectedValue(new TypeError("Failed to fetch"))
+  await controller.checkAvailability()
+  expect(availability.textContent).toMatch(/could not reach http:\/\/localhost:9200/)
 })

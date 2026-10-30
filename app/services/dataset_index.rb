@@ -90,6 +90,19 @@ module DatasetIndex
     named && builder.valid_name?(named) ? named : builder.fallback_name(dataset.key)
   end
 
+  # A copy of the endpoint for the user that searches the index instead (its address names it), with the same connection
+  # details; nil when the engine's address cannot name an index, so nothing can be copied.
+  def self.endpoint_for_index endpoint, index_name, owner
+    builder = builder_for(endpoint)
+    return unless builder.respond_to?(:url_with_index)
+
+    url = builder.url_with_index(endpoint.endpoint_url, index_name) or return
+    copy = endpoint.dup
+    copy.assign_attributes(owner: owner, endpoint_url: url, name: "#{endpoint.name.presence || SearchEngine.label(endpoint.search_engine)} (#{index_name})",
+                           archived: false)
+    copy
+  end
+
   # vector_size: how long the vectors are, for the engines that need to know up front (Qdrant); the dimensions of
   # the embedder the case uses.
   def self.build endpoint:, dataset:, vector_size: nil

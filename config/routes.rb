@@ -116,6 +116,11 @@ Rails.application.routes.draw do
     resource :index, only: [ :show, :create ], controller: 'dataset_case_indexes' do
       # For engines Quepid cannot create the index in: the user has deployed it, and now starts loading the documents.
       post :documents
+      # Is an index of this name already on the endpoint? Only asks.
+      get :availability
+      # Loading by the browser, for endpoints only it can reach: the documents to send, and how far it has got.
+      get :stream
+      post :progress
     end
   end
   resources :dataset_scorers, only: [ :index ]

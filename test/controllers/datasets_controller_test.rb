@@ -15,8 +15,8 @@ class DatasetsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     names = css_select('tbody tr td:first-child a').map(&:text)
 
-    assert_equal [ 'Haystack Rating Party', 'IMDb Non-Commercial Datasets' ], names.first(2)
-    assert_equal [ 'ESCI', 'WANDS', 'Home Depot Product Search Relevance' ], names.last(3)
+    assert_equal [ 'Haystack Rating Party', 'WANDS' ], names.first(2)
+    assert_equal [ 'ESCI', 'Home Depot Product Search Relevance', 'IMDb Non-Commercial Datasets' ], names.last(3)
     assert_select 'button[disabled]', text: 'Coming soon', count: 3
   end
 
@@ -37,7 +37,7 @@ class DatasetsControllerTest < ActionDispatch::IntegrationTest
     assert_select 'ul.nav-tabs a.nav-link.active', text: 'Datasets'
     assert_select 'ul.nav-tabs a[href=?]', dataset_cases_path, text: 'Dataset Cases'
     assert_select 'a[href=?]', dataset_cases_path(dataset: 'haystack'), text: 'Load to case', count: 1
-    assert_select 'a[href=?]', dataset_cases_path(dataset: 'imdb'), text: 'Load to case', count: 1
+    assert_select 'a[href=?]', dataset_cases_path(dataset: 'imdb'), count: 0, message: 'IMDb is coming soon'
     assert_select 'a, button', text: /Index in search backend/, count: 0
   end
 
@@ -46,18 +46,18 @@ class DatasetsControllerTest < ActionDispatch::IntegrationTest
 
     assert_equal(%w[0 0 — — —], css_select('tbody tr td:nth-child(8)').map { |cell| cell.text.strip })
 
-    dataset = Dataset.for(user, 'imdb')
+    dataset = Dataset.for(user, 'haystack')
     [ Case.create!(case_name: 'One', owner: user), Case.create!(case_name: 'Two', owner: user),
       Case.create!(case_name: 'Archived', owner: user, archived: true) ].each do |kase|
       CaseToDataset.create!(dataset: dataset, case: kase)
     end
     get datasets_url
 
-    assert_equal(%w[0 2 — — —], css_select('tbody tr td:nth-child(8)').map { |cell| cell.text.strip })
+    assert_equal(%w[2 0 — — —], css_select('tbody tr td:nth-child(8)').map { |cell| cell.text.strip })
   end
 
   test 'index counts only the current users cases' do
-    CaseToDataset.create!(dataset: Dataset.for(users(:doug), 'imdb'), case: Case.create!(case_name: 'Theirs', owner: users(:doug)))
+    CaseToDataset.create!(dataset: Dataset.for(users(:doug), 'haystack'), case: Case.create!(case_name: 'Theirs', owner: users(:doug)))
     get datasets_url
 
     assert_equal(%w[0 0 — — —], css_select('tbody tr td:nth-child(8)').map { |cell| cell.text.strip })
@@ -66,23 +66,29 @@ class DatasetsControllerTest < ActionDispatch::IntegrationTest
   test 'index disables load to case for a dataset with labels until it has a scorer' do
     get datasets_url
 
-    assert_select 'button[disabled]', text: 'Load to case', count: 1
-    assert_select 'span[title*=?]', 'Create a scorer first', count: 1
+    assert_select 'button[disabled]', text: 'Load to case', count: 2, message: 'Haystack and WANDS have labels, and no scorer yet'
+    assert_select 'span[title*=?]', 'Create a scorer first', count: 2
     assert_select 'a[href=?]', dataset_cases_path(dataset: 'haystack'), count: 0
-    assert_select 'a[href=?]', dataset_cases_path(dataset: 'imdb'), text: 'Load to case', count: 1, message: 'IMDb has no labels, so no scorer to wait for'
+    assert_select 'a[href=?]', dataset_cases_path(dataset: 'wands'), count: 0
 
     Scorer.create!(name: 'Haystack Rating Party Mine', owner: user, scale: [ 0, 1, 2, 3 ])
     get datasets_url
 
-    assert_select 'button[disabled]', text: 'Load to case', count: 0
+    assert_select 'button[disabled]', text: 'Load to case', count: 1, message: 'only WANDS is still waiting for its scorer'
     assert_select 'a[href=?]', dataset_cases_path(dataset: 'haystack'), text: 'Load to case', count: 1
+
+    Scorer.create!(name: 'WANDS Mine', owner: user, scale: [ 0, 1, 2 ])
+    get datasets_url
+
+    assert_select 'button[disabled]', text: 'Load to case', count: 0
+    assert_select 'a[href=?]', dataset_cases_path(dataset: 'wands'), text: 'Load to case', count: 1
   end
 
   test 'a scorer another user made for the dataset does not enable load to case' do
     Scorer.create!(name: 'Haystack Rating Party Theirs', owner: users(:doug), scale: [ 0, 1, 2, 3 ])
     get datasets_url
 
-    assert_select 'button[disabled]', text: 'Load to case', count: 1
+    assert_select 'button[disabled]', text: 'Load to case', count: 2
   end
 
   test 'the action buttons sit at the top of their cell, whatever the height of the row' do
@@ -124,12 +130,11 @@ class DatasetsControllerTest < ActionDispatch::IntegrationTest
     Scorer.find_or_create_by!(name: 'AP@10') { |scorer| scorer.assign_attributes(scale: [ 0, 1 ], communal: true, code: 'setScore(1);') }
   end
 
-  test 'index offers a create scorer dialog for a dataset with labels, and disables the button for one without' do
+  test 'index offers a create scorer dialog for each dataset with labels that is available' do
     get datasets_url
 
     assert_select 'button[data-bs-target=?]', '#createScorer-haystack', text: 'Create scorer', count: 1
-    assert_select 'button[disabled]', text: 'Create scorer', count: 1
-    assert_select 'span[title*=?]', 'no labels to build a scorer from', count: 1
+    assert_select 'button[data-bs-target=?]', '#createScorer-wands', text: 'Create scorer', count: 1
     assert_select '#createScorer-imdb', count: 0
   end
 
@@ -148,9 +153,10 @@ class DatasetsControllerTest < ActionDispatch::IntegrationTest
     post scorer_dataset_url('haystack'), params: { template_id: ap.id }
     get datasets_url
 
-    assert_select 'select[name=template_id] option', text: 'AP@10', count: 0
-    assert_select 'select[name=template_id] option', count: Scorer.communal.count - 1
-    assert_select 'select[name=template_id] option[selected]', count: 1
+    assert_select '#createScorer-haystack select[name=template_id] option', text: 'AP@10', count: 0
+    assert_select '#createScorer-haystack select[name=template_id] option', count: Scorer.communal.count - 1
+    assert_select '#createScorer-haystack select[name=template_id] option[selected]', count: 1
+    assert_select '#createScorer-wands select[name=template_id] option', text: 'AP@10', count: 1, message: 'WANDS has not had a scorer made from AP@10'
   end
 
   test 'index disables create scorer when the user has a scorer from every template' do

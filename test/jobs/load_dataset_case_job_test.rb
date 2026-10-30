@@ -120,4 +120,52 @@ class LoadDatasetCaseJobTest < ActiveJob::TestCase
 
     assert_equal first.case.reload.tries.first.search_endpoint, second_case.reload.tries.first.search_endpoint
   end
+
+  def with_wands_files
+    directory = Pathname.new(Dir.mktmpdir('wands'))
+    WandsData.directory = directory
+    WandsData::FILES.each_value do |file, _|
+      stub_request(:get, "#{WandsData::BASE_URL}/#{file}").to_return(status: 200, body: File.read(Rails.root.join('test/fixtures/files/wands', file)))
+    end
+    yield
+  ensure
+    WandsData.directory = nil
+    FileUtils.rm_rf(directory) if directory
+  end
+
+  test 'loads the WANDS queries and ratings into the case' do
+    link = pending_link('wands')
+
+    with_wands_files { LoadDatasetCaseJob.perform_now(link, 'WANDS', nil) }
+
+    assert_equal 'done', link.reload.status
+    assert_equal [ 'salon chair', 'smart coffee table', 'dinosaur' ], link.case.queries.order(:arranged_at).pluck(:query_text)
+    assert_equal 7, Rating.joins(:query).where(queries: { case_id: link.case.id }).count
+    assert_nil link.case.tries.first.search_endpoint, 'WANDS has no search engine of its own: the user picks one'
+  end
+
+  test 'loads a sample of the WANDS queries' do
+    link = pending_link('wands')
+
+    with_wands_files { LoadDatasetCaseJob.perform_now(link, 'WANDS', nil, 1) }
+
+    assert_equal 'done', link.reload.status
+    assert_equal 1, link.case.queries.count
+  end
+
+  test 'records a WANDS download that failed on the link, without raising, and leaves the case empty' do
+    link = pending_link('wands')
+    directory = Pathname.new(Dir.mktmpdir('wands'))
+    WandsData.directory = directory
+    stub_request(:get, "#{WandsData::BASE_URL}/query.csv").to_return(status: 503, body: 'down')
+
+    assert_nothing_raised { LoadDatasetCaseJob.perform_now(link, 'WANDS', nil) }
+
+    assert_equal 'failed', link.reload.status
+    assert_match(/GitHub answered 503/, link.error)
+    assert_equal 0, link.case.queries.count
+  ensure
+    WandsData.directory = nil
+    FileUtils.rm_rf(directory) if directory
+  end
 end

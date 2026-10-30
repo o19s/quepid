@@ -1,5 +1,5 @@
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-  <h1><i class="bi bi-database" aria-hidden="true"></i> Datasets</h1>
+  <h1><i class="bi bi-database" aria-hidden="true"></i> Datasets<%= render 'embedders/beta' %></h1>
   <div class="btn-toolbar mb-2 mb-md-0">
     <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#newDatasetCase">
       <i class="bi bi-plus-lg" aria-hidden="true"></i> Create new
@@ -83,9 +83,10 @@
                     <span class="badge text-bg-danger" title="<%= link.error %>">Failed</span>
                     <span class="small text-muted"><%= link.error.to_s.truncate(80) %></span>
                   <% elsif link.in_progress? %>
+                    <% total_queries = link.sample_size || DatasetCatalog.find(link.dataset.key)&.query_total %>
                     <span class="badge text-bg-secondary">
                       <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
-                      Loading in the background
+                      Loading in the background<%= " (#{number_with_delimiter(@query_counts.fetch(kase.id, 0))}#{" / #{number_with_delimiter(total_queries)}" if total_queries} queries so far)" if @query_counts.fetch(kase.id, 0).positive? %>
                     </span>
                   <% else %>
                     <%# A sample shows how much of the dataset it is: "10 / 137". %>
@@ -199,6 +200,8 @@
         <p>
           Choose the search endpoint <strong data-initiate-indexing-target="caseName">this case</strong> should use. You will see the
           index definition Quepid would make there, and decide whether to create it. Nothing is sent until you do.
+          On the next step you can use exactly this endpoint (and so its index), or create a new index on the same service, with a
+          new search endpoint that reuses all of this one's connection details.
         </p>
         <%= label_tag 'search_endpoint_id', 'Search endpoint', class: 'form-label' %>
         <%= select_tag :search_endpoint_id, options_for_select(@search_endpoints.map { |endpoint| [ endpoint.fullname, endpoint.id ] }),

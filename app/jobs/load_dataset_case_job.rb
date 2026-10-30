@@ -12,7 +12,7 @@ class LoadDatasetCaseJob < ApplicationJob
     entry = DatasetCatalog.find(link.dataset.key)
     entry.loader.new(link.case.owner).populate(link.case, case_name: case_name, scorer: scorer, sample: sample)
     link.update!(status: 'done')
-  rescue HaystackDataset::Error, ActiveRecord::RecordInvalid => e
+  rescue HaystackDataset::Error, WandsData::Error, ActiveRecord::RecordInvalid => e
     # A problem with the data itself: say so on the link, there is nothing to retry.
     fail_link(link, e)
   rescue StandardError => e

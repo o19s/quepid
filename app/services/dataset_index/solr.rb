@@ -15,6 +15,19 @@ module DatasetIndex
       nil
     end
 
+    # The endpoint's URL pointed at another collection: /solr/shop/select with "wands" is /solr/wands/select.
+    def self.url_with_index url, name
+      uri = URI.parse(url.to_s)
+      uri.path = if index_name_from(url)
+                   uri.path.sub(%r{/[^/]+/(select|query)\z}, "/#{name}/\\1")
+                 else
+                   uri.path.sub(%r{/(select|query)\z}, "/#{name}/\\1")
+                 end
+      uri.to_s
+    rescue URI::InvalidURIError
+      nil
+    end
+
     def self.valid_name? name
       name.match?(/\A[A-Za-z0-9_-]+\z/)
     end

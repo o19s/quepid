@@ -10,8 +10,8 @@ class IndexDatasetDocumentsJob < ApplicationJob
     entry = DatasetCatalog.find(link.dataset.key)
     documents = DatasetDocuments.canonical(entry, link.case)
     result = DatasetIndex::Indexer.new(endpoint, index_name).index(documents) { |count| link.update_columns(documents_indexed: count) }
-    finish(link, documents.size, result)
-  rescue DatasetIndex::Error => e
+    finish(link, result)
+  rescue DatasetIndex::Error, WandsData::Error => e
     # The endpoint said no, or could not be reached: say so on the link, there is nothing to retry blindly.
     fail_link(link, e.message)
   rescue StandardError => e
@@ -21,12 +21,12 @@ class IndexDatasetDocumentsJob < ApplicationJob
 
   private
 
-  def finish link, total, result
+  def finish link, result
     link.update!(documents_indexed: result.indexed)
     if result.failed.zero?
       link.update!(indexing_status: 'done')
     else
-      fail_link(link, "#{result.failed} of #{total} documents were refused, the first because: #{result.first_error}")
+      fail_link(link, "#{result.failed} of #{result.indexed + result.failed} documents were refused, the first because: #{result.first_error}")
     end
   end
 

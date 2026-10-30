@@ -85,4 +85,29 @@ class DatasetDocumentMapperTest < ActiveSupport::TestCase
     assert_equal DatasetDocumentMappers::Haystack, DatasetCatalog.find('haystack').mapper
     assert_equal DatasetDocumentMappers::Imdb, DatasetCatalog.find('imdb').mapper
   end
+
+  test 'the WANDS mapper takes the name, description, average rating, and the category path and class as categories' do
+    row = { 'product_id' => '0', 'product_name' => 'solid wood platform bed', 'product_class' => 'Beds',
+            'category hierarchy' => 'Furniture / Bedroom Furniture / Beds & Headboards / Beds / Twin Beds',
+            'product_description' => 'good , deep sleep', 'product_features' => 'headboardtype : slat', 'rating_count' => '15.0',
+            'average_rating' => '4.5', 'review_count' => '15.0' }
+
+    assert_equal({ 'id' => '0', 'title' => 'solid wood platform bed', 'description' => 'good , deep sleep', 'rating' => 4.5,
+                   'category' => [ 'Furniture', 'Bedroom Furniture', 'Beds & Headboards', 'Beds', 'Twin Beds' ] },
+                 DatasetDocumentMappers::Wands.map(row, id: '0'))
+  end
+
+  test 'the WANDS mapper leaves out what a product does not have' do
+    bare = { 'product_name' => 'mystery box', 'product_class' => 'Toys', 'category hierarchy' => '', 'product_description' => '', 'average_rating' => '4.0' }
+    nothing = { 'product_name' => 'plain', 'product_class' => '', 'category hierarchy' => '', 'product_description' => '', 'average_rating' => '' }
+
+    assert_equal({ 'id' => '3', 'title' => 'mystery box', 'rating' => 4.0, 'category' => [ 'Toys' ] }, DatasetDocumentMappers::Wands.map(bare, id: '3'))
+    assert_equal({ 'id' => '4', 'title' => 'plain' }, DatasetDocumentMappers::Wands.map(nothing, id: '4'))
+  end
+
+  test 'a class that is also a level of the path is one category, not two' do
+    row = { 'product_name' => 'x', 'product_class' => 'Beds', 'category hierarchy' => 'Furniture / Beds' }
+
+    assert_equal %w[Furniture Beds], DatasetDocumentMappers::Wands.map(row, id: '1')['category']
+  end
 end

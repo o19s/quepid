@@ -8,6 +8,12 @@ class DatasetCasesControllerTest < ActionDispatch::IntegrationTest
 
   setup do
     login_user_for_integration_test user
+    # IMDb is listed as coming soon; its loading is kept working, so these tests turn it on.
+    DatasetCatalog.find('imdb').available = true
+  end
+
+  teardown do
+    DatasetCatalog.find('imdb').available = false
   end
 
   # What the Haystack export names as its scorer, so importing it works.
@@ -416,10 +422,10 @@ class DatasetCasesControllerTest < ActionDispatch::IntegrationTest
     get dataset_cases_url
 
     assert_select 'form#new-dataset-case-form[action=?]', dataset_cases_path do
-      assert_select 'select[name=dataset] option', count: 2
+      assert_select 'select[name=dataset] option', count: 3
       assert_select 'select[name=dataset] option[selected]', text: /Haystack/
       assert_select 'input[name=case_name][value=?]', 'Haystack Rating Party'
-      assert_select 'select[name=scorer_id]', count: 2
+      assert_select 'select[name=scorer_id]', count: 3
     end
   end
 
@@ -687,5 +693,54 @@ class DatasetCasesControllerTest < ActionDispatch::IntegrationTest
     end
 
     assert_redirected_to dataset_cases_url
+  end
+
+  test 'the create dialog offers WANDS, with its name, up to 480 queries to sample, and a scorer to create' do
+    get dataset_cases_url(dataset: 'wands')
+
+    assert_select 'select[name=dataset] option[value=wands][selected]', text: /WANDS/
+    assert_select 'input[name=case_name][value=?]', 'WANDS'
+    assert_select '[data-dataset-key=wands] input[name=sample_size][max=480][min=1]'
+    assert_select '#scorer_id_wands option[value=new][selected]', text: /Create the scorer WANDS AP@10 \(0 Irrelevant, 1 Partial, 2 Exact\)/
+  end
+
+  test 'create makes a WANDS case and its scorer with the three WANDS labels, and queues the download and loading' do
+    Scorer.find_or_create_by!(name: 'AP@10') { |scorer| scorer.assign_attributes(scale: [ 0, 1 ], communal: true, code: 'setScore(1);') }
+
+    assert_difference [ 'Case.count', 'Scorer.count' ], 1 do
+      assert_enqueued_with(job: LoadDatasetCaseJob) do
+        post dataset_cases_url, params: { dataset: 'wands', scorer_id: 'new', sample_size: '25' }
+      end
+    end
+
+    kase = Case.order(:id).last
+    link = CaseToDataset.find_by(case: kase)
+
+    assert_equal 'WANDS (sample of 25)', kase.case_name
+    assert_equal 'WANDS AP@10', kase.scorer.name
+    assert_equal [ 0, 1, 2 ], kase.scorer.scale
+    assert_equal({ '0' => 'Irrelevant', '1' => 'Partial', '2' => 'Exact' }, kase.scorer.scale_with_labels)
+    assert_equal [ 'wands', 25, 'pending' ], [ link.dataset.key, link.sample_size, link.status ]
+    assert_equal 0, kase.queries.count, 'the queries come from the background job, after the download'
+  end
+
+  test 'a sample as big as WANDS is the whole of it' do
+    Scorer.find_or_create_by!(name: 'AP@10') { |scorer| scorer.assign_attributes(scale: [ 0, 1 ], communal: true, code: 'setScore(1);') }
+    post dataset_cases_url, params: { dataset: 'wands', scorer_id: 'new', sample_size: '480' }
+
+    assert_nil CaseToDataset.order(:id).last.sample_size
+  end
+
+  test 'a WANDS case lists its rated products as documents, and a sample as loaded over total' do
+    kase = link_case('wands', name: 'WANDS')
+    query = kase.queries.create!(query_text: 'salon chair')
+    %w[0 1 2].each { |doc_id| query.ratings.create!(doc_id: doc_id, rating: 1) }
+    CaseToDataset.find_by(case: kase).update!(sample_size: 1)
+    get dataset_cases_url
+
+    row = css_select('tbody tr').find { |tr| 'WANDS' == tr.at_css('td a').text }
+
+    assert_equal '1 / 480', row.css('td')[4].text.squish
+    assert_equal '3', row.css('td')[5].text.squish
   end
 end

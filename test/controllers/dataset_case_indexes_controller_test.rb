@@ -30,7 +30,7 @@ class DatasetCaseIndexesControllerTest < ActionDispatch::IntegrationTest
     assert_select 'table td a[href=?]', search_endpoint_path(es), text: 'My es'
     assert_select 'table td code', text: 'movies'
     assert_select '.card-header', text: /The index definition for Elasticsearch: edit it/
-    assert_select 'form[data-controller=json-editor][action=?]', dataset_case_index_path(@link) do
+    assert_select 'form[data-controller~=json-editor][action=?]', dataset_case_index_path(@link) do
       assert_select 'input[name=index_name][value=movies]'
       assert_select 'textarea[name=definition]', text: /"dynamic": "strict"/
       assert_select 'textarea[name=definition]', text: /"number_of_shards": 1/
@@ -44,7 +44,7 @@ class DatasetCaseIndexesControllerTest < ActionDispatch::IntegrationTest
     get dataset_case_index_url(@link, search_endpoint_id: es.id)
 
     assert_select 'form[action=?] button[type=submit]', dataset_case_index_path(@link), text: 'Create the index'
-    assert_select 'button[data-turbo-confirm=?]', 'Create the Elasticsearch index on My es with this definition?'
+    assert_select 'form[data-turbo-confirm=?]', 'Create the Elasticsearch index on My es with this definition?'
     assert_select 'p', text: /No documents will be indexed: Quepid has no documents for Haystack Rating Party, so only the index is created/
     assert_select 'button[data-action="json-editor#format"]', text: 'Format'
     assert_select 'button[data-action="json-editor#reset"]', text: 'Back to the proposed definition'
@@ -121,8 +121,106 @@ class DatasetCaseIndexesControllerTest < ActionDispatch::IntegrationTest
     assert_requested stub, times: 1
     assert_requested :put, 'http://es.example.com:9200/movies', body: ->(body) { 'strict' == JSON.parse(body).dig('mappings', 'dynamic') }
     assert_redirected_to dataset_cases_url
-    assert_match(/Created Elasticsearch index movies on My es, and Haystack case now searches it/, flash[:notice])
+    assert_match(/Created Elasticsearch index movies on My es\. Haystack case now searches it, with a starter query as Try 2/, flash[:notice])
     assert_equal es, @case.tries.first.reload.search_endpoint
+  end
+
+  test 'show asks which index first, the endpoints own or a new one, before the definition' do
+    es = make_endpoint(:es, 'http://es.example.com:9200/movies/_search')
+    get dataset_case_index_url(@link, search_endpoint_id: es.id)
+
+    assert_select 'input[type=radio][name=new_endpoint][value="0"][checked]'
+    assert_select 'input[type=radio][name=new_endpoint][value="1"]:not([checked])'
+    assert_select 'input[name=index_name][readonly][value=movies]'
+    assert_select 'form[data-json-editor-new-name-value=?]', 'haystack', message: 'a new index is named after the dataset, unless it is the current one'
+    body = response.body
+
+    assert_operator body.index('Which index?'), :<, body.index('The index definition for')
+  end
+
+  test 'show has a check availability button for the new index choice' do
+    es = make_endpoint(:es, 'http://es.example.com:9200/movies/_search')
+    get dataset_case_index_url(@link, search_endpoint_id: es.id)
+
+    assert_select 'button[data-json-editor-target=availabilityButton][hidden]', text: 'Check availability'
+    assert_select 'form[data-json-editor-availability-url-value=?]', availability_dataset_case_index_path(@link, search_endpoint_id: es.id)
+  end
+
+  test 'show gives the browser what it needs to check a name itself, unless the endpoint is proxied' do
+    es = make_endpoint(:es, 'http://localhost:9200/movies/_search')
+    es.update!(basic_auth_credential: 'user:secret')
+    get dataset_case_index_url(@link, search_endpoint_id: es.id)
+
+    probe = JSON.parse(css_select('form[data-json-editor-probe-value]').first['data-json-editor-probe-value'])
+
+    assert_equal 'http://localhost:9200', probe['origin']
+    assert_equal 'es', probe['engine']
+    assert_equal "Basic #{Base64.strict_encode64('user:secret')}", probe['headers']['Authorization']
+
+    es.update!(proxy_requests: true)
+    get dataset_case_index_url(@link, search_endpoint_id: es.id)
+
+    assert_select 'form[data-json-editor-probe-value]', count: 0
+  end
+
+  test 'availability says whether the name is taken on the endpoints service, and only reads' do
+    es = make_endpoint(:es, 'http://es.example.com:9200/movies/_search')
+    stub_request(:get, 'http://es.example.com:9200/wands').to_return(status: 404, body: '{}')
+    stub_request(:get, 'http://es.example.com:9200/movies').to_return(status: 200, body: '{}')
+
+    get availability_dataset_case_index_url(@link, search_endpoint_id: es.id, index_name: 'wands')
+
+    assert_equal({ 'status' => 'free', 'message' => 'wands is free.' }, response.parsed_body)
+
+    get availability_dataset_case_index_url(@link, search_endpoint_id: es.id, index_name: 'movies')
+
+    assert_equal 'taken', response.parsed_body['status']
+    assert_not_requested :put, /.*/
+  end
+
+  test 'availability refuses a bad name, and says when the service cannot answer' do
+    es = make_endpoint(:es, 'http://es.example.com:9200/movies/_search')
+    get availability_dataset_case_index_url(@link, search_endpoint_id: es.id, index_name: 'UPPER')
+
+    assert_equal 'invalid', response.parsed_body['status']
+
+    stub_request(:get, 'http://es.example.com:9200/wands').to_return(status: 500, body: 'boom')
+    get availability_dataset_case_index_url(@link, search_endpoint_id: es.id, index_name: 'wands')
+
+    assert_equal 'unknown', response.parsed_body['status']
+    assert_match(/answered 500/, response.parsed_body['message'])
+  end
+
+  test 'availability checks a Qdrant collection and a Solr core' do
+    qdrant = make_endpoint(:qdrant, 'http://qd.example.com:6333', mapper: 'qdrant')
+    stub_request(:get, 'http://qd.example.com:6333/collections/wands').to_return(status: 200, body: '{}')
+    get availability_dataset_case_index_url(@link, search_endpoint_id: qdrant.id, index_name: 'wands')
+
+    assert_equal 'taken', response.parsed_body['status']
+
+    solr = make_endpoint(:solr, 'http://solr.example.com:8983/solr/shop/select')
+    stub_request(:get, 'http://solr.example.com:8983/solr/admin/cores').with(query: hash_including('core' => 'wands'))
+      .to_return(status: 200, body: '{"status":{"wands":{}}}')
+    get availability_dataset_case_index_url(@link, search_endpoint_id: solr.id, index_name: 'wands')
+
+    assert_equal 'free', response.parsed_body['status']
+  end
+
+  test 'create can make a new search endpoint for the new index, copying the chosen endpoint' do
+    es = make_endpoint(:es, 'http://es.example.com:9200/movies/_search')
+    es.update!(basic_auth_credential: 'user:secret', custom_headers: '{"X-Key":"1"}')
+    stub_request(:put, 'http://es.example.com:9200/wands').to_return(status: 200, body: '{"acknowledged":true}')
+
+    assert_difference 'SearchEndpoint.count', 1 do
+      post dataset_case_index_url(@link), params: { search_endpoint_id: es.id, index_name: 'wands', definition: '{"settings":{}}', new_endpoint: '1' }
+    end
+
+    copy = SearchEndpoint.order(:id).last
+
+    assert_equal 'http://es.example.com:9200/wands/_search', copy.endpoint_url
+    assert_equal [ 'user:secret', { 'X-Key' => '1' }, user ], [ copy.basic_auth_credential, copy.custom_headers, copy.owner ]
+    assert_equal copy, @case.tries.reload.first.search_endpoint
+    assert_equal 'http://es.example.com:9200/movies/_search', es.reload.endpoint_url
   end
 
   test 'create sends the definition as the user edited it, under the name they gave it' do
@@ -297,7 +395,7 @@ class DatasetCaseIndexesControllerTest < ActionDispatch::IntegrationTest
 
     assert_operator @documents, :>, 0
     assert_select 'form[action=?] button[type=submit]', dataset_case_index_path(@link), text: 'Create index and start indexing the data'
-    assert_select 'button[data-turbo-confirm*=?]', 'and start indexing the documents'
+    assert_select 'form[data-turbo-confirm*=?]', 'and start indexing the documents'
     assert_select 'strong', text: "#{@documents} documents"
     assert_select 'p', text: /No documents will be indexed/, count: 0
   end
@@ -335,6 +433,54 @@ class DatasetCaseIndexesControllerTest < ActionDispatch::IntegrationTest
     assert_equal [ 'my-movies', 'pending', 0 ], [ @link.index_name, @link.indexing_status, @link.documents_indexed ]
     assert_match(/Its #{@documents} documents are being indexed in the background/, flash[:notice])
     assert_equal es, @case.tries.first.reload.search_endpoint
+  end
+
+  test 'create with applied set leaves creating the index to the browser, and the loading too' do
+    give_documents
+    es = make_endpoint(:es, 'http://localhost:9200/movies/_search')
+
+    assert_no_enqueued_jobs only: IndexDatasetDocumentsJob do
+      post dataset_case_index_url(@link), params: { search_endpoint_id: es.id, index_name: 'my-movies', definition: '{}', applied: 'true' }, as: :html,
+                                          headers: { 'Accept' => 'application/json' }
+    end
+
+    assert_not_requested :any, /localhost/
+    assert_equal({ 'redirect' => dataset_cases_path, 'load' => true, 'total' => @documents }, response.parsed_body)
+    @link.reload
+
+    assert_equal [ 'my-movies', 'indexing', 0 ], [ @link.index_name, @link.indexing_status, @link.documents_indexed ]
+    assert_equal es, @case.tries.first.reload.search_endpoint
+  end
+
+  test 'stream gives the documents one a line, and only to whoever may load them' do
+    give_documents
+    es = make_endpoint(:es, 'http://localhost:9200/movies/_search')
+    get stream_dataset_case_index_url(@link, search_endpoint_id: es.id)
+
+    assert_response :success
+    docs = response.body.lines.map { |line| JSON.parse(line) }
+
+    assert_equal @documents, docs.size
+    assert(docs.all? { |doc| doc['id'].present? })
+
+    @case.update!(book: nil)
+    get stream_dataset_case_index_url(@link, search_endpoint_id: es.id)
+
+    assert_response :unprocessable_content
+  end
+
+  test 'progress records how far the browser has got, and why it stopped' do
+    es = make_endpoint(:es, 'http://localhost:9200/movies/_search')
+    post progress_dataset_case_index_url(@link, search_endpoint_id: es.id), params: { status: 'indexing', documents_indexed: 500 }
+
+    assert_response :no_content
+    @link.reload
+
+    assert_equal [ 'indexing', 500, nil ], [ @link.indexing_status, @link.documents_indexed, @link.indexing_error ]
+
+    post progress_dataset_case_index_url(@link, search_endpoint_id: es.id), params: { status: 'failed', documents_indexed: 500, error: 'it broke' }
+
+    assert_equal [ 'failed', 'it broke' ], [ @link.reload.indexing_status, @link.indexing_error ]
   end
 
   test 'create without documents queues nothing, and says so' do
@@ -470,5 +616,98 @@ class DatasetCaseIndexesControllerTest < ActionDispatch::IntegrationTest
     end
     assert_not_requested :any, /.*/
     assert_nil @case.tries.first.reload.search_endpoint
+  end
+
+  test 'create gives the case a new try with a starter query for Elasticsearch, and keeps its old try' do
+    es = make_endpoint(:es, 'http://es.example.com:9200/movies/_search')
+    stub_request(:put, 'http://es.example.com:9200/movies').to_return(status: 200, body: '{"acknowledged":true}')
+    old = @case.tries.first
+    old.update!(query_params: 'q=#$query##&useParams=old')
+
+    post dataset_case_index_url(@link), params: { search_endpoint_id: es.id }
+
+    newest = @case.reload.tries.first
+
+    assert_not_equal old, newest
+    assert_equal es, newest.search_endpoint
+    assert_equal DatasetIndex::SearchSetup::STARTERS.fetch('es')[:query_params], newest.query_params
+    assert_equal 'id:_id, title:title, thumb:thumb, brand, category', newest.field_spec
+    assert_equal 'q=#$query##&useParams=old', old.reload.query_params
+    assert_match(/with a starter query as Try 2 \(its earlier settings are still in its history\)/, flash[:notice])
+  end
+
+  test 'create for an engine with no starter query only gives the latest try the endpoint' do
+    qdrant = make_endpoint(:searchapi, 'http://q.example.com:6333/collections/shop/points/query', mapper: 'qdrant')
+    embedder = embedders(:openai_small)
+    embedder.update_columns(dimensions: 8)
+    @case.update!(embedder: embedder)
+    stub_request(:put, 'http://q.example.com:6333/collections/shop').to_return(status: 200, body: '{"result":true}')
+    stub_request(:put, 'http://q.example.com:6333/collections/shop/index').to_return(status: 200, body: '{"result":true}')
+
+    assert_no_difference 'Try.count' do
+      post dataset_case_index_url(@link), params: { search_endpoint_id: qdrant.id }
+    end
+
+    assert_equal qdrant, @case.tries.first.reload.search_endpoint
+    assert_match(/now searches it\./, flash[:notice])
+  end
+
+  test 'a form that asks before it does something is handled by Turbo, which is what asks: Turbo is not turned off on it' do
+    give_documents
+    es = make_endpoint(:es, 'http://es.example.com:9200/movies/_search')
+    vespa = make_endpoint(:searchapi, 'https://a.vespa.cloud/search/', mapper: 'vespa')
+
+    [ es, vespa ].each do |endpoint|
+      get dataset_case_index_url(@link, search_endpoint_id: endpoint.id)
+
+      confirming = css_select('form[data-turbo-confirm]')
+
+      assert_equal 1, confirming.size, endpoint.search_engine
+      assert_nil confirming.first['data-turbo'], 'data-turbo="false" would skip the confirmation'
+      assert_empty css_select('button[data-turbo-confirm]'), 'a confirmation on a button is not asked for either'
+    end
+  end
+
+  test 'the confirmation says what is about to happen for each kind of engine' do
+    give_documents
+    get dataset_case_index_url(@link, search_endpoint_id: make_endpoint(:es, 'http://es.example.com:9200/movies/_search').id)
+
+    assert_select 'form[data-turbo-confirm*=?]', 'with this definition and start indexing the documents?'
+
+    get dataset_case_index_url(@link, search_endpoint_id: make_endpoint(:searchapi, 'https://a.vespa.cloud/search/', mapper: 'vespa').id)
+
+    assert_select 'form[data-turbo-confirm*=?]', "Load #{@documents} documents into"
+    assert_select 'form[data-turbo-confirm*=?]', 'Is the definition deployed there?'
+  end
+
+  test 'show offers to index the 42,994 WANDS products, from a case that holds none of them' do
+    wands = CaseToDataset.create!(dataset: Dataset.for(user, 'wands'), case: Case.create!(case_name: 'WANDS', owner: user), status: 'done')
+    es = make_endpoint(:es, 'http://es.example.com:9200/wands/_search')
+    get dataset_case_index_url(wands, search_endpoint_id: es.id)
+
+    assert_response :success
+    assert_select 'strong', text: '42,994 documents'
+    assert_select 'button[type=submit]', text: 'Create index and start indexing the data'
+    assert_select 'table td code', text: 'wands'
+    assert_select 'td', text: /`?category hierarchy`?.*product_class|category hierarchy/
+    assert_select 'td', text: /product_name/
+    assert_select 'td', text: /average_rating.*as a number/
+    assert_not_requested :any, /.*/
+  end
+
+  test 'create makes the index for WANDS and queues indexing its products, with a starter query for the case' do
+    wands_case = Case.create!(case_name: 'WANDS', owner: user)
+    wands = CaseToDataset.create!(dataset: Dataset.for(user, 'wands'), case: wands_case, status: 'done')
+    es = make_endpoint(:es, 'http://es.example.com:9200/wands/_search')
+    stub_request(:put, 'http://es.example.com:9200/wands').to_return(status: 200, body: '{"acknowledged":true}')
+
+    assert_enqueued_with(job: IndexDatasetDocumentsJob) do
+      post dataset_case_index_url(wands), params: { search_endpoint_id: es.id }
+    end
+
+    assert_match(/Its 42,994 documents are being indexed in the background/, flash[:notice])
+    assert_equal %w[wands pending], [ wands.reload.index_name, wands.indexing_status ]
+    assert_equal es, wands_case.tries.first.reload.search_endpoint
+    assert_equal 'Elasticsearch starter query', wands_case.tries.first.name
   end
 end

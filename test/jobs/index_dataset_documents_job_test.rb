@@ -59,4 +59,40 @@ class IndexDatasetDocumentsJobTest < ActiveJob::TestCase
   test 'runs on the bulk processing queue' do
     assert_equal 'bulk_processing', IndexDatasetDocumentsJob.new.queue_name
   end
+
+  test 'indexes the WANDS products from their file, downloaded when needed, and marks the link done' do
+    wands_link = CaseToDataset.create!(dataset: Dataset.for(user, 'wands'), case: Case.create!(case_name: 'WANDS', owner: user), status: 'done')
+    directory = Pathname.new(Dir.mktmpdir('wands'))
+    WandsData.directory = directory
+    download = stub_request(:get, "#{WandsData::BASE_URL}/product.csv").to_return(status: 200, body: File.read(Rails.root.join('test/fixtures/files/wands/product.csv')))
+    bulk = stub_request(:post, 'http://es.example.com:9200/_bulk').to_return(status: 200, body: { 'errors' => false, 'items' => Array.new(4) { { 'index' => { 'status' => 201 } } } }.to_json)
+
+    IndexDatasetDocumentsJob.perform_now(wands_link, @es, 'movies')
+
+    wands_link.reload
+
+    assert_requested download, times: 1
+    assert_requested bulk
+    assert_equal [ 'done', 4 ], [ wands_link.indexing_status, wands_link.documents_indexed ]
+    assert_requested :post, 'http://es.example.com:9200/_bulk',
+                     body: ->(body) { body.include?('"title":"all-clad 7 qt . slow cooker"') && body.include?('"category":["Kitchen \u0026 Tabletop"') && body.include?('"rating":4.5') }
+  ensure
+    WandsData.directory = nil
+    FileUtils.rm_rf(directory) if directory
+  end
+
+  test 'records a WANDS product file that cannot be downloaded on the link, without raising' do
+    wands_link = CaseToDataset.create!(dataset: Dataset.for(user, 'wands'), case: Case.create!(case_name: 'WANDS', owner: user), status: 'done')
+    directory = Pathname.new(Dir.mktmpdir('wands'))
+    WandsData.directory = directory
+    stub_request(:get, "#{WandsData::BASE_URL}/product.csv").to_return(status: 500, body: 'oops')
+
+    assert_nothing_raised { IndexDatasetDocumentsJob.perform_now(wands_link, @es, 'movies') }
+
+    assert_equal 'failed', wands_link.reload.indexing_status
+    assert_match(/GitHub answered 500/, wands_link.indexing_error)
+  ensure
+    WandsData.directory = nil
+    FileUtils.rm_rf(directory) if directory
+  end
 end
