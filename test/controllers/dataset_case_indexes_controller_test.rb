@@ -5,6 +5,13 @@ require 'test_helper'
 class DatasetCaseIndexesControllerTest < ActionDispatch::IntegrationTest
   let(:user) { users(:random) }
 
+  # A book with documents, which is where Quepid has Haystack's.
+  def give_documents
+    @book = books(:book_of_star_wars_judgements)
+    @case.update!(book: @book)
+    @documents = DatasetDocuments.count(DatasetCatalog.find('haystack'), @case)
+  end
+
   setup do
     login_user_for_integration_test user
     @case = Case.create!(case_name: 'Haystack case', owner: user)
@@ -38,7 +45,7 @@ class DatasetCaseIndexesControllerTest < ActionDispatch::IntegrationTest
 
     assert_select 'form[action=?] button[type=submit]', dataset_case_index_path(@link), text: 'Create the index'
     assert_select 'button[data-turbo-confirm=?]', 'Create the Elasticsearch index on My es with this definition?'
-    assert_select 'p', text: /No documents are indexed yet/
+    assert_select 'p', text: /No documents will be indexed: Quepid has no documents for Haystack Rating Party, so only the index is created/
     assert_select 'button[data-action="json-editor#format"]', text: 'Format'
     assert_select 'button[data-action="json-editor#reset"]', text: 'Back to the proposed definition'
   end
@@ -83,7 +90,7 @@ class DatasetCaseIndexesControllerTest < ActionDispatch::IntegrationTest
     assert_select '.card-header', text: /\AThe index definition for Vespa\z/
     assert_select 'pre code', text: /schema quepid_haystack/
     assert_select 'textarea', count: 0
-    assert_select 'p', text: /Quepid cannot create this index itself/
+    assert_select '.alert-secondary', text: /Quepid does not create indexes in Vespa\. Deploy this definition yourself/
     assert_select 'form[action=?]', dataset_case_index_path(@link), count: 0
   end
 
@@ -281,5 +288,187 @@ class DatasetCaseIndexesControllerTest < ActionDispatch::IntegrationTest
 
     assert_match(/belongs to someone else/, flash[:alert])
     assert_not_requested :any, /.*/
+  end
+
+  test 'show offers to create the index and start indexing the data when Quepid has the documents and can load them' do
+    give_documents
+    es = make_endpoint(:es, 'http://es.example.com:9200/movies/_search')
+    get dataset_case_index_url(@link, search_endpoint_id: es.id)
+
+    assert_operator @documents, :>, 0
+    assert_select 'form[action=?] button[type=submit]', dataset_case_index_path(@link), text: 'Create index and start indexing the data'
+    assert_select 'button[data-turbo-confirm*=?]', 'and start indexing the documents'
+    assert_select 'strong', text: "#{@documents} documents"
+    assert_select 'p', text: /No documents will be indexed/, count: 0
+  end
+
+  test 'show only offers to create the index when the dataset has no documents in Quepid, or the engine cannot be loaded' do
+    imdb = CaseToDataset.create!(dataset: Dataset.for(user, 'imdb'), case: Case.create!(case_name: 'Movies', owner: user), status: 'done')
+    es = make_endpoint(:es, 'http://es.example.com:9200/movies/_search')
+    get dataset_case_index_url(imdb, search_endpoint_id: es.id)
+
+    assert_select 'p', text: /No documents will be indexed: Quepid has no documents for IMDb/
+    assert_select 'button[type=submit]', text: 'Create the index'
+
+    give_documents
+    qdrant = make_endpoint(:searchapi, 'http://q.example.com:6333/collections/shop/points/query', mapper: 'qdrant')
+    embedder = embedders(:openai_small)
+    embedder.update_columns(dimensions: 8)
+    @case.update!(embedder: embedder)
+    get dataset_case_index_url(@link, search_endpoint_id: qdrant.id)
+
+    assert_select 'p', text: /No documents will be indexed: Quepid cannot load documents into Qdrant yet/
+    assert_select 'button[type=submit]', text: 'Create the index'
+  end
+
+  test 'create makes the index and queues the documents to be indexed, then shows the progress on the link' do
+    give_documents
+    es = make_endpoint(:es, 'http://es.example.com:9200/movies/_search')
+    stub_request(:put, 'http://es.example.com:9200/my-movies').to_return(status: 200, body: '{"acknowledged":true}')
+
+    assert_enqueued_with(job: IndexDatasetDocumentsJob) do
+      post dataset_case_index_url(@link), params: { search_endpoint_id: es.id, index_name: 'my-movies', definition: '{}' }
+    end
+
+    @link.reload
+
+    assert_equal [ 'my-movies', 'pending', 0 ], [ @link.index_name, @link.indexing_status, @link.documents_indexed ]
+    assert_match(/Its #{@documents} documents are being indexed in the background/, flash[:notice])
+    assert_equal es, @case.tries.first.reload.search_endpoint
+  end
+
+  test 'create without documents queues nothing, and says so' do
+    es = make_endpoint(:es, 'http://es.example.com:9200/movies/_search')
+    stub_request(:put, 'http://es.example.com:9200/movies').to_return(status: 200, body: '{"acknowledged":true}')
+
+    assert_no_enqueued_jobs only: IndexDatasetDocumentsJob do
+      post dataset_case_index_url(@link), params: { search_endpoint_id: es.id }
+    end
+
+    assert_match(/No documents were indexed: Quepid has no documents for Haystack Rating Party/, flash[:notice])
+    assert_nil @link.reload.indexing_status
+  end
+
+  test 'for an engine Quepid cannot create, show says it stops, and offers loading once the user has deployed it' do
+    give_documents
+    vespa = make_endpoint(:searchapi, 'https://a.vespa.cloud/search/', mapper: 'vespa')
+    get dataset_case_index_url(@link, search_endpoint_id: vespa.id)
+
+    assert_select '.alert-secondary', text: /Quepid does not create indexes in Vespa.*sends nothing until you say you have deployed it/m
+    assert_select 'form[action=?]', dataset_case_index_path(@link), count: 0
+    assert_select 'form[action=?]', documents_dataset_case_index_path(@link) do
+      assert_select 'input[name=index_name][value=quepid_haystack]'
+      assert_select 'button[type=submit]', text: 'I have deployed this. Start loading'
+      assert_select 'input[name=search_endpoint_id][value=?]', vespa.id.to_s
+    end
+    assert_select 'strong', text: "#{@documents} documents"
+    assert_select 'p', text: /one at a time through Vespa.s Document API/
+    assert_not_requested :any, /.*/
+  end
+
+  test 'for an engine Quepid cannot create or load, show offers nothing to load, and says why' do
+    give_documents
+    algolia = make_endpoint(:algolia, 'https://APP-dsn.algolia.net/1/indexes/shop/query')
+    get dataset_case_index_url(@link, search_endpoint_id: algolia.id)
+
+    assert_select 'form[action=?]', documents_dataset_case_index_path(@link), count: 0
+    assert_select 'p', text: /Quepid does not load documents here: Quepid cannot load documents into Algolia yet/
+
+    @case.update!(book: nil)
+    vespa = make_endpoint(:searchapi, 'https://a.vespa.cloud/search/', mapper: 'vespa')
+    get dataset_case_index_url(@link, search_endpoint_id: vespa.id)
+
+    assert_select 'form[action=?]', documents_dataset_case_index_path(@link), count: 0
+    assert_select 'p', text: /Quepid does not load documents here: Quepid has no documents for Haystack Rating Party/
+  end
+
+  test 'documents starts loading into the schema the user deployed, creating nothing, and points the case at the endpoint' do
+    give_documents
+    vespa = make_endpoint(:searchapi, 'https://a.vespa.cloud/search/', mapper: 'vespa')
+
+    assert_enqueued_with(job: IndexDatasetDocumentsJob) do
+      post documents_dataset_case_index_url(@link), params: { search_endpoint_id: vespa.id, index_name: 'my_schema' }
+    end
+
+    assert_redirected_to dataset_cases_url
+    assert_match(/Its #{@documents} documents are being indexed in the background/, flash[:notice])
+    assert_equal %w[my_schema pending], [ @link.reload.index_name, @link.indexing_status ]
+    assert_equal vespa, @case.tries.first.reload.search_endpoint
+    assert_not_requested :any, /.*/
+  end
+
+  test 'documents refuses what it cannot load: a bad name, an engine Quepid creates itself, an engine with no loader, no documents' do
+    give_documents
+    vespa = make_endpoint(:searchapi, 'https://a.vespa.cloud/search/', mapper: 'vespa')
+    es = make_endpoint(:es, 'http://es.example.com:9200/movies/_search')
+    algolia = make_endpoint(:algolia, 'https://APP-dsn.algolia.net/1/indexes/shop/query')
+
+    [ [ vespa, 'Not Valid!', /is not a name Vespa accepts/ ], [ vespa, '../x', /is not a name/ ], [ es, 'movies', /creates this index itself/ ],
+      [ algolia, 'shop', /cannot load documents into Algolia/ ] ].each do |endpoint, name, message|
+      assert_no_enqueued_jobs only: IndexDatasetDocumentsJob do
+        post documents_dataset_case_index_url(@link), params: { search_endpoint_id: endpoint.id, index_name: name }
+      end
+
+      assert_response :unprocessable_content
+      assert_select '.alert', text: message
+    end
+
+    @case.update!(book: nil)
+    post documents_dataset_case_index_url(@link), params: { search_endpoint_id: vespa.id, index_name: 'quepid_haystack' }
+
+    assert_response :unprocessable_content
+    assert_select '.alert', text: /Quepid has no documents for Haystack Rating Party, so there is nothing to load/
+    assert_nil @case.tries.first.reload.search_endpoint
+    assert_not_requested :any, /.*/
+  end
+
+  CHORUS = 'http://chorus.dev.o19s.com:8983/solr/ecommerce/select'
+
+  test 'show proposes no schema for an endpoint where the dataset is already indexed, only using it' do
+    give_documents
+    chorus = make_endpoint(:solr, CHORUS, name: 'Chorus')
+    get dataset_case_index_url(@link, search_endpoint_id: chorus.id)
+
+    assert_response :success
+    assert_select '.alert-success', text: /Haystack Rating Party is already indexed in Chorus.*no index to propose, create or load/m
+    assert_select 'pre', count: 0
+    assert_select 'textarea', count: 0
+    assert_select 'form[action=?]', dataset_case_index_path(@link), count: 0
+    assert_select 'form[action=?]', documents_dataset_case_index_path(@link), count: 0
+    assert_select 'form[action=?] button', endpoint_dataset_case_path(@link), text: 'Only use this endpoint'
+    assert_not_requested :any, /.*/
+  end
+
+  test 'show still proposes a schema for another Solr, for another dataset, and for another backend of the same dataset' do
+    other_solr = make_endpoint(:solr, 'http://solr.example.com:8983/solr/shop/select')
+    get dataset_case_index_url(@link, search_endpoint_id: other_solr.id)
+
+    assert_select '.alert-success', count: 0
+    assert_select 'textarea[name=definition]', text: /add-field/
+
+    imdb = CaseToDataset.create!(dataset: Dataset.for(user, 'imdb'), case: Case.create!(case_name: 'Movies', owner: user), status: 'done')
+    chorus = make_endpoint(:solr, CHORUS, name: 'Chorus')
+    get dataset_case_index_url(imdb, search_endpoint_id: chorus.id)
+
+    assert_select '.alert-success', count: 0
+    assert_select 'textarea[name=definition]'
+  end
+
+  test 'create and documents refuse an endpoint where the dataset is already indexed, and send nothing' do
+    give_documents
+    chorus = make_endpoint(:solr, CHORUS, name: 'Chorus')
+
+    assert_no_enqueued_jobs only: IndexDatasetDocumentsJob do
+      post dataset_case_index_url(@link), params: { search_endpoint_id: chorus.id }
+
+      assert_response :unprocessable_content
+      assert_select '.alert', text: /already indexed in Chorus, so there is nothing to create or load there/
+
+      post documents_dataset_case_index_url(@link), params: { search_endpoint_id: chorus.id, index_name: 'ecommerce' }
+
+      assert_response :unprocessable_content
+    end
+    assert_not_requested :any, /.*/
+    assert_nil @case.tries.first.reload.search_endpoint
   end
 end

@@ -10,7 +10,7 @@
 <%= render 'datasets/tabs' %>
 
 <%# While a case is still loading, look again every few seconds. %>
-<div class="card" <%= raw('data-controller="loading-refresh"') if @links.any?(&:in_progress?) %>>
+<div class="card" <%= raw('data-controller="loading-refresh"') if @links.any? { |link| link.in_progress? || link.indexing? } %>>
   <div class="card-body">
     <% if @links.any? %>
       <div class="table-responsive">
@@ -44,13 +44,36 @@
                   <% endpoint = @endpoints[kase.id] %>
                   <% if endpoint %>
                     <%= link_to endpoint.fullname, search_endpoint_path(endpoint) %>
+                    <% if DatasetCatalog.find(link.dataset.key)&.preindexed_in?(endpoint) %>
+                      <div class="small text-muted">preindexed: the documents were already there</div>
+                    <% end %>
+                    <% if link.indexing? %>
+                      <div class="small">
+                        <span class="badge text-bg-secondary">
+                          <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+                          Indexing documents<%= " (#{number_with_delimiter(link.documents_indexed)} so far)" if link.documents_indexed.to_i.positive? %>
+                        </span>
+                      </div>
+                    <% elsif link.indexing_failed? %>
+                      <div class="small"><span class="badge text-bg-danger" title="<%= link.indexing_error %>">Indexing failed</span>
+                        <span class="text-muted"><%= link.indexing_error.to_s.truncate(80) %></span></div>
+                    <% elsif 'done' == link.indexing_status %>
+                      <div class="small text-muted"><%= number_with_delimiter(link.documents_indexed) %> documents indexed</div>
+                    <% end %>
+                    <%# The backend can be changed, except while documents are being sent to this one. %>
+                    <% unless link.in_progress? || link.indexing? %>
+                      <div>
+                        <button type="button" class="btn btn-link btn-sm p-0" data-bs-toggle="modal" data-bs-target="#initiateIndexing"
+                                data-url="<%= dataset_case_index_path(link) %>" data-case-name="<%= kase.case_name %>">Change backend</button>
+                      </div>
+                    <% end %>
                   <% else %>
                     <% if link.in_progress? %>
                       <span title="Still loading: try again when that has finished">
-                        <button type="button" class="btn btn-sm btn-outline-secondary" disabled>Initiate indexing</button>
+                        <button type="button" class="btn btn-link btn-sm p-0 text-muted" disabled>Initiate indexing</button>
                       </span>
                     <% else %>
-                      <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#initiateIndexing"
+                      <button type="button" class="btn btn-link btn-sm p-0" data-bs-toggle="modal" data-bs-target="#initiateIndexing"
                               data-url="<%= dataset_case_index_path(link) %>" data-case-name="<%= kase.case_name %>">Initiate indexing</button>
                     <% end %>
                   <% end %>
@@ -167,8 +190,8 @@
 <% end %>
 <%= render 'shared/modal_shell', id: 'newDatasetCase', title: 'Create a case from a dataset', body: modal_body, footer: modal_footer %>
 
-<%# One dialog for every Initiate indexing button: the button that opened it says which case it is for. %>
-<% if @links.any? { |link| !@endpoints[link.case_id] && !link.in_progress? } %>
+<%# One dialog for every Initiate indexing and Change backend button: the button that opened it says which case it is for. %>
+<% if @links.any? { |link| !link.in_progress? } %>
   <% modal_body = capture do %>
     <% if @search_endpoints.any? %>
       <%# The action is set by script to the case's own, and it only looks: a GET, so there is no token to go stale. %>

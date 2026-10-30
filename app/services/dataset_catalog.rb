@@ -5,7 +5,13 @@
 module DatasetCatalog
   # One example dataset. The Dataset model holds what a user has made from one.
   Entry = Struct.new(:key, :name, :description, :queries, :documents, :judgements, :labels, :url, :available, :loader,
-                     :default_case_name, :scale_labels, :query_total, :mapper, keyword_init: true) do
+                     :default_case_name, :scale_labels, :query_total, :mapper, :documents_from, :preindexed_url, keyword_init: true) do
+    # Is the dataset already indexed in this endpoint, by someone else? Haystack's is, in the Chorus Solr its export names,
+    # so there is no index to propose or create there.
+    def preindexed_in? endpoint
+      preindexed_url.present? && endpoint.endpoint_url.to_s.strip.chomp('/') == preindexed_url
+    end
+
     # Can a sample of its queries be asked for? Only when we know how many it has.
     def sampleable?
       query_total.present?
@@ -52,6 +58,8 @@ module DatasetCatalog
       default_case_name: 'Haystack Rating Party',
       query_total:       137,
       mapper:            DatasetDocumentMappers::Haystack,
+      documents_from:    :book,
+      preindexed_url:    'http://chorus.dev.o19s.com:8983/solr/ecommerce/select',
       scale_labels:      { '0' => 'Poor', '1' => 'Fair', '2' => 'Good', '3' => 'Perfect' }
     ),
     Entry.new(

@@ -24,6 +24,10 @@ class HaystackDataset
   # export would overwrite the case's name and scorer, so those are put back (the ratings are 0-3, so
   # whatever scorer the user picked works).
   #
+  # The case keeps the search endpoint and query settings of the export, on purpose: it is a Chorus Solr where the
+  # Haystack documents are already indexed, so the case works at once. Change backend on the Dataset Cases tab moves
+  # it to another engine.
+  #
   # With a sample (a number of queries), only that many randomly chosen queries are loaded, with their
   # ratings and the book's pairs for them.
   def populate kase, case_name: nil, scorer: nil, sample: nil

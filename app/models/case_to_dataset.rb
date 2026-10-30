@@ -21,6 +21,15 @@ class CaseToDataset < ApplicationRecord
     %w[pending loading].include?(status)
   end
 
+  # Its documents are being indexed into a search engine (not waiting for its queries to load: that is in_progress?).
+  def indexing?
+    %w[pending indexing].include?(indexing_status)
+  end
+
+  def indexing_failed?
+    'failed' == indexing_status
+  end
+
   def failed?
     'failed' == status
   end

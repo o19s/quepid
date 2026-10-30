@@ -113,7 +113,10 @@ Rails.application.routes.draw do
   resources :dataset_cases, only: [ :index, :create, :destroy ] do
     post :endpoint, on: :member
     # The index definition for a case's dataset on a search endpoint: shown first (show), made when agreed to (create).
-    resource :index, only: [ :show, :create ], controller: 'dataset_case_indexes'
+    resource :index, only: [ :show, :create ], controller: 'dataset_case_indexes' do
+      # For engines Quepid cannot create the index in: the user has deployed it, and now starts loading the documents.
+      post :documents
+    end
   end
   resources :dataset_scorers, only: [ :index ]
 

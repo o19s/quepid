@@ -62,14 +62,81 @@ class DatasetCasesControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test 'index has no initiate indexing dialog when every case has an endpoint' do
-    with_own = link_case('imdb', name: 'Has its own')
-    with_own.tries.first.update!(search_endpoint: make_endpoint('Own'))
+  test 'index shows how the indexing of a case documents is going, in the Indexed in column' do
+    endpoint = make_endpoint
+    states = { 'Pending' => { indexing_status: 'pending' }, 'Going' => { indexing_status: 'indexing', documents_indexed: 1200 },
+               'Done' => { indexing_status: 'done', documents_indexed: 1558 }, 'Broken' => { indexing_status: 'failed', documents_indexed: 10, indexing_error: 'No can do' } }
+    states.each do |name, attributes|
+      link_case('haystack', name: name).tap { |kase| kase.tries.first.update!(search_endpoint: endpoint) }
+      CaseToDataset.find_by(case: Case.find_by(case_name: name)).update!(attributes)
+    end
     get dataset_cases_url
 
-    assert_select 'button', text: 'Initiate indexing', count: 0
-    assert_select '#initiateIndexing', count: 0
+    rows = css_select('tbody tr').index_by { |row| row.at_css('td a').text }
+
+    assert_match(/Indexing documents/, rows['Pending'].css('td')[3].text)
+    assert_match(/Indexing documents \(1,200 so far\)/, rows['Going'].css('td')[3].text)
+    assert_match(/1,558 documents indexed/, rows['Done'].css('td')[3].text)
+    assert_select 'span.badge[title=?]', 'No can do', text: 'Indexing failed'
+    assert_select '[data-controller=loading-refresh]', count: 1
+  end
+
+  test 'index does not refresh itself once the indexing is over' do
+    kase = link_case('haystack', name: 'Done')
+    kase.tries.first.update!(search_endpoint: make_endpoint)
+    CaseToDataset.find_by(case: kase).update!(indexing_status: 'done', documents_indexed: 3)
+    get dataset_cases_url
+
+    assert_select '[data-controller=loading-refresh]', count: 0
+  end
+
+  test 'index marks a case whose endpoint is where its dataset was already indexed as preindexed' do
+    chorus = make_endpoint('Chorus').tap { |endpoint| endpoint.update!(search_engine: 'solr', endpoint_url: 'http://chorus.dev.o19s.com:8983/solr/ecommerce/select') }
+    kase = link_case('haystack', name: 'On Chorus')
+    kase.tries.first.update!(search_endpoint: chorus)
+    other = link_case('haystack', name: 'On another')
+    other.tries.first.update!(search_endpoint: make_endpoint('Another'))
+    get dataset_cases_url
+
+    rows = css_select('tbody tr').index_by { |row| row.at_css('td a').text }
+
+    assert_match(/preindexed: the documents were already there/, rows['On Chorus'].css('td')[3].text)
+    assert_no_match(/preindexed/, rows['On another'].css('td')[3].text)
+    assert_match(/Change backend/, rows['On Chorus'].css('td')[3].text)
+  end
+
+  test 'Initiate indexing and Change backend look the same: plain links' do
+    link_case('imdb', name: 'Nowhere')
+    has = link_case('imdb', name: 'Has its own')
+    has.tries.first.update!(search_endpoint: make_endpoint('Own'))
+    get dataset_cases_url
+
+    assert_select 'button.btn-link.btn-sm.p-0[data-bs-target="#initiateIndexing"]', text: 'Initiate indexing', count: 1
+    assert_select 'button.btn-link.btn-sm.p-0[data-bs-target="#initiateIndexing"]', text: 'Change backend', count: 1
+    assert_select 'button.btn-outline-primary', text: 'Initiate indexing', count: 0
+  end
+
+  test 'index offers Change backend, not Initiate indexing, for a case that has an endpoint, sharing the one dialog' do
+    with_own = link_case('imdb', name: 'Has its own')
+    with_own.tries.first.update!(search_endpoint: make_endpoint('Own'))
+    link = CaseToDataset.find_by(case: with_own)
+    get dataset_cases_url
+
     assert_select 'td a', text: 'Own'
+    assert_select 'button', text: 'Initiate indexing', count: 0
+    assert_select 'button[data-bs-target="#initiateIndexing"][data-url=?][data-case-name=?]', dataset_case_index_path(link), 'Has its own', text: 'Change backend'
+    assert_select '#initiateIndexing', count: 1
+  end
+
+  test 'index does not offer Change backend while a case is loading or its documents are being indexed' do
+    loading = link_case('imdb', name: 'Loading')
+    CaseToDataset.find_by(case: loading).update!(status: 'loading')
+    busy = link_case('imdb', name: 'Busy')
+    busy.tries.first.update!(search_endpoint: make_endpoint('Busy one'))
+    CaseToDataset.find_by(case: busy).update!(indexing_status: 'indexing', documents_indexed: 5)
+    get dataset_cases_url
+
+    assert_select 'button', text: 'Change backend', count: 0
   end
 
   test 'index disables initiate indexing while a case is still loading' do

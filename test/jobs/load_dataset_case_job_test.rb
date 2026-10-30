@@ -90,4 +90,34 @@ class LoadDatasetCaseJobTest < ActiveJob::TestCase
   test 'runs on the bulk processing queue' do
     assert_equal 'bulk_processing', LoadDatasetCaseJob.new.queue_name
   end
+
+  test 'a Haystack case keeps the search endpoint of its export, on purpose: the data is already indexed there' do
+    Scorer.find_or_create_by!(name: 'nDCG@10') { |scorer| scorer.assign_attributes(scale: (0..3).to_a, communal: true, code: 'setScore(1);') }
+    link = pending_link('haystack')
+
+    assert_difference 'SearchEndpoint.count', 1 do
+      LoadDatasetCaseJob.perform_now(link, 'Haystack', nil)
+    end
+
+    first_try = link.case.reload.tries.first
+
+    assert_equal 'http://chorus.dev.o19s.com:8983/solr/ecommerce/select', first_try.search_endpoint.endpoint_url
+    assert_equal 'solr', first_try.search_endpoint.search_engine
+    assert_match(/useParams=querqy_match_by_txt_emb/, first_try.query_params)
+    assert_equal user, first_try.search_endpoint.owner
+  end
+
+  test 'a second Haystack case reuses the endpoint the first one attached' do
+    Scorer.find_or_create_by!(name: 'nDCG@10') { |scorer| scorer.assign_attributes(scale: (0..3).to_a, communal: true, code: 'setScore(1);') }
+    first = pending_link('haystack')
+    LoadDatasetCaseJob.perform_now(first, 'First', nil)
+    second_case = Case.create!(case_name: 'Second', owner: user)
+    second = CaseToDataset.create!(dataset: Dataset.for(user, 'haystack'), case: second_case)
+
+    assert_no_difference 'SearchEndpoint.count' do
+      LoadDatasetCaseJob.perform_now(second, 'Second', nil)
+    end
+
+    assert_equal first.case.reload.tries.first.search_endpoint, second_case.reload.tries.first.search_endpoint
+  end
 end

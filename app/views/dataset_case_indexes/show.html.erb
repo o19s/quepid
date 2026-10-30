@@ -23,7 +23,13 @@
   </div>
 </div>
 
-<% if @unsupported %>
+<% if @preindexed %>
+  <div class="alert alert-success" role="alert">
+    <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+    <strong><%= @entry.name %> is already indexed in <%= @endpoint.fullname %>.</strong> The documents are there already, so Quepid has no
+    index to propose, create or load. Use the endpoint as it is.
+  </div>
+<% elsif @unsupported %>
   <div class="alert alert-warning" role="alert">
     <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i> <%= @unsupported %>
     Index definitions are made for <%= DatasetIndex::BUILDERS.values.map { |builder| builder::LABEL }.to_sentence %> endpoints.
@@ -63,10 +69,17 @@
         <div class="card-body">
           <p class="mb-2">
             Create this index on <strong><%= @endpoint.fullname %></strong>? Quepid will send the definition above to the endpoint,
-            and then <%= @kase.case_name %> will search it. No documents are indexed yet.
+            and then <%= @kase.case_name %> will search it.
+            <% if @loadable %>
+              Quepid will then index the <strong><%= number_with_delimiter(@documents) %> documents</strong> of <%= @entry.name %> into it, in the
+              background, filled in as the table below says.
+            <% else %>
+              <strong>No documents will be indexed:</strong> <%= @no_documents_because %>, so only the index is created.
+            <% end %>
           </p>
-          <%= button_tag "Create the index", type: 'submit', class: 'btn btn-primary', data: { json_editor_target: 'submit',
-                                                                                           turbo_confirm: "Create the #{@definition.label} index on #{@endpoint.fullname} with this definition?" } %>
+          <%= button_tag(@loadable ? 'Create index and start indexing the data' : 'Create the index', type: 'submit', class: 'btn btn-primary',
+                         data: { json_editor_target: 'submit',
+                                 turbo_confirm: "Create the #{@definition.label} index on #{@endpoint.fullname} with this definition#{' and start indexing the documents' if @loadable}?" }) %>
         </div>
       </div>
     <% end %>
@@ -78,7 +91,10 @@
           <p class="text-muted small"><%= @definition.note %></p>
         <% end %>
         <pre class="bg-body-tertiary border rounded p-3 mb-0" style="max-height: 28rem; overflow: auto;"><code><%= @definition.text %></code></pre>
-        <p class="mt-3 mb-0 text-muted">Quepid cannot create this index itself, so there is nothing to apply: use the definition above in <%= @definition.label %>.</p>
+        <div class="alert alert-secondary mt-3 mb-0" role="alert">
+          <strong>Quepid does not create indexes in <%= @definition.label %>.</strong> Deploy this definition yourself, with <%= @definition.label %>'s
+          own tools. Nothing has been sent to <%= @endpoint.fullname %>, and Quepid sends nothing until you say you have deployed it.
+        </div>
       </div>
     </div>
   <% end %>
@@ -107,6 +123,31 @@
       </div>
     </div>
   <% end %>
+<% end %>
+
+<% if @definition && !@definition.applicable? %>
+  <div class="card mb-3">
+    <div class="card-body">
+      <% if @loadable %>
+        <%= form_with url: documents_dataset_case_index_path(@link), method: :post, data: { turbo: false } do %>
+          <%= hidden_field_tag :search_endpoint_id, @endpoint.id %>
+          <p class="mb-2">
+            Deployed it? Quepid will load the <strong><%= number_with_delimiter(@documents) %> documents</strong> of <%= @entry.name %> into
+            <strong><%= @endpoint.fullname %></strong> in the background, as the table above says, and <%= @kase.case_name %> will search it.
+            <%= "They are sent one at a time through Vespa's Document API." if 'vespa' == DatasetIndex.engine_id(@endpoint) %>
+          </p>
+          <div class="input-group mb-3" style="max-width: 32rem;">
+            <%= label_tag :index_name, 'Name you deployed it as', class: 'input-group-text' %>
+            <%= text_field_tag :index_name, @edited_name || @proposed.index_name, class: 'form-control font-monospace', required: true %>
+          </div>
+          <%= button_tag 'I have deployed this. Start loading', type: 'submit', class: 'btn btn-primary',
+                         data: { turbo_confirm: "Load #{number_with_delimiter(@documents)} documents into #{@endpoint.fullname}? Is the definition deployed there?" } %>
+        <% end %>
+      <% else %>
+        <p class="mb-0 text-muted">Quepid does not load documents here: <%= @no_documents_because %>. Load them with <%= @definition.label %>'s own tools once the definition is deployed.</p>
+      <% end %>
+    </div>
+  </div>
 <% end %>
 
 <div class="card">
