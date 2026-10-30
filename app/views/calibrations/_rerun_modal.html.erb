@@ -1,0 +1,43 @@
+<%# locals: (run:) %>
+<% options = run.judge_snapshot['judge_options'] || {} %>
+<% jev = options['llm_provider'] == 'typesafe_jev' %>
+<div class="modal fade" id="rerun_modal_<%= run.id %>" tabindex="-1" aria-labelledby="rerun_modal_label_<%= run.id %>" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <%= form_with url: rerun_book_calibration_path(run.book, run), method: :post, scope: :settings, class: 'modal-content' do |form| %>
+      <div class="modal-header">
+        <h5 class="modal-title" id="rerun_modal_label_<%= run.id %>">
+          <i class="bi bi-sliders" aria-hidden="true"></i> Tune <%= run.judge.name %> and run again on these <%= run.sample.size %> pairs
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p class="text-muted small">
+          Filled in with what this run used. Change what you want to try: the new run uses these settings, and
+          <%= run.judge.name %> itself isn't changed. If the result is better, apply them from the new run's page.
+        </p>
+        <% if jev %>
+          <div class="row mb-3">
+            <%= form.label :jev_min_confidence, 'Minimum confidence', class: 'col-sm-4 col-form-label' %>
+            <div class="col-sm-8">
+              <%= form.number_field :jev_min_confidence, value: options['jev_min_confidence'], min: 0, max: 1, step: 0.05,
+                                    class: 'form-control', placeholder: 'none' %>
+              <div class="form-text">Answers less sure than this are unrateable. Blank accepts every answer.</div>
+            </div>
+          </div>
+        <% end %>
+        <div class="mb-1">
+          <%= form.label :system_prompt, jev ? 'Instructions' : 'Prompt', class: 'form-label' %>
+          <%= form.text_area :system_prompt, value: run.judge_snapshot['system_prompt'], rows: 10,
+                             class: 'form-control font-monospace small' %>
+          <div class="form-text">
+            The book's scale is added to it, as in real judging. Read the disagreeing pairs' explanations to see what to change.
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer justify-content-between">
+        <span class="text-muted small">This makes <%= run.sample.size %> calls to <%= run.judge.name %>.</span>
+        <%= form.submit 'Start', class: 'btn btn-primary' %>
+      </div>
+    <% end %>
+  </div>
+</div>
