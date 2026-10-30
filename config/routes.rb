@@ -111,6 +111,7 @@ Rails.application.routes.draw do
     post :scorer, on: :member
   end
   resources :dataset_cases, only: [ :index, :create ]
+  resources :dataset_scorers, only: [ :index ]
 
   resources :embedders do
     member do
