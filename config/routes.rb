@@ -107,6 +107,11 @@ Rails.application.routes.draw do
 
   resources :ai_judges
 
+  resources :datasets, only: [ :index ] do
+    post :scorer, on: :member
+  end
+  resources :dataset_cases, only: [ :index, :create ]
+
   resources :embedders do
     member do
       get 'clone'

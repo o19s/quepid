@@ -1,0 +1,11 @@
+<%# The two pages of this section: the example datasets, and the cases made from them. %>
+<ul class="nav nav-tabs mb-3">
+  <li class="nav-item">
+    <%= link_to 'Datasets', datasets_path, class: "nav-link #{'active' if 'datasets' == controller_name}",
+                aria: { current: ('page' if 'datasets' == controller_name) } %>
+  </li>
+  <li class="nav-item">
+    <%= link_to 'Dataset Cases', dataset_cases_path, class: "nav-link #{'active' if 'dataset_cases' == controller_name}",
+                aria: { current: ('page' if 'dataset_cases' == controller_name) } %>
+  </li>
+</ul>
