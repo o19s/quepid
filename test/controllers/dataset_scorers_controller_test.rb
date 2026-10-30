@@ -23,6 +23,21 @@ class DatasetScorersControllerTest < ActionDispatch::IntegrationTest
     assert_select 'p', text: /no scorers made for a dataset yet/
   end
 
+  test 'index explains, above the list, that a case needs a scorer compatible with the dataset labels' do
+    dataset_scorer
+    get dataset_scorers_url
+
+    assert_select '.alert-info', text: /A case from a dataset needs a scorer compatible with the system of labels the dataset provides: a scale that covers its rating values, ideally with the same label names\. Use Create scorer to make one that matches\./m
+    assert_select '.alert-info a[href=?]', datasets_path, text: 'Create scorer'
+    assert_operator response.body.index('alert-info'), :<, response.body.index('<table'), 'the explanation comes before the list'
+  end
+
+  test 'the explanation shows when there are no dataset scorers yet too' do
+    get dataset_scorers_url
+
+    assert_select '.alert-info', count: 1
+  end
+
   test 'every page of the section has the same three tabs' do
     [ datasets_url, dataset_cases_url, dataset_scorers_url ].each do |url|
       get url
