@@ -72,4 +72,22 @@ class DatasetTest < ActiveSupport::TestCase
 
     assert_not link.valid?
   end
+
+  test 'drop_orphans_of deletes the links of deleted cases, only for that owner, and keeps the live ones' do
+    mine = Dataset.for(user, 'imdb')
+    theirs = Dataset.for(users(:doug), 'imdb')
+    live = Case.create!(case_name: 'Live', owner: user)
+    gone = Case.create!(case_name: 'Gone', owner: user)
+    their_gone = Case.create!(case_name: 'Their gone', owner: users(:doug))
+    [ [ mine, live ], [ mine, gone ], [ theirs, their_gone ] ].each { |dataset, kase| CaseToDataset.create!(dataset: dataset, case: kase) }
+    gone.destroy
+    their_gone.destroy
+
+    assert_difference 'CaseToDataset.count', -1 do
+      CaseToDataset.drop_orphans_of(user)
+    end
+
+    assert_equal [ live.id ], mine.case_to_datasets.pluck(:case_id)
+    assert_equal [ their_gone.id ], theirs.case_to_datasets.pluck(:case_id), 'another user\'s links are not touched'
+  end
 end

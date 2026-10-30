@@ -35,6 +35,21 @@ class DatasetCasesControllerTest < ActionDispatch::IntegrationTest
     assert_select 'button[data-bs-target=?]', '#newDatasetCase', text: /Create new/
   end
 
+  test 'index quietly drops the links of cases that were deleted' do
+    kept = link_case('imdb', name: 'Kept')
+    deleted = link_case('imdb', name: 'Deleted')
+    deleted.destroy
+
+    assert_difference 'CaseToDataset.count', -1 do
+      get dataset_cases_url
+    end
+
+    assert_response :success
+    assert_select 'tbody tr', count: 1
+    assert_select 'td a[href=?]', case_core_path(kept)
+    assert_nil CaseToDataset.find_by(case_id: deleted.id)
+  end
+
   test 'index lists the cases made from datasets, without archived ones or other users cases' do
     kase = link_case('imdb', name: 'My movies')
     kase.queries.create!(query_text: 'rambo')

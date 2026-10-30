@@ -7,6 +7,7 @@ class DatasetCasesController < ApplicationController
 
   # With ?dataset=key (the Datasets tab's Load to case) the create dialog opens on that dataset.
   def index
+    CaseToDataset.drop_orphans_of(current_user)
     links = CaseToDataset.joins(:dataset, :case).where(datasets: { owner_id: current_user.id }, cases: { archived: [ false, nil ] })
       .includes(case: :scorer, dataset: []).order(created_at: :desc)
     @links = links.to_a

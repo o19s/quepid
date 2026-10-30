@@ -11,6 +11,12 @@ class CaseToDataset < ApplicationRecord
   validates :case_id, uniqueness: true
   validates :status, inclusion: { in: STATUSES }
 
+  # Deletes the owner's links whose case has been deleted. Cases are deleted without telling us (the Case model
+  # knows nothing about datasets), and the lists already skip such links, so this only tidies the table.
+  def self.drop_orphans_of owner
+    where(dataset_id: Dataset.where(owner: owner).select(:id)).where.not(case_id: Case.select(:id)).delete_all
+  end
+
   def in_progress?
     %w[pending loading].include?(status)
   end
