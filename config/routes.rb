@@ -109,9 +109,12 @@ Rails.application.routes.draw do
 
   resources :datasets, only: [ :index ] do
     post :scorer, on: :member
-    post :endpoint, on: :member
   end
-  resources :dataset_cases, only: [ :index, :create, :destroy ]
+  resources :dataset_cases, only: [ :index, :create, :destroy ] do
+    post :endpoint, on: :member
+    # The index definition for a case's dataset on a search endpoint: shown first (show), made when agreed to (create).
+    resource :index, only: [ :show, :create ], controller: 'dataset_case_indexes'
+  end
   resources :dataset_scorers, only: [ :index ]
 
   resources :embedders do

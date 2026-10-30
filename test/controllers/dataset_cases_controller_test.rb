@@ -39,34 +39,46 @@ class DatasetCasesControllerTest < ActionDispatch::IntegrationTest
     SearchEndpoint.create!(owner: user, name: name, search_engine: :solr, api_method: 'JSONP', endpoint_url: "http://example.com/#{name}/select")
   end
 
-  test 'index offers to initiate indexing for a case with no search endpoint, with a dialog to pick one' do
-    link_case('imdb', name: 'Nowhere')
+  test 'index offers to initiate indexing for each case with no search endpoint, with one dialog to pick it' do
+    first = link_case('imdb', name: 'Nowhere')
+    second = link_case('imdb', name: 'Nowhere either')
+    has = link_case('imdb', name: 'Has one')
+    has.tries.first.update!(search_endpoint: make_endpoint('Own'))
     chorus = make_endpoint
     make_endpoint('Archived').update!(archived: true)
     get dataset_cases_url
 
-    assert_select 'button[data-bs-target=?]', '#initiateIndexing-imdb', text: 'Initiate indexing', count: 1
-    assert_select 'form#initiate-indexing-form-imdb[action=?]', endpoint_dataset_path('imdb') do
+    assert_select 'button[data-bs-target="#initiateIndexing"]', text: 'Initiate indexing', count: 2
+    [ first, second ].each do |kase|
+      assert_select 'button[data-url=?][data-case-name=?]', dataset_case_index_path(CaseToDataset.find_by(case: kase)), kase.case_name
+    end
+    assert_select '#initiateIndexing', count: 1
+    assert_select '#initiateIndexing[data-controller=initiate-indexing]'
+    assert_select '#initiateIndexing form#initiate-indexing-form[method=get]' do
+      assert_select 'input[name=authenticity_token]', count: 0
       assert_select 'select[name=search_endpoint_id] option[value=?]', chorus.id.to_s, text: 'Chorus'
       assert_select 'select[name=search_endpoint_id] option', text: 'Archived', count: 0
+      assert_select 'a[href=?][target=_blank]', new_search_endpoint_path, text: 'Create a new search endpoint'
     end
   end
 
-  test 'index has no initiate indexing button once the case, or its dataset, has an endpoint' do
+  test 'index has no initiate indexing dialog when every case has an endpoint' do
     with_own = link_case('imdb', name: 'Has its own')
     with_own.tries.first.update!(search_endpoint: make_endpoint('Own'))
     get dataset_cases_url
 
     assert_select 'button', text: 'Initiate indexing', count: 0
-    assert_select '#initiateIndexing-imdb', count: 0
+    assert_select '#initiateIndexing', count: 0
+    assert_select 'td a', text: 'Own'
+  end
 
-    with_own.tries.first.update!(search_endpoint: nil)
-    hosted = make_endpoint('Hosted')
-    Dataset.for(user, 'imdb').update!(search_endpoint: hosted)
+  test 'index disables initiate indexing while a case is still loading' do
+    kase = link_case('imdb', name: 'Busy')
+    CaseToDataset.find_by(case: kase).update!(status: 'loading')
     get dataset_cases_url
 
-    assert_select 'td a[href=?]', search_endpoint_path(hosted), text: 'Hosted'
-    assert_select 'button', text: 'Initiate indexing', count: 0
+    assert_select 'button[disabled]', text: 'Initiate indexing', count: 1
+    assert_select 'button[data-bs-target="#initiateIndexing"]', count: 0
   end
 
   test 'the initiate indexing dialog points to creating a search endpoint when the user has none' do
@@ -74,8 +86,92 @@ class DatasetCasesControllerTest < ActionDispatch::IntegrationTest
     SearchEndpoint.for_user(user).update_all(archived: true) # whatever the fixtures gave this user
     get dataset_cases_url
 
-    assert_select '#initiateIndexing-imdb a[href=?]', new_search_endpoint_path
-    assert_select '#initiateIndexing-imdb button[type=submit]', count: 0
+    assert_select '#initiateIndexing a[href=?]', new_search_endpoint_path
+    assert_select '#initiateIndexing button[type=submit]', count: 0
+  end
+
+  test 'endpoint points one case at the chosen search endpoint and leaves the others alone' do
+    chosen = link_case('imdb', name: 'Chosen')
+    other = link_case('imdb', name: 'Other')
+    endpoint = make_endpoint
+
+    post endpoint_dataset_case_url(CaseToDataset.find_by(case: chosen)), params: { search_endpoint_id: endpoint.id }
+
+    assert_redirected_to dataset_cases_url
+    assert_match(/Chosen now searches Chorus/, flash[:notice])
+    assert_equal endpoint, chosen.tries.first.reload.search_endpoint
+    assert_nil other.tries.first.reload.search_endpoint
+    get dataset_cases_url
+
+    assert_select 'td a[href=?]', search_endpoint_path(endpoint), text: 'Chorus', count: 1
+    assert_select 'button', text: 'Initiate indexing', count: 1
+  end
+
+  test 'the dialog only looks: it submits a GET to the review page, so it has no token to go stale' do
+    link_case('imdb', name: 'Nowhere')
+    get dataset_cases_url
+
+    assert_select '#initiate-indexing-form[method=get]'
+    assert_select '#initiate-indexing-form input[name=authenticity_token]', count: 0
+    assert_select 'button[type=submit][form=initiate-indexing-form]', text: 'Review index definition'
+  end
+
+  test 'endpoint changes the latest try only, and does not index or create anything' do
+    kase = link_case('imdb', name: 'Two tries')
+    kase.tries.create!(try_number: 2)
+    endpoint = make_endpoint
+
+    assert_no_difference [ 'Case.count', 'Scorer.count', 'Query.count', 'Try.count' ] do
+      post endpoint_dataset_case_url(CaseToDataset.find_by(case: kase)), params: { search_endpoint_id: endpoint.id }
+    end
+
+    assert_equal endpoint, kase.tries.reload.first.search_endpoint
+    assert_equal [ nil ], kase.tries.reload.drop(1).map(&:search_endpoint)
+  end
+
+  test 'endpoint refuses an endpoint the user cannot use, an archived one, or none' do
+    kase = link_case('imdb', name: 'Picky')
+    link = CaseToDataset.find_by(case: kase)
+    theirs = make_endpoint('Theirs').tap { |endpoint| endpoint.update!(owner: users(:doug)) }
+    archived = make_endpoint('Old').tap { |endpoint| endpoint.update!(archived: true) }
+
+    [ theirs.id, archived.id, 0, nil ].each do |id|
+      post endpoint_dataset_case_url(link), params: { search_endpoint_id: id }
+
+      assert_redirected_to dataset_cases_url
+      assert_match(/Pick a search endpoint/, flash[:alert])
+    end
+
+    assert_nil kase.tries.first.reload.search_endpoint
+  end
+
+  test 'endpoint refuses a case that is still loading' do
+    kase = link_case('imdb', name: 'Busy')
+    link = CaseToDataset.find_by(case: kase)
+    link.update!(status: 'loading')
+
+    post endpoint_dataset_case_url(link), params: { search_endpoint_id: make_endpoint.id }
+
+    assert_match(/still loading/, flash[:alert])
+    assert_nil kase.tries.first.reload.search_endpoint
+  end
+
+  test 'endpoint does not touch another users case, or a case that is no longer the users own' do
+    other = Case.create!(case_name: 'Theirs', owner: users(:doug))
+    their_link = CaseToDataset.create!(dataset: Dataset.for(users(:doug), 'imdb'), case: other, status: 'done')
+    endpoint = make_endpoint
+
+    post endpoint_dataset_case_url(their_link), params: { search_endpoint_id: endpoint.id }
+
+    assert_response :not_found
+    assert_nil other.tries.first.reload.search_endpoint
+
+    taken = link_case('imdb', name: 'Taken over')
+    taken.update!(owner: users(:doug))
+    post endpoint_dataset_case_url(CaseToDataset.find_by(case: taken)), params: { search_endpoint_id: endpoint.id }
+
+    assert_match(/belongs to someone else/, flash[:alert])
+    assert_nil taken.tries.first.reload.search_endpoint
   end
 
   test 'index has an uninstall button per case, asking first, disabled while the case is still loading' do

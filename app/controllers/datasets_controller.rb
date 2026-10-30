@@ -32,17 +32,4 @@ class DatasetsController < ApplicationController
   rescue DatasetScorer::Error, ActiveRecord::RecordInvalid => e
     redirect_to datasets_path, alert: "Could not create the scorer: #{e.message}"
   end
-
-  # Records which of the user's search endpoints the dataset is hosted in (Dataset Cases shows it as "Indexed in").
-  # Quepid cannot index the documents itself yet, so this only remembers where they are.
-  def endpoint
-    dataset = DatasetCatalog.find(params.expect(:id))
-    return redirect_to(dataset_cases_path, alert: 'That dataset is not available.') unless dataset&.available
-
-    endpoint = current_user.search_endpoints_involved_with.not_archived.find_by(id: params.fetch(:search_endpoint_id, nil))
-    return redirect_to(dataset_cases_path, alert: 'Pick a search endpoint you can use.') unless endpoint
-
-    Dataset.for(current_user, dataset.key).update!(search_endpoint: endpoint)
-    redirect_to dataset_cases_path, notice: "Recorded that #{dataset.name} is hosted in #{endpoint.name}."
-  end
 end

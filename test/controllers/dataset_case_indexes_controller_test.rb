@@ -1,0 +1,285 @@
+# frozen_string_literal: true
+
+require 'test_helper'
+
+class DatasetCaseIndexesControllerTest < ActionDispatch::IntegrationTest
+  let(:user) { users(:random) }
+
+  setup do
+    login_user_for_integration_test user
+    @case = Case.create!(case_name: 'Haystack case', owner: user)
+    @link = CaseToDataset.create!(dataset: Dataset.for(user, 'haystack'), case: @case, status: 'done')
+  end
+
+  def make_endpoint engine, url, name: "My #{engine}", mapper: nil, owner: user
+    SearchEndpoint.create!(owner: owner, name: name, search_engine: engine, mapper_based_search_engine_id: mapper, api_method: 'POST', endpoint_url: url)
+  end
+
+  test 'show lays out the Elasticsearch index definition for the endpoint in a box to edit, and sends nothing' do
+    es = make_endpoint(:es, 'http://es.example.com:9200/movies/_search')
+    get dataset_case_index_url(@link, search_endpoint_id: es.id)
+
+    assert_response :success
+    assert_select 'table td a[href=?]', search_endpoint_path(es), text: 'My es'
+    assert_select 'table td code', text: 'movies'
+    assert_select '.card-header', text: /The index definition for Elasticsearch: edit it/
+    assert_select 'form[data-controller=json-editor][action=?]', dataset_case_index_path(@link) do
+      assert_select 'input[name=index_name][value=movies]'
+      assert_select 'textarea[name=definition]', text: /"dynamic": "strict"/
+      assert_select 'textarea[name=definition]', text: /"number_of_shards": 1/
+      assert_select 'input[name=search_endpoint_id][value=?]', es.id.to_s
+    end
+    assert_not_requested :any, /.*/
+  end
+
+  test 'show asks before creating, and says what will happen' do
+    es = make_endpoint(:es, 'http://es.example.com:9200/movies/_search')
+    get dataset_case_index_url(@link, search_endpoint_id: es.id)
+
+    assert_select 'form[action=?] button[type=submit]', dataset_case_index_path(@link), text: 'Create the index'
+    assert_select 'button[data-turbo-confirm=?]', 'Create the Elasticsearch index on My es with this definition?'
+    assert_select 'p', text: /No documents are indexed yet/
+    assert_select 'button[data-action="json-editor#format"]', text: 'Format'
+    assert_select 'button[data-action="json-editor#reset"]', text: 'Back to the proposed definition'
+  end
+
+  test 'show says where the documents fields come from' do
+    es = make_endpoint(:es, 'http://es.example.com:9200/movies/_search')
+    get dataset_case_index_url(@link, search_endpoint_id: es.id)
+
+    assert_select '.card-header', text: /Where the documents. fields come from/
+    assert_select 'td code', text: 'title'
+    assert_select 'td', text: /the first of title, name that has a value/
+    assert_select 'td', text: /product_type/
+    assert_select 'td', text: /not available in this dataset/, minimum: 2
+  end
+
+  test 'show works for IMDb too, whose documents are not in Quepid' do
+    imdb_link = CaseToDataset.create!(dataset: Dataset.for(user, 'imdb'), case: Case.create!(case_name: 'Movies', owner: user), status: 'done')
+    es = make_endpoint(:es, 'http://es.example.com:9200/_search')
+    get dataset_case_index_url(imdb_link, search_endpoint_id: es.id)
+
+    assert_response :success
+    assert_select 'table td code', text: 'quepid-imdb'
+    assert_select 'td', text: /split on/
+  end
+
+  test 'show says an endpoint of an engine without an index definition has none, and offers just using it' do
+    static = make_endpoint(:static, 'http://localhost/search', name: 'A file')
+    get dataset_case_index_url(@link, search_endpoint_id: static.id)
+
+    assert_response :success
+    assert_select '.alert-warning', text: /no index definition for Static File endpoints/
+    assert_select '.alert-warning', text: /Elasticsearch, OpenSearch, Solr, Qdrant, Vespa, Algolia, and Vectara/
+    assert_select 'pre', count: 0
+    assert_select 'form[action=?] button', endpoint_dataset_case_path(@link), text: 'Only use this endpoint'
+    assert_select 'form[action=?]', dataset_case_index_path(@link), count: 0
+  end
+
+  test 'show displays a definition Quepid cannot create read-only, with nothing to apply' do
+    vespa = make_endpoint(:searchapi, 'https://a.vespa.cloud/search/', mapper: 'vespa')
+    get dataset_case_index_url(@link, search_endpoint_id: vespa.id)
+
+    assert_select '.card-header', text: /\AThe index definition for Vespa\z/
+    assert_select 'pre code', text: /schema quepid_haystack/
+    assert_select 'textarea', count: 0
+    assert_select 'p', text: /Quepid cannot create this index itself/
+    assert_select 'form[action=?]', dataset_case_index_path(@link), count: 0
+  end
+
+  test 'show explains that Qdrant needs the vector size, and uses the one the cases embedder has' do
+    qdrant = make_endpoint(:searchapi, 'http://q.example.com:6333/collections/shop/points/query', mapper: 'qdrant')
+    get dataset_case_index_url(@link, search_endpoint_id: qdrant.id)
+
+    assert_select '.text-muted', text: /how long the vectors are/
+    assert_select 'form[action=?]', dataset_case_index_path(@link), count: 0
+
+    embedder = embedders(:openai_small)
+    embedder.update_columns(dimensions: 384)
+    @case.update!(embedder: embedder)
+    get dataset_case_index_url(@link, search_endpoint_id: qdrant.id)
+
+    assert_select 'textarea[name=definition]', text: /"size": 384/
+    assert_select 'form[action=?] button[type=submit]', dataset_case_index_path(@link), text: 'Create the index'
+  end
+
+  test 'create makes the index, points the case at the endpoint, and indexes no documents' do
+    es = make_endpoint(:es, 'http://es.example.com:9200/movies/_search')
+    stub = stub_request(:put, 'http://es.example.com:9200/movies').to_return(status: 200, body: '{"acknowledged":true}')
+
+    assert_no_difference [ 'Case.count', 'Query.count', 'Scorer.count' ] do
+      post dataset_case_index_url(@link), params: { search_endpoint_id: es.id }
+    end
+
+    assert_requested stub, times: 1
+    assert_requested :put, 'http://es.example.com:9200/movies', body: ->(body) { 'strict' == JSON.parse(body).dig('mappings', 'dynamic') }
+    assert_redirected_to dataset_cases_url
+    assert_match(/Created Elasticsearch index movies on My es, and Haystack case now searches it/, flash[:notice])
+    assert_equal es, @case.tries.first.reload.search_endpoint
+  end
+
+  test 'create sends the definition as the user edited it, under the name they gave it' do
+    es = make_endpoint(:es, 'http://es.example.com:9200/movies/_search')
+    stub = stub_request(:put, 'http://es.example.com:9200/my-movies').to_return(status: 200, body: '{"acknowledged":true}')
+    edited = { 'settings' => { 'number_of_shards' => 3 }, 'mappings' => { 'properties' => { 'title' => { 'type' => 'text' } } } }
+
+    post dataset_case_index_url(@link), params: { search_endpoint_id: es.id, index_name: ' my-movies ', definition: JSON.pretty_generate(edited) }
+
+    assert_requested stub, times: 1
+    assert_requested :put, 'http://es.example.com:9200/my-movies', body: edited.to_json
+    assert_not_requested :put, 'http://es.example.com:9200/movies'
+    assert_match(/Created Elasticsearch index my-movies/, flash[:notice])
+  end
+
+  test 'create keeps the edit and shows the reason when the definition is not valid JSON' do
+    es = make_endpoint(:es, 'http://es.example.com:9200/movies/_search')
+
+    post dataset_case_index_url(@link), params: { search_endpoint_id: es.id, index_name: 'mine', definition: '{ "settings": oops' }
+
+    assert_response :unprocessable_content
+    assert_select '.alert', text: /The definition is not valid JSON/
+    assert_select 'textarea[name=definition]', text: /"settings": oops/
+    assert_select 'input[name=index_name][value=mine]'
+    assert_not_requested :any, /.*/
+    assert_nil @case.tries.first.reload.search_endpoint
+  end
+
+  test 'create refuses a definition that is not an object, and a name that is not safe for an address' do
+    es = make_endpoint(:es, 'http://es.example.com:9200/movies/_search')
+
+    post dataset_case_index_url(@link), params: { search_endpoint_id: es.id, index_name: 'movies', definition: '[1, 2]' }
+
+    assert_response :unprocessable_content
+    assert_select '.alert', text: /must be a JSON object/
+
+    [ '../_all', 'a/b', 'UPPER', '', 'has space', '_hidden' ].each do |name|
+      post dataset_case_index_url(@link), params: { search_endpoint_id: es.id, index_name: name, definition: '{}' }
+
+      assert_response :unprocessable_content, name.inspect
+      assert_select '.alert', text: /Give the index a name|is not a name Elasticsearch accepts/, count: 1
+    end
+    assert_not_requested :any, /.*/
+  end
+
+  test 'create takes only add commands for Solr, and a collection and payload indexes for Qdrant' do
+    solr = make_endpoint(:solr, 'http://solr.example.com:8983/solr/shop/select')
+
+    post dataset_case_index_url(@link), params: { search_endpoint_id: solr.id, index_name: 'shop', definition: '{"delete-field": {"name": "title"}}' }
+
+    assert_response :unprocessable_content
+    assert_select '.alert', text: /only sends add commands to Solr.*not delete-field/
+
+    qdrant = make_endpoint(:searchapi, 'http://q.example.com:6333/collections/shop/points/query', mapper: 'qdrant')
+    embedder = embedders(:openai_small)
+    embedder.update_columns(dimensions: 8)
+    @case.update!(embedder: embedder)
+    [ '{}', '{"collection": {"vectors": {"dense": {"size": 8}}}, "payload_indexes": "all"}',
+      '{"collection": {"vectors": {"dense": {"size": 8}}}, "payload_indexes": [{"field_name": "x"}]}' ].each do |definition|
+      post dataset_case_index_url(@link), params: { search_endpoint_id: qdrant.id, index_name: 'shop', definition: definition }
+
+      assert_response :unprocessable_content, definition
+    end
+    assert_not_requested :any, /.*/
+  end
+
+  test 'create without an edited definition sends the proposed one' do
+    es = make_endpoint(:es, 'http://es.example.com:9200/movies/_search')
+    stub_request(:put, 'http://es.example.com:9200/movies').to_return(status: 200, body: '{"acknowledged":true}')
+
+    post dataset_case_index_url(@link), params: { search_endpoint_id: es.id }
+
+    assert_requested :put, 'http://es.example.com:9200/movies', body: DatasetIndex.build(endpoint: es, dataset: DatasetCatalog.find('haystack')).body.to_json
+  end
+
+  test 'create shows the review again, with the reason and the edit, when the index is already there' do
+    es = make_endpoint(:es, 'http://es.example.com:9200/movies/_search')
+    stub_request(:put, 'http://es.example.com:9200/movies').to_return(status: 400, body: '{"error":{"type":"resource_already_exists_exception"}}')
+
+    post dataset_case_index_url(@link), params: { search_endpoint_id: es.id, index_name: 'movies', definition: '{"settings": {"number_of_shards": 2}}' }
+
+    assert_response :unprocessable_content
+    assert_select '.alert', text: /The index movies already exists on My es/
+    assert_select 'textarea[name=definition]', text: /"number_of_shards": 2/
+    assert_nil @case.tries.first.reload.search_endpoint
+  end
+
+  test 'create shows the review again when the endpoint refuses or cannot be reached' do
+    es = make_endpoint(:es, 'http://es.example.com:9200/movies/_search')
+    stub_request(:put, 'http://es.example.com:9200/movies').to_return(status: 401, body: 'unauthorized')
+
+    post dataset_case_index_url(@link), params: { search_endpoint_id: es.id }
+
+    assert_response :unprocessable_content
+    assert_select '.alert', text: /answered 401/
+
+    stub_request(:put, 'http://es.example.com:9200/movies').to_timeout
+    post dataset_case_index_url(@link), params: { search_endpoint_id: es.id }
+
+    assert_select '.alert', text: /Could not reach/
+    assert_nil @case.tries.first.reload.search_endpoint
+  end
+
+  test 'create refuses a definition Quepid cannot apply, and sends nothing' do
+    vespa = make_endpoint(:searchapi, 'https://a.vespa.cloud/search/', mapper: 'vespa')
+    static = make_endpoint(:static, 'http://localhost/search', name: 'A file')
+
+    [ vespa, static ].each do |endpoint|
+      post dataset_case_index_url(@link), params: { search_endpoint_id: endpoint.id }
+
+      assert_response :unprocessable_content
+      assert_select '.alert', minimum: 1
+    end
+
+    assert_not_requested :any, /.*/
+    assert_nil @case.tries.first.reload.search_endpoint
+  end
+
+  test 'create applies a Solr definition to the collection the address names' do
+    solr = make_endpoint(:solr, 'http://solr.example.com:8983/solr/shop/select')
+    stub = stub_request(:post, 'http://solr.example.com:8983/solr/shop/schema').to_return(status: 200, body: '{"responseHeader":{"status":0}}')
+
+    post dataset_case_index_url(@link), params: { search_endpoint_id: solr.id }
+
+    assert_requested stub
+    assert_equal solr, @case.tries.first.reload.search_endpoint
+  end
+
+  test 'it needs a search endpoint the user can use' do
+    theirs = make_endpoint(:es, 'http://es.example.com:9200/movies/_search', owner: users(:doug))
+    archived = make_endpoint(:es, 'http://es.example.com:9200/old/_search')
+    archived.update!(archived: true)
+
+    [ nil, 0, theirs.id, archived.id ].each do |id|
+      get dataset_case_index_url(@link, search_endpoint_id: id)
+
+      assert_redirected_to dataset_cases_url
+      assert_match(/Pick a search endpoint/, flash[:alert])
+      post dataset_case_index_url(@link), params: { search_endpoint_id: id }
+
+      assert_redirected_to dataset_cases_url
+    end
+    assert_not_requested :any, /.*/
+  end
+
+  test 'it is only for the users own cases that have finished loading' do
+    es = make_endpoint(:es, 'http://es.example.com:9200/movies/_search')
+    other = CaseToDataset.create!(dataset: Dataset.for(users(:doug), 'imdb'), case: Case.create!(case_name: 'Theirs', owner: users(:doug)), status: 'done')
+
+    get dataset_case_index_url(other, search_endpoint_id: es.id)
+
+    assert_response :not_found
+
+    @link.update!(status: 'loading')
+    get dataset_case_index_url(@link, search_endpoint_id: es.id)
+
+    assert_redirected_to dataset_cases_url
+    assert_match(/still loading/, flash[:alert])
+
+    @link.update!(status: 'done')
+    @case.update!(owner: users(:doug))
+    post dataset_case_index_url(@link), params: { search_endpoint_id: es.id }
+
+    assert_match(/belongs to someone else/, flash[:alert])
+    assert_not_requested :any, /.*/
+  end
+end

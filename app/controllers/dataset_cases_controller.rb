@@ -44,6 +44,21 @@ class DatasetCasesController < ApplicationController
     redirect_to dataset_cases_path, notice: "Uninstalled #{case_name}: the case was deleted."
   end
 
+  # Initiate indexing for one case: points the case's own search endpoint at one of the user's endpoints, where the
+  # dataset is already hosted. Quepid cannot index the documents itself yet, so it does not index anything.
+  def endpoint
+    link = CaseToDataset.joins(:dataset).where(datasets: { owner_id: current_user.id }).find(params.expect(:id))
+    kase = link.case
+    return redirect_to(dataset_cases_path, alert: "#{kase.case_name} is still loading: try again when that has finished.") if link.in_progress?
+    return redirect_to(dataset_cases_path, alert: "#{kase.case_name} belongs to someone else, so its search endpoint cannot be changed from here.") unless kase.owner_id == current_user.id
+
+    endpoint = current_user.search_endpoints_involved_with.not_archived.find_by(id: params.fetch(:search_endpoint_id, nil))
+    return redirect_to(dataset_cases_path, alert: 'Pick a search endpoint you can use.') unless endpoint
+
+    kase.tries.first.update!(search_endpoint: endpoint)
+    redirect_to dataset_cases_path, notice: "#{kase.case_name} now searches #{endpoint.fullname}."
+  end
+
   private
 
   # The table: the user's live cases made from datasets, with what each row shows.
@@ -65,11 +80,9 @@ class DatasetCasesController < ApplicationController
     @open_dataset = @datasets.find { |dataset| dataset.key == params.fetch(:dataset, nil) }
     @scorers = current_user.scorers_involved_with.order(:name)
     @default_scorer = current_user.default_scorer || Scorer.system_default_scorer
-    records = Dataset.where(owner: current_user).includes(:scorer, :search_endpoint).index_by(&:key)
+    records = Dataset.where(owner: current_user).includes(:scorer).index_by(&:key)
     # The scorer the user built for each dataset with labels, if any (the dialog offers to create it otherwise).
     @dataset_scorers = records.transform_values(&:scorer)
-    # Where each dataset is hosted, if the user said so: the fallback for a case that has no endpoint of its own.
-    @dataset_endpoints = records.transform_values(&:search_endpoint)
     @search_endpoints = current_user.search_endpoints_involved_with.not_archived.order(:name)
   end
 

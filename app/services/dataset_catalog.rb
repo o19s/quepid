@@ -5,7 +5,7 @@
 module DatasetCatalog
   # One example dataset. The Dataset model holds what a user has made from one.
   Entry = Struct.new(:key, :name, :description, :queries, :documents, :judgements, :labels, :url, :available, :loader,
-                     :default_case_name, :scale_labels, :query_total, keyword_init: true) do
+                     :default_case_name, :scale_labels, :query_total, :mapper, keyword_init: true) do
     # Can a sample of its queries be asked for? Only when we know how many it has.
     def sampleable?
       query_total.present?
@@ -51,6 +51,7 @@ module DatasetCatalog
       loader:            HaystackDataset,
       default_case_name: 'Haystack Rating Party',
       query_total:       137,
+      mapper:            DatasetDocumentMappers::Haystack,
       scale_labels:      { '0' => 'Poor', '1' => 'Fair', '2' => 'Good', '3' => 'Perfect' }
     ),
     Entry.new(
@@ -98,7 +99,8 @@ module DatasetCatalog
       available:         true,
       loader:            ImdbDataset,
       default_case_name: ImdbDataset::CASE_NAME,
-      query_total:       ImdbDataset::QUERIES.size
+      query_total:       ImdbDataset::QUERIES.size,
+      mapper:            DatasetDocumentMappers::Imdb
     )
   ].freeze
 

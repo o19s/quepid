@@ -57,13 +57,26 @@ class HttpClientService
   # Perform a POST request
   # @param params [Hash] Additional query parameters
   # @param body [String] Request body
+  # @param path [String] Send to this path of the same host instead of the URL's own
   # @return [Faraday::Response]
-  def post params: {}, body: nil
+  def post params: {}, body: nil, path: nil
     connection.post do |req|
-      req.path = @uri.path.presence || '/'
+      req.path = path || @uri.path.presence || '/'
       apply_timeouts(req)
       apply_url_query_params(req)
       params.each { |key, value| req.params[key] = value }
+      req.body = body if body.present?
+    end
+  end
+
+  # Perform a PUT request to a path of the same host
+  # @param path [String] Where on the host, instead of the URL's own path
+  # @param body [String] Request body
+  # @return [Faraday::Response]
+  def put path:, body: nil
+    connection.put do |req|
+      req.path = path
+      apply_timeouts(req)
       req.body = body if body.present?
     end
   end
