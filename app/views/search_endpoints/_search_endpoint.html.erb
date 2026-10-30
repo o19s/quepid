@@ -20,7 +20,7 @@
 
   <p>
     <strong>Custom headers:</strong>
-    <%= text_area_tag 'custom_headers', format_json(search_endpoint.custom_headers), data: codemirror_data(mode: "application/json", height: 100, width: 500, readonly: true) %>
+    <%= text_area_tag 'custom_headers', format_json_for_display(search_endpoint.custom_headers), data: codemirror_data(mode: "application/json", height: 100, width: 500, readonly: true) %>
   </p>
 
   <p>
@@ -55,7 +55,7 @@
     <div class="mb-3">
       <strong>Test Query:</strong>
       <div class="form-text">Search API only. Sample query used by the Mapper Wizard for testing mappers.</div>
-      <pre class="bg-light p-2 border rounded"><%= search_endpoint.test_query.presence || 'Not set' %></pre>
+      <pre class="bg-light p-2 border rounded"><%= search_endpoint.test_query.present? ? format_json_for_display(search_endpoint.test_query) : 'Not set' %></pre>
     </div>
   <% end %>
 

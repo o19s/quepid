@@ -167,7 +167,8 @@ const troubleshootingPages = {
   os: "Troubleshooting-OpenSearch-and-Quepid",
   vectara: "Troubleshooting-Vectara-and-Quepid",
   searchapi: "Troubleshooting-SearchAPI-and-Quepid",
-  vespa: "Troubleshooting-Vespa-and-Quepid"
+  vespa: "Troubleshooting-Vespa-and-Quepid",
+  qdrant: "Troubleshooting-Qdrant-and-Quepid"
 }
 
 export function createSettingsCatalog() {
