@@ -43,6 +43,8 @@ function build(values = {}) {
   return { controller, message, bar }
 }
 
+const form = { index_name: "wands", definition: '{"settings":{}}' }
+
 function ndjson(lines) {
   const encoder = new TextEncoder()
   return new ReadableStream({
@@ -58,7 +60,7 @@ afterEach(() => vi.restoreAllMocks())
 it("creates the index at the service itself, with the endpoint's headers", async () => {
   const { controller } = build()
   globalThis.fetch = vi.fn().mockResolvedValue({ ok: true })
-  await controller.createIndex()
+  await controller.createIndex(form)
   const [url, options] = globalThis.fetch.mock.calls[0]
   expect(url).toBe("http://localhost:9200/wands")
   expect(options.method).toBe("PUT")
@@ -73,7 +75,7 @@ it("says the name is taken when the service refuses to create it", async () => {
     status: 400,
     text: async () => '{"error":{"type":"resource_already_exists_exception"}}'
   })
-  await expect(controller.createIndex()).rejects.toThrow(/wands is already there/)
+  await expect(controller.createIndex(form)).rejects.toThrow(/wands is already there/)
 })
 
 it("sends the documents to the bulk API in batches, and reports the progress", async () => {
@@ -98,7 +100,7 @@ it("sends the documents to the bulk API in batches, and reports the progress", a
       }
     return { ok: true }
   })
-  await controller.load(3)
+  await controller.load(3, "wands")
   const bulks = calls.filter(([url]) => url.endsWith("/_bulk"))
   expect(bulks).toHaveLength(2)
   expect(bulks[0][1].body.split("\n")[0]).toBe('{"index":{"_index":"wands","_id":"1"}}')
@@ -130,7 +132,7 @@ it("fails the loading when the service refuses documents", async () => {
       }
     return { ok: true }
   })
-  await expect(controller.load(1)).rejects.toThrow(
+  await expect(controller.load(1, "wands")).rejects.toThrow(
     /1 of 1 documents were refused.*strict_dynamic_mapping_exception: no/
   )
 })
@@ -145,8 +147,7 @@ it("leaves the form to Quepid when there is no probe", async () => {
 function submitFixture(overrides = {}) {
   const built = build(overrides)
   const button = document.createElement("button")
-  built.controller.submitTarget = button
-  built.controller.hasSubmitTarget = true
+  built.controller.element.append(button)
   built.controller.confirmValue = "Create it?"
   built.controller.hasProbeValue = true
   return { ...built, button }
@@ -186,6 +187,34 @@ it("creates the index, tells Quepid, loads the documents and goes to the Dataset
   delete window.Turbo
 })
 
+it("keeps loading into the index it was asked for, with the form locked, even if the name is edited on the way", async () => {
+  const { controller, button } = submitFixture()
+  const name = controller.element.querySelector("[name=index_name]")
+  name.value = " wands "
+  const indexes = []
+  postJson.mockImplementation(async () => {
+    name.value = "other"
+    return { redirect: "/dataset_cases", load: true, total: 1 }
+  })
+  globalThis.fetch = vi.fn(async (url, options = {}) => {
+    if ("/stream" === url) {
+      expect(name.disabled).toBe(true)
+      expect(button.disabled).toBe(true)
+      return { ok: true, body: ndjson(['{"id":"1"}']) }
+    }
+    if (String(url).endsWith("/_bulk")) {
+      indexes.push(JSON.parse(options.body.split("\n")[0]).index._index)
+      return { ok: true, json: async () => ({ items: [{ index: { status: 201 } }] }) }
+    }
+    if (String(url).endsWith("/_refresh")) indexes.push(String(url))
+    return { ok: true }
+  })
+  window.Turbo = { visit: vi.fn() }
+  await controller.submit({ preventDefault: vi.fn() })
+  expect(indexes).toEqual(["wands", "http://localhost:9200/wands/_refresh"])
+  delete window.Turbo
+})
+
 it("shows Quepid's reason, and keeps the loading from starting, when Quepid refuses to set the case up", async () => {
   const { HttpError } = await import("api/http_error")
   const { controller, message, button } = submitFixture()
@@ -196,6 +225,7 @@ it("shows Quepid's reason, and keeps the loading from starting, when Quepid refu
   await controller.submit({ preventDefault: vi.fn() })
   expect(message.textContent).toBe("That name is not safe.")
   expect(button.disabled).toBe(false)
+  expect(controller.element.querySelector("[name=index_name]").disabled).toBe(false)
 })
 
 it("shows why it stopped and gives the button back when the service refuses the index", async () => {
@@ -245,9 +275,9 @@ it("creates a Solr index through the schema, and loads it through the update han
   })
   controller.sent = 0
   controller.total = 2
-  await controller.createIndex()
+  await controller.createIndex(form)
   expect(calls[0][0]).toBe("http://solr:8983/solr/shop/schema")
-  await controller.sendBatch([{ id: "1" }, { id: "2" }])
+  await controller.sendBatch([{ id: "1" }, { id: "2" }], "wands")
   expect(calls[1][0]).toBe("http://solr:8983/solr/shop/update?commit=true")
   expect(JSON.parse(calls[1][1].body)).toEqual([{ id: "1" }, { id: "2" }])
   expect(controller.sent).toBe(2)
@@ -256,7 +286,7 @@ it("creates a Solr index through the schema, and loads it through the update han
 it("creates a Qdrant collection and its payload indexes", async () => {
   const qdrant = { origin: "http://qd:6333", engine: "qdrant", path: "", headers: {} }
   const { controller } = build({ probe: qdrant })
-  controller.element.querySelector("[name=definition]").value = JSON.stringify({
+  const definition = JSON.stringify({
     collection: { vectors: {} },
     payload_indexes: [{ field_name: "brand" }]
   })
@@ -265,7 +295,7 @@ it("creates a Qdrant collection and its payload indexes", async () => {
     calls.push([options.method, String(url)])
     return { ok: true }
   })
-  await controller.createIndex()
+  await controller.createIndex({ index_name: "wands", definition })
   expect(calls).toEqual([
     ["PUT", "http://qd:6333/collections/wands"],
     ["PUT", "http://qd:6333/collections/wands/index"]

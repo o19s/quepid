@@ -10,7 +10,7 @@ import { serverMessage } from "utils/error_message"
 // the new search endpoint and the progress; this sends the definition and the documents to the service.
 // Without a probe (the endpoint is proxied) the form is submitted to Quepid as usual, and Quepid does it all.
 export default class extends Controller {
-  static targets = ["progress", "message", "bar", "submit"]
+  static targets = ["progress", "message", "bar"]
   static values = {
     probe: Object,
     streamUrl: String,
@@ -25,17 +25,19 @@ export default class extends Controller {
     event.preventDefault()
     if (this.confirmValue && !(await confirmDialog(this.confirmValue, "primary"))) return
 
+    // What the user agreed to: read once, so that the index created, every batch and what Quepid records all name the same index.
+    const form = Object.fromEntries(new FormData(this.element))
+    form.index_name = form.index_name.trim()
     this.running = true
     this.lock(true)
     this.say("Creating the index…", "text-muted")
     try {
-      await this.createIndex()
-      const form = Object.fromEntries(new FormData(this.element))
+      await this.createIndex(form)
       const { redirect, load, total } = await postJson(this.element.action, {
         ...form,
         applied: true
       })
-      if (load) await this.load(total)
+      if (load) await this.load(total, form.index_name)
       this.running = false
       window.Turbo ? window.Turbo.visit(redirect) : (window.location = redirect)
     } catch (error) {
@@ -60,10 +62,8 @@ export default class extends Controller {
     navigator.sendBeacon(this.progressUrlValue, data)
   }
 
-  async createIndex() {
+  async createIndex({ index_name: name, definition: body }) {
     const { origin, engine, path, headers } = this.probeValue
-    const name = this.field("index_name").value.trim()
-    const body = this.field("definition").value
     const json = { ...headers, "Content-Type": "application/json", Accept: "application/json" }
     const send = async (method, url, payload) => {
       let response
@@ -99,7 +99,7 @@ export default class extends Controller {
   }
 
   // Reads the documents from Quepid, a line each, and sends them to the service in batches.
-  async load(total) {
+  async load(total, name) {
     this.loading = true
     this.sent = 0
     this.failed = 0
@@ -126,14 +126,14 @@ export default class extends Controller {
         if (doc.error) throw new Error(doc.error)
         batch.push(doc)
         if (batch.length >= this.batchSizeValue) {
-          await this.sendBatch(batch)
+          await this.sendBatch(batch, name)
           batch = []
         }
       }
       if (done) break
     }
-    if (batch.length) await this.sendBatch(batch)
-    await this.refresh()
+    if (batch.length) await this.sendBatch(batch, name)
+    await this.refresh(name)
     if (this.failed > 0) {
       const message = `${this.failed} of ${this.sent + this.failed} documents were refused, the first because: ${this.firstError}`
       await this.report("failed", this.sent, message)
@@ -143,9 +143,8 @@ export default class extends Controller {
     this.loading = false
   }
 
-  async sendBatch(batch) {
+  async sendBatch(batch, name) {
     const { origin, engine, path, headers } = this.probeValue
-    const name = this.field("index_name").value.trim()
     let response
     try {
       if ("solr" === engine) {
@@ -197,14 +196,15 @@ export default class extends Controller {
     await this.report("indexing", this.sent)
   }
 
-  async refresh() {
+  async refresh(name) {
     const { origin, engine, headers } = this.probeValue
     if ("solr" === engine) return
     try {
-      await serviceFetch(
-        `${origin}/${encodeURIComponent(this.field("index_name").value.trim())}/_refresh`,
-        { method: "POST", headers, credentials: "omit" }
-      )
+      await serviceFetch(`${origin}/${encodeURIComponent(name)}/_refresh`, {
+        method: "POST",
+        headers,
+        credentials: "omit"
+      })
     } catch {
       // The documents are there; they just show up a second later.
     }
@@ -239,12 +239,15 @@ export default class extends Controller {
     this.messageTarget.className = style
   }
 
+  // Nothing in the form can change while the index is made and loaded; unlocking gives back only what locking took.
   lock(locked) {
-    if (this.hasSubmitTarget) this.submitTarget.disabled = locked
-  }
-
-  field(name) {
-    return this.element.querySelector(`[name=${name}]`)
+    if (locked) {
+      this.locked = [...this.element.elements].filter((control) => !control.disabled)
+      for (const control of this.locked) control.disabled = true
+    } else {
+      for (const control of this.locked || []) control.disabled = false
+      this.locked = null
+    }
   }
 
   get token() {
