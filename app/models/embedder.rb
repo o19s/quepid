@@ -74,7 +74,7 @@ class Embedder < ApplicationRecord
   validates :name, presence: true
   validates :provider, inclusion: { in: ->(_) { EmbedderProvider.keys }, message: 'is not a known provider' }
   validates :model, presence: true
-  validates :service_url, presence: true, format: { with: %r{\Ahttps?://}i, message: 'must start with http:// or https://' }
+  validates :service_url, presence: true
   validates :api_key, length: { maximum: 1000 }, allow_blank: true
   validates :truncation, inclusion: { in: TRUNCATIONS }
   validates :dimensions, numericality: { only_integer: true, greater_than: 0 }, allow_nil: true
@@ -83,6 +83,7 @@ class Embedder < ApplicationRecord
   validate :native_truncation_supported
   validate :api_key_present_when_required
   validate :input_template_has_query
+  validate :http_service_url
 
   def provider_definition
     @provider_definition ||= EmbedderProvider.find(provider)
@@ -146,6 +147,17 @@ class Embedder < ApplicationRecord
   end
 
   private
+
+  def http_service_url
+    return if service_url.blank?
+
+    uri = URI.parse(service_url)
+    return if uri.is_a?(URI::HTTP) && uri.host.present?
+
+    errors.add(:service_url, 'must be a valid http:// or https:// URL')
+  rescue URI::InvalidURIError
+    errors.add(:service_url, 'must be a valid http:// or https:// URL')
+  end
 
   def revectorize_cases
     cases.find_each { |kase| VectorizeCaseQueriesJob.enqueue_for(kase) }

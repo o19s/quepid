@@ -55,6 +55,40 @@ class EmbedderTest < ActiveSupport::TestCase
       assert_not build_embedder(service_url: '').valid?
     end
 
+    test 'accepts complete http(s) service urls including local hosts and provider paths' do
+      urls = [
+        'https://api.openai.com',
+        'HTTPS://api.openai.com/v1',
+        'http://ollama:11434',
+        'http://localhost:8080/v1/',
+        'http://[::1]:11434/api',
+        'https://example.com/provider/v1?api-version=2026-01-01'
+      ]
+
+      urls.each do |url|
+        assert_predicate build_embedder(service_url: url), :valid?, url
+      end
+    end
+
+    test 'rejects malformed service urls and unsupported schemes' do
+      urls = [
+        'https://',
+        'https:///v1',
+        'https://example.com:invalid',
+        'https://example.com/with a space',
+        "https://example.com\nhttps://other.example.com",
+        'ftp://example.com',
+        '//example.com'
+      ]
+
+      urls.each do |url|
+        embedder = build_embedder(service_url: url)
+
+        assert_not embedder.valid?, url
+        assert_includes embedder.errors[:service_url], 'must be a valid http:// or https:// URL'
+      end
+    end
+
     test 'requires dimensions when truncating' do
       embedder = build_embedder(truncation: 'client')
 

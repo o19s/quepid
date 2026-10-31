@@ -146,7 +146,7 @@
         <%# One panel per provider, shown for the chosen one: the help is server HTML. %>
         <% EmbedderProvider.all.each do |definition| %>
           <%= tag.div class: 'alert alert-info small', hidden: definition.key != provider&.key,
-                      data: { embedder_form_target: 'help', provider: definition.key } do %><%== definition.help_html %><% end %>
+                      data: { embedder_form_target: 'help', provider: definition.key } do %><%= sanitize definition.help_html %><% end %>
         <% end %>
       </div>
     </div>
