@@ -28,8 +28,11 @@ class DatasetCaseIndexesController < ApplicationController
     return render_review(@review.unsupported || 'There is no index definition to create.') unless @review.definition&.applicable?
 
     @review.definition = @review.definition.edited(index_name: params[:index_name], text: params[:definition]) if params.key?(:definition)
-    DatasetIndex::Applier.new(@endpoint).apply(@review.definition) unless applied_by_browser?
+    # The index is created, and the documents loaded, where the case will search: for a new index that is the copy's
+    # address, not the chosen endpoint's (for Solr, /solr/wands/schema rather than /solr/shop/schema).
     @target = new_endpoint_for(@review.definition.index_name) || @endpoint
+    DatasetIndex::Applier.new(@target).apply(@review.definition) unless applied_by_browser?
+    @target.save! if @target.new_record?
     notice = "#{created_message} #{start_indexing(@review.definition.index_name)}"
 
     if applied_by_browser?
@@ -59,11 +62,12 @@ class DatasetCaseIndexesController < ApplicationController
   end
 
   # With "Create a new index on the same service" chosen: a copy of the chosen endpoint, with its connection details,
-  # that searches the new index. Nil when the endpoint's own index is used, or its address cannot name an index.
+  # that searches the new index, not saved until the index is there. Nil when the endpoint's own index is used, or its
+  # address cannot name an index.
   def new_endpoint_for index_name
     return unless new_index_chosen?
 
-    DatasetIndex.endpoint_for_index(@endpoint, index_name, current_user)&.tap(&:save!)
+    DatasetIndex.endpoint_for_index(@endpoint, index_name, current_user)
   end
 
   def already_indexed_message
@@ -92,7 +96,7 @@ class DatasetCaseIndexesController < ApplicationController
     @link.start_indexing!(index_name, in_browser: applied_by_browser?)
     return "Its #{helpers.number_with_delimiter(@review.documents)} documents are being indexed from your browser: keep that page open until it says it is done." if applied_by_browser?
 
-    IndexDatasetDocumentsJob.perform_later(@link, @endpoint, index_name)
+    IndexDatasetDocumentsJob.perform_later(@link, @target, index_name)
     "Its #{helpers.number_with_delimiter(@review.documents)} documents are being indexed in the background."
   end
 

@@ -306,6 +306,39 @@ class DatasetCaseIndexesControllerTest < ActionDispatch::IntegrationTest
     assert_equal solr, @case.tries.first.reload.search_endpoint
   end
 
+  test 'create adds the Solr fields to the new collection, and loads the documents there, not into the chosen one' do
+    wands_case = Case.create!(case_name: 'WANDS', owner: user)
+    wands = CaseToDataset.create!(dataset: Dataset.for(user, 'wands'), case: wands_case, status: 'done')
+    solr = make_endpoint(:solr, 'http://solr.example.com:8983/solr/shop/select')
+    schema = stub_request(:post, 'http://solr.example.com:8983/solr/wands/schema').to_return(status: 200, body: '{"responseHeader":{"status":0}}')
+
+    assert_enqueued_with(job: IndexDatasetDocumentsJob, args: ->(args) { 'http://solr.example.com:8983/solr/wands/select' == args[1].endpoint_url }) do
+      post dataset_case_index_url(wands), params: { search_endpoint_id: solr.id, index_name: 'wands', definition: DatasetIndex::Solr.commands.to_json, new_endpoint: 'true' }
+    end
+
+    assert_requested schema
+    assert_not_requested :post, %r{/solr/shop/}
+    assert_equal 'http://solr.example.com:8983/solr/wands/select', wands_case.tries.first.reload.search_endpoint.endpoint_url
+  end
+
+  test 'create keeps no endpoint for a new Solr collection that is not there, and loads nothing' do
+    wands_case = Case.create!(case_name: 'WANDS', owner: user)
+    wands = CaseToDataset.create!(dataset: Dataset.for(user, 'wands'), case: wands_case, status: 'done')
+    solr = make_endpoint(:solr, 'http://solr.example.com:8983/solr/shop/select')
+    stub_request(:post, 'http://solr.example.com:8983/solr/wands/schema').to_return(status: 404, body: 'Not Found')
+
+    assert_no_difference 'SearchEndpoint.count' do
+      assert_no_enqueued_jobs only: IndexDatasetDocumentsJob do
+        post dataset_case_index_url(wands), params: { search_endpoint_id: solr.id, index_name: 'wands', definition: DatasetIndex::Solr.commands.to_json, new_endpoint: 'true' }
+      end
+    end
+
+    assert_response :unprocessable_content
+    assert_match(/There is no collection wands on My solr \(wands\): Solr cannot make one from Quepid, so create it first/, flash[:alert])
+    assert_not_requested :post, %r{/solr/shop/}
+    assert_nil wands.reload.index_name
+  end
+
   test 'it needs a search endpoint the user can use' do
     theirs = make_endpoint(:es, 'http://es.example.com:9200/movies/_search', owner: users(:doug))
     archived = make_endpoint(:es, 'http://es.example.com:9200/old/_search')

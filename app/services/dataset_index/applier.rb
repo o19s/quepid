@@ -33,6 +33,7 @@ module DatasetIndex
       response = client.post(path: path, body: definition.body.to_json)
       body = JSON.parse(response.body.to_s) rescue {} # rubocop:disable Style/RescueModifier
       return if response.success? && body['error'].blank? && body['errors'].blank?
+      raise Error, "There is no collection #{definition.index_name} on #{@endpoint.fullname}: Solr cannot make one from Quepid, so create it first." if 404 == response.status
 
       fail_with(response)
     end
