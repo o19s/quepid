@@ -44,6 +44,28 @@ module HomeDepotData
       FILES.each_key { |name| FileUtils.rm_f(path(name)) }
     end
 
+    # Yields each row of an uploaded file as a hash (header => value). The files are ISO-8859-1.
+    def each_row name, &block
+      raise Error, 'The Home Depot files are not uploaded (or were imported already): upload them again on the Datasets tab.' unless uploaded?
+
+      CSV.foreach(path(name), headers: true, encoding: 'ISO-8859-1:UTF-8', liberal_parsing: true) { |row| block.call(row.to_h) }
+    end
+
+    # How many distinct search terms the uploaded train.csv has, or nil when nothing is uploaded. Counted once per upload.
+    def query_total
+      return unless uploaded?
+
+      stamp = File.mtime(path(:train))
+      @query_total = nil unless @query_total_stamp == stamp
+      @query_total_stamp = stamp
+      @query_total ||= begin
+        terms = Set.new
+        each_row(:train) { |row| terms << row['search_term'].to_s.strip }
+        terms.delete('')
+        terms.size
+      end
+    end
+
     # Takes the files out of an uploaded zip and keeps them. Each is checked before any is kept, and they are written
     # under other names and moved into place when all are whole, so a bad upload leaves what was there before.
     def store! zip_path

@@ -10,10 +10,15 @@ class DatasetCasesControllerTest < ActionDispatch::IntegrationTest
     login_user_for_integration_test user
     # IMDb is listed as coming soon; its loading is kept working, so these tests turn it on.
     DatasetCatalog.find('imdb').available = true
+    # Home Depot's uploaded files are looked for in a folder of the test's own, empty unless a test uploads.
+    @home_depot_directory = Pathname.new(Dir.mktmpdir('home_depot'))
+    HomeDepotData.directory = @home_depot_directory
   end
 
   teardown do
     DatasetCatalog.find('imdb').available = false
+    HomeDepotData.directory = nil
+    FileUtils.rm_rf(@home_depot_directory)
   end
 
   # What the Haystack export names as its scorer, so importing it works.
@@ -662,6 +667,42 @@ class DatasetCasesControllerTest < ActionDispatch::IntegrationTest
     end
 
     assert_redirected_to dataset_cases_url
+  end
+
+  test 'Home Depot can be made into a case only once its files are uploaded, and then samples what was uploaded' do
+    get dataset_cases_url
+
+    assert_select 'select[name=dataset] option[value=home_depot]', count: 0
+
+    assert_no_difference 'Case.count' do
+      post dataset_cases_url, params: { dataset: 'home_depot', scorer_id: 'new' }
+    end
+
+    assert_redirected_to dataset_cases_url
+    assert_equal 'Upload the Home Depot Product Search Relevance files on the Datasets tab first.', flash[:alert]
+
+    HomeDepotData.store!(home_depot_zip)
+    get dataset_cases_url(dataset: 'home_depot')
+
+    assert_select 'select[name=dataset] option[value=home_depot][selected]', text: /Home Depot/
+    assert_select '[data-dataset-key=home_depot] input[name=sample_size][max=4][min=1]'
+    assert_select '#scorer_id_home_depot option[value=new]', text: /0 Irrelevant, 1 Partially relevant, 2 Perfect match/
+  end
+
+  test 'the job makes the Home Depot case from the upload, with a book of its products, and deletes the upload' do
+    create_ap
+    HomeDepotData.store!(home_depot_zip)
+
+    perform_enqueued_jobs do
+      post dataset_cases_url, params: { dataset: 'home_depot', scorer_id: 'new' }
+    end
+
+    kase = Case.order(:id).last
+
+    assert_equal [ 'Home Depot Product Search Relevance', 4, 5 ], [ kase.case_name, kase.queries.count, kase.book.query_doc_pairs.count ]
+    assert_equal [ 0, 1, 2 ], kase.scorer.scale
+    assert_equal 'done', CaseToDataset.find_by(case: kase).status
+    assert_not HomeDepotData.uploaded?
   end
 
   test 'the create dialog offers WANDS, with its name, up to 480 queries to sample, and a scorer to create' do

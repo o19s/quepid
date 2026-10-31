@@ -3,12 +3,6 @@
 require 'test_helper'
 
 class HomeDepotDataTest < ActiveSupport::TestCase
-  FILES = {
-    'train.csv'                => "\"id\",\"product_uid\",\"product_title\",\"search_term\",\"relevance\"\n2,100001,\"Simpson Strong-Tie 12-Gauge Angle\",\"angle bracket\",3\n",
-    'product_descriptions.csv' => "\"product_uid\",\"product_description\"\n100001,\"Not only do angles make joints stronger\"\n",
-    'attributes.csv'           => "\"product_uid\",\"name\",\"value\"\n100001,\"MFG Brand Name\",\"Simpson Strong-Tie\"\n",
-  }.freeze
-
   setup do
     @directory = Pathname.new(Dir.mktmpdir('home_depot'))
     HomeDepotData.directory = @directory
@@ -21,8 +15,8 @@ class HomeDepotDataTest < ActiveSupport::TestCase
     FileUtils.rm_rf(@uploads)
   end
 
-  def zip_of entries, name: 'upload.zip'
-    path = File.join(@uploads, name)
+  def zip_of entries
+    path = File.join(@uploads, 'upload.zip')
     Zip::OutputStream.open(path) do |zip|
       entries.each do |file, content|
         zip.put_next_entry(file)
@@ -32,30 +26,24 @@ class HomeDepotDataTest < ActiveSupport::TestCase
     path
   end
 
-  # As Kaggle's Download All gives it: each file zipped once more, inside one zip.
-  def kaggle_zip files = FILES
-    zip_of(files.to_h { |file, content| [ "#{file}.zip", File.binread(zip_of({ file => content }, name: "#{file}.zip")) ] }
-      .merge('sample_submission.csv.zip' => File.binread(zip_of({ 'sample_submission.csv' => "id,relevance\n" }, name: 'sample.zip'))))
-  end
-
   test 'keeps the three files from the zip Kaggle gives, each zipped once more inside it' do
     assert_not HomeDepotData.uploaded?
 
-    HomeDepotData.store!(kaggle_zip)
+    HomeDepotData.store!(home_depot_zip)
 
     assert_predicate HomeDepotData, :uploaded?
-    FILES.each { |file, content| assert_equal content, File.read(@directory.join(file)) }
+    HOME_DEPOT_FILES.each { |file, content| assert_equal content, File.binread(@directory.join(file)) }
     assert_empty Dir.children(@directory).grep(/\.part\z/)
   end
 
   test 'takes a zip of the plain files too, in a folder' do
-    HomeDepotData.store!(zip_of(FILES.transform_keys { |file| "home-depot/#{file}" }.merge('__MACOSX/home-depot/._train.csv' => 'x')))
+    HomeDepotData.store!(zip_of(HOME_DEPOT_FILES.transform_keys { |file| "home-depot/#{file}" }.merge('__MACOSX/home-depot/._train.csv' => 'x')))
 
     assert_predicate HomeDepotData, :uploaded?
   end
 
   test 'refuses a zip without one of the files, and keeps nothing of it' do
-    error = assert_raises(HomeDepotData::Error) { HomeDepotData.store!(kaggle_zip(FILES.except('attributes.csv'))) }
+    error = assert_raises(HomeDepotData::Error) { HomeDepotData.store!(home_depot_zip(HOME_DEPOT_FILES.except('attributes.csv'))) }
 
     assert_match(/The zip has no attributes\.csv/, error.message)
     assert_not HomeDepotData.uploaded?
@@ -63,26 +51,45 @@ class HomeDepotDataTest < ActiveSupport::TestCase
   end
 
   test 'refuses a file without the columns the competition has, and keeps what was uploaded before' do
-    HomeDepotData.store!(kaggle_zip)
+    HomeDepotData.store!(home_depot_zip)
 
-    error = assert_raises(HomeDepotData::Error) { HomeDepotData.store!(kaggle_zip(FILES.merge('train.csv' => "a,b\n1,2\n"))) }
+    error = assert_raises(HomeDepotData::Error) { HomeDepotData.store!(home_depot_zip(HOME_DEPOT_FILES.merge('train.csv' => "a,b\n1,2\n"))) }
 
     assert_match(/train\.csv does not start with the columns/, error.message)
-    assert_equal FILES['train.csv'], File.read(@directory.join('train.csv'))
+    assert_equal HOME_DEPOT_FILES['train.csv'], File.binread(@directory.join('train.csv'))
   end
 
-  test 'deletes the files once they have been imported' do
-    HomeDepotData.store!(kaggle_zip)
+  test 'reads the rows as UTF-8, from the ISO-8859-1 the competition wrote' do
+    HomeDepotData.store!(home_depot_zip)
+    titles = []
+    HomeDepotData.each_row(:train) { |row| titles << row['product_title'] }
+
+    assert_includes titles, 'Delta 90° Shower Faucet'
+    assert(titles.all? { |title| Encoding::UTF_8 == title.encoding && title.valid_encoding? })
+  end
+
+  test 'counts the distinct search terms uploaded, and none before an upload' do
+    assert_nil HomeDepotData.query_total
+
+    HomeDepotData.store!(home_depot_zip)
+
+    assert_equal 4, HomeDepotData.query_total, 'angle bracket, l bracket, shower faucet, deck over; the blank one is not a term'
+  end
+
+  test 'deletes the files once they have been imported, and then says to upload them again' do
+    HomeDepotData.store!(home_depot_zip)
 
     HomeDepotData.discard!
 
     assert_not HomeDepotData.uploaded?
     assert_empty Dir.children(@directory).grep(/\.csv\z/)
+    error = assert_raises(HomeDepotData::Error) { HomeDepotData.each_row(:train) { |_| nil } }
+    assert_match(/upload them again/, error.message)
   end
 
   test 'refuses a file that is not a zip' do
     path = File.join(@uploads, 'train.csv')
-    File.write(path, FILES['train.csv'])
+    File.binwrite(path, HOME_DEPOT_FILES['train.csv'])
 
     error = assert_raises(HomeDepotData::Error) { HomeDepotData.store!(path) }
 

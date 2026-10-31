@@ -14,6 +14,16 @@ module DatasetCatalog
       preindexed_url.present? && endpoint.endpoint_url.to_s.strip.chomp('/') == preindexed_url
     end
 
+    # Can a case be made from it now? Not one whose files the user uploads (Home Depot's) until they are there.
+    def loadable?
+      available && (upload.nil? || upload.uploaded?)
+    end
+
+    # How many queries it has: for an uploaded dataset, counted in what was uploaded (nil until it is).
+    def query_total
+      upload ? upload.query_total : self[:query_total]
+    end
+
     # Can a sample of its queries be asked for? Only when we know how many it has.
     def sampleable?
       query_total.present?

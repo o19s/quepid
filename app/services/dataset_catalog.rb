@@ -59,18 +59,24 @@ module DatasetCatalog
       scale_labels:      { '0' => 'Irrelevant', '1' => 'Partial', '2' => 'Exact' }
     ),
     Entry.new(
-      key:         'home_depot',
-      name:        'Home Depot Product Search Relevance',
-      description: 'Kaggle competition data: Home Depot search terms with products and human-rated relevance scores.',
-      queries:     'Search terms',
-      documents:   'Product titles, descriptions and attributes',
-      judgements:  'Human-rated relevance scores',
-      labels:      '1 to 3, averaged over raters (decimals like 2.33)',
-      url:         'https://www.kaggle.com/competitions/home-depot-product-search-relevance/data',
-      license:     "The competition's rules, accepted on Kaggle",
-      license_url: 'https://www.kaggle.com/competitions/home-depot-product-search-relevance/rules',
-      available:   false,
-      upload:      HomeDepotData
+      key:               'home_depot',
+      name:              'Home Depot Product Search Relevance',
+      description:       'Kaggle competition data: Home Depot search terms with products and human-rated relevance scores. ' \
+                         'Kaggle wants a login and its rules accepted, so you upload the files; they are deleted once imported.',
+      queries:           "The search terms of the competition's train.csv",
+      documents:         'The rated products, with title, description and brand',
+      judgements:        'Human-rated relevance scores, one per search term and product',
+      labels:            '0 Irrelevant, 1 Partially relevant, 2 Perfect match (the 1 to 3 average of the raters, rounded)',
+      url:               'https://www.kaggle.com/competitions/home-depot-product-search-relevance/data',
+      license:           "The competition's rules, accepted on Kaggle",
+      license_url:       'https://www.kaggle.com/competitions/home-depot-product-search-relevance/rules',
+      available:         true,
+      upload:            HomeDepotData,
+      loader:            HomeDepotDataset,
+      default_case_name: 'Home Depot Product Search Relevance',
+      mapper:            DatasetDocumentMappers::HomeDepot,
+      documents_from:    :book,
+      scale_labels:      { '0' => 'Irrelevant', '1' => 'Partially relevant', '2' => 'Perfect match' }
     ),
     Entry.new(
       key:               'imdb',

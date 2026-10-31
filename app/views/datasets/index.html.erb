@@ -50,6 +50,11 @@
                 <%# One width for every button, so the column lines up. %>
                 <div class="d-grid gap-1 ms-auto" style="width: 8rem;">
                   <% if dataset.available %>
+                    <% if dataset.upload %>
+                      <%# Kaggle only gives the files to someone signed in who accepted the rules: the user fetches and uploads them. %>
+                      <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
+                              data-bs-target="#uploadDataset-<%= dataset.key %>">Upload data</button>
+                    <% end %>
                     <% if dataset.scale_labels.blank? %>
                       <span title="No ratings, so there are no labels to build a scorer from">
                         <button type="button" class="btn btn-sm btn-outline-secondary w-100" disabled>Create scorer</button>
@@ -62,18 +67,18 @@
                       <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
                               data-bs-target="#createScorer-<%= dataset.key %>">Create scorer</button>
                     <% end %>
-                    <% if dataset.scale_labels.present? && @dataset_scorers.fetch(dataset.key, []).empty? %>
+                    <% if !dataset.loadable? %>
+                      <span title="Upload the data first: Quepid cannot download it from Kaggle">
+                        <button type="button" class="btn btn-sm btn-primary w-100" disabled>Load to case</button>
+                      </span>
+                    <% elsif dataset.scale_labels.present? && @dataset_scorers.fetch(dataset.key, []).empty? %>
                       <span title="Create a scorer first: a case from this dataset needs one compatible with its labels">
                         <button type="button" class="btn btn-sm btn-primary w-100" disabled>Load to case</button>
                       </span>
                     <% else %>
                       <%= link_to 'Load to case', dataset_cases_path(dataset: dataset.key), class: 'btn btn-sm btn-primary' %>
                     <% end %>
-                  <% elsif dataset.upload %>
-                    <%# Kaggle only gives the files to someone signed in who accepted the rules: the user fetches and uploads them. %>
-                    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
-                            data-bs-target="#uploadDataset-<%= dataset.key %>">Upload data</button>
-                    <% if dataset.upload.uploaded? %>
+                    <% if dataset.upload&.uploaded? %>
                       <span class="small text-success text-wrap"><i class="bi bi-check-circle-fill" aria-hidden="true"></i> Files uploaded</span>
                     <% end %>
                   <% else %>

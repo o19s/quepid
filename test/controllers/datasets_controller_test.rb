@@ -5,8 +5,16 @@ require 'test_helper'
 class DatasetsControllerTest < ActionDispatch::IntegrationTest
   let(:user) { users(:random) }
 
+  # Home Depot's uploaded files are looked for in a folder of the test's own, empty unless a test uploads.
   setup do
     login_user_for_integration_test user
+    @home_depot_directory = Pathname.new(Dir.mktmpdir('home_depot'))
+    HomeDepotData.directory = @home_depot_directory
+  end
+
+  teardown do
+    HomeDepotData.directory = nil
+    FileUtils.rm_rf(@home_depot_directory)
   end
 
   test 'index lists the loadable datasets first, then the coming soon ones' do
@@ -15,8 +23,8 @@ class DatasetsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     names = css_select('tbody tr td:first-child a').map(&:text)
 
-    assert_equal [ 'Haystack Rating Party', 'WANDS' ], names.first(2)
-    assert_equal [ 'ESCI', 'Home Depot Product Search Relevance', 'IMDb Non-Commercial Datasets' ], names.last(3)
+    assert_equal [ 'Haystack Rating Party', 'WANDS', 'Home Depot Product Search Relevance' ], names.first(3)
+    assert_equal [ 'ESCI', 'IMDb Non-Commercial Datasets' ], names.last(2)
     assert_select 'button[disabled]', text: 'Coming soon', count: 2
   end
 
@@ -44,7 +52,7 @@ class DatasetsControllerTest < ActionDispatch::IntegrationTest
   test 'index counts the cases made from each dataset, without archived ones' do
     get datasets_url
 
-    assert_equal(%w[0 0 — — —], css_select('tbody tr td:nth-child(9)').map { |cell| cell.text.strip })
+    assert_equal(%w[0 0 0 — —], css_select('tbody tr td:nth-child(9)').map { |cell| cell.text.strip })
 
     dataset = Dataset.for(user, 'haystack')
     [ Case.create!(case_name: 'One', owner: user), Case.create!(case_name: 'Two', owner: user),
@@ -53,34 +61,35 @@ class DatasetsControllerTest < ActionDispatch::IntegrationTest
     end
     get datasets_url
 
-    assert_equal(%w[2 0 — — —], css_select('tbody tr td:nth-child(9)').map { |cell| cell.text.strip })
+    assert_equal(%w[2 0 0 — —], css_select('tbody tr td:nth-child(9)').map { |cell| cell.text.strip })
   end
 
   test 'index counts only the current users cases' do
     CaseToDataset.create!(dataset: Dataset.for(users(:doug), 'haystack'), case: Case.create!(case_name: 'Theirs', owner: users(:doug)))
     get datasets_url
 
-    assert_equal(%w[0 0 — — —], css_select('tbody tr td:nth-child(9)').map { |cell| cell.text.strip })
+    assert_equal(%w[0 0 0 — —], css_select('tbody tr td:nth-child(9)').map { |cell| cell.text.strip })
   end
 
   test 'index disables load to case for a dataset with labels until it has a scorer' do
     get datasets_url
 
-    assert_select 'button[disabled]', text: 'Load to case', count: 2, message: 'Haystack and WANDS have labels, and no scorer yet'
+    assert_select 'button[disabled]', text: 'Load to case', count: 3, message: 'Haystack and WANDS have no scorer yet, Home Depot no upload'
     assert_select 'span[title*=?]', 'Create a scorer first', count: 2
+    assert_select 'span[title*=?]', 'Upload the data first', count: 1
     assert_select 'a[href=?]', dataset_cases_path(dataset: 'haystack'), count: 0
     assert_select 'a[href=?]', dataset_cases_path(dataset: 'wands'), count: 0
 
     Scorer.create!(name: 'Haystack Rating Party Mine', owner: user, scale: [ 0, 1, 2, 3 ])
     get datasets_url
 
-    assert_select 'button[disabled]', text: 'Load to case', count: 1, message: 'only WANDS is still waiting for its scorer'
+    assert_select 'button[disabled]', text: 'Load to case', count: 2, message: 'WANDS is still waiting for its scorer, Home Depot for its upload'
     assert_select 'a[href=?]', dataset_cases_path(dataset: 'haystack'), text: 'Load to case', count: 1
 
     Scorer.create!(name: 'WANDS Mine', owner: user, scale: [ 0, 1, 2 ])
     get datasets_url
 
-    assert_select 'button[disabled]', text: 'Load to case', count: 0
+    assert_select 'button[disabled]', text: 'Load to case', count: 1, message: 'only Home Depot, for its upload'
     assert_select 'a[href=?]', dataset_cases_path(dataset: 'wands'), text: 'Load to case', count: 1
   end
 
@@ -88,7 +97,7 @@ class DatasetsControllerTest < ActionDispatch::IntegrationTest
     Scorer.create!(name: 'Haystack Rating Party Theirs', owner: users(:doug), scale: [ 0, 1, 2, 3 ])
     get datasets_url
 
-    assert_select 'button[disabled]', text: 'Load to case', count: 2
+    assert_select 'button[disabled]', text: 'Load to case', count: 3
   end
 
   test 'the action buttons sit at the top of their cell, whatever the height of the row' do
@@ -254,33 +263,20 @@ class DatasetsControllerTest < ActionDispatch::IntegrationTest
   end
 
   # Home Depot's files come from Kaggle, which wants a login and the rules accepted: the user uploads them.
-  def with_home_depot_directory
-    directory = Pathname.new(Dir.mktmpdir('home_depot'))
-    HomeDepotData.directory = directory
-    yield directory
-  ensure
-    HomeDepotData.directory = nil
-    FileUtils.rm_rf(directory) if directory
-  end
-
-  def home_depot_zip
-    inner = HomeDepotDataTest::FILES.to_h do |file, content|
-      buffer = Zip::OutputStream.write_buffer { |zip| zip.put_next_entry(file) && zip.write(content) }
-      [ "#{file}.zip", buffer.string ]
-    end
-    file = Tempfile.new([ 'home-depot', '.zip' ])
-    Zip::OutputStream.open(file.path) { |zip| inner.each { |name, bytes| zip.put_next_entry(name) && zip.write(bytes) } }
-    Rack::Test::UploadedFile.new(file.path, 'application/zip')
+  def kaggle_upload
+    Rack::Test::UploadedFile.new(home_depot_zip, 'application/zip')
   end
 
   test 'Home Depot offers an upload, explaining that Kaggle wants a login and the rules accepted, and how to get the zip' do
-    with_home_depot_directory do
+    with_home_depot_upload do
       get datasets_url
 
       row = css_select('tbody tr').find { |tr| 'Home Depot Product Search Relevance' == tr.at_css('td a').text }
 
-      assert_equal([ 'Upload data' ], row.css('button').map { |button| button.text.strip })
+      assert_equal([ 'Upload data', 'Create scorer', 'Load to case' ], row.css('button').map { |button| button.text.strip })
       assert_equal '#uploadDataset-home_depot', row.at_css('button')['data-bs-target']
+      assert row.css('button').last.key?('disabled'), 'Load to case waits for the upload'
+      assert_equal 'Upload the data first: Quepid cannot download it from Kaggle', row.at_css('span[title^=Upload]')['title']
       assert_select '#uploadDataset-home_depot' do
         assert_select '.modal-body p', text: /Kaggle requires a login and acceptance of the competition rules/
         assert_select '.modal-body ol li', count: 4
@@ -296,8 +292,8 @@ class DatasetsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'upload keeps the Home Depot files, and the page then says they are there' do
-    with_home_depot_directory do |directory|
-      post dataset_upload_url('home_depot'), params: { file: home_depot_zip }
+    with_home_depot_upload do |directory|
+      post dataset_upload_url('home_depot'), params: { file: kaggle_upload }
 
       assert_redirected_to datasets_url
       assert_equal 'Uploaded the Home Depot Product Search Relevance files.', flash[:notice]
@@ -311,7 +307,7 @@ class DatasetsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'upload says why it refuses a file, and needs one, and a dataset that takes uploads' do
-    with_home_depot_directory do
+    with_home_depot_upload do
       post dataset_upload_url('home_depot'), params: { file: Rack::Test::UploadedFile.new(StringIO.new('not a zip'), 'application/zip', original_filename: 'x.zip') }
 
       assert_match(/Could not use that upload: Quepid could not read that file as a zip/, flash[:alert])
@@ -320,7 +316,7 @@ class DatasetsControllerTest < ActionDispatch::IntegrationTest
 
       assert_match(/Choose the zip of Home Depot Product Search Relevance to upload/, flash[:alert])
 
-      post dataset_upload_url('wands'), params: { file: home_depot_zip }
+      post dataset_upload_url('wands'), params: { file: kaggle_upload }
 
       assert_match(/That dataset is not uploaded/, flash[:alert])
       assert_not HomeDepotData.uploaded?

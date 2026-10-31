@@ -16,6 +16,7 @@ class DatasetCasesController < ApplicationController
   def create
     dataset = DatasetCatalog.find(params.fetch(:dataset, nil))
     return redirect_to(dataset_cases_path, alert: 'Pick a dataset that is available.', status: :see_other) unless dataset&.available
+    return redirect_to(dataset_cases_path, alert: "Upload the #{dataset.name} files on the Datasets tab first.", status: :see_other) unless dataset.loadable?
 
     sample = sample_size(dataset)
     case_name = params[:case_name].presence || default_name(dataset, sample)
@@ -61,7 +62,7 @@ class DatasetCasesController < ApplicationController
 
   # What the two dialogs need: Create new (datasets and scorers) and Initiate indexing (search endpoints).
   def load_dialogs
-    @datasets = DatasetCatalog.loadable_first.select(&:available)
+    @datasets = DatasetCatalog.loadable_first.select(&:loadable?)
     @open_dataset = @datasets.find { |dataset| dataset.key == params.fetch(:dataset, nil) }
     @scorers = current_user.scorers_involved_with.order(:name)
     @default_scorer = current_user.default_scorer || Scorer.system_default_scorer
