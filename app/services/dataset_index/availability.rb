@@ -26,11 +26,13 @@ module DatasetIndex
     end
 
     # What the browser needs to ask the service itself, for an endpoint whose searches do not go through Quepid's proxy:
-    # the service's own origin, its engine, and the headers to send. Same reach as the case's searches have.
+    # the service's own origin, its engine, and the headers to send. Same reach as the case's searches have. The origin
+    # leaves out any user:password in the endpoint's URL, so those go in the Authorization header, as HttpClientService
+    # does: the endpoint's credential first, else the URL's.
     def self.browser_probe endpoint
       uri = Addressable::URI.parse(endpoint.endpoint_url)
       headers = endpoint.custom_headers.is_a?(Hash) ? endpoint.custom_headers.dup : {}
-      credentials = endpoint.basic_auth_credential.presence
+      credentials = endpoint.basic_auth_credential.presence || uri.userinfo.presence&.then { |userinfo| Addressable::URI.unencode_component(userinfo) }
       headers['Authorization'] = "Basic #{Base64.strict_encode64(credentials)}" if credentials
       { origin: "#{uri.scheme}://#{uri.authority.to_s.split('@').last}", engine: DatasetIndex.engine_id(endpoint), path: uri.path.to_s, headers: headers }
     end
