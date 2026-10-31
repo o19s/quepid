@@ -85,9 +85,21 @@ export default class extends Controller {
           `${origin} answered ${response.status}${409 === response.status || /already_exists/.test(text) ? `: ${name} is already there` : ""}: ${text}`
         )
       }
+      return response
     }
     if ("solr" === engine) {
-      await send("POST", path.replace(/\/(select|query)$/, "/schema"), body)
+      // Solr can answer 200 and still list what it refused (a field that is already there), as Quepid's Applier knows.
+      const text = await (
+        await send("POST", path.replace(/\/(select|query)$/, "/schema"), body)
+      ).text()
+      let answer
+      try {
+        answer = JSON.parse(text)
+      } catch {
+        answer = {}
+      }
+      if (answer.error || answer.errors?.length)
+        throw new Error(`${origin} refused the schema: ${text.replace(/\s+/g, " ").slice(0, 300)}`)
     } else if ("qdrant" === engine) {
       const { collection, payload_indexes: indexes } = JSON.parse(body)
       await send("PUT", `/collections/${encodeURIComponent(name)}`, JSON.stringify(collection))

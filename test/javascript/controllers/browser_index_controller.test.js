@@ -271,7 +271,7 @@ it("creates a Solr index through the schema, and loads it through the update han
   const calls = []
   globalThis.fetch = vi.fn(async (url, options = {}) => {
     calls.push([String(url), options])
-    return { ok: true }
+    return { ok: true, text: async () => '{"responseHeader":{"status":0}}' }
   })
   controller.sent = 0
   controller.total = 2
@@ -281,6 +281,25 @@ it("creates a Solr index through the schema, and loads it through the update han
   expect(calls[1][0]).toBe("http://solr:8983/solr/shop/update?commit=true")
   expect(JSON.parse(calls[1][1].body)).toEqual([{ id: "1" }, { id: "2" }])
   expect(controller.sent).toBe(2)
+})
+
+it("stops when Solr lists errors in a successful answer to the schema", async () => {
+  const solr = {
+    origin: "http://solr:8983",
+    engine: "solr",
+    path: "/solr/shop/select",
+    headers: {}
+  }
+  const { controller } = build({ probe: solr })
+  globalThis.fetch = vi.fn().mockResolvedValue({
+    ok: true,
+    status: 200,
+    text: async () =>
+      '{"responseHeader":{"status":400},"errors":[{"errorMessages":["Field \'title\' already exists."]}]}'
+  })
+  await expect(controller.createIndex(form)).rejects.toThrow(
+    /solr:8983 refused the schema: .*Field 'title' already exists/
+  )
 })
 
 it("creates a Qdrant collection and its payload indexes", async () => {
