@@ -4,12 +4,15 @@
 
 Follow [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md) for development conventions.
 
-- Preserve behavior unless the user specifically authorizes a change. Refactoring or simplifying architecture does not authorize behavioral improvements or pre-existing bug fixes.
-- Establish and verify existing edit/shared-state, persistence, refresh, validation, failure and navigation contracts. Do not rewrite tests or scenarios to justify changed behavior; leave work incomplete if parity is unresolved.
+- Preserve behavior unless the user specifically authorizes a change.
+  - Refactoring or simplifying architecture does not authorize behavioral improvements or pre-existing bug fixes.
+- Establish and verify existing edit/shared-state, persistence, refresh, validation, failure and navigation contracts.
+  - Do not rewrite tests or scenarios to justify changed behavior; leave work incomplete if parity is unresolved and report to user.
 - Fix regressions while retaining the authorized implementation. Ask before a broad rollback.
 - Keep changes focused. Before substantive renames, file moves, broad rewrites or other unrequested churn, ask with the proposed change, reason and smaller alternative. General refactoring instructions do not authorize that churn; specific approval persists.
-- **Rules go in this repo, never only in agent memory.** When the user gives a standing rule, preference or workflow requirement, write it into this file (or the doc it links to) in the same turn, then tell the user where.
-  - Check the existing rules first so each rule is stated once.
+- **Rules go in this repo, never only in agent memory.**
+- Check the existing rules first so each rule is stated once.
+- When retiring or consolidating a skill or doc, carry over every standing rule that still applies. Before editing, ask with the rules you propose to carry over (and where), and the content you propose to drop as specific to finished work.
 - **Preserve existing and imported documentation wording and structure.** Change it only for factual corrections, necessary task-related updates or an explicitly requested rewrite; do not condense, reorganize or restyle it merely to improve presentation.
 
 ## General Configuration / Execution
@@ -56,7 +59,7 @@ Follow [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md) for development conventions.
 - Keep `app` immediately after `docker compose exec` so the command matches the approved Docker execution rule. For environment overrides, use `docker compose exec app env KEY=value command ...`; do not put `-e KEY=value` before `app`.
 - **Never use `bin/docker r`, `b`, or `c`, or any other `docker compose run`, for agent commands.**
     - Those wrappers create new throwaway containers. Use `exec` in the actual server so installed tools remain available throughout the session.
-    - Restart a stopped server container rather than creating a new one, as described above. A new container is never the fallback, including when it is missing gems or other dependencies.
+    - Restart a stopped server container rather than creating a new one. A new container is never the fallback, including when it is missing gems or other dependencies.
 - Container recreation between server sessions is acceptable; preserve host-mounted or volume-backed data.
     - Do not pull images, rebuild Docker images, or run setup unnecessarily.
     - If multiple servers exist, report their exact names and ask before stopping them.
@@ -75,8 +78,11 @@ Follow [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md) for development conventions.
 
 ## Frontend
 
-- The core case app uses Rails-rendered HTML, vanilla JS, StimulusJS, and Hotwire.
-- For Stimulus migrations, keep static page structure and copy in Rails ERB partials. JavaScript should own behavior, state, and genuinely dynamic repeated content only; do not put a mostly-static page or modal's HTML into `innerHTML` template strings. If a dynamic modal needs a shell, render the shell in ERB and populate its targets.
+- The core app uses Rails-rendered HTML, vanilla JS, StimulusJS, and Hotwire.
+- JavaScript should own behavior, state, and genuinely dynamic repeated content only; do not put a mostly-static page or modal's HTML into `innerHTML` template strings.
+- If a dynamic modal needs a shell, render the shell in ERB and populate its targets.
+- Some features deliberately differ between the case workspace and the Rails pages (e.g. `share-case-core` vs `share-case`). Do not collapse them into one partial or interaction model without an explicit product decision; see [Per-surface contracts](docs/core_ui_implementation_reference.md#6-per-surface-contracts).
+  - Shared building blocks are fine when each surface keeps its own UX. Do not make one surface match the other unless asked. Verify and screenshot both surfaces; neither is the source of truth for the other.
 
 
 ## Backend
@@ -85,12 +91,16 @@ Follow [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md) for development conventions.
 - Tests for Ruby are written in Minitest.
 - Long-running work uses ActiveJob + SolidQueue, ActionCable pushes state to the frontend.
 - Solr JSONP forces the case page to HTTP while the rest may be HTTPS. When touching `CoreController` or SSL config, make sure to take this into consideration.
-- **Turbo navigation:** Drive is the default on ordinary Rails management/admin pages. Follow [DEVELOPER_GUIDE.md — Turbo navigation](DEVELOPER_GUIDE.md#turbo-navigation) for form responses, confirmations, caching, and opt-outs. The case workspace and standalone analytics retain full-page boundaries; see [Turbo on the case page](DEVELOPER_GUIDE.md#turbo-on-the-case-page) before changing either lifecycle.
+  - A protocol switch reloads the case page carrying try/wizard state in URL params (`searchEngine`, `searchUrl`, `apiMethod`, `fieldSpec`), which `CoreController#populate_from_params` restores onto the try. Keep that round trip working.
+- **Turbo navigation:** Drive is the default on ordinary Rails management/admin pages.
+  - Follow [DEVELOPER_GUIDE.md — Turbo navigation](DEVELOPER_GUIDE.md#turbo-navigation) for form responses, confirmations, caching, and opt-outs.
+  - The case workspace and standalone analytics retain full-page boundaries; see [Turbo on the case page](DEVELOPER_GUIDE.md#turbo-on-the-case-page) before changing either lifecycle.
 
 
 ## JavaScript
 
 - Use yarn instead of npm for package management.
+- When a change removes the last caller of a module, service or event, delete it in the same change: the module, its specs, and any emitters or listeners left with nothing on the other end. Do not leave unreachable code.
 
 
 ## Tests
@@ -119,24 +129,15 @@ Follow [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md) for development conventions.
 - For separate concurrent Playwright invocations, use distinct artifact/report directories and isolate writable auth/test state. Serialize invocations only while those resources remain shared; this does not restrict workers within one invocation.
 - Run Playwright E2E tests via `docker compose exec app yarn test:e2e`, with `docker compose exec app npx playwright install chromium` once. Requires the app already running (see Docker above).
 - This is a separate, checked-in test suite under `test/playwright/` — not the same thing as the Playwright MCP interactive tool described below. See DEVELOPER_GUIDE.md's "Playwright E2E" section for env vars and full details.
+- A spec for a changed flow performs its key action (share, save, import, rate → score badge updates), not only opening the modal. Add or extend one when none does.
 - **Any spec that creates a row in the shared dev DB (a user, a team, a case) must delete it in a `test.afterAll`** — See DEVELOPER_GUIDE.md's "Playwright E2E" section for the cleanup pattern to copy.
 
 ### Manual testing tracker (`docs/manual-testing/`)
 
-- Follow the timestamp rules in [DEVELOPER_GUIDE.md — Manual testing tracker](DEVELOPER_GUIDE.md#manual-testing-tracker). Preserve actual verification timestamps.
-
-- Proactively offer a representative sample batch when browser verification spans many flows or would slow incremental development. Name the proposed sample and deferred coverage. Once sampling is authorized, carry out that batch without asking again on every commit; follow the sampling policy in DEVELOPER_GUIDE.md. Do not make a full Playwright sweep the default gate for each commit.
-
-- When observed behavior differs from a manual scenario's expectation, compare it with the same surface on pre-deangularization `main` before classifying it or proposing a fix. Go back far enough to recover the Angular implementation (months if needed), record the baseline commit and source evidence, and distinguish migration regressions, pre-existing defects, and unsupported test expectations. Historical source inspection is not a live historical replay; state that limit explicitly.
-
-- `docs/manual-testing/*.md` is the human-readable manual test script. - `docs/manual-testing/tracking.yml` tracks, per numbered scenario, when it was last actually driven end-to-end (via Playwright MCP or by hand), the result, and which source `paths` that scenario exercises.
-
-- Before starting work that touches a tracked path, or when asked to do a manual testing pass: run `bin/manual_test_status` (plain `ruby`, no Docker/Rails boot needed) to see what's due — never run, stale (> `policy.default_max_age_days`, default 90), or whose `paths` changed (committed **or uncommitted**) since `last_run`. Use `--due-only` to filter, `--part 07` to scope to one part, `--paths-for 3.2` to see what a scenario tracks.
+- Use the [`manual-testing` skill](.agents/skills/manual-testing/SKILL.md) to run, sample, compare and record scenarios.
+- Before starting work that touches a tracked path, or when asked to do a manual testing pass: run `bin/manual_test_status` (plain `ruby`, no Docker/Rails boot needed) to see what's due — never run, stale (> `policy.default_max_age_days`, default 90), or whose `paths` changed (committed **or uncommitted**) since `last_run`.
 - After changing code, check whether any tracked `paths` match your diff (`bin/manual_test_status` will surface it as "uncommitted changes in ...").
 - Age-expired scenarios (flagged solely because `last_run` is past `default_max_age_days`, with no path change involved) are also yours to act on, not just report: when a session touching this repo notices one via `bin/manual_test_status`, drive it through Playwright MCP and update `tracking.yml` in that same session — don't wait to be asked, and don't leave it sitting as a report for a human to run later.
-- After running a scenario (pass or fail), update its entry in `tracking.yml`: `last_run` (today, UTC), `result` (`pass` / `pass_with_fixes` / `fail` / `blocked`), and `notes` on what was actually covered and what wasn't (partial coverage is normal — say so rather than implying the whole scenario was exhaustively verified; `tracking.yml`'s own header has the length guidance — brief for a clean pass, as long as it takes to be useful when the pass found and fixed something). Only set `last_run` for scenarios you actually exercised; leave others alone (`null` is honest and useful).
-- Update the tracker before moving to another scenario. During a long scenario, record verified checkpoints as you go, explicitly label the coverage as partial/in progress and name pending checks; do not leave an older result in place until the whole sweep finishes. The result describes only the recorded coverage. Replace the checkpoint notes with the final coverage and outcome when finished.
-- If a scenario's source moves or a new one is added, update `paths`/add an entry — the tracker is only as useful as its path mappings.
 - **Feature parity, not just staleness:** the checks above only re-verify scenarios that *already exist*. When a PR adds, removes, or materially changes user-facing functionality, also update the prose itself, in the same PR:
     - add a new numbered scenario (with `paths`) for new functionality,
     - delete/mark obsolete the scenario for removed functionality,
@@ -179,7 +180,7 @@ Quepid **does not** use one global JS style. Write **new** code to modern conven
 - ESLint covers the wider modern tree (`controllers/`, `modules/`, entry bundles, etc.) and the JavaScript tests under `test/javascript/`; follow the conventions above when you add specs.
     - Pre-commit runs ESLint and Prettier on staged files — run them yourself before finishing: `docker compose exec app npx eslint app/javascript/path/to/file.js` or tree-wide `docker compose exec app yarn lint:js` and `yarn format:js:check`.
 - Do not fall back to legacy habits (`var`, semicolons) on Stimulus/importmap code.
-- **Importmap bare paths** — `import { apiFetch } from "api/fetch"`, not relative `../api/...`. Add new pins to `vitest.config.js` when tests import them.
+- **Importmap bare paths** — `import { apiFetch } from "api/fetch"`, not relative `../api/...`. Vitest resolves `controllers/`, `utils/`, `stores/`, `api/`, and `modules/` by directory; only a new vendored package needs a `vitest.config.js` alias.
 
 **Ruby** — `.rubocop.yml` (opposite comma rule from JS):
 
