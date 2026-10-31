@@ -117,6 +117,8 @@ Rails.application.routes.draw do
       scope module: :dataset_case_indexes do
         # Is an index of this name already on the endpoint? Only asks.
         resource :availability, only: :show
+        # Would create take this definition? Asked by the browser before it sends the definition to the endpoint itself.
+        resource :validation, only: :create
         # The documents to load: show streams them to a browser that loads them itself; create is for engines Quepid cannot
         # create the index in, where the user has deployed it and now starts loading.
         resource :documents, only: [ :show, :create ]

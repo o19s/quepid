@@ -24,6 +24,17 @@ module DatasetIndex
       @index_name_missing
     end
 
+    # The definition to create as the user agreed to it: with their edit (index name and JSON text) when they made one.
+    # Checked before anything is sent to the endpoint, whether Quepid sends it or the browser does. Raises Error saying
+    # why it cannot be created.
+    def agreed! index_name: nil, text: nil
+      raise Error, "#{entry.name} is already indexed in #{endpoint.fullname}, so there is nothing to create or load there." if preindexed?
+      raise Error, unsupported || 'There is no index definition to create.' unless definition&.applicable?
+
+      self.definition = definition.edited(index_name: index_name, text: text) unless text.nil?
+      definition
+    end
+
     # The dataset's documents are in this endpoint already (Haystack's Chorus Solr), so there is nothing to create or load.
     def preindexed?
       @preindexed

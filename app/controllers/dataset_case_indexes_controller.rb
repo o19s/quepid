@@ -9,7 +9,8 @@
 #   have, Quepid loads the documents where it can (DatasetCaseIndexes::DocumentsController#create).
 #
 # For an endpoint that is not proxied, the browser creates the index and loads the documents itself, and create only sets
-# the case up (see browser_index_controller.js): its request says applied.
+# the case up (see browser_index_controller.js): its request says applied. The browser has the definition checked first
+# (DatasetCaseIndexes::ValidationsController), so it sends the endpoint only what create would.
 class DatasetCaseIndexesController < ApplicationController
   include DatasetCaseScoped
 
@@ -24,10 +25,7 @@ class DatasetCaseIndexesController < ApplicationController
   # The user has seen the definition, maybe changed it, and agreed: create the index as it now is, and point the case
   # at the endpoint. What comes back from the form is checked before anything is sent.
   def create
-    return render_review(already_indexed_message) if @review.preindexed?
-    return render_review(@review.unsupported || 'There is no index definition to create.') unless @review.definition&.applicable?
-
-    @review.definition = @review.definition.edited(index_name: params[:index_name], text: params[:definition]) if params.key?(:definition)
+    @review.agreed!(index_name: params[:index_name], text: params[:definition])
     # The index is created, and the documents loaded, where the case will search: for a new index that is the copy's
     # address, not the chosen endpoint's (for Solr, /solr/wands/schema rather than /solr/shop/schema).
     @target = new_endpoint_for(@review.definition.index_name) || @endpoint
@@ -68,10 +66,6 @@ class DatasetCaseIndexesController < ApplicationController
     return unless new_index_chosen?
 
     DatasetIndex.endpoint_for_index(@endpoint, index_name, current_user)
-  end
-
-  def already_indexed_message
-    "#{@entry.name} is already indexed in #{@endpoint.fullname}, so there is nothing to create or load there."
   end
 
   # Points the case at the new index. Where Quepid knows the engine's query language the case gets a new try with a

@@ -34,6 +34,7 @@ function build(values = {}) {
     values: {
       probe,
       streamUrl: "/stream",
+      validationUrl: "/validation",
       progressUrl: "/progress",
       endpointId: 2,
       batchSize: 2,
@@ -55,7 +56,10 @@ function ndjson(lines) {
   })
 }
 
-afterEach(() => vi.restoreAllMocks())
+afterEach(() => {
+  vi.restoreAllMocks()
+  postJson.mockReset()
+})
 
 it("creates the index at the service itself, with the endpoint's headers", async () => {
   const { controller } = build()
@@ -178,6 +182,11 @@ it("creates the index, tells Quepid, loads the documents and goes to the Dataset
   window.Turbo = { visit: vi.fn() }
   await controller.submit({ preventDefault: vi.fn() })
   expect(urls[0]).toBe("http://localhost:9200/wands")
+  expect(postJson).toHaveBeenNthCalledWith(
+    1,
+    "/validation",
+    expect.objectContaining({ index_name: "wands", definition: '{"settings":{}}' })
+  )
   expect(postJson).toHaveBeenCalledWith(
     "http://quepid.test/dataset_cases/1/index",
     expect.objectContaining({ index_name: "wands", applied: true })
@@ -213,6 +222,27 @@ it("keeps loading into the index it was asked for, with the form locked, even if
   await controller.submit({ preventDefault: vi.fn() })
   expect(indexes).toEqual(["wands", "http://localhost:9200/wands/_refresh"])
   delete window.Turbo
+})
+
+it("sends the service nothing when Quepid refuses the definition", async () => {
+  const { HttpError } = await import("api/http_error")
+  const { controller, message, button } = submitFixture()
+  postJson.mockRejectedValueOnce(
+    new HttpError({
+      status: 422,
+      statusText: "x",
+      data: {
+        error:
+          "Quepid only sends add commands to Solr (add-field, add-copy-field and the like), not delete-field."
+      }
+    })
+  )
+  globalThis.fetch = vi.fn()
+  await controller.submit({ preventDefault: vi.fn() })
+  expect(globalThis.fetch).not.toHaveBeenCalled()
+  expect(postJson).toHaveBeenCalledTimes(1)
+  expect(message.textContent).toMatch(/only sends add commands/)
+  expect(button.disabled).toBe(false)
 })
 
 it("shows Quepid's reason, and keeps the loading from starting, when Quepid refuses to set the case up", async () => {

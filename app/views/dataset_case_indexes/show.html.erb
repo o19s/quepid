@@ -46,6 +46,7 @@
                           json_editor_availability_url_value: dataset_case_index_availability_path(@link, search_endpoint_id: @endpoint.id),
                           json_editor_probe_value: (probe = DatasetIndex::Availability.browser_probe(@endpoint).to_json unless @endpoint.proxy_requests),
                           browser_index_probe_value: probe,
+                          browser_index_validation_url_value: dataset_case_index_validation_path(@link),
                           browser_index_stream_url_value: dataset_case_index_documents_path(@link, search_endpoint_id: @endpoint.id),
                           browser_index_endpoint_id_value: @endpoint.id,
                           browser_index_progress_url_value: dataset_case_index_progress_path(@link),

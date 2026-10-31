@@ -7,13 +7,15 @@ import { serverMessage } from "utils/error_message"
 
 // Creates the index and loads the documents from the browser, for a search endpoint that only the browser can reach
 // (not proxied by Quepid, maybe on localhost): the same way the case's own searches reach it. Quepid keeps the case,
-// the new search endpoint and the progress; this sends the definition and the documents to the service.
+// the new search endpoint and the progress; this sends the definition and the documents to the service, once Quepid
+// has checked the definition as it would its own (validationUrl).
 // Without a probe (the endpoint is proxied) the form is submitted to Quepid as usual, and Quepid does it all.
 export default class extends Controller {
   static targets = ["progress", "message", "bar"]
   static values = {
     probe: Object,
     streamUrl: String,
+    validationUrl: String,
     progressUrl: String,
     endpointId: Number,
     confirm: String,
@@ -32,6 +34,7 @@ export default class extends Controller {
     this.lock(true)
     this.say("Creating the index…", "text-muted")
     try {
+      await postJson(this.validationUrlValue, form)
       await this.createIndex(form)
       const { redirect, load, total } = await postJson(this.element.action, {
         ...form,
