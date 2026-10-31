@@ -65,6 +65,17 @@ class WandsDataTest < ActiveSupport::TestCase
     assert_equal 'five" long , "sharp"', rows.first['product_description']
   end
 
+  test 'reads a quoted field as WANDS writes it, with its doubled quotes made single' do
+    # Two rows exactly as upstream's query.csv has them.
+    body = "query_id\tquery\tquery_class\n208\t\"fawkes 36\"\" blue vanity\"\tVanities\n391\t\"writing desk 48\"\"\"\tDesks\n"
+    stub_file(:query, body: body)
+    rows = []
+    WandsData.each_row(:query) { |row| rows << row }
+
+    assert_equal [ 'fawkes 36" blue vanity', 'writing desk 48"' ], rows.pluck('query')
+    assert_equal %w[Vanities Desks], rows.pluck('query_class')
+  end
+
   test 'refuses a file that does not start with the columns WANDS has, and keeps nothing of it' do
     stub_file(:label, body: "a\tb\tc\n1\t2\t3\n")
 

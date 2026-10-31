@@ -46,8 +46,9 @@ module WandsData
     # Yields each row of a file as a hash (header => value), downloading the file first if need be.
     def each_row name, &block
       fetch!(name)
-      # Quote characters are not used in these files, and a stray one in a description must not swallow the rows after it.
-      CSV.foreach(path(name), headers: true, col_sep: "\t", quote_char: "\x00", encoding: 'UTF-8') { |row| block.call(row.to_h) }
+      # A few fields are quoted, with their own quotes doubled (query 208 is "fawkes 36"" blue vanity"); liberal parsing
+      # keeps a quote inside an unquoted field (a 5" nail) as it is.
+      CSV.foreach(path(name), headers: true, col_sep: "\t", liberal_parsing: true, encoding: 'UTF-8') { |row| block.call(row.to_h) }
     end
 
     private
