@@ -171,6 +171,28 @@ class LoadDatasetCaseJobTest < ActiveJob::TestCase
     assert_equal 1, link.case.queries.count
   end
 
+  test 'a retry after a failed run loads the dataset once, not on top of what that run left' do
+    link = pending_link('wands')
+    failing = WandsDataset.instance_method(:insert_ratings)
+    WandsDataset.define_method(:insert_ratings) { |_ids| raise ActiveRecord::StatementInvalid, 'the database went away' }
+
+    with_wands_files do
+      assert_raises(ActiveRecord::StatementInvalid) { LoadDatasetCaseJob.perform_now(link, 'WANDS', nil) }
+
+      assert_equal 'failed', link.reload.status
+      assert_equal 3, link.case.queries.count, 'the failed run left its queries'
+
+      WandsDataset.define_method(:insert_ratings, failing)
+      LoadDatasetCaseJob.perform_now(link, 'WANDS', nil)
+    end
+
+    assert_equal 'done', link.reload.status
+    assert_equal [ 'salon chair', 'smart coffee table', 'dinosaur' ], link.case.queries.order(:arranged_at).pluck(:query_text)
+    assert_equal 7, Rating.joins(:query).where(queries: { case_id: link.case.id }).count
+  ensure
+    WandsDataset.define_method(:insert_ratings, failing) if failing
+  end
+
   test 'records a WANDS download that failed on the link, without raising, and leaves the case empty' do
     link = pending_link('wands')
     directory = Pathname.new(Dir.mktmpdir('wands'))
