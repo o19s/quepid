@@ -12,3 +12,6 @@ that supersedes the old one rather than editing the old one into agreement with 
 | ADR | Status | Subject |
 |-----|--------|---------|
 | [0001](./0001-llm-judge-provider-architecture.md) | Proposed | LLM-as-Judge provider architecture: the adapter seam, TypeSafe Jev, and OpenAI Batch |
+| [0002](./0002-judge-calibration.md) | Proposed | Judge calibration and manual tuning against a reference |
+| [0003](./0003-ai-judge-prompt-auto-tuning.md) | Proposed | Auto-tuning AI judge prompts against reference judgements |
+| [0004](./0004-relevance-factory.md) | Proposed | Relevance Factory orchestration: observable and controllable calibration and auto-tuning |
