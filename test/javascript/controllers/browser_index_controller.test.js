@@ -100,7 +100,7 @@ it("sends the documents to the bulk API in batches, and reports the progress", a
       }
     return { ok: true }
   })
-  await controller.load(3, "wands")
+  await controller.load(3, { name: "wands", path: probe.path })
   const bulks = calls.filter(([url]) => url.endsWith("/_bulk"))
   expect(bulks).toHaveLength(2)
   expect(bulks[0][1].body.split("\n")[0]).toBe('{"index":{"_index":"wands","_id":"1"}}')
@@ -132,7 +132,7 @@ it("fails the loading when the service refuses documents", async () => {
       }
     return { ok: true }
   })
-  await expect(controller.load(1, "wands")).rejects.toThrow(
+  await expect(controller.load(1, { name: "wands", path: probe.path })).rejects.toThrow(
     /1 of 1 documents were refused.*strict_dynamic_mapping_exception: no/
   )
 })
@@ -275,12 +275,73 @@ it("creates a Solr index through the schema, and loads it through the update han
   })
   controller.sent = 0
   controller.total = 2
-  await controller.createIndex(form)
+  await controller.createIndex({ ...form, index_name: "shop" })
   expect(calls[0][0]).toBe("http://solr:8983/solr/shop/schema")
-  await controller.sendBatch([{ id: "1" }, { id: "2" }], "wands")
+  await controller.sendBatch([{ id: "1" }, { id: "2" }], { name: "shop", path: solr.path })
   expect(calls[1][0]).toBe("http://solr:8983/solr/shop/update?commit=true")
   expect(JSON.parse(calls[1][1].body)).toEqual([{ id: "1" }, { id: "2" }])
   expect(controller.sent).toBe(2)
+})
+
+it("creates and loads a new Solr collection at its own address, not the endpoint's collection", async () => {
+  const solr = {
+    origin: "http://solr:8983",
+    engine: "solr",
+    path: "/solr/shop/select",
+    headers: {}
+  }
+  const { controller } = submitFixture({ probe: solr })
+  const newEndpoint = document.createElement("input")
+  newEndpoint.name = "new_endpoint"
+  newEndpoint.value = "true"
+  controller.element.append(newEndpoint)
+  postJson.mockResolvedValue({ redirect: "/dataset_cases", load: true, total: 1 })
+  const urls = []
+  globalThis.fetch = vi.fn(async (url) => {
+    urls.push(String(url))
+    if ("/stream" === url) return { ok: true, body: ndjson(['{"id":"1"}']) }
+    return { ok: true, text: async () => '{"responseHeader":{"status":0}}' }
+  })
+  window.Turbo = { visit: vi.fn() }
+  await controller.submit({ preventDefault: vi.fn() })
+  expect(urls.filter((url) => url.startsWith("http://solr"))).toEqual([
+    "http://solr:8983/solr/wands/schema",
+    "http://solr:8983/solr/wands/update?commit=true"
+  ])
+  delete window.Turbo
+})
+
+it("points the address at the new collection only when one is chosen, also when it names none", () => {
+  const { controller } = build({
+    probe: { origin: "http://solr:8983", engine: "solr", path: "/solr/shop/select" }
+  })
+  expect(controller.servicePath({ index_name: "wands", new_endpoint: "false" })).toBe(
+    "/solr/shop/select"
+  )
+  expect(controller.servicePath({ index_name: "wands", new_endpoint: "true" })).toBe(
+    "/solr/wands/select"
+  )
+  controller.probeValue = { origin: "http://solr:8983", engine: "solr", path: "/solr/select" }
+  expect(controller.servicePath({ index_name: "wands", new_endpoint: "true" })).toBe(
+    "/solr/wands/select"
+  )
+})
+
+it("says to create the Solr collection first when it is not there", async () => {
+  const solr = {
+    origin: "http://solr:8983",
+    engine: "solr",
+    path: "/solr/shop/select",
+    headers: {}
+  }
+  const { controller } = build({ probe: solr })
+  globalThis.fetch = vi
+    .fn()
+    .mockResolvedValue({ ok: false, status: 404, text: async () => "Not Found" })
+  await expect(controller.createIndex({ ...form, new_endpoint: "true" })).rejects.toThrow(
+    "There is no collection wands on http://solr:8983: Solr cannot make one from Quepid, so create it first."
+  )
+  expect(globalThis.fetch.mock.calls[0][0]).toBe("http://solr:8983/solr/wands/schema")
 })
 
 it("stops when Solr lists errors in a successful answer to the schema", async () => {

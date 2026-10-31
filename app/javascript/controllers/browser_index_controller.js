@@ -37,7 +37,7 @@ export default class extends Controller {
         ...form,
         applied: true
       })
-      if (load) await this.load(total, form.index_name)
+      if (load) await this.load(total, { name: form.index_name, path: this.servicePath(form) })
       this.running = false
       window.Turbo ? window.Turbo.visit(redirect) : (window.location = redirect)
     } catch (error) {
@@ -62,8 +62,10 @@ export default class extends Controller {
     navigator.sendBeacon(this.progressUrlValue, data)
   }
 
-  async createIndex({ index_name: name, definition: body }) {
-    const { origin, engine, path, headers } = this.probeValue
+  async createIndex(form) {
+    const { index_name: name, definition: body } = form
+    const { origin, engine, headers } = this.probeValue
+    const path = this.servicePath(form)
     const json = { ...headers, "Content-Type": "application/json", Accept: "application/json" }
     const send = async (method, url, payload) => {
       let response
@@ -79,6 +81,10 @@ export default class extends Controller {
           `Your browser could not reach ${origin}: is it running, and does it allow requests from this page (CORS)?`
         )
       }
+      if ("solr" === engine && 404 === response.status)
+        throw new Error(
+          `There is no collection ${name} on ${origin}: Solr cannot make one from Quepid, so create it first.`
+        )
       if (!response.ok) {
         const text = (await response.text()).replace(/\s+/g, " ").slice(0, 300)
         throw new Error(
@@ -110,8 +116,9 @@ export default class extends Controller {
     }
   }
 
-  // Reads the documents from Quepid, a line each, and sends them to the service in batches.
-  async load(total, name) {
+  // Reads the documents from Quepid, a line each, and sends them to the service in batches. target is the index's name
+  // and the endpoint address that searches it (servicePath).
+  async load(total, target) {
     this.loading = true
     this.sent = 0
     this.failed = 0
@@ -138,14 +145,14 @@ export default class extends Controller {
         if (doc.error) throw new Error(doc.error)
         batch.push(doc)
         if (batch.length >= this.batchSizeValue) {
-          await this.sendBatch(batch, name)
+          await this.sendBatch(batch, target)
           batch = []
         }
       }
       if (done) break
     }
-    if (batch.length) await this.sendBatch(batch, name)
-    await this.refresh(name)
+    if (batch.length) await this.sendBatch(batch, target)
+    await this.refresh(target.name)
     if (this.failed > 0) {
       const message = `${this.failed} of ${this.sent + this.failed} documents were refused, the first because: ${this.firstError}`
       await this.report("failed", this.sent, message)
@@ -155,8 +162,8 @@ export default class extends Controller {
     this.loading = false
   }
 
-  async sendBatch(batch, name) {
-    const { origin, engine, path, headers } = this.probeValue
+  async sendBatch(batch, { name, path }) {
+    const { origin, engine, headers } = this.probeValue
     let response
     try {
       if ("solr" === engine) {
@@ -220,6 +227,20 @@ export default class extends Controller {
     } catch {
       // The documents are there; they just show up a second later.
     }
+  }
+
+  // The endpoint's address, pointed at the new collection when one is chosen, as Quepid's copy of the endpoint will be
+  // (DatasetIndex::Solr.url_with_index): /solr/shop/select with "wands" is /solr/wands/select. Only Solr's writes go
+  // through the address; the other engines name the index in the request.
+  servicePath({ index_name: name, new_endpoint: copied }) {
+    const { engine, path } = this.probeValue
+    if ("solr" !== engine || "true" !== copied) return path
+    const collection = path.match(/\/([^/]+)\/(?:select|query)$/)?.[1]
+    const named = collection && "solr" !== collection
+    return path.replace(
+      named ? /\/[^/]+\/(select|query)$/ : /\/(select|query)$/,
+      `/${encodeURIComponent(name)}/$1`
+    )
   }
 
   async report(status, indexed, error = "") {
