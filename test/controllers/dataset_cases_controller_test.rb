@@ -622,6 +622,30 @@ class DatasetCasesControllerTest < ActionDispatch::IntegrationTest
     assert_match(/can't rate every label/, flash[:alert])
   end
 
+  test 'create refuses the default scorer too when its scale does not fit the dataset' do
+    user.update!(default_scorer: scorers(:'p@10'))
+
+    assert_no_difference 'Case.count' do
+      assert_no_enqueued_jobs only: LoadDatasetCaseJob do
+        post dataset_cases_url, params: { dataset: 'haystack' }
+      end
+    end
+
+    assert_redirected_to dataset_cases_url
+    assert_match(/P@10 can't rate every label/, flash[:alert])
+  end
+
+  test 'create gives the job the default scorer when it fits the dataset' do
+    fits = Scorer.create!(name: 'Zero to three', scale: (0..3).to_a, communal: true)
+    user.update!(default_scorer: fits)
+
+    assert_enqueued_with(job: LoadDatasetCaseJob, args: ->(args) { args[2] == fits }) do
+      post dataset_cases_url, params: { dataset: 'haystack' }
+    end
+
+    assert_equal fits, Case.order(:id).last.scorer
+  end
+
   test 'create refuses a scorer the user cannot see' do
     assert_no_difference 'Case.count' do
       post dataset_cases_url, params: { dataset: 'imdb', scorer_id: 0 }

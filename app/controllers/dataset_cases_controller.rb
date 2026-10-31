@@ -87,13 +87,17 @@ class DatasetCasesController < ApplicationController
   end
 
   # The scorer picked in the form: 'new' for one built from the dataset's labels, or one the user can see
-  # whose scale covers them. Blank means the user's default.
+  # whose scale covers them. Blank means the user's default, which has to cover them too.
   def chosen_scorer dataset
     return DatasetScorer.new(current_user).find_or_create(dataset) if 'new' == params[:scorer_id]
-    return if params[:scorer_id].blank?
 
-    scorer = current_user.scorers_involved_with.find_by(id: params[:scorer_id])
-    raise ScorerRefused, 'That scorer is not available to you.' unless scorer
+    if params[:scorer_id].blank?
+      scorer = current_user.default_scorer || Scorer.system_default_scorer
+      return unless scorer
+    else
+      scorer = current_user.scorers_involved_with.find_by(id: params[:scorer_id])
+      raise ScorerRefused, 'That scorer is not available to you.' unless scorer
+    end
     raise ScorerRefused, "#{scorer.name} can't rate every label in #{dataset.name}: pick a scorer with a wider scale." unless dataset.accepts?(scorer)
 
     scorer
