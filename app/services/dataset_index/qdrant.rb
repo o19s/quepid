@@ -19,6 +19,18 @@ module DatasetIndex
       nil
     end
 
+    # The endpoint's URL pointed at another collection: /collections/shop/points/query with "wands" is
+    # /collections/wands/points/query. Nil when it names none, as there is then no telling where the name goes.
+    def self.url_with_index url, name
+      return unless index_name_from(url)
+
+      uri = URI.parse(url.to_s)
+      uri.path = uri.path.sub(%r{/collections/[^/]+}, "/collections/#{name}")
+      uri.to_s
+    rescue URI::InvalidURIError
+      nil
+    end
+
     def self.valid_name? name
       name.match?(/\A[A-Za-z0-9_-]+\z/)
     end

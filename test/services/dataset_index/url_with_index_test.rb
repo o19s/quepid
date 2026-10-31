@@ -19,6 +19,15 @@ class DatasetIndexUrlWithIndexTest < ActiveSupport::TestCase
     assert_equal 'http://solr:8983/solr/wands/select', builder.url_with_index('http://solr:8983/solr/select', 'wands')
   end
 
+  test 'Qdrant swaps the collection in the address, and has none to swap when it names none' do
+    builder = DatasetIndex::Qdrant
+
+    assert_equal 'http://qd:6333/collections/wands/points/query', builder.url_with_index('http://qd:6333/collections/shop/points/query', 'wands')
+    assert_equal 'https://qd.example.com/collections/wands/points/search?wait=true',
+                 builder.url_with_index('https://qd.example.com/collections/shop/points/search?wait=true', 'wands')
+    assert_nil builder.url_with_index('http://qd:6333/points/query', 'wands')
+  end
+
   test 'a copy of an endpoint keeps its connection details and names the new index' do
     owner = users(:random)
     endpoint = SearchEndpoint.create!(owner: users(:doug), name: 'Shop', search_engine: :solr, api_method: 'GET', basic_auth_credential: 'u:p',

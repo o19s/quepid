@@ -609,6 +609,37 @@ class DatasetCaseIndexesControllerTest < ActionDispatch::IntegrationTest
     assert_match(/now searches it\./, flash[:notice])
   end
 
+  test 'create makes a new Qdrant collection, and points the case at a copy of the endpoint that queries it' do
+    qdrant = make_endpoint(:searchapi, 'http://q.example.com:6333/collections/shop/points/query', mapper: 'qdrant')
+    embedder = embedders(:openai_small)
+    embedder.update_columns(dimensions: 8)
+    @case.update!(embedder: embedder)
+    definition = DatasetIndex.build(endpoint: qdrant, dataset: DatasetCatalog.find('haystack'), vector_size: 8).text
+    create = stub_request(:put, 'http://q.example.com:6333/collections/wands').to_return(status: 200, body: '{"result":true}')
+    stub_request(:put, 'http://q.example.com:6333/collections/wands/index').to_return(status: 200, body: '{"result":true}')
+
+    assert_difference 'SearchEndpoint.count', 1 do
+      post dataset_case_index_url(@link), params: { search_endpoint_id: qdrant.id, index_name: 'wands', definition: definition, new_endpoint: 'true' }
+    end
+
+    assert_requested create
+    copy = @case.tries.first.reload.search_endpoint
+
+    assert_equal [ 'http://q.example.com:6333/collections/wands/points/query', 'qdrant' ], [ copy.endpoint_url, copy.mapper_based_search_engine_id ]
+    assert_equal 'http://q.example.com:6333/collections/shop/points/query', qdrant.reload.endpoint_url
+  end
+
+  test 'show offers a new Qdrant collection next to the endpoint\'s own' do
+    qdrant = make_endpoint(:searchapi, 'http://q.example.com:6333/collections/shop/points/query', mapper: 'qdrant')
+    embedder = embedders(:openai_small)
+    embedder.update_columns(dimensions: 8)
+    @case.update!(embedder: embedder)
+    get dataset_case_index_url(@link, search_endpoint_id: qdrant.id)
+
+    assert_select 'input[type=radio][name=new_endpoint][value="false"][checked]'
+    assert_select 'input[type=radio][name=new_endpoint][value="true"]'
+  end
+
   test 'a form that asks before it does something is handled by Turbo, which is what asks: Turbo is not turned off on it' do
     give_documents
     es = make_endpoint(:es, 'http://es.example.com:9200/movies/_search')
