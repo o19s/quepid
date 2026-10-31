@@ -27,6 +27,12 @@ class DatasetSidebarTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test 'the menu that stands in for the sidebar on small screens has Datasets too' do
+    get root_url
+
+    assert_select 'ul.navbar-nav li.nav-item.d-lg-none a.nav-link[href=?]', datasets_path, text: 'Datasets'
+  end
+
   test 'the Cases and Scorers icons are still lit on their own pages' do
     get cases_url
 
