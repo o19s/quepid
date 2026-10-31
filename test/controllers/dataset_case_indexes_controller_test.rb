@@ -63,12 +63,41 @@ class DatasetCaseIndexesControllerTest < ActionDispatch::IntegrationTest
 
   test 'show works for IMDb too, whose documents are not in Quepid' do
     imdb_link = CaseToDataset.create!(dataset: Dataset.for(user, 'imdb'), case: Case.create!(case_name: 'Movies', owner: user), status: 'done')
-    es = make_endpoint(:es, 'http://es.example.com:9200/_search')
+    es = make_endpoint(:es, 'http://es.example.com:9200/movies/_search')
     get dataset_case_index_url(imdb_link, search_endpoint_id: es.id)
 
     assert_response :success
-    assert_select 'table td code', text: 'quepid-imdb'
+    assert_select 'table td code', text: 'movies'
     assert_select 'td', text: /split on/
+  end
+
+  test 'show asks for an index name when the endpoint names none, and offers only using the endpoint' do
+    [ make_endpoint(:es, 'http://es.example.com:9200/_search'), make_endpoint(:solr, 'http://solr.example.com:8983/solr/select') ].each do |endpoint|
+      get dataset_case_index_url(@link, search_endpoint_id: endpoint.id)
+
+      assert_response :success
+      assert_select '.alert-warning', text: /\AQuepid cannot find an index name in the selected endpoint\. Please specify the index name\.\z/
+      assert_select 'form[action=?]', dataset_case_index_path(@link), count: 0
+      assert_select 'form[action=?] button', dataset_case_search_endpoint_path(@link), text: 'Only use this endpoint'
+    end
+  end
+
+  test 'create and documents refuse an endpoint that names no index, and send nothing' do
+    es = make_endpoint(:es, 'http://es.example.com:9200/_search')
+
+    assert_no_difference 'SearchEndpoint.count' do
+      assert_no_enqueued_jobs only: IndexDatasetDocumentsJob do
+        post dataset_case_index_url(@link), params: { search_endpoint_id: es.id, index_name: 'wands', definition: '{"settings":{}}' }
+
+        assert_response :unprocessable_content
+        assert_equal DatasetIndex::Review::NO_INDEX_NAME, flash[:alert]
+
+        post dataset_case_index_documents_url(@link), params: { search_endpoint_id: es.id }
+      end
+    end
+
+    assert_not_requested :any, /.*/
+    assert_nil @case.tries.first.reload.search_endpoint
   end
 
   test 'show says an endpoint of an engine without an index definition has none, and offers just using it' do

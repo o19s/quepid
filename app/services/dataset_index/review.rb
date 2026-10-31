@@ -4,6 +4,8 @@ module DatasetIndex
   # What there is to know before creating a case's dataset index on a search endpoint: the definition proposed for the
   # endpoint's engine, whether the dataset is already indexed there, and whether its documents can be loaded. Only reads.
   class Review
+    NO_INDEX_NAME = 'Quepid cannot find an index name in the selected endpoint. Please specify the index name.'
+
     attr_reader :link, :kase, :entry, :endpoint, :proposed, :unsupported, :documents, :why_not
     attr_accessor :definition
 
@@ -14,6 +16,12 @@ module DatasetIndex
       @endpoint = endpoint
       build_definition
       describe_documents
+    end
+
+    # The endpoint's address should name its index (Elasticsearch's /tmdb/_search, Solr's /solr/shop/select) and does
+    # not (/_search): the case would go on searching the address as it is, not the index Quepid made.
+    def index_name_missing?
+      @index_name_missing
     end
 
     # The dataset's documents are in this endpoint already (Haystack's Chorus Solr), so there is nothing to create or load.
@@ -39,6 +47,12 @@ module DatasetIndex
     # Qdrant needs the length of the vectors, which comes from the embedder the case uses, if it has one.
     def build_definition
       return @preindexed = true if entry&.preindexed_in?(endpoint)
+
+      builder = DatasetIndex.builder_for(endpoint)
+      if builder.respond_to?(:url_with_index) && builder.index_name_from(endpoint.endpoint_url).nil?
+        @index_name_missing = true
+        return @unsupported = NO_INDEX_NAME
+      end
 
       @proposed = @definition = DatasetIndex.build(endpoint: endpoint, dataset: entry, vector_size: kase.embedder&.dimensions)
     rescue DatasetIndex::Unsupported => e

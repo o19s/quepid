@@ -32,7 +32,9 @@
 <% elsif @review.unsupported %>
   <div class="alert alert-warning" role="alert">
     <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i> <%= @review.unsupported %>
-    Index definitions are made for <%= DatasetIndex::BUILDERS.values.map { |builder| builder::LABEL }.to_sentence %> endpoints.
+    <% unless @review.index_name_missing? %>
+      Index definitions are made for <%= DatasetIndex::BUILDERS.values.map { |builder| builder::LABEL }.to_sentence %> endpoints.
+    <% end %>
   </div>
 <% else %>
   <% if @review.definition.applicable? %>
