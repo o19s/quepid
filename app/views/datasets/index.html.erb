@@ -1,0 +1,154 @@
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <h1><i class="bi bi-database" aria-hidden="true"></i> Datasets<%= render 'embedders/beta' %></h1>
+</div>
+
+<%= render 'datasets/tabs' %>
+
+<div class="alert alert-info" role="alert">
+  <i class="bi bi-info-circle-fill" aria-hidden="true"></i>
+  Datasets are public relevance collections. Load one into a new case; the cases made from them are on the Dataset Cases tab.
+</div>
+
+<div class="card">
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table table-sm table-hover align-middle">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Queries</th>
+            <th>Documents</th>
+            <th>Judgements</th>
+            <th>Labels</th>
+            <th>Licence</th>
+            <th>Scorers<sup><a href="#scorer-note" aria-label="Note 1: scorers and labels">(1)</a></sup></th>
+            <th>Cases</th>
+            <th class="text-end"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @datasets.each do |dataset| %>
+            <tr>
+              <td><%= link_to dataset.name, dataset.url, target: '_blank', rel: 'noopener noreferrer' %></td>
+              <td><%= dataset.description %></td>
+              <td><%= dataset.queries %></td>
+              <td><%= dataset.documents %></td>
+              <td><%= dataset.judgements %></td>
+              <td><%= dataset.labels %></td>
+              <td><%= link_to dataset.license, dataset.license_url, target: '_blank', rel: 'noopener noreferrer' %></td>
+              <td>
+                <% scorers = @dataset_scorers.fetch(dataset.key, []) %>
+                <% if scorers.any? %>
+                  <%= safe_join(scorers.map { |scorer| link_to(scorer.name, edit_scorer_path(scorer)) }, ', ') %>
+                <% else %>
+                  <span class="text-muted">-</span>
+                <% end %>
+              </td>
+              <td><%= dataset.available ? @case_counts.fetch(dataset.key, 0) : raw('<span class="text-muted">&mdash;</span>') %></td>
+              <td class="text-end text-nowrap align-top">
+                <%# One width for every button, so the column lines up. %>
+                <div class="d-grid gap-1 ms-auto" style="width: 8rem;">
+                  <% if dataset.available %>
+                    <% if dataset.upload %>
+                      <%# Kaggle only gives the files to someone signed in who accepted the rules: the user fetches and uploads them. %>
+                      <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
+                              data-bs-target="#uploadDataset-<%= dataset.key %>">Upload data</button>
+                    <% end %>
+                    <% if dataset.scale_labels.blank? %>
+                      <span title="No ratings, so there are no labels to build a scorer from">
+                        <button type="button" class="btn btn-sm btn-outline-secondary w-100" disabled>Create scorer</button>
+                      </span>
+                    <% elsif @templates_left[dataset.key].empty? %>
+                      <span title="You already have a scorer from every communal scorer">
+                        <button type="button" class="btn btn-sm btn-outline-secondary w-100" disabled>Create scorer</button>
+                      </span>
+                    <% else %>
+                      <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
+                              data-bs-target="#createScorer-<%= dataset.key %>">Create scorer</button>
+                    <% end %>
+                    <% if !dataset.loadable? %>
+                      <span title="Upload the data first: Quepid cannot download it from Kaggle">
+                        <button type="button" class="btn btn-sm btn-primary w-100" disabled>Load to case</button>
+                      </span>
+                    <% elsif dataset.scale_labels.present? && @dataset_scorers.fetch(dataset.key, []).empty? %>
+                      <span title="Create a scorer first: a case from this dataset needs one compatible with its labels">
+                        <button type="button" class="btn btn-sm btn-primary w-100" disabled>Load to case</button>
+                      </span>
+                    <% else %>
+                      <%= link_to 'Load to case', dataset_cases_path(dataset: dataset.key), class: 'btn btn-sm btn-primary' %>
+                    <% end %>
+                    <% if dataset.upload&.uploaded? %>
+                      <span class="small text-success text-wrap"><i class="bi bi-check-circle-fill" aria-hidden="true"></i> Files uploaded</span>
+                    <% end %>
+                  <% else %>
+                    <button type="button" class="btn btn-sm btn-outline-secondary w-100" disabled>Coming soon</button>
+                  <% end %>
+                </div>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+    <p id="scorer-note" class="small text-muted mb-0">
+      <sup>(1)</sup> A case from a dataset needs a scorer compatible with the system of labels the dataset provides:
+      a scale that covers its rating values, ideally with the same label names. Use <strong>Create scorer</strong> to make one that matches.
+    </p>
+  </div>
+</div>
+
+<% @datasets.select(&:upload).each do |dataset| %>
+  <% modal_body = capture do %>
+    <%= form_with url: dataset_upload_path(dataset.key), method: :post, multipart: true, id: "upload-dataset-form-#{dataset.key}" do %>
+      <p>
+        Kaggle requires a login and acceptance of the competition rules before it lets anyone download this data,
+        so Quepid cannot fetch it for you. Download it yourself, then upload it here:
+      </p>
+      <ol>
+        <li>
+          Open the <%= link_to 'competition on Kaggle', dataset.upload::COMPETITION_URL, target: '_blank', rel: 'noopener noreferrer' %>
+          and sign in (or create a free account).
+        </li>
+        <li>Open the <strong>Rules</strong> tab, read the rules, and accept them.</li>
+        <li>Open the <strong>Data</strong> tab and click <strong>Download All</strong>: you get one zip.</li>
+        <li>Choose that zip below, as it is: no need to unzip it.</li>
+      </ol>
+      <%= label_tag "upload_file_#{dataset.key}", 'Zip from Kaggle', class: 'form-label' %>
+      <%= file_field_tag :file, id: "upload_file_#{dataset.key}", accept: '.zip,application/zip', required: true, class: 'form-control' %>
+      <div class="form-text">
+        Quepid keeps <%= safe_join(dataset.upload::FILES.values.map { |file, _| tag.code(file) }, ', ') %> from it on this
+        server only for the time of the import, and deletes them once they are imported<%= '. This upload replaces the files uploaded before' if dataset.upload.uploaded? %>.
+      </div>
+    <% end %>
+  <% end %>
+  <% modal_footer = capture do %>
+    <button type="submit" form="upload-dataset-form-<%= dataset.key %>" class="btn btn-primary">Upload</button>
+  <% end %>
+  <%= render 'shared/modal_shell', id: "uploadDataset-#{dataset.key}", title: "Upload #{dataset.name}", body: modal_body, footer: modal_footer %>
+<% end %>
+
+<% @datasets.select { |dataset| @templates_left.key?(dataset.key) && @templates_left[dataset.key].any? }.each do |dataset| %>
+  <% left = @templates_left[dataset.key] %>
+  <% modal_body = capture do %>
+    <%= form_with url: dataset_scorer_path(dataset.key), method: :post, id: "create-scorer-form-#{dataset.key}" do |form| %>
+      <p>
+        Makes a scorer for <strong><%= dataset.name %></strong> with exactly its labels
+        (<%= dataset.labels %>), as a copy of a communal scorer. Which one should it be based on?
+      </p>
+      <%= label_tag "template_id_#{dataset.key}", 'Based on', class: 'form-label' %>
+      <%= select_tag :template_id,
+                     options_for_select(left.map { |template| [ template.name, template.id ] },
+                                        (left.find { |template| DatasetScorer::DEFAULT_TEMPLATE == template.name } || left.first).id),
+                     id: "template_id_#{dataset.key}", class: 'form-select' %>
+      <div class="form-text">
+        It is named after the dataset and the scorer, like “<%= DatasetScorer.scorer_name(dataset, '<scorer>') %>”.
+        A scorer you already made from a template isn't listed.
+      </div>
+    <% end %>
+  <% end %>
+  <% modal_footer = capture do %>
+    <button type="submit" form="create-scorer-form-<%= dataset.key %>" class="btn btn-primary">Create scorer</button>
+  <% end %>
+  <%= render 'shared/modal_shell', id: "createScorer-#{dataset.key}", title: "Create a scorer for #{dataset.name}", body: modal_body, footer: modal_footer %>
+<% end %>

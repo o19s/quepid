@@ -13,14 +13,16 @@
     layouts/_header_navigation.html.erb's d-lg-none items. %>
 <div class="sidebar d-none d-lg-flex flex-column flex-shrink-0 bg-body-tertiary" style="width: 3.5rem;">
     <ul class="nav nav-pills flex-column mb-auto text-center">
+      <%# The pages of the Datasets section have "case" and "scorers" in their addresses, but they are not the Cases or Scorers pages. %>
+      <% in_datasets = request.path.include?('/dataset') %>
       <%= render "layouts/sidebar_item", url: root_path, label: "Dashboard", icon: "bi-speedometer2",
                  active: make_active?({controller: 'home'}) %>
       <%= render "layouts/sidebar_item", url: cases_path, label: "Relevancy Cases", icon: "bi-briefcase",
-                 active: make_active?({path: 'case'}), data: { turbo_prefetch: false } %>
+                 active: make_active?({path: 'case'}) && !in_datasets, data: { turbo_prefetch: false } %>
       <%= render "layouts/sidebar_item", url: books_path, label: "Judgements", icon: "bi-book",
                  icon_label: "Judgement Books", active: make_active?({path: 'book'}) %>
       <%= render "layouts/sidebar_item", url: scorers_path, label: "Scorers", icon: "bi-list-task",
-                 active: make_active?({path: 'scorers'}), data: { turbo_prefetch: false } %>
+                 active: make_active?({path: 'scorers'}) && !in_datasets, data: { turbo_prefetch: false } %>
       <%= render "layouts/sidebar_item", url: "#{root_path}notebooks/lab/index.html", label: "Notebooks",
                  icon: "bi-journal-medical", active: false, icon_active: make_active?({path: 'case'}),
                  link_class: "nav-link py-3 border-bottom rounded-0",
@@ -35,6 +37,8 @@
           <%= render 'embedders/icon', size: '1.5rem', style: "color: #{make_active?({path: 'embedder'}) ? 'white' : 'cornflowerblue'};" %>
         <% end %>
       </li>
+      <%= render "layouts/sidebar_item", url: datasets_path, label: "Datasets", tooltip: "Datasets β", icon: "bi-database",
+                 active: make_active?({path: 'dataset'}), data: { turbo_prefetch: false } %>
       <% unless desktop_mode? %>
         <%= render "layouts/sidebar_item", url: teams_path, label: "Teams", icon: "bi-people-fill",
                    active: make_active?({path: 'teams'}), data: { turbo_prefetch: false } %>

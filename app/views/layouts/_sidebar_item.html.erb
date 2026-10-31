@@ -1,8 +1,8 @@
-<%# locals: (url:, label:, icon:, active:, icon_label: label, icon_active: active, link_class: nil, target: nil, rel: nil, data: {}) %>
+<%# locals: (url:, label:, icon:, active:, icon_label: label, icon_active: active, link_class: nil, target: nil, rel: nil, data: {}, tooltip: label) %>
 <li>
   <%= link_to url, class: link_class || "nav-link #{active ? 'active' : ''} py-3 border-bottom rounded-0",
               target: target, rel: rel, aria: { label: label },
-              data: data.merge(controller: "bs-tooltip", "bs-tooltip-placement-value": "right", "bs-tooltip-title-value": label) do %>
+              data: data.merge(controller: "bs-tooltip", "bs-tooltip-placement-value": "right", "bs-tooltip-title-value": tooltip) do %>
     <i class="bi <%= icon %>"
        aria-hidden="true"
        title="<%= icon_label %>"

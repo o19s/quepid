@@ -708,35 +708,19 @@ class SampleData < Thor
   def haystack_party
     load_environment
 
-    contents = unzip_file_in_memory(Rails.root.join('db/sample_data/haystack_rating_party_case.json.zip'))
-    data = JSON.parse(contents)
-    case_params = data.to_h.deep_symbolize_keys
-
     realistic_activity_user = ::User.by_email('quepid+realisticActivity@o19s.com').first
+    dataset = ::HaystackDataset.new(realistic_activity_user, keep_raters: true)
 
     @case = ::Case.find_by(id: 6789)
     @case&.destroy
-
     @case = ::Case.new(id: 6789)
-    options = { force_create_users: true }
-    case_importer = ::CaseImporter.new @case, realistic_activity_user, case_params, options
-
-    case_importer.validate
-    case_importer.import
+    dataset.import_case(@case)
 
     print_step 'About to import book........'
-    contents = unzip_file_in_memory(Rails.root.join('db/sample_data/haystack_rating_party_book.json.zip'))
-    data = JSON.parse(contents)
-    book_params = data.to_h.deep_symbolize_keys
-
     @book = ::Book.find_by(id: 25)
     @book&.really_destroy
     @book = ::Book.new(id: 25)
-    options = { force_create_users: true }
-    book_importer = ::BookImporter.new @book, realistic_activity_user, book_params, options
-
-    book_importer.validate
-    book_importer.import
+    dataset.import_book(@book)
 
     osc = ::Team.find_by(name: 'OSC')
 

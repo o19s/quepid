@@ -1,0 +1,225 @@
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <h1><i class="bi bi-database" aria-hidden="true"></i> Datasets<%= render 'embedders/beta' %></h1>
+  <div class="btn-toolbar mb-2 mb-md-0">
+    <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#newDatasetCase">
+      <i class="bi bi-plus-lg" aria-hidden="true"></i> Create new
+    </button>
+  </div>
+</div>
+
+<%= render 'datasets/tabs' %>
+
+<%# While a case is still loading, look again every few seconds. %>
+<div class="card" <%= raw('data-controller="loading-refresh" data-action="turbo:visit@document->loading-refresh#stop turbo:submit-start@document->loading-refresh#stop"') if @links.any? { |link| link.in_progress? || link.indexing? } %>>
+  <div class="card-body">
+    <% if @links.any? %>
+      <div class="table-responsive">
+        <table class="table table-sm table-hover align-middle">
+          <thead>
+            <tr>
+              <th>Case</th>
+              <th>Dataset</th>
+              <th>Scorer</th>
+              <th>Indexed in</th>
+              <th>Queries<sup><a href="#queries-note" aria-label="Note 1: sampled cases">(1)</a></sup></th>
+              <th title="Distinct documents rated in the case or listed in its judgement book">Documents</th>
+              <th>Created</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @links.each do |link| %>
+              <% kase = link.case %>
+              <tr>
+                <td><%= link_to kase.case_name, case_core_path(kase) %></td>
+                <td><%= DatasetCatalog.find(link.dataset.key)&.name || link.dataset.key %></td>
+                <td>
+                  <% if kase.scorer %>
+                    <%= link_to kase.scorer.name, edit_scorer_path(kase.scorer) %>
+                  <% else %>
+                    <span class="text-muted">&mdash;</span>
+                  <% end %>
+                </td>
+                <td>
+                  <% endpoint = @endpoints[kase.id] %>
+                  <% if endpoint %>
+                    <%= link_to endpoint.fullname, search_endpoint_path(endpoint) %>
+                    <% if DatasetCatalog.find(link.dataset.key)&.preindexed_in?(endpoint) %>
+                      <div class="small text-muted">preindexed: the documents were already there</div>
+                    <% end %>
+                    <% if link.indexing? %>
+                      <div class="small">
+                        <span class="badge text-bg-secondary">
+                          <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+                          Indexing documents<%= " (#{number_with_delimiter(link.documents_indexed)} so far)" if link.documents_indexed.to_i.positive? %>
+                        </span>
+                      </div>
+                    <% elsif link.indexing_failed? %>
+                      <div class="small"><span class="badge text-bg-danger" title="<%= link.indexing_error %>">Indexing failed</span>
+                        <span class="text-muted"><%= link.indexing_error.to_s.truncate(80) %></span></div>
+                    <% elsif 'done' == link.indexing_status %>
+                      <div class="small text-muted"><%= number_with_delimiter(link.documents_indexed) %> documents indexed</div>
+                    <% end %>
+                    <%# The backend can be changed, except while documents are being sent to this one. %>
+                    <% unless link.in_progress? || link.indexing? %>
+                      <div>
+                        <button type="button" class="btn btn-link btn-sm p-0" data-bs-toggle="modal" data-bs-target="#initiateIndexing"
+                                data-url="<%= dataset_case_index_path(link) %>" data-case-name="<%= kase.case_name %>">Change backend</button>
+                      </div>
+                    <% end %>
+                  <% else %>
+                    <% if link.in_progress? %>
+                      <span title="Still loading: try again when that has finished">
+                        <button type="button" class="btn btn-link btn-sm p-0 text-muted" disabled>Initiate indexing</button>
+                      </span>
+                    <% else %>
+                      <button type="button" class="btn btn-link btn-sm p-0" data-bs-toggle="modal" data-bs-target="#initiateIndexing"
+                              data-url="<%= dataset_case_index_path(link) %>" data-case-name="<%= kase.case_name %>">Initiate indexing</button>
+                    <% end %>
+                  <% end %>
+                </td>
+                <td>
+                  <% if link.failed? %>
+                    <span class="badge text-bg-danger" title="<%= link.error %>">Failed</span>
+                    <span class="small text-muted"><%= link.error.to_s.truncate(80) %></span>
+                  <% elsif link.in_progress? %>
+                    <% total_queries = link.sample_size || DatasetCatalog.find(link.dataset.key)&.query_total %>
+                    <span class="badge text-bg-secondary">
+                      <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+                      Loading in the background<%= " (#{number_with_delimiter(@query_counts.fetch(kase.id, 0))}#{" / #{number_with_delimiter(total_queries)}" if total_queries} queries so far)" if @query_counts.fetch(kase.id, 0).positive? %>
+                    </span>
+                  <% else %>
+                    <%# A sample shows how much of the dataset it is: "10 / 137". %>
+                    <% total = DatasetCatalog.find(link.dataset.key)&.query_total %>
+                    <%= link.sample_size && total ? "#{@query_counts.fetch(kase.id, 0)} / #{total}" : @query_counts.fetch(kase.id, 0) %>
+                  <% end %>
+                </td>
+                <td>
+                  <% if link.in_progress? || link.failed? %>
+                    <span class="text-muted">&mdash;</span>
+                  <% else %>
+                    <%= @document_counts.fetch(kase.id, 0) %>
+                  <% end %>
+                </td>
+                <td><%= l link.created_at.to_date, format: :long %></td>
+                <td class="text-end text-nowrap">
+                  <% if link.in_progress? %>
+                    <span title="Still loading: uninstall it when that has finished">
+                      <button type="button" class="btn btn-sm btn-outline-secondary" disabled>Uninstall</button>
+                    </span>
+                  <% else %>
+                    <%= button_to 'Uninstall', dataset_case_path(link), method: :delete, class: 'btn btn-sm btn-outline-danger',
+                                  form: { data: { turbo_confirm: "Uninstall #{kase.case_name}? This deletes the case with its queries and ratings. " \
+                                                                 'The judgement book and scorers made for the dataset are kept.' } } %>
+                  <% end %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+      <p id="queries-note" class="small text-muted mb-0">
+        <sup>(1)</sup> For a case made from a sample of a dataset, the number of queries it has is shown over how many the
+        dataset has, like <strong>4 / 10</strong>. A case made from the whole dataset shows just its number of queries.
+      </p>
+    <% else %>
+      <p class="text-muted mb-0">
+        You haven't made a case from a dataset yet. Use <strong>Create new</strong> to pick a dataset and make one.
+      </p>
+    <% end %>
+  </div>
+</div>
+
+<% selected = @open_dataset || @datasets.first %>
+<% modal_body = capture do %>
+  <%= form_with url: dataset_cases_path, method: :post, id: 'new-dataset-case-form',
+                data: { controller: 'dataset-case-form', dataset_case_form_open_value: @open_dataset.present? } do |form| %>
+    <div class="mb-3">
+      <%= form.label :dataset, 'Dataset', for: 'dataset_case_dataset', class: 'form-label' %>
+      <select name="dataset" id="dataset_case_dataset" class="form-select"
+              data-dataset-case-form-target="dataset" data-action="dataset-case-form#change">
+        <% @datasets.each do |dataset| %>
+          <option value="<%= dataset.key %>" data-default-name="<%= dataset.default_case_name %>" <%= 'selected' if dataset == selected %>>
+            <%= dataset.name %>
+          </option>
+        <% end %>
+      </select>
+    </div>
+    <div class="mb-3">
+      <%= form.label :case_name, 'Case name', for: 'dataset_case_name', class: 'form-label' %>
+      <%= form.text_field :case_name, value: selected.default_case_name, id: 'dataset_case_name', class: 'form-control',
+                          required: true, data: { dataset_case_form_target: 'name' } %>
+    </div>
+    <%# One scorer list per dataset, since which scorers fit depends on its labels; only the picked dataset's is shown and sent. %>
+    <% @datasets.each do |dataset| %>
+      <% shown = dataset == selected %>
+      <div class="mb-0" data-dataset-case-form-target="scorerGroup" data-dataset-key="<%= dataset.key %>" <%= 'hidden' unless shown %>>
+        <%# The dataset's own scorers (named after it) first, then the rest; each group in name order. %>
+        <% own, others = @scorers.partition { |scorer| scorer.name.to_s.start_with?(dataset.name) } %>
+        <% as_option = ->(scorer) do
+             fits = dataset.accepts?(scorer)
+             [ fits ? scorer.name : "#{scorer.name} (scale #{Array(scorer.scale).join(', ')}, doesn't fit)", scorer.id, { disabled: !fits } ]
+           end %>
+        <% custom = @dataset_scorers[dataset.key] %>
+        <% own_options = own.map(&as_option) %>
+        <% own_options.unshift([ "Create the scorer #{DatasetScorer.scorer_name(dataset)} (#{dataset.labels})", 'new' ]) if dataset.needs_new_scorer?(custom) %>
+        <% selected_scorer = dataset.preselected_scorer(@scorers, @default_scorer, custom) %>
+        <%= label_tag "scorer_id_#{dataset.key}", 'Scorer', class: 'form-label' %>
+        <% scorer_choices = if own_options.any?
+                              grouped_options_for_select([ [ "Scorers for #{dataset.name}", own_options ], [ 'Other scorers', others.map(&as_option) ] ], selected_scorer)
+                            else
+                              options_for_select(others.map(&as_option), selected_scorer)
+                            end %>
+        <%= select_tag :scorer_id, scorer_choices, id: "scorer_id_#{dataset.key}", class: 'form-select', disabled: !shown %>
+        <% if dataset.scale.present? %>
+          <div class="form-text">This dataset's ratings are <%= dataset.scale.join(', ') %>, so scorers with a narrower scale are disabled.</div>
+        <% end %>
+        <% if dataset.sampleable? %>
+          <div class="mt-3">
+            <%= label_tag "sample_size_#{dataset.key}", 'Sample size', class: 'form-label' %>
+            <%= number_field_tag :sample_size, nil, id: "sample_size_#{dataset.key}", class: 'form-control', min: 1, max: dataset.query_total,
+                                 step: 1, placeholder: "All #{dataset.query_total} queries", disabled: !shown %>
+            <div class="form-text">Load only this many queries, picked at random, with their ratings. Leave empty to load all <%= dataset.query_total %>.</div>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+  <% end %>
+<% end %>
+<% modal_footer = capture do %>
+  <button type="submit" form="new-dataset-case-form" class="btn btn-primary">Create case</button>
+<% end %>
+<%= render 'shared/modal_shell', id: 'newDatasetCase', title: 'Create a case from a dataset', body: modal_body, footer: modal_footer %>
+
+<%# One dialog for every Initiate indexing and Change backend button: the button that opened it says which case it is for. %>
+<% if @links.any? { |link| !link.in_progress? } %>
+  <% modal_body = capture do %>
+    <% if @search_endpoints.any? %>
+      <%# The action is set by script to the case's own, and it only looks: a GET, so there is no token to go stale. %>
+      <%= form_with url: '#', method: :get, id: 'initiate-indexing-form', data: { initiate_indexing_target: 'form' } do %>
+        <p>
+          Choose the search endpoint <strong data-initiate-indexing-target="caseName">this case</strong> should use. You will see the
+          index definition Quepid would make there, and decide whether to create it. Nothing is sent until you do.
+          On the next step you can use exactly this endpoint (and so its index), or create a new index on the same service, with a
+          new search endpoint that reuses all of this one's connection details.
+        </p>
+        <%= label_tag 'search_endpoint_id', 'Search endpoint', class: 'form-label' %>
+        <%= select_tag :search_endpoint_id, options_for_select(@search_endpoints.map { |endpoint| [ endpoint.fullname, endpoint.id ] }),
+                       id: 'search_endpoint_id', class: 'form-select' %>
+        <div class="form-text">
+          Not in the list? <%= link_to 'Create a new search endpoint', new_search_endpoint_path, target: '_blank', rel: 'noopener noreferrer' %>
+          (it opens in a new tab), then reload this page.
+        </div>
+      <% end %>
+    <% else %>
+      <p class="mb-0">You have no search endpoints yet. <%= link_to 'Create one', new_search_endpoint_path %> first, then come back.</p>
+    <% end %>
+  <% end %>
+  <% modal_footer = capture do %>
+    <% if @search_endpoints.any? %>
+      <button type="submit" form="initiate-indexing-form" class="btn btn-primary">Review index definition</button>
+    <% end %>
+  <% end %>
+  <%= render 'shared/modal_shell', id: 'initiateIndexing', title: 'Initiate indexing', body: modal_body, footer: modal_footer,
+                                   data: { controller: 'initiate-indexing', action: 'show.bs.modal->initiate-indexing#fill' } %>
+<% end %>

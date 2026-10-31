@@ -1,0 +1,54 @@
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <h1><i class="bi bi-database" aria-hidden="true"></i> Datasets<%= render 'embedders/beta' %></h1>
+</div>
+
+<%= render 'datasets/tabs' %>
+
+<div class="alert alert-info" role="alert">
+  <i class="bi bi-info-circle-fill" aria-hidden="true"></i>
+  A case from a dataset needs a scorer compatible with the system of labels the dataset provides: a scale that covers its
+  rating values, ideally with the same label names. Use <%= link_to 'Create scorer', datasets_path, class: 'alert-link fw-bold' %>
+  to make one that matches.
+</div>
+
+<div class="card">
+  <div class="card-body">
+    <% if @rows.any? %>
+      <div class="table-responsive">
+        <table class="table table-sm table-hover align-middle">
+          <thead>
+            <tr>
+              <th>Scorer</th>
+              <th>Dataset</th>
+              <th>Based on</th>
+              <th>Labels</th>
+              <th>Cases using it</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @rows.each do |row| %>
+              <tr>
+                <td class="align-top"><%= link_to row.scorer.name, edit_scorer_path(row.scorer) %></td>
+                <td class="align-top"><%= row.dataset.name %></td>
+                <td class="align-top"><%= row.based_on %></td>
+                <td class="align-top"><%= row.dataset.labels %></td>
+                <td class="align-top">
+                  <% if row.cases.any? %>
+                    <%= safe_join(row.cases.map { |kase| link_to(kase.case_name, case_core_path(kase)) }, ', ') %>
+                  <% else %>
+                    <span class="text-muted">-</span>
+                  <% end %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <p class="text-muted mb-0">
+        There are no scorers made for a dataset yet. Use <strong>Create scorer</strong> on the
+        <%= link_to 'Datasets', datasets_path %> tab to make one that matches a dataset's labels.
+      </p>
+    <% end %>
+  </div>
+</div>
