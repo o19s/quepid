@@ -109,6 +109,8 @@ Rails.application.routes.draw do
 
   resources :datasets, only: [ :index ] do
     resource :scorer, only: :create, module: :datasets
+    # The files of a dataset Quepid cannot download itself (Kaggle's), uploaded by the user.
+    resource :upload, only: :create, module: :datasets
   end
   resources :dataset_cases, only: [ :index, :create, :destroy ] do
     resource :search_endpoint, only: :update, module: :dataset_cases

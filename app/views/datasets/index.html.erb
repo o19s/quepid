@@ -67,6 +67,13 @@
                     <% else %>
                       <%= link_to 'Load to case', dataset_cases_path(dataset: dataset.key), class: 'btn btn-sm btn-primary' %>
                     <% end %>
+                  <% elsif dataset.upload %>
+                    <%# Kaggle only gives the files to someone signed in who accepted the rules: the user fetches and uploads them. %>
+                    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
+                            data-bs-target="#uploadDataset-<%= dataset.key %>">Upload data</button>
+                    <% if dataset.upload.uploaded? %>
+                      <span class="small text-success text-wrap"><i class="bi bi-check-circle-fill" aria-hidden="true"></i> Files uploaded</span>
+                    <% end %>
                   <% else %>
                     <button type="button" class="btn btn-sm btn-outline-secondary w-100" disabled>Coming soon</button>
                   <% end %>
@@ -83,6 +90,36 @@
     </p>
   </div>
 </div>
+
+<% @datasets.select(&:upload).each do |dataset| %>
+  <% modal_body = capture do %>
+    <%= form_with url: dataset_upload_path(dataset.key), method: :post, multipart: true, id: "upload-dataset-form-#{dataset.key}" do %>
+      <p>
+        Kaggle requires a login and acceptance of the competition rules before it lets anyone download this data,
+        so Quepid cannot fetch it for you. Download it yourself, then upload it here:
+      </p>
+      <ol>
+        <li>
+          Open the <%= link_to 'competition on Kaggle', dataset.upload::COMPETITION_URL, target: '_blank', rel: 'noopener noreferrer' %>
+          and sign in (or create a free account).
+        </li>
+        <li>Open the <strong>Rules</strong> tab, read the rules, and accept them.</li>
+        <li>Open the <strong>Data</strong> tab and click <strong>Download All</strong>: you get one zip.</li>
+        <li>Choose that zip below, as it is: no need to unzip it.</li>
+      </ol>
+      <%= label_tag "upload_file_#{dataset.key}", 'Zip from Kaggle', class: 'form-label' %>
+      <%= file_field_tag :file, id: "upload_file_#{dataset.key}", accept: '.zip,application/zip', required: true, class: 'form-control' %>
+      <div class="form-text">
+        Quepid keeps <%= safe_join(dataset.upload::FILES.values.map { |file, _| tag.code(file) }, ', ') %> from it on this
+        server only for the time of the import, and deletes them once they are imported<%= '. This upload replaces the files uploaded before' if dataset.upload.uploaded? %>.
+      </div>
+    <% end %>
+  <% end %>
+  <% modal_footer = capture do %>
+    <button type="submit" form="upload-dataset-form-<%= dataset.key %>" class="btn btn-primary">Upload</button>
+  <% end %>
+  <%= render 'shared/modal_shell', id: "uploadDataset-#{dataset.key}", title: "Upload #{dataset.name}", body: modal_body, footer: modal_footer %>
+<% end %>
 
 <% @datasets.select { |dataset| @templates_left.key?(dataset.key) && @templates_left[dataset.key].any? }.each do |dataset| %>
   <% left = @templates_left[dataset.key] %>

@@ -3,7 +3,10 @@
 module DatasetCatalog
   # One example dataset. The Dataset model holds what a user has made from one.
   Entry = Struct.new(:key, :name, :description, :queries, :documents, :judgements, :labels, :url, :available, :loader,
-                     :default_case_name, :scale_labels, :query_total, :mapper, :documents_from, :document_total, :preindexed_url, keyword_init: true) do
+                     :default_case_name, :scale_labels, :query_total, :mapper, :documents_from, :document_total, :preindexed_url, :upload,
+                     keyword_init: true) do
+    # upload: for a dataset the user has to fetch themselves (Kaggle's, behind a login and rules), what keeps the files
+    # they upload (HomeDepotData).
     # Is the dataset already indexed in this endpoint, by someone else? Haystack's is, in the Chorus Solr its export names,
     # so there is no index to propose or create there.
     def preindexed_in? endpoint

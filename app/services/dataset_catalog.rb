@@ -61,7 +61,8 @@ module DatasetCatalog
       judgements:  'Human-rated relevance scores',
       labels:      '1 to 3, averaged over raters (decimals like 2.33)',
       url:         'https://www.kaggle.com/competitions/home-depot-product-search-relevance/data',
-      available:   false
+      available:   false,
+      upload:      HomeDepotData
     ),
     Entry.new(
       key:               'imdb',

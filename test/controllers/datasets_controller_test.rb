@@ -17,7 +17,7 @@ class DatasetsControllerTest < ActionDispatch::IntegrationTest
 
     assert_equal [ 'Haystack Rating Party', 'WANDS' ], names.first(2)
     assert_equal [ 'ESCI', 'Home Depot Product Search Relevance', 'IMDb Non-Commercial Datasets' ], names.last(3)
-    assert_select 'button[disabled]', text: 'Coming soon', count: 3
+    assert_select 'button[disabled]', text: 'Coming soon', count: 2
   end
 
   test 'index describes each dataset by its queries, documents, judgements and labels, and nothing else' do
@@ -238,5 +238,79 @@ class DatasetsControllerTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to datasets_url
     assert_match(/no labels/, flash[:alert])
+  end
+
+  # Home Depot's files come from Kaggle, which wants a login and the rules accepted: the user uploads them.
+  def with_home_depot_directory
+    directory = Pathname.new(Dir.mktmpdir('home_depot'))
+    HomeDepotData.directory = directory
+    yield directory
+  ensure
+    HomeDepotData.directory = nil
+    FileUtils.rm_rf(directory) if directory
+  end
+
+  def home_depot_zip
+    inner = HomeDepotDataTest::FILES.to_h do |file, content|
+      buffer = Zip::OutputStream.write_buffer { |zip| zip.put_next_entry(file) && zip.write(content) }
+      [ "#{file}.zip", buffer.string ]
+    end
+    file = Tempfile.new([ 'home-depot', '.zip' ])
+    Zip::OutputStream.open(file.path) { |zip| inner.each { |name, bytes| zip.put_next_entry(name) && zip.write(bytes) } }
+    Rack::Test::UploadedFile.new(file.path, 'application/zip')
+  end
+
+  test 'Home Depot offers an upload, explaining that Kaggle wants a login and the rules accepted, and how to get the zip' do
+    with_home_depot_directory do
+      get datasets_url
+
+      row = css_select('tbody tr').find { |tr| 'Home Depot Product Search Relevance' == tr.at_css('td a').text }
+
+      assert_equal([ 'Upload data' ], row.css('button').map { |button| button.text.strip })
+      assert_equal '#uploadDataset-home_depot', row.at_css('button')['data-bs-target']
+      assert_select '#uploadDataset-home_depot' do
+        assert_select '.modal-body p', text: /Kaggle requires a login and acceptance of the competition rules/
+        assert_select '.modal-body ol li', count: 4
+        assert_select '.modal-body ol li a[href=?][target=_blank]', HomeDepotData::COMPETITION_URL
+        assert_select '.modal-body ol li', text: /Rules.*accept/
+        assert_select '.modal-body ol li', text: /Download All/
+        assert_select 'form[action=?][enctype="multipart/form-data"] input[type=file][name=file][required]', dataset_upload_path('home_depot')
+        assert_select '.modal-footer button[type=submit][form=upload-dataset-form-home_depot]', text: 'Upload'
+        assert_select '.form-text', text: /only for the time of the import, and deletes them once they are imported/
+      end
+      assert_select 'span', text: /Files uploaded/, count: 0
+    end
+  end
+
+  test 'upload keeps the Home Depot files, and the page then says they are there' do
+    with_home_depot_directory do |directory|
+      post dataset_upload_url('home_depot'), params: { file: home_depot_zip }
+
+      assert_redirected_to datasets_url
+      assert_equal 'Uploaded the Home Depot Product Search Relevance files.', flash[:notice]
+      assert_predicate directory.join('train.csv'), :exist?
+
+      get datasets_url
+
+      assert_select 'span.text-success', text: /Files uploaded/
+      assert_select '#uploadDataset-home_depot .form-text', text: /This upload replaces the files uploaded before/
+    end
+  end
+
+  test 'upload says why it refuses a file, and needs one, and a dataset that takes uploads' do
+    with_home_depot_directory do
+      post dataset_upload_url('home_depot'), params: { file: Rack::Test::UploadedFile.new(StringIO.new('not a zip'), 'application/zip', original_filename: 'x.zip') }
+
+      assert_match(/Could not use that upload: Quepid could not read that file as a zip/, flash[:alert])
+
+      post dataset_upload_url('home_depot')
+
+      assert_match(/Choose the zip of Home Depot Product Search Relevance to upload/, flash[:alert])
+
+      post dataset_upload_url('wands'), params: { file: home_depot_zip }
+
+      assert_match(/That dataset is not uploaded/, flash[:alert])
+      assert_not HomeDepotData.uploaded?
+    end
   end
 end
