@@ -84,7 +84,8 @@ class DatasetCasesControllerTest < ActionDispatch::IntegrationTest
     assert_match(/Indexing documents \(1,200 so far\)/, rows['Going'].css('td')[3].text)
     assert_match(/1,558 documents indexed/, rows['Done'].css('td')[3].text)
     assert_select 'span.badge[title=?]', 'No can do', text: 'Indexing failed'
-    assert_select '[data-controller=loading-refresh]', count: 1
+    assert_select '[data-controller=loading-refresh][data-action=?]',
+                  'turbo:visit@document->loading-refresh#stop turbo:submit-start@document->loading-refresh#stop', count: 1
   end
 
   test 'index does not refresh itself once the indexing is over' do

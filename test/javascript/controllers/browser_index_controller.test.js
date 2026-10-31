@@ -266,6 +266,41 @@ it("shows why it stopped and gives the button back when the service refuses the 
   expect(button.disabled).toBe(false)
 })
 
+it("stops loading when Turbo takes the user to another page, says so, and does not bring them back", async () => {
+  const { controller } = submitFixture()
+  postJson.mockResolvedValue({ redirect: "/dataset_cases", load: true, total: 4 })
+  let bulks = 0
+  globalThis.fetch = vi.fn(async (url) => {
+    if ("/stream" === url)
+      return {
+        ok: true,
+        body: ndjson(['{"id":"1"}', '{"id":"2"}', '{"id":"3"}', '{"id":"4"}'])
+      }
+    if (String(url).endsWith("/_bulk")) {
+      bulks += 1
+      controller.disconnect()
+      return {
+        ok: true,
+        json: async () => ({ items: [{ index: { status: 201 } }, { index: { status: 201 } }] })
+      }
+    }
+    return { ok: true }
+  })
+  window.Turbo = { visit: vi.fn() }
+  await controller.submit({ preventDefault: vi.fn() })
+  expect(bulks).toBe(1)
+  expect(window.Turbo.visit).not.toHaveBeenCalled()
+  expect(patchJson).toHaveBeenLastCalledWith(
+    "/progress",
+    expect.objectContaining({
+      status: "failed",
+      documents_indexed: 2,
+      error: "The browser page was left before the loading finished."
+    })
+  )
+  delete window.Turbo
+})
+
 it("tells Quepid the loading failed when the page is closed in the middle of it", () => {
   const { controller } = build()
   controller.running = true

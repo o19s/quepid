@@ -10,7 +10,7 @@
 <%= render 'datasets/tabs' %>
 
 <%# While a case is still loading, look again every few seconds. %>
-<div class="card" <%= raw('data-controller="loading-refresh"') if @links.any? { |link| link.in_progress? || link.indexing? } %>>
+<div class="card" <%= raw('data-controller="loading-refresh" data-action="turbo:visit@document->loading-refresh#stop turbo:submit-start@document->loading-refresh#stop"') if @links.any? { |link| link.in_progress? || link.indexing? } %>>
   <div class="card-body">
     <% if @links.any? %>
       <div class="table-responsive">

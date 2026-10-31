@@ -31,6 +31,7 @@ export default class extends Controller {
     const form = Object.fromEntries(new FormData(this.element))
     form.index_name = form.index_name.trim()
     this.running = true
+    this.left = false
     this.lock(true)
     this.say("Creating the index…", "text-muted")
     try {
@@ -42,6 +43,7 @@ export default class extends Controller {
       })
       if (load) await this.load(total, { name: form.index_name, path: this.servicePath(form) })
       this.running = false
+      if (this.left) return
       window.Turbo ? window.Turbo.visit(redirect) : (window.location = redirect)
     } catch (error) {
       const message = serverMessage(error, "Quepid could not set the case up.")
@@ -50,6 +52,12 @@ export default class extends Controller {
       if (this.loading) await this.report("failed", this.sent, message)
       this.running = false
     }
+  }
+
+  // Leaving the page through Turbo replaces it without a pagehide, and the loading would go on unseen, then take the user
+  // back to Dataset Cases when it ended: it stops at the next batch instead, and says so (submit's catch).
+  disconnect() {
+    if (this.running) this.left = true
   }
 
   // Closing the page stops the loading: say so, so that the table does not claim it is still going.
@@ -123,6 +131,7 @@ export default class extends Controller {
   // and the endpoint address that searches it (servicePath).
   async load(total, target) {
     this.loading = true
+    this.stopIfLeft()
     this.sent = 0
     this.failed = 0
     this.firstError = null
@@ -166,6 +175,7 @@ export default class extends Controller {
   }
 
   async sendBatch(batch, { name, path }) {
+    this.stopIfLeft()
     const { origin, engine, headers } = this.probeValue
     let response
     try {
@@ -244,6 +254,10 @@ export default class extends Controller {
       named ? /\/[^/]+\/(select|query)$/ : /\/(select|query)$/,
       `/${encodeURIComponent(name)}/$1`
     )
+  }
+
+  stopIfLeft() {
+    if (this.left) throw new Error("The browser page was left before the loading finished.")
   }
 
   async report(status, indexed, error = "") {

@@ -35,6 +35,13 @@ it("leaves the page alone while a dialog is open", () => {
   expect(window.Turbo.visit).not.toHaveBeenCalled()
 })
 
+it("stops reloading once the user sets off somewhere, so as not to cancel that", () => {
+  const controller = connected()
+  controller.stop()
+  vi.advanceTimersByTime(20000)
+  expect(window.Turbo.visit).not.toHaveBeenCalled()
+})
+
 it("stops reloading when it disconnects", () => {
   const controller = connected()
   controller.disconnect()
