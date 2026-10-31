@@ -51,6 +51,10 @@
         <%= link_to new_ai_judge_path(team_id: @team.id), class: 'btn btn-primary btn-sm w-100' do %>
           <i class="bi bi-robot"></i> Create AI Judge
         <% end %>
+        <%# The new embedder starts out shared with this team (EmbeddersController#new). %>
+        <%= link_to new_embedder_path(team_id: @team.id), class: 'btn btn-primary btn-sm w-100 mt-2' do %>
+          <%= render 'embedders/icon' %> Create Embedder
+        <% end %>
       </div>
     </div>
 
