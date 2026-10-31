@@ -41,7 +41,8 @@ class HttpClientService
   end
 
   # Perform a GET request
-  # @param path [String] Send to this path of the same host instead of the URL's own
+  # @param path [String] Send to this path of the same host instead of the URL's own; the URL's query parameters
+  #   belong to its own path (a search's size or defType), so they are not sent there
   # @param params [Hash] Additional query parameters
   # @param body [String] Optional request body
   # @return [Faraday::Response]
@@ -49,7 +50,7 @@ class HttpClientService
     connection.get do |req|
       req.path = path || @uri.path.presence || '/'
       apply_timeouts(req)
-      apply_url_query_params(req)
+      apply_url_query_params(req) unless path
       params.each { |key, value| req.params[key] = value }
       req.body = body if body.present?
     end
@@ -58,13 +59,13 @@ class HttpClientService
   # Perform a POST request
   # @param params [Hash] Additional query parameters
   # @param body [String] Request body
-  # @param path [String] Send to this path of the same host instead of the URL's own
+  # @param path [String] Send to this path of the same host instead of the URL's own, without the URL's query parameters
   # @return [Faraday::Response]
   def post params: {}, body: nil, path: nil
     connection.post do |req|
       req.path = path || @uri.path.presence || '/'
       apply_timeouts(req)
-      apply_url_query_params(req)
+      apply_url_query_params(req) unless path
       params.each { |key, value| req.params[key] = value }
       req.body = body if body.present?
     end
