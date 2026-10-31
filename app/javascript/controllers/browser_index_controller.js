@@ -5,11 +5,13 @@ import { serviceFetch } from "api/service_fetch"
 import { confirmDialog } from "utils/confirm_dialog"
 import { serverMessage } from "utils/error_message"
 
-// Creates the index and loads the documents from the browser, for a search endpoint that only the browser can reach
-// (not proxied by Quepid, maybe on localhost): the same way the case's own searches reach it. Quepid keeps the case,
-// the new search endpoint and the progress; this sends the definition and the documents to the service, once Quepid
-// has checked the definition as it would its own (validationUrl).
-// Without a probe (the endpoint is proxied) the form is submitted to Quepid as usual, and Quepid does it all.
+/**
+ * Creates the index and loads the documents from the browser, for a search endpoint that only the browser can reach
+ * (not proxied by Quepid, maybe on localhost): the same way the case's own searches reach it. Quepid keeps the case,
+ * the new search endpoint and the progress; this sends the definition and the documents to the service, once Quepid
+ * has checked the definition as it would its own (validationUrl).
+ * Without a probe (the endpoint is proxied) the form is submitted to Quepid as usual, and Quepid does it all.
+ */
 export default class extends Controller {
   static targets = ["progress", "message", "bar"]
   static values = {
@@ -22,6 +24,10 @@ export default class extends Controller {
     batchSize: { type: Number, default: 500 }
   }
 
+  /**
+   * Where the browser has to reach the service itself (a probe), has Quepid check the definition, creates the index,
+   * has Quepid set the case up and loads the documents; otherwise leaves the form to Quepid.
+   */
   async submit(event) {
     if (!this.hasProbeValue || !this.probeValue.origin) return
     event.preventDefault()
@@ -54,13 +60,17 @@ export default class extends Controller {
     }
   }
 
-  // Leaving the page through Turbo replaces it without a pagehide, and the loading would go on unseen, then take the user
-  // back to Dataset Cases when it ended: it stops at the next batch instead, and says so (submit's catch).
+  /**
+   * Leaving the page through Turbo replaces it without a pagehide, and the loading would go on unseen, then take the user
+   * back to Dataset Cases when it ended: it stops at the next batch instead, and says so (submit's catch).
+   */
   disconnect() {
     if (this.running) this.left = true
   }
 
-  // Closing the page stops the loading: say so, so that the table does not claim it is still going.
+  /**
+   * Closing the page stops the loading: say so, so that the table does not claim it is still going.
+   */
   interrupted() {
     if (!this.running || !this.loading) return
     const data = new FormData()
@@ -73,6 +83,11 @@ export default class extends Controller {
     navigator.sendBeacon(this.progressUrlValue, data)
   }
 
+  /**
+   * Sends the definition to the service: Solr's schema, a Qdrant collection and its payload indexes, or an
+   * Elasticsearch or OpenSearch index.
+   * @param {{index_name: string, definition: string, new_endpoint?: string}} form what the user agreed to
+   */
   async createIndex(form) {
     const { index_name: name, definition: body } = form
     const { origin, engine, headers } = this.probeValue
@@ -127,8 +142,10 @@ export default class extends Controller {
     }
   }
 
-  // Reads the documents from Quepid, a line each, and sends them to the service in batches. target is the index's name
-  // and the endpoint address that searches it (servicePath).
+  /**
+   * Reads the documents from Quepid, a line each, and sends them to the service in batches. target is the index's name
+   * and the endpoint address that searches it (servicePath).
+   */
   async load(total, target) {
     this.loading = true
     this.stopIfLeft()
@@ -174,6 +191,9 @@ export default class extends Controller {
     this.loading = false
   }
 
+  /**
+   * Sends one batch of documents, to Solr's update handler or to the bulk API, and counts what was taken and refused.
+   */
   async sendBatch(batch, { name, path }) {
     this.stopIfLeft()
     const { origin, engine, headers } = this.probeValue
@@ -228,6 +248,9 @@ export default class extends Controller {
     await this.report("indexing", this.sent)
   }
 
+  /**
+   * Makes the documents searchable at once (Elasticsearch, OpenSearch); Solr commits with each batch.
+   */
   async refresh(name) {
     const { origin, engine, headers } = this.probeValue
     if ("solr" === engine) return
@@ -242,9 +265,11 @@ export default class extends Controller {
     }
   }
 
-  // The endpoint's address, pointed at the new collection when one is chosen, as Quepid's copy of the endpoint will be
-  // (DatasetIndex::Solr.url_with_index): /solr/shop/select with "wands" is /solr/wands/select. Only Solr's writes go
-  // through the address; the other engines name the index in the request.
+  /**
+   * The endpoint's address, pointed at the new collection when one is chosen, as Quepid's copy of the endpoint will be
+   * (DatasetIndex::Solr.url_with_index): /solr/shop/select with "wands" is /solr/wands/select. Only Solr's writes go
+   * through the address; the other engines name the index in the request.
+   */
   servicePath({ index_name: name, new_endpoint: copied }) {
     const { engine, path } = this.probeValue
     if ("solr" !== engine || "true" !== copied) return path
@@ -256,10 +281,16 @@ export default class extends Controller {
     )
   }
 
+  /**
+   * Throws once the user has left the page, so that the loading stops there.
+   */
   stopIfLeft() {
     if (this.left) throw new Error("The browser page was left before the loading finished.")
   }
 
+  /**
+   * Tells Quepid how far the loading has got.
+   */
   async report(status, indexed, error = "") {
     try {
       await patchJson(this.progressUrlValue, {
@@ -273,6 +304,9 @@ export default class extends Controller {
     }
   }
 
+  /**
+   * Shows how far the loading has got.
+   */
   progress() {
     const percent = this.total ? Math.min(100, Math.round((this.sent / this.total) * 100)) : 0
     if (this.hasBarTarget) this.barTarget.style.width = `${percent}%`
@@ -282,6 +316,9 @@ export default class extends Controller {
     )
   }
 
+  /**
+   * Shows a message under the button, in a text style.
+   */
   say(message, style) {
     if (this.hasProgressTarget) this.progressTarget.hidden = false
     if (!this.hasMessageTarget) return
@@ -289,7 +326,9 @@ export default class extends Controller {
     this.messageTarget.className = style
   }
 
-  // Nothing in the form can change while the index is made and loaded; unlocking gives back only what locking took.
+  /**
+   * Nothing in the form can change while the index is made and loaded; unlocking gives back only what locking took.
+   */
   lock(locked) {
     if (locked) {
       this.locked = [...this.element.elements].filter((control) => !control.disabled)
@@ -300,6 +339,9 @@ export default class extends Controller {
     }
   }
 
+  /**
+   * The page's CSRF token, for the beacon.
+   */
   get token() {
     return document.querySelector("meta[name=csrf-token]")?.content
   }

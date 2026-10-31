@@ -2,8 +2,10 @@ import { Controller } from "@hotwired/stimulus"
 import { getJson } from "api/json"
 import { serviceFetch } from "api/service_fetch"
 
-// A box for editing a JSON definition: says whether it is valid as it is typed, keeps the Create button off
-// until it is, can tidy it up, and can put the proposed definition back.
+/**
+ * A box for editing a JSON definition: says whether it is valid as it is typed, keeps the Create button off
+ * until it is, can tidy it up, and can put the proposed definition back.
+ */
 export default class extends Controller {
   static targets = ["input", "name", "status", "submit", "availability", "availabilityButton"]
   static values = {
@@ -14,10 +16,16 @@ export default class extends Controller {
     probe: Object
   }
 
+  /**
+   * Says at once whether the proposed definition is valid.
+   */
   connect() {
     this.check()
   }
 
+  /**
+   * Says whether the text is a JSON object, and turns the Create button on or off with it.
+   */
   check() {
     try {
       const parsed = JSON.parse(this.inputTarget.value)
@@ -30,6 +38,9 @@ export default class extends Controller {
     }
   }
 
+  /**
+   * Lays the JSON out tidily, when it parses.
+   */
   format() {
     try {
       this.inputTarget.value = JSON.stringify(JSON.parse(this.inputTarget.value), null, 2)
@@ -39,13 +50,18 @@ export default class extends Controller {
     this.check()
   }
 
+  /**
+   * Puts the proposed definition and index name back.
+   */
   reset() {
     this.inputTarget.value = this.originalValue
     if (this.hasNameTarget) this.nameTarget.value = this.originalNameValue
     this.check()
   }
 
-  // The index to use: the endpoint's own keeps its name, a new one is named by the user.
+  /**
+   * The index to use: the endpoint's own keeps its name, a new one is named by the user.
+   */
   choose(event) {
     if (!this.hasNameTarget) return
     const isNew = "true" === event.target.value
@@ -62,8 +78,10 @@ export default class extends Controller {
     }
   }
 
-  // Asks whether an index of this name is already on the endpoint's service: from the browser, as the case's searches
-  // go, when the endpoint is not proxied (the Quepid server may not reach it, like a localhost one), else via the server.
+  /**
+   * Asks whether an index of this name is already on the endpoint's service: from the browser, as the case's searches
+   * go, when the endpoint is not proxied (the Quepid server may not reach it, like a localhost one), else via the server.
+   */
   async checkAvailability() {
     const name = this.nameTarget.value.trim()
     this.showAvailability("text-muted", "Checking…")
@@ -85,12 +103,22 @@ export default class extends Controller {
     }
   }
 
+  /**
+   * Asks Quepid, for an endpoint it reaches through its proxy.
+   * @param {string} name
+   * @returns {Promise<{status: string, message: string}>}
+   */
   askServer(name) {
     const url = new URL(this.availabilityUrlValue, window.location.origin)
     url.searchParams.set("index_name", name)
     return getJson(url.toString())
   }
 
+  /**
+   * Asks the service itself, as the case's searches do, for an endpoint that is not proxied.
+   * @param {string} name
+   * @returns {Promise<{status: string, message: string}>}
+   */
   async askService(name) {
     const { origin, engine, headers } = this.probeValue
     const path =
@@ -116,6 +144,9 @@ export default class extends Controller {
     }
   }
 
+  /**
+   * The answer for a name that is taken, or free.
+   */
   verdict(name, taken) {
     return {
       status: taken ? "taken" : "free",
@@ -123,16 +154,25 @@ export default class extends Controller {
     }
   }
 
+  /**
+   * Forgets the last answer: the name it was for has changed.
+   */
   clearAvailability() {
     this.showAvailability("text-muted", "")
   }
 
+  /**
+   * Shows an answer about the name, in a text style (text-success, text-danger...).
+   */
   showAvailability(style, message) {
     if (!this.hasAvailabilityTarget) return
     this.availabilityTarget.textContent = message
     this.availabilityTarget.className = `form-text ${style}`
   }
 
+  /**
+   * Shows whether the definition is valid, and lets it be created only if it is.
+   */
   show(valid, message) {
     this.statusTarget.textContent = message
     this.statusTarget.classList.toggle("text-success", valid)
