@@ -23,7 +23,7 @@ class DatasetsControllerTest < ActionDispatch::IntegrationTest
   test 'index describes each dataset by its queries, documents, judgements and labels, and nothing else' do
     get datasets_url
 
-    %w[Queries Documents Judgements Labels Cases].each { |heading| assert_select 'th', text: heading }
+    %w[Queries Documents Judgements Labels Licence Cases].each { |heading| assert_select 'th', text: heading }
     assert_select 'th', text: /\AScorers/
     assert_select 'th', text: 'In Quepid', count: 0
     assert_select 'td', text: '137 queries'
@@ -44,7 +44,7 @@ class DatasetsControllerTest < ActionDispatch::IntegrationTest
   test 'index counts the cases made from each dataset, without archived ones' do
     get datasets_url
 
-    assert_equal(%w[0 0 — — —], css_select('tbody tr td:nth-child(8)').map { |cell| cell.text.strip })
+    assert_equal(%w[0 0 — — —], css_select('tbody tr td:nth-child(9)').map { |cell| cell.text.strip })
 
     dataset = Dataset.for(user, 'haystack')
     [ Case.create!(case_name: 'One', owner: user), Case.create!(case_name: 'Two', owner: user),
@@ -53,14 +53,14 @@ class DatasetsControllerTest < ActionDispatch::IntegrationTest
     end
     get datasets_url
 
-    assert_equal(%w[2 0 — — —], css_select('tbody tr td:nth-child(8)').map { |cell| cell.text.strip })
+    assert_equal(%w[2 0 — — —], css_select('tbody tr td:nth-child(9)').map { |cell| cell.text.strip })
   end
 
   test 'index counts only the current users cases' do
     CaseToDataset.create!(dataset: Dataset.for(users(:doug), 'haystack'), case: Case.create!(case_name: 'Theirs', owner: users(:doug)))
     get datasets_url
 
-    assert_equal(%w[0 0 — — —], css_select('tbody tr td:nth-child(8)').map { |cell| cell.text.strip })
+    assert_equal(%w[0 0 — — —], css_select('tbody tr td:nth-child(9)').map { |cell| cell.text.strip })
   end
 
   test 'index disables load to case for a dataset with labels until it has a scorer' do
@@ -110,7 +110,7 @@ class DatasetsControllerTest < ActionDispatch::IntegrationTest
   test 'index lists the scorers whose names start with the dataset name' do
     get datasets_url
 
-    assert_equal([ '-' ] * 5, css_select('tbody tr td:nth-child(7)').map { |cell| cell.text.strip })
+    assert_equal([ '-' ] * 5, css_select('tbody tr td:nth-child(8)').map { |cell| cell.text.strip })
 
     own = Scorer.create!(name: 'Haystack Rating Party Scorer', owner: user, scale: [ 0, 1, 2, 3 ])
     shared = Scorer.create!(name: 'Haystack Rating Party AP', communal: true, scale: [ 0, 1 ])
@@ -123,7 +123,7 @@ class DatasetsControllerTest < ActionDispatch::IntegrationTest
 
     assert_equal [ 'Haystack Rating Party AP', 'Haystack Rating Party Scorer' ], links.map(&:text)
     assert_equal [ edit_scorer_path(shared), edit_scorer_path(own) ], links.pluck('href')
-    assert_equal 'Haystack Rating Party AP, Haystack Rating Party Scorer', haystack_row.css('td')[6].text.squish, 'a comma separated list'
+    assert_equal 'Haystack Rating Party AP, Haystack Rating Party Scorer', haystack_row.css('td')[7].text.squish, 'a comma separated list'
   end
 
   def create_ap
@@ -238,6 +238,19 @@ class DatasetsControllerTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to datasets_url
     assert_match(/no labels/, flash[:alert])
+  end
+
+  test 'index says under which licence each dataset comes, linking to its terms' do
+    get datasets_url
+
+    licences = css_select('tbody tr').to_h { |row| [ row.at_css('td a').text, row.css('td')[6].at_css('a') ] }
+
+    assert_equal DatasetCatalog::ENTRIES.size, licences.size
+    assert_equal([ 'MIT', 'https://github.com/wayfair/WANDS/blob/main/LICENSE', '_blank' ], licences['WANDS'].then { |a| [ a.text, a['href'], a['target'] ] })
+    assert_equal 'Apache 2.0, as part of Quepid', licences['Haystack Rating Party'].text
+    assert_equal 'Apache 2.0', licences['ESCI'].text
+    assert_equal "The competition's rules, accepted on Kaggle", licences['Home Depot Product Search Relevance'].text
+    assert_equal 'Personal and non-commercial use only', licences['IMDb Non-Commercial Datasets'].text
   end
 
   # Home Depot's files come from Kaggle, which wants a login and the rules accepted: the user uploads them.

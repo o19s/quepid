@@ -21,6 +21,7 @@
             <th>Documents</th>
             <th>Judgements</th>
             <th>Labels</th>
+            <th>Licence</th>
             <th>Scorers<sup><a href="#scorer-note" aria-label="Note 1: scorers and labels">(1)</a></sup></th>
             <th>Cases</th>
             <th class="text-end"></th>
@@ -35,6 +36,7 @@
               <td><%= dataset.documents %></td>
               <td><%= dataset.judgements %></td>
               <td><%= dataset.labels %></td>
+              <td><%= link_to dataset.license, dataset.license_url, target: '_blank', rel: 'noopener noreferrer' %></td>
               <td>
                 <% scorers = @dataset_scorers.fetch(dataset.key, []) %>
                 <% if scorers.any? %>
