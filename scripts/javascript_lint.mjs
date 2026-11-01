@@ -24,7 +24,11 @@ if (files.length === 0) {
 }
 
 const prettierBin = join(repoRoot, "node_modules/.bin/prettier")
-const prettierArgs = [mode === "write" ? "--write" : "--check", ...files]
+const prettierArgs = [
+  mode === "write" ? "--write" : "--check",
+  ...(process.env.CI ? [] : ["--cache", "--cache-strategy", "content"]),
+  ...files
+]
 
 const result = spawnSync(prettierBin, prettierArgs, {
   cwd: repoRoot,
