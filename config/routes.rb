@@ -107,6 +107,30 @@ Rails.application.routes.draw do
 
   resources :ai_judges
 
+  resources :datasets, only: [ :index ] do
+    resource :scorer, only: :create, module: :datasets
+    # The files of a dataset Quepid cannot download itself (Kaggle's), uploaded by the user.
+    resource :upload, only: :create, module: :datasets
+  end
+  resources :dataset_cases, only: [ :index, :create, :destroy ] do
+    resource :search_endpoint, only: :update, module: :dataset_cases
+    # The index definition for a case's dataset on a search endpoint: shown first (show), made when agreed to (create).
+    resource :index, only: [ :show, :create ], controller: 'dataset_case_indexes' do
+      scope module: :dataset_case_indexes do
+        # Is an index of this name already on the endpoint? Only asks.
+        resource :availability, only: :show
+        # Would create take this definition? Asked by the browser before it sends the definition to the endpoint itself.
+        resource :validation, only: :create
+        # The documents to load: show streams them to a browser that loads them itself; create is for engines Quepid cannot
+        # create the index in, where the user has deployed it and now starts loading.
+        resource :documents, only: [ :show, :create ]
+        # How far the browser has got in loading the documents.
+        resource :progress, only: :update
+      end
+    end
+  end
+  resources :dataset_scorers, only: [ :index ]
+
   resources :embedders do
     member do
       get 'clone'

@@ -130,6 +130,17 @@ class HttpClientServiceTest < ActiveSupport::TestCase
     assert_predicate response, :success?
   end
 
+  test 'sends another path of the host without the URL query params, which belong to the URL own path' do
+    bulk = stub_request(:post, 'http://es.example.com:9200/_bulk').with(query: {}).to_return(status: 200, body: '{}')
+    cores = stub_request(:get, 'http://solr.example.com:8983/solr/admin/cores').with(query: { 'action' => 'STATUS' }).to_return(status: 200, body: '{}')
+
+    HttpClientService.new('http://es.example.com:9200/movies/_search?size=5').post(path: '/_bulk', body: '{}')
+    HttpClientService.new('http://solr.example.com:8983/solr/shop/select?defType=edismax').get(path: '/solr/admin/cores', params: { 'action' => 'STATUS' })
+
+    assert_requested bulk
+    assert_requested cores
+  end
+
   test 'follows redirects' do
     stub_request(:get, 'https://example.com/old')
       .to_return(status: 302, headers: { 'Location' => 'https://example.com/new' })

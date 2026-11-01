@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_24_233000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_30_150000) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -244,6 +244,22 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_24_233000) do
     t.index ["user_id"], name: "index_case_scores_on_user_id"
   end
 
+  create_table "case_to_datasets", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
+    t.integer "case_id", null: false
+    t.datetime "created_at", null: false
+    t.bigint "dataset_id", null: false
+    t.integer "documents_indexed"
+    t.text "error"
+    t.string "index_name"
+    t.text "indexing_error"
+    t.string "indexing_status", limit: 20
+    t.integer "sample_size"
+    t.string "status", limit: 20, default: "pending", null: false
+    t.datetime "updated_at", null: false
+    t.index ["case_id"], name: "index_case_to_datasets_on_case_id", unique: true
+    t.index ["dataset_id"], name: "index_case_to_datasets_on_dataset_id"
+  end
+
   create_table "cases", id: :integer, charset: "utf8mb3", force: :cascade do |t|
     t.boolean "archived"
     t.boolean "auto_populate_book_pairs", default: false, null: false
@@ -272,6 +288,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_24_233000) do
     t.datetime "updated_at", precision: nil, null: false
     t.float "value"
     t.index ["try_id"], name: "try_id"
+  end
+
+  create_table "datasets", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "key", limit: 50, null: false
+    t.integer "owner_id", null: false
+    t.integer "scorer_id"
+    t.bigint "search_endpoint_id"
+    t.datetime "updated_at", null: false
+    t.index ["owner_id", "key"], name: "index_datasets_on_owner_id_and_key", unique: true
   end
 
   create_table "embedders", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|

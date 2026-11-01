@@ -34,115 +34,389 @@ const editorPackages = [
   "w3c-keyname"
 ]
 
-
 export default defineConfig({
   test: {
     environment: "happy-dom",
     include: ["test/javascript/**/*.test.js"],
-    globals: false,
+    globals: false
   },
   resolve: {
     alias: [
-      ...editorPackages.map(name => ({
+      ...editorPackages.map((name) => ({
         find: name,
         replacement: path.resolve(repoRoot, `vendor/javascript/${name.replaceAll("/", "--")}.js`)
       })),
-      { find: "modules/search_endpoint_select", replacement: path.resolve(repoRoot, "app/javascript/modules/search_endpoint_select.js") },
-      { find: "utils/core_events", replacement: path.resolve(repoRoot, "app/javascript/utils/core_events.js") },
-      { find: "@hotwired/stimulus", replacement: path.resolve(repoRoot, "test/javascript/support/stimulus_stub.js") },
+      {
+        find: "modules/search_endpoint_select",
+        replacement: path.resolve(repoRoot, "app/javascript/modules/search_endpoint_select.js")
+      },
+      {
+        find: "utils/core_events",
+        replacement: path.resolve(repoRoot, "app/javascript/utils/core_events.js")
+      },
+      {
+        find: "@hotwired/stimulus",
+        replacement: path.resolve(repoRoot, "test/javascript/support/stimulus_stub.js")
+      },
       { find: "api/fetch", replacement: path.resolve(repoRoot, "app/javascript/api/fetch.js") },
-      { find: "api/http_error", replacement: path.resolve(repoRoot, "app/javascript/api/http_error.js") },
+      {
+        find: "api/service_fetch",
+        replacement: path.resolve(repoRoot, "app/javascript/api/service_fetch.js")
+      },
+      {
+        find: "api/http_error",
+        replacement: path.resolve(repoRoot, "app/javascript/api/http_error.js")
+      },
       { find: "api/json", replacement: path.resolve(repoRoot, "app/javascript/api/json.js") },
       { find: "js-cookie", replacement: path.resolve(repoRoot, "vendor/javascript/js-cookie.js") },
       { find: "party-js", replacement: path.resolve(repoRoot, "vendor/javascript/party-js.js") },
-      { find: "modules/tour", replacement: path.resolve(repoRoot, "app/javascript/modules/tour.js") },
-      { find: "modules/editor", replacement: path.resolve(repoRoot, "app/javascript/modules/editor.js") },
-      { find: "utils/quepid_root", replacement: path.resolve(repoRoot, "app/javascript/utils/quepid_root.js") },
+      {
+        find: "modules/tour",
+        replacement: path.resolve(repoRoot, "app/javascript/modules/tour.js")
+      },
+      {
+        find: "modules/editor",
+        replacement: path.resolve(repoRoot, "app/javascript/modules/editor.js")
+      },
+      {
+        find: "utils/quepid_root",
+        replacement: path.resolve(repoRoot, "app/javascript/utils/quepid_root.js")
+      },
       { find: "utils/csv", replacement: path.resolve(repoRoot, "app/javascript/utils/csv.js") },
-      { find: "utils/case_header", replacement: path.resolve(repoRoot, "app/javascript/utils/case_header.js") },
-      { find: "utils/bs_tooltip", replacement: path.resolve(repoRoot, "app/javascript/utils/bs_tooltip.js") },
-      { find: "utils/bs_popover", replacement: path.resolve(repoRoot, "app/javascript/utils/bs_popover.js") },
+      {
+        find: "utils/case_header",
+        replacement: path.resolve(repoRoot, "app/javascript/utils/case_header.js")
+      },
+      {
+        find: "utils/bs_tooltip",
+        replacement: path.resolve(repoRoot, "app/javascript/utils/bs_tooltip.js")
+      },
+      {
+        find: "utils/bs_popover",
+        replacement: path.resolve(repoRoot, "app/javascript/utils/bs_popover.js")
+      },
       { find: "utils/html", replacement: path.resolve(repoRoot, "app/javascript/utils/html.js") },
-      { find: "utils/bs_modal", replacement: path.resolve(repoRoot, "app/javascript/utils/bs_modal.js") },
-      { find: "utils/confirm_dialog", replacement: path.resolve(repoRoot, "app/javascript/utils/confirm_dialog.js") },
-      { find: "utils/dynamic_modal", replacement: path.resolve(repoRoot, "app/javascript/utils/dynamic_modal.js") },
-      { find: "utils/detailed_document_modal", replacement: path.resolve(repoRoot, "app/javascript/utils/detailed_document_modal.js") },
-      { find: "utils/clipboard", replacement: path.resolve(repoRoot, "app/javascript/utils/clipboard.js") },
-      { find: "utils/temporary_feedback", replacement: path.resolve(repoRoot, "app/javascript/utils/temporary_feedback.js") },
-      { find: "utils/json_explorer", replacement: path.resolve(repoRoot, "app/javascript/utils/json_explorer.js") },
-      { find: "utils/text_paste", replacement: path.resolve(repoRoot, "app/javascript/utils/text_paste.js") },
-      { find: "utils/count_up", replacement: path.resolve(repoRoot, "app/javascript/utils/count_up.js") },
-      { find: "utils/share_case_teams", replacement: path.resolve(repoRoot, "app/javascript/utils/share_case_teams.js") },
-      { find: "utils/case_csv", replacement: path.resolve(repoRoot, "app/javascript/utils/case_csv.js") },
-      { find: "utils/date_format", replacement: path.resolve(repoRoot, "app/javascript/utils/date_format.js") },
-      { find: "utils/parse_explain", replacement: path.resolve(repoRoot, "app/javascript/utils/parse_explain.js") },
-      { find: "utils/download_file", replacement: path.resolve(repoRoot, "app/javascript/utils/download_file.js") },
+      {
+        find: "utils/bs_modal",
+        replacement: path.resolve(repoRoot, "app/javascript/utils/bs_modal.js")
+      },
+      {
+        find: "utils/confirm_dialog",
+        replacement: path.resolve(repoRoot, "app/javascript/utils/confirm_dialog.js")
+      },
+      {
+        find: "utils/service_fetch",
+        replacement: path.resolve(repoRoot, "app/javascript/utils/service_fetch.js")
+      },
+      {
+        find: "utils/dynamic_modal",
+        replacement: path.resolve(repoRoot, "app/javascript/utils/dynamic_modal.js")
+      },
+      {
+        find: "utils/detailed_document_modal",
+        replacement: path.resolve(repoRoot, "app/javascript/utils/detailed_document_modal.js")
+      },
+      {
+        find: "utils/clipboard",
+        replacement: path.resolve(repoRoot, "app/javascript/utils/clipboard.js")
+      },
+      {
+        find: "utils/temporary_feedback",
+        replacement: path.resolve(repoRoot, "app/javascript/utils/temporary_feedback.js")
+      },
+      {
+        find: "utils/json_explorer",
+        replacement: path.resolve(repoRoot, "app/javascript/utils/json_explorer.js")
+      },
+      {
+        find: "utils/text_paste",
+        replacement: path.resolve(repoRoot, "app/javascript/utils/text_paste.js")
+      },
+      {
+        find: "utils/count_up",
+        replacement: path.resolve(repoRoot, "app/javascript/utils/count_up.js")
+      },
+      {
+        find: "utils/share_case_teams",
+        replacement: path.resolve(repoRoot, "app/javascript/utils/share_case_teams.js")
+      },
+      {
+        find: "utils/case_csv",
+        replacement: path.resolve(repoRoot, "app/javascript/utils/case_csv.js")
+      },
+      {
+        find: "utils/date_format",
+        replacement: path.resolve(repoRoot, "app/javascript/utils/date_format.js")
+      },
+      {
+        find: "utils/parse_explain",
+        replacement: path.resolve(repoRoot, "app/javascript/utils/parse_explain.js")
+      },
+      {
+        find: "utils/download_file",
+        replacement: path.resolve(repoRoot, "app/javascript/utils/download_file.js")
+      },
       { find: "utils/flash", replacement: path.resolve(repoRoot, "app/javascript/utils/flash.js") },
-      { find: "utils/error_message", replacement: path.resolve(repoRoot, "app/javascript/utils/error_message.js") },
-      { find: "utils/search_error", replacement: path.resolve(repoRoot, "app/javascript/utils/search_error.js") },
-      { find: "utils/search_engines", replacement: path.resolve(repoRoot, "app/javascript/utils/search_engines.js") },
-      { find: "utils/browse_query", replacement: path.resolve(repoRoot, "app/javascript/utils/browse_query.js") },
-      { find: "utils/rated_docs", replacement: path.resolve(repoRoot, "app/javascript/utils/rated_docs.js") },
-      { find: "utils/scoring", replacement: path.resolve(repoRoot, "app/javascript/utils/scoring.js") },
-      { find: "utils/scorer_catalog", replacement: path.resolve(repoRoot, "app/javascript/utils/scorer_catalog.js") },
-      { find: "utils/scorer_runtime", replacement: path.resolve(repoRoot, "app/javascript/utils/scorer_runtime.js") },
-      { find: "utils/splainer_search_runtime", replacement: path.resolve(repoRoot, "app/javascript/utils/splainer_search_runtime.js") },
-      { find: "utils/user_runtime", replacement: path.resolve(repoRoot, "app/javascript/utils/user_runtime.js") },
-      { find: "utils/search_endpoint_runtime", replacement: path.resolve(repoRoot, "app/javascript/utils/search_endpoint_runtime.js") },
-      { find: "utils/mapper_search_runtime", replacement: path.resolve(repoRoot, "app/javascript/utils/mapper_search_runtime.js") },
-      { find: "utils/settings_catalog_runtime", replacement: path.resolve(repoRoot, "app/javascript/utils/settings_catalog_runtime.js") },
-      { find: "utils/settings_runtime", replacement: path.resolve(repoRoot, "app/javascript/utils/settings_runtime.js") },
-      { find: "utils/navigation_runtime", replacement: path.resolve(repoRoot, "app/javascript/utils/navigation_runtime.js") },
-      { find: "utils/case_runtime", replacement: path.resolve(repoRoot, "app/javascript/utils/case_runtime.js") },
-      { find: "utils/diff_scores", replacement: path.resolve(repoRoot, "app/javascript/utils/diff_scores.js") },
-      { find: "utils/diff_results", replacement: path.resolve(repoRoot, "app/javascript/utils/diff_results.js") },
-      { find: "utils/query_state", replacement: path.resolve(repoRoot, "app/javascript/utils/query_state.js") },
-      { find: "utils/qgraph", replacement: path.resolve(repoRoot, "app/javascript/utils/qgraph.js") },
-      { find: "utils/endpoint_settings", replacement: path.resolve(repoRoot, "app/javascript/utils/endpoint_settings.js") },
-      { find: "utils/tune_relevance", replacement: path.resolve(repoRoot, "app/javascript/utils/tune_relevance.js") },
-      { find: "utils/core_workspace_runtime", replacement: path.resolve(repoRoot, "app/javascript/utils/core_workspace_runtime.js") },
-      { find: "utils/core_capabilities_runtime", replacement: path.resolve(repoRoot, "app/javascript/utils/core_capabilities_runtime.js") },
-      { find: "utils/store_subscription", replacement: path.resolve(repoRoot, "app/javascript/utils/store_subscription.js") },
-      { find: "utils/core_store_access", replacement: path.resolve(repoRoot, "app/javascript/utils/core_store_access.js") },
-      { find: "utils/core_capability_access", replacement: path.resolve(repoRoot, "app/javascript/utils/core_capability_access.js") },
-      { find: "utils/core_flash", replacement: path.resolve(repoRoot, "app/javascript/utils/core_flash.js") },
-      { find: "core_runtime", replacement: path.resolve(repoRoot, "app/javascript/core_runtime.js") },
-      { find: "quepid_store", replacement: path.resolve(repoRoot, "app/javascript/quepid_store.js") },
-      { find: "utils/editor_mode", replacement: path.resolve(repoRoot, "app/javascript/utils/editor_mode.js") },
-      { find: "utils/json_format", replacement: path.resolve(repoRoot, "app/javascript/utils/json_format.js") },
-      { find: "utils/query_lifecycle", replacement: path.resolve(repoRoot, "app/javascript/utils/query_lifecycle.js") },
-      { find: "utils/query_service", replacement: path.resolve(repoRoot, "app/javascript/utils/query_service.js") },
-      { find: "utils/live_query_documents", replacement: path.resolve(repoRoot, "app/javascript/utils/live_query_documents.js") },
-      { find: "utils/live_query_factory", replacement: path.resolve(repoRoot, "app/javascript/utils/live_query_factory.js") },
-      { find: "utils/live_query_commands", replacement: path.resolve(repoRoot, "app/javascript/utils/live_query_commands.js") },
-      { find: "utils/live_query_events", replacement: path.resolve(repoRoot, "app/javascript/utils/live_query_events.js") },
-      { find: "utils/record_identity", replacement: path.resolve(repoRoot, "app/javascript/utils/record_identity.js") },
-      { find: "utils/lazy_detail", replacement: path.resolve(repoRoot, "app/javascript/utils/lazy_detail.js") },
-      { find: "utils/pagination", replacement: path.resolve(repoRoot, "app/javascript/utils/pagination.js") },
-      { find: "utils/live_query_lifecycle", replacement: path.resolve(repoRoot, "app/javascript/utils/live_query_lifecycle.js") },
-      { find: "utils/live_query_read_models", replacement: path.resolve(repoRoot, "app/javascript/utils/live_query_read_models.js") },
-      { find: "utils/live_query_collection", replacement: path.resolve(repoRoot, "app/javascript/utils/live_query_collection.js") },
-      { find: "utils/live_query_runtime_owner", replacement: path.resolve(repoRoot, "app/javascript/utils/live_query_runtime_owner.js") },
-      { find: "utils/query_model", replacement: path.resolve(repoRoot, "app/javascript/utils/query_model.js") },
-      { find: "utils/query_documents", replacement: path.resolve(repoRoot, "app/javascript/utils/query_documents.js") },
-      { find: "utils/query_runtime", replacement: path.resolve(repoRoot, "app/javascript/utils/query_runtime.js") },
-      { find: "utils/curator_vars", replacement: path.resolve(repoRoot, "app/javascript/utils/curator_vars.js") },
-      { find: "utils/book_sync", replacement: path.resolve(repoRoot, "app/javascript/utils/book_sync.js") },
-      { find: "utils/doc_cache", replacement: path.resolve(repoRoot, "app/javascript/utils/doc_cache.js") },
-      { find: "utils/ratings_store", replacement: path.resolve(repoRoot, "app/javascript/utils/ratings_store.js") },
-      { find: "utils/snapshot_searcher", replacement: path.resolve(repoRoot, "app/javascript/utils/snapshot_searcher.js") },
-      { find: "utils/snapshot_model", replacement: path.resolve(repoRoot, "app/javascript/utils/snapshot_model.js") },
-      { find: "utils/snapshot_hydration", replacement: path.resolve(repoRoot, "app/javascript/utils/snapshot_hydration.js") },
-      { find: "utils/snapshot_api", replacement: path.resolve(repoRoot, "app/javascript/utils/snapshot_api.js") },
-      { find: "utils/snapshot_import", replacement: path.resolve(repoRoot, "app/javascript/utils/snapshot_import.js") },
-      { find: "utils/snapshot_payload", replacement: path.resolve(repoRoot, "app/javascript/utils/snapshot_payload.js") },
-      { find: "utils/query_scoring", replacement: path.resolve(repoRoot, "app/javascript/utils/query_scoring.js") },
-      { find: "utils/wizard_contracts", replacement: path.resolve(repoRoot, "app/javascript/utils/wizard_contracts.js") },
-      { find: "stores/case_score_store", replacement: path.resolve(repoRoot, "app/javascript/stores/case_score_store.js") },
-      { find: "stores/query_collection_store", replacement: path.resolve(repoRoot, "app/javascript/stores/query_collection_store.js") },
-      { find: "stores/query_documents_store", replacement: path.resolve(repoRoot, "app/javascript/stores/query_documents_store.js") },
-      { find: "stores/diff_state_store", replacement: path.resolve(repoRoot, "app/javascript/stores/diff_state_store.js") },
-      { find: /^controllers\/(.*)$/, replacement: path.resolve(repoRoot, "app/javascript/controllers") + "/$1" }
-    ],
-  },
+      {
+        find: "utils/error_message",
+        replacement: path.resolve(repoRoot, "app/javascript/utils/error_message.js")
+      },
+      {
+        find: "utils/search_error",
+        replacement: path.resolve(repoRoot, "app/javascript/utils/search_error.js")
+      },
+      {
+        find: "utils/search_engines",
+        replacement: path.resolve(repoRoot, "app/javascript/utils/search_engines.js")
+      },
+      {
+        find: "utils/browse_query",
+        replacement: path.resolve(repoRoot, "app/javascript/utils/browse_query.js")
+      },
+      {
+        find: "utils/rated_docs",
+        replacement: path.resolve(repoRoot, "app/javascript/utils/rated_docs.js")
+      },
+      {
+        find: "utils/scoring",
+        replacement: path.resolve(repoRoot, "app/javascript/utils/scoring.js")
+      },
+      {
+        find: "utils/scorer_catalog",
+        replacement: path.resolve(repoRoot, "app/javascript/utils/scorer_catalog.js")
+      },
+      {
+        find: "utils/scorer_runtime",
+        replacement: path.resolve(repoRoot, "app/javascript/utils/scorer_runtime.js")
+      },
+      {
+        find: "utils/splainer_search_runtime",
+        replacement: path.resolve(repoRoot, "app/javascript/utils/splainer_search_runtime.js")
+      },
+      {
+        find: "utils/user_runtime",
+        replacement: path.resolve(repoRoot, "app/javascript/utils/user_runtime.js")
+      },
+      {
+        find: "utils/search_endpoint_runtime",
+        replacement: path.resolve(repoRoot, "app/javascript/utils/search_endpoint_runtime.js")
+      },
+      {
+        find: "utils/mapper_search_runtime",
+        replacement: path.resolve(repoRoot, "app/javascript/utils/mapper_search_runtime.js")
+      },
+      {
+        find: "utils/settings_catalog_runtime",
+        replacement: path.resolve(repoRoot, "app/javascript/utils/settings_catalog_runtime.js")
+      },
+      {
+        find: "utils/settings_runtime",
+        replacement: path.resolve(repoRoot, "app/javascript/utils/settings_runtime.js")
+      },
+      {
+        find: "utils/navigation_runtime",
+        replacement: path.resolve(repoRoot, "app/javascript/utils/navigation_runtime.js")
+      },
+      {
+        find: "utils/case_runtime",
+        replacement: path.resolve(repoRoot, "app/javascript/utils/case_runtime.js")
+      },
+      {
+        find: "utils/diff_scores",
+        replacement: path.resolve(repoRoot, "app/javascript/utils/diff_scores.js")
+      },
+      {
+        find: "utils/diff_results",
+        replacement: path.resolve(repoRoot, "app/javascript/utils/diff_results.js")
+      },
+      {
+        find: "utils/query_state",
+        replacement: path.resolve(repoRoot, "app/javascript/utils/query_state.js")
+      },
+      {
+        find: "utils/qgraph",
+        replacement: path.resolve(repoRoot, "app/javascript/utils/qgraph.js")
+      },
+      {
+        find: "utils/endpoint_settings",
+        replacement: path.resolve(repoRoot, "app/javascript/utils/endpoint_settings.js")
+      },
+      {
+        find: "utils/tune_relevance",
+        replacement: path.resolve(repoRoot, "app/javascript/utils/tune_relevance.js")
+      },
+      {
+        find: "utils/core_workspace_runtime",
+        replacement: path.resolve(repoRoot, "app/javascript/utils/core_workspace_runtime.js")
+      },
+      {
+        find: "utils/core_capabilities_runtime",
+        replacement: path.resolve(repoRoot, "app/javascript/utils/core_capabilities_runtime.js")
+      },
+      {
+        find: "utils/store_subscription",
+        replacement: path.resolve(repoRoot, "app/javascript/utils/store_subscription.js")
+      },
+      {
+        find: "utils/core_store_access",
+        replacement: path.resolve(repoRoot, "app/javascript/utils/core_store_access.js")
+      },
+      {
+        find: "utils/core_capability_access",
+        replacement: path.resolve(repoRoot, "app/javascript/utils/core_capability_access.js")
+      },
+      {
+        find: "utils/core_flash",
+        replacement: path.resolve(repoRoot, "app/javascript/utils/core_flash.js")
+      },
+      {
+        find: "core_runtime",
+        replacement: path.resolve(repoRoot, "app/javascript/core_runtime.js")
+      },
+      {
+        find: "quepid_store",
+        replacement: path.resolve(repoRoot, "app/javascript/quepid_store.js")
+      },
+      {
+        find: "utils/editor_mode",
+        replacement: path.resolve(repoRoot, "app/javascript/utils/editor_mode.js")
+      },
+      {
+        find: "utils/json_format",
+        replacement: path.resolve(repoRoot, "app/javascript/utils/json_format.js")
+      },
+      {
+        find: "utils/query_lifecycle",
+        replacement: path.resolve(repoRoot, "app/javascript/utils/query_lifecycle.js")
+      },
+      {
+        find: "utils/query_service",
+        replacement: path.resolve(repoRoot, "app/javascript/utils/query_service.js")
+      },
+      {
+        find: "utils/live_query_documents",
+        replacement: path.resolve(repoRoot, "app/javascript/utils/live_query_documents.js")
+      },
+      {
+        find: "utils/live_query_factory",
+        replacement: path.resolve(repoRoot, "app/javascript/utils/live_query_factory.js")
+      },
+      {
+        find: "utils/live_query_commands",
+        replacement: path.resolve(repoRoot, "app/javascript/utils/live_query_commands.js")
+      },
+      {
+        find: "utils/live_query_events",
+        replacement: path.resolve(repoRoot, "app/javascript/utils/live_query_events.js")
+      },
+      {
+        find: "utils/record_identity",
+        replacement: path.resolve(repoRoot, "app/javascript/utils/record_identity.js")
+      },
+      {
+        find: "utils/lazy_detail",
+        replacement: path.resolve(repoRoot, "app/javascript/utils/lazy_detail.js")
+      },
+      {
+        find: "utils/pagination",
+        replacement: path.resolve(repoRoot, "app/javascript/utils/pagination.js")
+      },
+      {
+        find: "utils/live_query_lifecycle",
+        replacement: path.resolve(repoRoot, "app/javascript/utils/live_query_lifecycle.js")
+      },
+      {
+        find: "utils/live_query_read_models",
+        replacement: path.resolve(repoRoot, "app/javascript/utils/live_query_read_models.js")
+      },
+      {
+        find: "utils/live_query_collection",
+        replacement: path.resolve(repoRoot, "app/javascript/utils/live_query_collection.js")
+      },
+      {
+        find: "utils/live_query_runtime_owner",
+        replacement: path.resolve(repoRoot, "app/javascript/utils/live_query_runtime_owner.js")
+      },
+      {
+        find: "utils/query_model",
+        replacement: path.resolve(repoRoot, "app/javascript/utils/query_model.js")
+      },
+      {
+        find: "utils/query_documents",
+        replacement: path.resolve(repoRoot, "app/javascript/utils/query_documents.js")
+      },
+      {
+        find: "utils/query_runtime",
+        replacement: path.resolve(repoRoot, "app/javascript/utils/query_runtime.js")
+      },
+      {
+        find: "utils/curator_vars",
+        replacement: path.resolve(repoRoot, "app/javascript/utils/curator_vars.js")
+      },
+      {
+        find: "utils/book_sync",
+        replacement: path.resolve(repoRoot, "app/javascript/utils/book_sync.js")
+      },
+      {
+        find: "utils/doc_cache",
+        replacement: path.resolve(repoRoot, "app/javascript/utils/doc_cache.js")
+      },
+      {
+        find: "utils/ratings_store",
+        replacement: path.resolve(repoRoot, "app/javascript/utils/ratings_store.js")
+      },
+      {
+        find: "utils/snapshot_searcher",
+        replacement: path.resolve(repoRoot, "app/javascript/utils/snapshot_searcher.js")
+      },
+      {
+        find: "utils/snapshot_model",
+        replacement: path.resolve(repoRoot, "app/javascript/utils/snapshot_model.js")
+      },
+      {
+        find: "utils/snapshot_hydration",
+        replacement: path.resolve(repoRoot, "app/javascript/utils/snapshot_hydration.js")
+      },
+      {
+        find: "utils/snapshot_api",
+        replacement: path.resolve(repoRoot, "app/javascript/utils/snapshot_api.js")
+      },
+      {
+        find: "utils/snapshot_import",
+        replacement: path.resolve(repoRoot, "app/javascript/utils/snapshot_import.js")
+      },
+      {
+        find: "utils/snapshot_payload",
+        replacement: path.resolve(repoRoot, "app/javascript/utils/snapshot_payload.js")
+      },
+      {
+        find: "utils/query_scoring",
+        replacement: path.resolve(repoRoot, "app/javascript/utils/query_scoring.js")
+      },
+      {
+        find: "utils/wizard_contracts",
+        replacement: path.resolve(repoRoot, "app/javascript/utils/wizard_contracts.js")
+      },
+      {
+        find: "stores/case_score_store",
+        replacement: path.resolve(repoRoot, "app/javascript/stores/case_score_store.js")
+      },
+      {
+        find: "stores/query_collection_store",
+        replacement: path.resolve(repoRoot, "app/javascript/stores/query_collection_store.js")
+      },
+      {
+        find: "stores/query_documents_store",
+        replacement: path.resolve(repoRoot, "app/javascript/stores/query_documents_store.js")
+      },
+      {
+        find: "stores/diff_state_store",
+        replacement: path.resolve(repoRoot, "app/javascript/stores/diff_state_store.js")
+      },
+      {
+        find: /^controllers\/(.*)$/,
+        replacement: path.resolve(repoRoot, "app/javascript/controllers") + "/$1"
+      }
+    ]
+  }
 })

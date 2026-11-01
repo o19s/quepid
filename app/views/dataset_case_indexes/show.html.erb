@@ -1,0 +1,206 @@
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <h1><i class="bi bi-database" aria-hidden="true"></i> Initiate indexing</h1>
+  <div class="btn-toolbar mb-2 mb-md-0">
+    <%= link_to 'Back to Dataset Cases', dataset_cases_path, class: 'btn btn-sm btn-outline-secondary' %>
+  </div>
+</div>
+
+<div class="card mb-3">
+  <div class="card-body">
+    <table class="table table-sm mb-0">
+      <tbody>
+        <tr><th scope="row" class="w-25">Case</th><td><%= link_to @kase.case_name, case_core_path(@kase) %></td></tr>
+        <tr><th scope="row">Dataset</th><td><%= @entry&.name || @link.dataset.key %></td></tr>
+        <tr>
+          <th scope="row">Search endpoint</th>
+          <td><%= link_to @endpoint.fullname, search_endpoint_path(@endpoint) %> <span class="text-muted">(<%= SearchEngine.label(@endpoint.search_engine) %>)</span></td>
+        </tr>
+        <% if @review.definition %>
+          <tr><th scope="row">Index</th><td><code><%= @review.proposed.index_name %></code>, named by the endpoint's address when it names one<%= ', and you can change it below' if @review.proposed.applicable? %></td></tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<% if @review.preindexed? %>
+  <div class="alert alert-success" role="alert">
+    <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+    <strong><%= @entry.name %> is already indexed in <%= @endpoint.fullname %>.</strong> The documents are there already, so Quepid has no
+    index to propose, create or load. Use the endpoint as it is.
+  </div>
+<% elsif @review.unsupported %>
+  <div class="alert alert-warning" role="alert">
+    <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i> <%= @review.unsupported %>
+    <% unless @review.index_name_missing? %>
+      Index definitions are made for <%= DatasetIndex::BUILDERS.values.map { |builder| builder::LABEL }.to_sentence %> endpoints.
+    <% end %>
+  </div>
+<% else %>
+  <% if @review.definition.applicable? %>
+    <%# The definition is a form: the user may edit the name and the JSON before agreeing. %>
+    <%# Turbo handles this submit so that it asks first (data-turbo-confirm). %>
+    <%= form_with url: dataset_case_index_path(@link), method: :post,
+                  data: { controller: 'json-editor browser-index', action: 'submit->browser-index#submit pagehide@window->browser-index#interrupted',
+                          json_editor_original_value: @review.proposed.text, json_editor_original_name_value: @review.proposed.index_name, json_editor_new_name_value: @review.suggested_new_name,
+                          json_editor_availability_url_value: dataset_case_index_availability_path(@link, search_endpoint_id: @endpoint.id),
+                          json_editor_probe_value: (probe = DatasetIndex::Availability.browser_probe(@endpoint).to_json unless @endpoint.proxy_requests),
+                          browser_index_probe_value: probe,
+                          browser_index_validation_url_value: dataset_case_index_validation_path(@link),
+                          browser_index_stream_url_value: dataset_case_index_documents_path(@link, search_endpoint_id: @endpoint.id),
+                          browser_index_endpoint_id_value: @endpoint.id,
+                          browser_index_progress_url_value: dataset_case_index_progress_path(@link),
+                          browser_index_confirm_value: "Create the #{@review.definition.label} index on #{@endpoint.fullname} with this definition#{' and start indexing the documents from this page' if @review.loadable?}?",
+                          turbo_confirm: "Create the #{@review.definition.label} index on #{@endpoint.fullname} with this definition#{' and start indexing the documents' if @review.loadable?}?" } do %>
+      <%= hidden_field_tag :search_endpoint_id, @endpoint.id %>
+      <%# First the index: the endpoint's own, or a new one on the same service; only then its definition. %>
+      <% can_copy = DatasetIndex.builder_for(@endpoint).respond_to?(:url_with_index) && DatasetIndex.builder_for(@endpoint).index_name_from(@endpoint.endpoint_url) %>
+      <% new_index = !can_copy || new_index_chosen? %>
+      <div class="card mb-3">
+        <div class="card-header">Which index?</div>
+        <div class="card-body">
+          <% if can_copy %>
+            <div class="form-check">
+              <%= radio_button_tag :new_endpoint, 'false', !new_index, class: 'form-check-input', data: { action: 'json-editor#choose' } %>
+              <%= label_tag :new_endpoint_false, class: 'form-check-label' do %>
+                Use the index <strong><code><%= @review.proposed.index_name %></code></strong> of <strong><%= @endpoint.fullname %></strong>, exactly as it is
+              <% end %>
+            </div>
+            <div class="form-check mb-3">
+              <%= radio_button_tag :new_endpoint, 'true', new_index, class: 'form-check-input', data: { action: 'json-editor#choose' } %>
+              <%= label_tag :new_endpoint_true, class: 'form-check-label' do %>
+                Create a new index on the same service
+              <% end %>
+              <div class="form-text">
+                Quepid saves a new search endpoint that reuses all the connection details of <%= @endpoint.fullname %> and names the new index
+                in its address; <%= @endpoint.fullname %> itself stays as it is, and <%= @kase.case_name %> searches the new one.
+              </div>
+            </div>
+          <% end %>
+          <%= label_tag :index_name, 'Index name', class: 'form-label' %>
+          <div class="input-group">
+            <%= text_field_tag :index_name, @edited_name || (can_copy && new_index ? @review.suggested_new_name : @review.proposed.index_name), class: 'form-control font-monospace',
+                               required: true, readonly: !new_index, data: { json_editor_target: 'name', action: 'input->json-editor#clearAvailability' } %>
+            <% if DatasetIndex::Availability.supports?(@endpoint) %>
+              <button type="button" class="btn btn-outline-secondary" <%= 'hidden' unless new_index %>
+                      data-json-editor-target="availabilityButton" data-action="json-editor#checkAvailability">Check availability</button>
+            <% end %>
+          </div>
+          <div class="form-text" data-json-editor-target="availability" aria-live="polite"></div>
+        </div>
+      </div>
+
+      <div class="card mb-3">
+        <div class="card-header">The index definition for <%= @review.definition.label %>: edit it if you want to change it</div>
+        <div class="card-body">
+          <% if @review.definition.note.present? %>
+            <p class="text-muted small"><%= @review.definition.note %></p>
+          <% end %>
+          <%= label_tag :definition, 'Definition (JSON)', class: 'form-label' %>
+          <%= text_area_tag :definition, @edited_text || @review.proposed.text, rows: 24, spellcheck: false, class: 'form-control font-monospace',
+                            style: 'font-size: .85rem;', data: { json_editor_target: 'input', action: 'input->json-editor#check' } %>
+          <div class="d-flex justify-content-between align-items-center mt-2">
+            <span class="small" data-json-editor-target="status" aria-live="polite"></span>
+            <span>
+              <button type="button" class="btn btn-sm btn-outline-secondary" data-action="json-editor#format">Format</button>
+              <button type="button" class="btn btn-sm btn-outline-secondary" data-action="json-editor#reset">Back to the proposed definition</button>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card mb-3">
+        <div class="card-body">
+          <p class="mb-2">
+            Create this index on <strong><%= @endpoint.fullname %></strong>? Quepid will send the definition above to the endpoint,
+            and then <%= @kase.case_name %> will search it.
+            <% if @review.loadable? %>
+              Quepid will then index the <strong><%= number_with_delimiter(@review.documents) %> documents</strong> of <%= @entry.name %> into it, in the
+              background, filled in as the table below says.
+            <% else %>
+              <strong>No documents will be indexed:</strong> <%= @review.why_not %>, so only the index is created.
+            <% end %>
+          </p>
+          <%= button_tag(@review.loadable? ? 'Create index and start indexing the data' : 'Create the index', type: 'submit', class: 'btn btn-primary',
+                         data: { json_editor_target: 'submit' }) %>
+          <div class="mt-3" data-browser-index-target="progress" hidden>
+            <div class="progress mb-2" style="height: .6rem;"><div class="progress-bar" data-browser-index-target="bar" style="width: 0%;"></div></div>
+            <div data-browser-index-target="message" aria-live="polite"></div>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  <% else %>
+    <div class="card mb-3">
+      <div class="card-header">The index definition for <%= @review.definition.label %></div>
+      <div class="card-body">
+        <% if @review.definition.note.present? %>
+          <p class="text-muted small"><%= @review.definition.note %></p>
+        <% end %>
+        <pre class="bg-body-tertiary border rounded p-3 mb-0" style="max-height: 28rem; overflow: auto;"><code><%= @review.definition.text %></code></pre>
+        <div class="alert alert-secondary mt-3 mb-0" role="alert">
+          <strong>Quepid does not create indexes in <%= @review.definition.label %>.</strong> Deploy this definition yourself, with <%= @review.definition.label %>'s
+          own tools. Nothing has been sent to <%= @endpoint.fullname %>, and Quepid sends nothing until you say you have deployed it.
+        </div>
+      </div>
+    </div>
+  <% end %>
+
+  <% if @entry&.mapper %>
+    <div class="card mb-3">
+      <div class="card-header">Where the documents' fields come from</div>
+      <div class="card-body">
+        <p class="small text-muted">
+          Every dataset's documents are turned into the same shape, the canonical dataset index schema, before they are indexed.
+          For <%= @entry.name %>, the fields are filled in like this; fields that are not listed are left out, and source fields
+          that are not used are dropped.
+        </p>
+        <table class="table table-sm mb-0">
+          <thead><tr><th>Field</th><th>Filled in from</th></tr></thead>
+          <tbody>
+            <% CanonicalDatasetIndexSchema::FIELDS.each do |field| %>
+              <% how = @entry.mapper.describe.to_h[field.name] %>
+              <tr>
+                <td><code><%= field.name %></code> <span class="text-muted small"><%= field.description %></span></td>
+                <td><%= 'id' == field.name ? "the document's own id" : (how ? sanitize(how.gsub(/`([^`]+)`/, '<code>\\1</code>')) : raw('<span class="text-muted">not available in this dataset</span>')) %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  <% end %>
+<% end %>
+
+<% if @review.definition && !@review.definition.applicable? %>
+  <div class="card mb-3">
+    <div class="card-body">
+      <% if @review.loadable? %>
+        <%= form_with url: dataset_case_index_documents_path(@link), method: :post,
+                      data: { turbo_confirm: "Load #{number_with_delimiter(@review.documents)} documents into #{@endpoint.fullname}? Is the definition deployed there?" } do %>
+          <%= hidden_field_tag :search_endpoint_id, @endpoint.id %>
+          <p class="mb-2">
+            Deployed it? Quepid will load the <strong><%= number_with_delimiter(@review.documents) %> documents</strong> of <%= @entry.name %> into
+            <strong><%= @endpoint.fullname %></strong> in the background, as the table above says, and <%= @kase.case_name %> will search it.
+            <%= "They are sent one at a time through Vespa's Document API." if 'vespa' == DatasetIndex.engine_id(@endpoint) %>
+          </p>
+          <div class="input-group mb-3" style="max-width: 32rem;">
+            <%= label_tag :index_name, 'Name you deployed it as', class: 'input-group-text' %>
+            <%= text_field_tag :index_name, @edited_name || @review.proposed.index_name, class: 'form-control font-monospace', required: true %>
+          </div>
+          <%= button_tag 'I have deployed this. Start loading', type: 'submit', class: 'btn btn-primary' %>
+        <% end %>
+      <% else %>
+        <p class="mb-0 text-muted">Quepid does not load documents here: <%= @review.why_not %>. Load them with <%= @review.definition.label %>'s own tools once the definition is deployed.</p>
+      <% end %>
+    </div>
+  </div>
+<% end %>
+
+<div class="card">
+  <div class="card-body">
+    <p class="mb-2">Already indexed there? Point <%= @kase.case_name %> at <strong><%= @endpoint.fullname %></strong> without creating anything.</p>
+    <%= button_to 'Only use this endpoint', dataset_case_search_endpoint_path(@link), method: :patch, params: { search_endpoint_id: @endpoint.id },
+                  class: 'btn btn-sm btn-outline-secondary', form: { class: 'd-inline' } %>
+  </div>
+</div>

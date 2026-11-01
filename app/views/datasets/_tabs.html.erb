@@ -1,0 +1,9 @@
+<%# The pages of this section: the example datasets, the cases made from them, and the scorers made for them. %>
+<ul class="nav nav-tabs mb-3">
+  <% [ [ 'Datasets', datasets_path, 'datasets' ], [ 'Dataset Cases', dataset_cases_path, 'dataset_cases' ],
+       [ 'Dataset Scorers', dataset_scorers_path, 'dataset_scorers' ] ].each do |label, path, name| %>
+    <li class="nav-item">
+      <%= link_to label, path, class: "nav-link #{'active' if name == controller_name}", aria: { current: ('page' if name == controller_name) } %>
+    </li>
+  <% end %>
+</ul>
