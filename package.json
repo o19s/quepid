@@ -6,7 +6,7 @@
   },
   "license": "Apache-2.0",
   "engines": {
-    "node": ">=24 <27"
+    "node": ">=26 <27"
   },
   "dependencies": {
     "@floating-ui/dom": "^1.8.0",
@@ -30,7 +30,7 @@
     "@playwright/test": "^1.64.1",
     "@stryker-mutator/core": "https://github.com/davidshq/stryker-js/releases/download/crash-recovery-v10.0.0-3/stryker-mutator-core-10.0.0.tgz",
     "@stryker-mutator/vitest-runner": "https://github.com/davidshq/stryker-js/releases/download/crash-recovery-v10.0.0-3/stryker-mutator-vitest-runner-10.0.0.tgz",
-    "@types/node": "^24.19.2",
+    "@types/node": "^26.0.0",
     "@vitest/eslint-plugin": "^1.6.28",
     "chokidar": "6.0.0",
     "eslint": "^10.13.0",
