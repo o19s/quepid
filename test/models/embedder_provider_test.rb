@@ -18,6 +18,19 @@ class EmbedderProviderTest < ActiveSupport::TestCase
     assert_equal Rails.configuration.ollama_service_url, EmbedderProvider.find('ollama').default_service_url
   end
 
+  test 'ollama help escapes the configured url while retaining provider markup' do
+    original = Rails.configuration.ollama_service_url
+    Rails.configuration.ollama_service_url = 'http://ollama:11434/<img src=x onerror="alert(1)">'
+
+    help = EmbedderProvider.find('ollama').help_html
+
+    assert_includes help, '<strong>Ollama</strong>'
+    assert_includes help, ERB::Util.html_escape(Rails.configuration.ollama_service_url)
+    assert_not_includes help, '<img'
+  ensure
+    Rails.configuration.ollama_service_url = original
+  end
+
   test 'presets carry what the form needs for every provider' do
     presets = EmbedderProvider.presets
 

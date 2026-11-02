@@ -52,6 +52,15 @@ class EmbeddersControllerTest < ActionDispatch::IntegrationTest
     assert_select "input[type=checkbox][value='#{team.id}'][checked]"
   end
 
+  test 'provider help keeps its formatting markup' do
+    get new_embedder_url(team_id: team.id)
+
+    EmbedderProvider.select_options.map(&:last).each do |key|
+      assert_select "[data-embedder-form-target='help'][data-provider=?] strong", key
+      assert_select "[data-embedder-form-target='help'][data-provider=?] code", key
+    end
+  end
+
   test 'create saves an embedder owned by the user and shares it' do
     assert_difference 'Embedder.count' do
       post embedders_url, params: { embedder: embedder_form_params(team_ids: [ team.id.to_s ]) }
@@ -70,6 +79,16 @@ class EmbeddersControllerTest < ActionDispatch::IntegrationTest
     end
 
     assert_response :unprocessable_content
+  end
+
+  test 'create rejects a malformed service url without saving it' do
+    assert_no_difference 'Embedder.count' do
+      post embedders_url, params: { embedder: embedder_form_params(service_url: 'https://') }
+    end
+
+    assert_response :unprocessable_content
+    assert_select '.alert-danger li', text: 'Service url must be a valid http:// or https:// URL'
+    assert_select 'input[name="embedder[service_url]"][value="https://"]'
   end
 
   test 'the form never renders the saved key' do

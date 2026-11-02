@@ -80,6 +80,13 @@
   ],
   "packageRules": [
     {
+      "matchPackageNames": [
+        "node",
+        "@types/node"
+      ],
+      "allowedVersions": ">=26 <27"
+    },
+    {
       "enabled": false,
       "matchDatasources": [
         "docker"
