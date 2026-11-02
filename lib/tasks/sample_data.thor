@@ -5,6 +5,10 @@ require 'zip'
 
 # rubocop:disable-next Style/StringConcatenation
 class SampleData < Thor
+  # The Playwright specs (test/playwright/case_helpers.ts) key off this case id.
+  E2E_FIXTURE_CASE_ID   = 219
+  E2E_FIXTURE_CASE_NAME = 'E2E Static Fixture (10s of Queries)'
+
   # rubocop:disable Metrics/AbcSize
   # rubocop:disable Metrics/MethodLength
   # rubocop:disable Metrics/BlockLength
@@ -468,6 +472,8 @@ class SampleData < Thor
 
     print_step 'End of seeding tries................'
 
+    seed_e2e_fixture tens_of_queries_case, realistic_activity_user
+
     # Teams
     print_step 'Seeding teams................'
 
@@ -805,7 +811,68 @@ class SampleData < Thor
   # rubocop:enable Metrics/CyclomaticComplexity
   # rubocop:enable Metrics/PerceivedComplexity
 
+  desc 'e2e_fixture', 'create the static case the Playwright e2e specs expect (case 219)'
+  long_desc <<-LONGDESC
+  `e2e_fixture`
+
+  Clones the "10s of Queries" case (created by `sample_data`) into case #{E2E_FIXTURE_CASE_ID}, records a
+  snapshot of its rated documents, and points the clone at a `static` search endpoint serving that
+  snapshot, so test/playwright/case_helpers.ts works without a live search engine.
+
+  EXAMPLES:
+
+  $ thor sample_data:e2e_fixture
+  LONGDESC
+  def e2e_fixture
+    load_environment
+
+    source_case = ::Case.find_by case_name: '10s of Queries'
+    if source_case.nil?
+      print_step 'No "10s of Queries" case found; run `thor sample_data:sample_data` first.'
+      return
+    end
+
+    seed_e2e_fixture source_case, source_case.owner
+  end
+
   private
+
+  # Hand-built fixture the Playwright specs assume exists: a clone of the "10s of Queries" case
+  # (same queries and ratings) whose try searches a `static` endpoint backed by a snapshot, so no
+  # external search engine is involved. The id is forced because case_helpers.ts hardcodes it
+  # (override with QUEPID_E2E_CASE_ID).
+  def seed_e2e_fixture source_case, user
+    print_step 'Seeding e2e fixture case................'
+
+    fixture_case = ::Case.find_by id: E2E_FIXTURE_CASE_ID
+    if fixture_case.present?
+      print_step "Case #{E2E_FIXTURE_CASE_ID} already exists (#{fixture_case.case_name}); leaving it alone."
+      return
+    end
+
+    fixture_case = ::Case.new id: E2E_FIXTURE_CASE_ID, case_name: E2E_FIXTURE_CASE_NAME
+    fixture_case.clone_case source_case, user, try: source_case.tries.latest, clone_queries: true, clone_ratings: true
+
+    docs_by_query = {}
+    fixture_case.queries.each do |query|
+      docs = query.ratings.order(:id).each_with_index.map do |rating, index|
+        { id: rating.doc_id, position: index + 1, fields: { title: rating.doc_id } }
+      end
+      docs_by_query[query.query_text] = { docs: docs }
+    end
+
+    snapshot = fixture_case.snapshots.create name: 'E2E Static Fixture Results'
+    ::SnapshotManager.new(snapshot).import_queries(docs_by_query)
+
+    static_endpoint = ::SearchEndpoint.create! search_engine: :static, name: E2E_FIXTURE_CASE_NAME, owner: user,
+                                               endpoint_url: "http://localhost:3000/api/cases/#{fixture_case.id}/snapshots/#{snapshot.id}/search",
+                                               api_method: 'GET'
+
+    fixture_case.tries.latest.update! search_endpoint: static_endpoint, field_spec: 'id:id, title:title',
+                                      query_params: 'q=#$query##'
+
+    print_case_info fixture_case
+  end
 
   def seed_judge hash
     ::AiJudge.find_by(name: hash[:name]) || ::AiJudge.create(hash)
