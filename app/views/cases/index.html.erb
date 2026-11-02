@@ -111,7 +111,8 @@ Cases are a group of queries that you are evaluating and experimenting with.
               <%= share_modal_button 'case', kase, name: kase.case_name, button_class: 'me-2' %>
 
               <%= archive_toggle_button kase, name: kase.case_name, group: false,
-                                        urls: { archive: archive_case_path(kase), unarchive: unarchive_case_path(kase) } %>
+                                        urls: { archive: archive_case_path(kase), unarchive: unarchive_case_path(kase) },
+                                        info: 'You\'re about to put this case into deep freeze. You\'ll be able to get to it through the "Archived" checkbox in the Relevancy Cases listing page.' %>
             </td>
           </tr>
         <% end %>

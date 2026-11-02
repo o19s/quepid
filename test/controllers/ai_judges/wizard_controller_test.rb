@@ -216,44 +216,42 @@ module AiJudges
         assert_not_requested(:post, 'https://api.openai.com/v1/chat/completions')
       end
     end
-  end
-end
 
-module AiJudges
-  class WizardControllerTest
-    test 'malformed options returns 422 without calling the provider' do
-      register_default_openai_stubs
-      post ai_judge_test_prompt_url(ai_judge_id: 'new'), params: {
-        system_prompt: 'Judge it.', llm_key: OPENAI_VALID_KEY,
-        judge_options: { llm_provider: 'openai', llm_service_url: 'https://api.openai.com', llm_model: 'gpt-4o' },
-        query_doc_pair: { query_text: 'q', doc_id: 'd', document_fields: '{}', options: '{bad' }
-      }, as: :json
-      assert_response :unprocessable_content
-      assert_predicate response.parsed_body['error'], :present?
-      assert_not_requested(:post, 'https://api.openai.com/v1/chat/completions')
-    end
-
-    test 'testing an existing id does not persist judge pair or judgement changes' do
-      register_default_openai_stubs
-      judge = users(:judge_judy)
-      original_prompt = judge.system_prompt
-      assert_no_difference [ 'AiJudge.count', 'QueryDocPair.count', 'Judgement.count' ] do
-        post ai_judge_test_prompt_url(ai_judge_id: judge.id), params: {
-          system_prompt: 'Unsaved draft.', llm_key: OPENAI_VALID_KEY,
-          judge_options: { llm_provider: 'openai', llm_service_url: 'https://api.openai.com', llm_model: 'gpt-4o', llm_include_images: false },
-          query_doc_pair: { query_text: 'q', doc_id: 'd', document_fields: '{}' }
+    describe 'edge cases' do
+      test 'malformed options returns 422 without calling the provider' do
+        register_default_openai_stubs
+        post ai_judge_test_prompt_url(ai_judge_id: 'new'), params: {
+          system_prompt: 'Judge it.', llm_key: OPENAI_VALID_KEY,
+          judge_options: { llm_provider: 'openai', llm_service_url: 'https://api.openai.com', llm_model: 'gpt-4o' },
+          query_doc_pair: { query_text: 'q', doc_id: 'd', document_fields: '{}', options: '{bad' }
         }, as: :json
+        assert_response :unprocessable_content
+        assert_predicate response.parsed_body['error'], :present?
+        assert_not_requested(:post, 'https://api.openai.com/v1/chat/completions')
       end
-      assert_response :success
-      assert_equal original_prompt, judge.reload.system_prompt
-    end
 
-    test 'empty accessible books return an editable blank pair' do
-      user.teams.clear
-      user.books.each { |owned_book| owned_book.query_doc_pairs.delete_all }
-      get ai_judge_sample_query_doc_pair_url(ai_judge_id: 'new')
-      assert_response :success
-      assert_nil response.parsed_body.dig('query_doc_pair', 'id')
+      test 'testing an existing id does not persist judge pair or judgement changes' do
+        register_default_openai_stubs
+        judge = users(:judge_judy)
+        original_prompt = judge.system_prompt
+        assert_no_difference [ 'AiJudge.count', 'QueryDocPair.count', 'Judgement.count' ] do
+          post ai_judge_test_prompt_url(ai_judge_id: judge.id), params: {
+            system_prompt: 'Unsaved draft.', llm_key: OPENAI_VALID_KEY,
+            judge_options: { llm_provider: 'openai', llm_service_url: 'https://api.openai.com', llm_model: 'gpt-4o', llm_include_images: false },
+            query_doc_pair: { query_text: 'q', doc_id: 'd', document_fields: '{}' }
+          }, as: :json
+        end
+        assert_response :success
+        assert_equal original_prompt, judge.reload.system_prompt
+      end
+
+      test 'empty accessible books return an editable blank pair' do
+        user.teams.clear
+        user.books.each { |owned_book| owned_book.query_doc_pairs.delete_all }
+        get ai_judge_sample_query_doc_pair_url(ai_judge_id: 'new')
+        assert_response :success
+        assert_nil response.parsed_body.dig('query_doc_pair', 'id')
+      end
     end
   end
 end

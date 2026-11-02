@@ -160,10 +160,10 @@ test("Sort buttons can be reached and activated by keyboard", async ({ page }) =
 
 test("Scores and ratings convey their state without color", async ({ page }) => {
   await gotoCase(page)
-  await expect(page.locator('[data-controller="qscore-case"] .score-state')).toContainText("of ")
-  await expect(page.locator('[data-controller="qscore-query"] .score-state').first()).toContainText(
-    "of "
-  )
+  // A numeric score is its own text: no state word and no claimed scale.
+  const caseScore = page.locator('[data-controller="qscore-case"]')
+  await expect(caseScore).toContainText(/\d\.\d\d/)
+  await expect(caseScore.locator(".score-state")).toHaveCount(0)
   await expandFirstQuery(page)
   const badge = page.locator("search-result .single-rating button").first()
   await expect(badge).toContainText("--")

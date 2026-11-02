@@ -156,7 +156,7 @@ This approach lets you run Quepid directly on your machine without Docker. It pr
 
 1. **Ruby**: Check `.ruby-version` for the current version of Ruby.  We track the latest releases.  We recommend using a version manager like [rbenv](https://github.com/rbenv/rbenv) or [RVM](https://rvm.io/).
 
-2. **Node.js**: Install Node.js 24.x (`>=24 <25`), as required by `package.json`.
+2. **Node.js**: Install Node.js 26.x (see `.nvmrc`), as required by `package.json` (`>=26 <27`).
 
 3. **Yarn**: Install Yarn package manager.
 
@@ -239,7 +239,7 @@ To run the Jupyter notebooks for development, you need to run:
 bin/setup_jupyterlite_docker
 ```
 
-or 
+or
 
 ```bash
 bin/setup_jupyterlite
@@ -751,7 +751,7 @@ docker compose up -d mysql
 docker compose run --rm app bin/rake db:setup
 ```
 
-6. Update your docker-compose.prod.yml file to use your image by updating the image version in the app 
+6. Update your docker-compose.prod.yml file to use your image by updating the image version in the app
 ```yaml
 image: o19s/quepid:10.0.0
 ```
@@ -793,10 +793,10 @@ Quepid supports OpenID Connect (OIDC) authentication. To test this functionality
 
    The development environment includes a Keycloak container set up in the `docker-compose.yml` file. When running the development environment with Docker, Keycloak will be available at http://localhost:9080.
 
-   - Default admin credentials: 
+   - Default admin credentials:
      - Username: `admin`
      - Password: `password`
-     
+
 The below steps are only if you want to customize the setup, and for basic testing you can skip.
 
 3. **Configure Quepid for OIDC**:
@@ -830,7 +830,7 @@ The below steps are only if you want to customize the setup, and for basic testi
 
 5. **Test the Integration**:
 
-   Restart Quepid and you should see an "OpenID Connect" button on the login page. 
+   Restart Quepid and you should see an "OpenID Connect" button on the login page.
    When clicked, it will redirect you to the Keycloak login page.
 
 For production deployments, you would typically configure Quepid to use your organization's existing OIDC provider (like Okta, Auth0, Azure AD, etc.) rather than Keycloak.
@@ -1021,7 +1021,9 @@ case workspace's scores and search results cannot: live search runs browser → 
 scoring runs client-side, so the server never sees the documents and has nothing to render from.
 Those re-render from a client-side store that Stimulus controllers subscribe to, writing the DOM
 directly. Reach for a Turbo Stream only when Rails is the source of truth for what changed; on this
-page that is the exception, not the default.
+page that is the exception, not the default. A rating must update scores immediately: the `scoring`
+store's `rating-changed` event triggers a client-side `scoreAll()` (`utils/live_query_events.js`),
+not a server round trip.
 
 ### Stimulus conventions
 
@@ -1390,6 +1392,24 @@ a new endpoint. Startup warns about incompatible
 existing endpoints without changing them. Review those endpoints explicitly;
 this flag does not migrate their settings or prevent their existing direct searches.
 The credential-only proxy setting remains independently configurable.
+
+## Proxying to internal search engines
+
+The proxy refuses targets that resolve to loopback, link-local or private
+addresses (RFC1918, carrier-grade NAT, IPv6 unique-local) to prevent SSRF. To
+proxy to an engine on an internal network, set `PROXY_ALLOWED_NETWORKS` to a
+comma separated list of CIDR ranges or single IPs, e.g.
+`PROXY_ALLOWED_NETWORKS=10.0.5.0/24,192.168.1.50`. Matching is on the
+resolved IP, and every address a hostname resolves to must be allowed. Anything
+not listed stays blocked. Keep the ranges narrow.
+
+For engines whose IPs change, such as an internal load balancer or a VPC search
+domain, list the exact hostname in `PROXY_ALLOWED_HOSTS` instead, e.g.
+`PROXY_ALLOWED_HOSTS=internal-search-123.us-east-1.elb.amazonaws.com`. This is
+narrower than opening the VPC's range. A listed name may reach private
+addresses, but link-local addresses stay blocked.
+
+Invalid entries in either variable are ignored with a warning in the Rails log.
 
 ## Seed Data
 

@@ -156,19 +156,23 @@ module ApplicationHelper
   # Row icon button that archives or unarchives `record`, confirmed through the
   # shared modal. `urls` holds the :archive and :unarchive paths. `group: false`
   # renders it as a plain inline form instead of a nested .btn-group (see group_button_to).
-  def archive_toggle_button record, name:, urls:, method: :post, group: true
-    verb = record.archived? ? 'Unarchive' : 'Archive'
+  # `info`, when given, is appended to the confirmation text, only when archiving.
+  # rubocop:disable-next Metrics/ParameterLists
+  def archive_toggle_button record, name:, urls:, method: :post, group: true, info: nil
+    archiving = !record.archived?
+    verb = archiving ? 'Archive' : 'Unarchive'
     label = "#{verb} #{record.model_name.human.downcase}"
-    color = record.archived? ? 'text-success' : 'text-warning'
-    confirm_style = 'primary' if record.archived?
-    url = urls.fetch(record.archived? ? :unarchive : :archive)
+    color = archiving ? 'text-warning' : 'text-success'
+    confirm_style = 'primary' unless archiving
+    url = urls.fetch(archiving ? :archive : :unarchive)
     icon = safe_join([ tag.i(class: 'bi bi-folder-check', aria: { hidden: true }), tag.span(label, class: 'visually-hidden') ])
+    confirm_message = [ "#{verb} #{name}?", (info if archiving) ].compact.join(' ')
 
     if group
       group_button_to(url, method: method, button_class: "#{color} p-0 me-3", title: label, aria: { label: label },
-                           confirm: "#{verb} #{name}?", confirm_style: confirm_style) { icon }
+                           confirm: confirm_message, confirm_style: confirm_style) { icon }
     else
-      form_data = { turbo_confirm: "#{verb} #{name}?", turbo_confirm_style: confirm_style }.compact
+      form_data = { turbo_confirm: confirm_message, turbo_confirm_style: confirm_style }.compact
       button_to(url, method: method, class: "btn btn-link #{color} p-0", title: label, aria: { label: label },
                      form: { class: 'd-inline', data: form_data }) { icon }
     end

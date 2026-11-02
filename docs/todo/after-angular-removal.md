@@ -235,7 +235,7 @@ Retain the explicit state owners described in [Application structure](../app_str
 - Moving `utils/` DOM lifecycles into controllers is done (`f4226b05`), and global event names have shared constants (`utils/core_events.js`; see the [core event bus](../../DEVELOPER_GUIDE.md#core-event-bus)). Preserve each surface's own lifecycle. See [Persisted case UI](../app_structure.md#persisted-case-ui) for rendering and background-update ownership.
 - Follow [JavaScript delivery](../js_pipeline.md) and [JavaScript tooling](../js_tooling.md) when adding modules; retain the core/application CSS outputs and compatibility layers.
 
-Follow [Scope and change control](../../AGENTS.md#scope-and-change-control) for module moves. Moving root-level `build_css.js` or `audit_css.js` alone has modest payoff and affects build/lint paths; prioritize command drift and CI coverage.
+Follow [Scope and change control](../../AGENTS.md#scope-and-change-control) for module moves. Moving root-level `build_css.js` alone has modest payoff and affects build/lint paths; prioritize command drift and CI coverage.
 
 ### [MIGRATION-FOLLOWUP] P3 I0 C2 — Patch upstream Stimulus LSP controller detection
 
@@ -402,15 +402,11 @@ a blank credential: hidden-credential deployments rely on it.
 
 ### [PREEXISTING] P1 I0 C3 — Proxy SSRF controls are incomplete
 
-**Location:** `app/controllers/proxy_controller.rb:105-120`, `app/services/http_client_service.rb:91-99`
+**Location:** `app/controllers/proxy_controller.rb` (`validate_proxy_url!`), `app/services/http_client_service.rb`
 
-The proxy validates the initial DNS resolution and blocks private ranges, but Faraday resolves the host again when making the request (DNS-rebinding window), and redirect following means an allowed public URL can redirect to an internal address without revalidation.
+The proxy validates the initial DNS resolution and blocks private ranges, but Faraday resolves the host again when making the request (DNS-rebinding window), and redirect following means an allowed public URL can redirect to an internal address without revalidation. Hosts and ranges opened with `PROXY_ALLOWED_HOSTS` / `PROXY_ALLOWED_NETWORKS` widen what a rebinding or redirect can reach.
 
-**Fix direction:** Use a single validated connection target, disable redirects by default, or validate each redirect target. Tests: redirect-to-private-address, IPv6/link-local, rebinding, non-default ports, credential forwarding.
-
-The same block (`634aa4a5`, from `main`) also stops proxied search to engines on internal networks: localhost, RFC1918 and Docker-network hosts are rejected, and there is no allow-list. Legacy (`8ceb99e9`) proxied to them. A deployment that sets `REQUIRE_PROXY_FOR_ALL_SEARCH_ENDPOINTS` cannot search an internal engine at all.
-
-**Decision needed:** Whether internal engines must stay reachable through the proxy. If they must, add an operator-configured allow-list of hosts or CIDR ranges, with a test that a listed private address passes and an unlisted one is still blocked.
+**Fix direction:** Use a single validated connection target, disable redirects by default, or validate each redirect target through the same check, allow-lists included. Tests: redirect-to-private-address, IPv6/link-local, rebinding, non-default ports, credential forwarding.
 
 ---
 
@@ -754,7 +750,8 @@ would let the run continue but exclude that pair from normal selection for the s
 judge until reset/removal. Should these failures follow that existing policy or
 remain eligible for an explicit retry? Prefer a specific adapter response error
 over rescuing programming errors broadly. Persistence effects were source-traced;
-no full suite or live provider verification performed.
+no full suite or live provider verification performed. Manual pass 2026-10-28
+(12.5) hit the same `JSON::ParserError` escape.
 
 ### [PREEXISTING] P2 I0 C1 — Whitespace-prefixed JSON takes the bare-query path
 
@@ -782,6 +779,42 @@ the original payload), and add tests for leading/trailing whitespace.
 From `e77dcfb8` (#1751, on `main`). Submitted values pass through `to_f` and are interpolated into a SQL `CASE`. A value such as `1e400` becomes `Infinity`, the SQL is invalid and the request fails with a 500. Non-numeric text silently becomes `0.0`.
 
 **Fix direction:** Parse with `Float(value, exception: false)`, reject non-finite or non-numeric values with a flash alert, and add a controller test for both.
+
+### [PREEXISTING] P1 I0 C1 — Book collaborators can run an AI judge they cannot access
+
+**Decision needed:** Should a book collaborator be able to run (or cancel) an AI judge that the book owner assigned to the book but that the collaborator does not own and that is not shared with them via a team? Running spends the judge owner's LLM key.
+
+**Location:** `app/controllers/books_controller.rb` (`run_judge_judy`, `cancel_judge_judy`), `Book#working_ai_judge`
+
+**Observed:** Manual pass 2026-10-28 (12.8): `working_ai_judge` only checks that the judge is assigned to the book or on call for it, so any collaborator on the book can run another user's judge. `run_judge_judy` came with `3e38c655` (Eric Pugh, 2025-01-15), when judges were communal. The ownership model (`c468d18f`, `4a9065db`, 2026-09-23) never added a per-user check, and `a31569e4` (2026-10-22) moved the lookup into `Book#working_ai_judge` without one.
+
+**Fix direction:** Settle the contract first, including automatic runs and escalation, and document it in scenario 12.8. `AiJudge.for_user(current_user)` also grants prompt/configuration editing, so sharing a judge with a team is not a run-only permission.
+
+### [PREEXISTING] P2 I0 C2 — Admin user delete leaves ownerless cases and books
+
+**Decision needed:** Is leaving ownerless cases and books after a user is deleted the intended contract, or should they be removed or reassigned? Scenario 14.8 currently documents "nullified (not deleted) if shared with a team, and survive".
+
+**Location:** `app/models/user.rb` (`has_many :cases` and `has_many :books`, both `dependent: :nullify`), `Admin::UsersController#destroy`
+
+**Observed:** Manual pass 2026-10-28 (14.8): deleting a user as admin left a case and two books with no owner. Nothing in the app lists or cleans them up. The `nullify` is long-standing: cases since `85d8e52f` (#359, 2021-07-31, with the comment "sometimes a case belongs to a team, so don't just delete it"), books since `56c1c483` (#916, 2024-01-17).
+
+**Options:** keep `nullify` for team-shared records only and destroy private ones; reassign to the deleting admin or a team member; or keep as is and document it.
+
+### [PREEXISTING] P2 I0 C1 — Home page and recent-cases menu order by other users' views
+
+**Location:** `app/controllers/home_controller.rb` (`show`), `app/controllers/concerns/authentication/current_case_manager.rb` (`recent_cases`)
+
+**Observed:** Manual pass 2026-10-28 (18.1) found `GET /api/cases` duplicating cases and ordering by other users' `last_viewed_at`. `c9ab0f86` fixed `fetch_full_cases` by joining only the current user's metadata row. The other two callers still use `.includes(:metadata)` and order by any user's `case_metadata.last_viewed_at`, so they very likely have the same cross-user ordering problem. The unfiltered ordering came from `379e5bf3` (2023-08-24, #795).
+
+**Fix direction:** Add a test where another user has a newer view, then apply the same per-user join, ideally as one shared "recently viewed" scope used by all three callers.
+
+### [PREEXISTING] P3 I0 C1 — Bulk query create stores blank queries
+
+**Location:** `app/controllers/api/v1/bulk/queries_controller.rb` (`create`)
+
+**Observed:** Manual pass 2026-10-28 (18.3): bulk create stores `""` and `"  "` as queries, because `Query.insert_all` skips the `presence` validation on `query_text`. Once a blank query exists, a blank single create returns 200 because `queries_controller.rb#create` finds the existing row before validating.
+
+**Fix direction:** Strip each query and drop blanks before `insert_all`, and have single create reject a blank `query_text` before the existence check. Add controller tests for both.
 
 ---
 
@@ -1041,7 +1074,9 @@ Typing and settled-modal exclusions pass. Current `judgement_rating_controller.j
 and Legacy `8ceb99e9`'s inline judging handler both guard only `.modal.show` before
 scheduling a delayed click (source comparison only; no historical live replay).
 Guard the opening transition and cancel/recheck pending shortcut timers when the
-modal opens; verify that cancelling the modal creates no judgement.
+modal opens; verify that cancelling the modal creates no judgement. The 2026-10-28
+pass reproduced it again and also recorded edit loss in the same scenario; capture
+the steps for that before fixing.
 
 ### [MIGRATION-FOLLOWUP] P2 I1 C2 — Classify concurrent case-evaluation deadlock
 

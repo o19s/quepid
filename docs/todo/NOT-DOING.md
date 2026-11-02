@@ -140,6 +140,3 @@ By user choice, the setup wizard leaves a new case name blank instead of default
 
 By user choice, the wizard and Tune Relevance share an icon-rendering Tom Select picker using option data attributes. The drawer uses one searchable control instead of a select plus custom typeahead; each surface retains its existing endpoint eligibility and persistence behavior.
 
-### Field option creation
-
-By user choice, Tom Select field controls do not create arbitrary new options. Existing saved custom fields and discovered modifier-prefixed candidates remain selectable.

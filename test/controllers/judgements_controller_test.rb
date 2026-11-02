@@ -94,19 +94,21 @@ class JudgementsControllerTest < ActionDispatch::IntegrationTest
       end
     end
 
-    test 'should update judgement' do
-      patch book_judgement_url(jbm_book, existing_judgement), params: { judgement: { rating: 3 } }
+    describe 'update and destroy' do
+      test 'should update judgement' do
+        patch book_judgement_url(jbm_book, existing_judgement), params: { judgement: { rating: 3 } }
 
-      assert_redirected_to book_judge_path(jbm_book)
-      assert_equal 3, existing_judgement.reload.rating
-    end
-
-    test 'should destroy judgement' do
-      assert_difference('Judgement.count', -1) do
-        delete book_judgement_url(jbm_book, existing_judgement)
+        assert_redirected_to book_judge_path(jbm_book)
+        assert_equal 3, existing_judgement.reload.rating
       end
 
-      assert_redirected_to book_judge_path(jbm_book)
+      test 'should destroy judgement' do
+        assert_difference('Judgement.count', -1) do
+          delete book_judgement_url(jbm_book, existing_judgement)
+        end
+
+        assert_redirected_to book_judge_path(jbm_book)
+      end
     end
 
     describe 'broadcasting judge activity' do

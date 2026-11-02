@@ -94,7 +94,7 @@ export default class extends Controller {
 
     this.element.style.backgroundColor = scoreToColor(score, maxScore)
     this.valueTarget.textContent = formatScore(score)
-    renderScoreState(this.element, score, maxScore)
+    renderScoreState(this.element, score)
   }
 
   persistScore(snapshot) {

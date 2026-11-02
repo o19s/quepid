@@ -58,13 +58,18 @@ module LlmJudgeAdapters
       { path: path, headers: headers, body: body_for(user_prompt, system_prompt) }
     end
 
+    # Bad model output raises a RuntimeError, which LlmService#perform_safe_judgement
+    # turns into an unrateable judgement instead of aborting the run.
     def extract_judgement response_body
       parsed_content = JSON.parse(content_from(response_body))
+      raise TypeError, 'not a JSON object' unless parsed_content.is_a?(Hash)
 
       {
         explanation: parsed_content['explanation'],
         judgment:    parsed_content['judgment'],
       }
+    rescue JSON::ParserError, TypeError => e
+      raise "LLM response was not a JSON judgement (#{e.class}: #{e.message.truncate(80)})"
     end
 
     def user_prompt query_doc_pair

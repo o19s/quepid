@@ -29,6 +29,34 @@ module EmbedderAdapters
       assert_equal [ [ 1.0, 0.0 ], [ 0.0, 1.0 ] ], vectors
     end
 
+    test 'retries a 429 or 529 and returns the vectors once the provider recovers' do
+      stub = stub_request(:post, URL)
+        .to_return({ status: 429, body: '{}' },
+                   { status: 529, body: '{}' },
+                   { status: 200, headers: { 'Content-Type' => 'application/json' }, body: openai_response([ 1.0, 0.0 ]) })
+
+      assert_equal [ [ 1.0, 0.0 ] ], embedder.embed([ 'a' ])
+      assert_requested stub, times: 3
+    end
+
+    test 'gives up with the provider\'s error when it keeps saying 429' do
+      stub = stub_request(:post, URL)
+        .to_return(status: 429, headers: { 'Content-Type' => 'application/json' },
+                   body: { error: { message: 'Rate limit reached' } }.to_json)
+
+      error = assert_raises(EmbedderAdapters::Error) { embedder.embed([ 'a' ]) }
+
+      assert_match(/429.*Rate limit reached/, error.message)
+      assert_requested stub, times: 1 + LlmConnection::RETRY_OPTIONS[:max]
+    end
+
+    test 'does not retry a 500, which may have been processed' do
+      stub = stub_request(:post, URL).to_return(status: 500, body: 'down')
+
+      assert_raises(EmbedderAdapters::Error) { embedder.embed([ 'a' ]) }
+      assert_requested stub, times: 1
+    end
+
     test 'native truncation sends dimensions' do
       embedder.assign_attributes(truncation: 'native', dimensions: 2)
       stub = stub_request(:post, URL)

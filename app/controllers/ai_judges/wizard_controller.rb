@@ -19,10 +19,16 @@ module AiJudges
       query_doc_pair = if @book
                          @book.query_doc_pairs.sample
                        else
-                         QueryDocPair
-                           .where(book: Book.for_user(current_user))
+                         # Two-stage sample: a random book first (a user's accessible book
+                         # count is small), then .sample within it - rather than ORDER BY
+                         # RAND() across every query/doc pair the user can reach, which forces
+                         # a full scan + sort of that entire set (tens of thousands of rows
+                         # for an active user) on every edit-page load.
+                         random_book = Book.for_user(current_user)
+                           .where(id: QueryDocPair.select(:book_id))
                            .order(Arel.sql(AdapterFunctions.random_function))
                            .first
+                         random_book&.query_doc_pairs&.sample
                        end
       query_doc_pair ||= QueryDocPair.new
 

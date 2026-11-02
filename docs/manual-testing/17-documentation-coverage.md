@@ -35,7 +35,7 @@ It also reviews the 17 pages listed in the [Quepid GitHub wiki](https://github.c
 | Use Ollama as LLM | Strengthened below | 17.6 covers configuring an Ollama AI Judge and running one bounded job. |
 | Reference / Core Concepts | Reference only | Concepts are exercised by the feature scenarios; no separate UI behavior. |
 | Quepid App Settings | Deployment/configuration | Verify with environment-specific configuration smoke tests. |
-| Quick Start Wizard | Covered | 3.2 and 7.7–7.10. |
+| Quick Start Wizard | Covered | 3.2 to 3.2e and 7.7–7.10. |
 | Case Screen | Covered | 4.17–4.24. |
 | Manage Your Queries | Covered | 4.2–4.7, 4.15–4.23. |
 | Relevance Panel | Covered | 4.10–4.14 and 4.24. |
@@ -217,6 +217,7 @@ New scenarios have null execution timestamps in `tracking.yml`.
 - **Edge cases:**
   - [ ] Run the same smoke flow with no context path and confirm root-hosted URLs remain correct.
   - [ ] Confirm an HTTPS deployment cannot directly call an HTTP search endpoint unless the documented Quepid proxy path is enabled.
+  - [ ] If the deployment's search engine is internal, set `PROXY_ALLOWED_HOSTS` (or `PROXY_ALLOWED_NETWORKS`) as documented in DEVELOPER_GUIDE.md and confirm a proxied search reaches it (Part 7.11).
   - [ ] Confirm a missing/invalid encryption key fails safely at boot or configuration time rather than silently losing secrets.
   - [ ] If OAuth, SMTP/Postmark, SolidCable, or SolidQueue is configured, verify one representative login, email, realtime notification, and background-job flow; record unavailable external services as blocked prerequisites.
 

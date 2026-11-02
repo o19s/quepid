@@ -345,7 +345,7 @@ export default class extends Controller {
 
   addDiscoveredFieldOptions(query = "") {
     if (this.discoveredFieldsKey !== this.displayedFieldsEndpointKey()) return
-    const prefix = query.match(/^(id|title|thumb|image|media|translations):/)?.[0] || ""
+    const prefix = query.match(/^(id|title|thumb|image|media|translate):/)?.[0] || ""
     this.displayedFieldsSelect?.addOptions(
       (this.discoveredFields || []).map((field) => {
         const value = prefix + field

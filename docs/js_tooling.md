@@ -13,6 +13,39 @@ Playwright E2E (`test/playwright/`) covers full-browser flows for both stacks; i
 
 ## ESLint + Prettier
 
+### Incremental checks
+
+`yarn lint:js` and local `yarn format:js:check` / `yarn format:js` use content-based
+caches under `node_modules/.cache/`. Git timestamp changes do not invalidate an
+otherwise unchanged file. After changing lint or formatter plugins (including
+dependency updates), remove `node_modules/.cache/eslint/` and
+`node_modules/.cache/prettier/` so plugin changes cannot reuse stale results.
+`rails test:eslint` runs ESLint without a result cache; `CI=true` also disables
+the Prettier result cache for full CI verification.
+
+Node's module compile cache is a separate, opt-in experiment:
+`NODE_COMPILE_CACHE=tmp/node-compile-cache yarn lint:js`. Keep this directory
+between runs to measure warm startup. Do not enable it globally for coverage
+or mutation runs, because cached V8 compilation can reduce coverage precision.
+
+MiniRacer embeds its own V8 through the locked `libv8-node` gem; it does not use
+the installed Node executable. Updating Node for build tooling does not update
+the JavaScript engine used by Ruby scorers or mappers.
+
+Measured in the development container with Node 26.13.0 (three runs per command;
+uncached median versus the mean of the final two warm result-cache runs):
+
+| Check | Uncached | Warm result cache |
+|-------|----------|-------------------|
+| ESLint, full `lint:js` scope | 2.25 s | 0.70 s |
+| Prettier, full JavaScript scope | 2.68 s | 1.07 s |
+
+The additional Node compile cache measured 0.85 s for ESLint and 1.06 s for
+Prettier on warm runs, so it remains opt-in. These are local wall-clock samples,
+not CI timing guarantees. Full `yarn build` had a median of 0.48 s on Node 26;
+the Node 24 comparison ran during an image build, so it cannot establish a
+runtime-only speedup.
+
 ### Scope
 
 Lint/format scope is defined once in **`config/javascript_lint_scope.mjs`** and used by:
@@ -91,7 +124,7 @@ Unit tests for the modern importmap stack.
 
 ### Setup
 
-- Config: `vitest.config.js` (`happy-dom`, import aliases for `api/fetch` and `utils/quepid_root`)
+- Config: `vitest.config.js` (`happy-dom`, directory aliases for importmap bare paths, vendored-package aliases)
 - Specs: `test/javascript/**/*.test.js`, mirroring `app/javascript/` (not colocated), e.g. `test/javascript/api/fetch.test.js` tests `app/javascript/api/fetch.js`. Import the module under test by its bare importmap path (`api/fetch`, `utils/bs_modal`, `controllers/foo_controller`) via the `resolve.alias` entries in `vitest.config.js`, not a relative path back into `app/javascript/`.
 - Module-level singletons (one-time warn flags, cached state): use `vi.resetModules()` and a fresh `import()` in `beforeEach` so tests do not leak state across files.
 
@@ -103,7 +136,7 @@ bin/docker r yarn test:unit:watch     # watch mode
 bin/docker r rails test:vitest        # same as yarn test:unit (CI-style)
 ```
 
-Add new importmap bare imports to `vitest.config.js` `resolve.alias` when tests import them (controller specs use `test/javascript/support/stimulus_stub.js` for `@hotwired/stimulus`); `controllers/*` resolves via a wildcard alias, matching `pin_all_from` in `config/importmap.rb`, so individual controllers don't need their own entry.
+Bare imports under `controllers/`, `utils/`, `stores/`, `api/`, and `modules/` (plus `core_runtime` and `quepid_store`) resolve by directory, like the aliases in `esbuild.config.js`, so new modules need no `vitest.config.js` entry. Only add an alias for a new vendored package in `vendor/javascript/` (controller specs use `test/javascript/support/stimulus_stub.js` for `@hotwired/stimulus`).
 
 ### Controller test fixtures
 
@@ -146,6 +179,7 @@ Keep fakes local to the spec; production modules have no test injection hooks.
 
 - **`api/` and `utils/`** — New or materially changed logic requires a `*.test.js` in `test/javascript/` (mirroring the source path) in the **same PR**.
 - **`controllers/`** — Add Vitest when you touch a controller for meaningful behavior change. Do not blanket-rewrite untested controllers for coverage alone.
+- Cover empty states, warnings and config flags, not only the happy path.
 - Run `bin/docker r yarn test:unit` before merging JS changes that add or update specs.
 
 ### Property-based tests (fast-check)
