@@ -217,6 +217,7 @@ New scenarios have null execution timestamps in `tracking.yml`.
 - **Edge cases:**
   - [ ] Run the same smoke flow with no context path and confirm root-hosted URLs remain correct.
   - [ ] Confirm an HTTPS deployment cannot directly call an HTTP search endpoint unless the documented Quepid proxy path is enabled.
+  - [ ] If the deployment's search engine is internal, set `PROXY_ALLOWED_HOSTS` (or `PROXY_ALLOWED_NETWORKS`) as documented in DEVELOPER_GUIDE.md and confirm a proxied search reaches it (Part 7.11).
   - [ ] Confirm a missing/invalid encryption key fails safely at boot or configuration time rather than silently losing secrets.
   - [ ] If OAuth, SMTP/Postmark, SolidCable, or SolidQueue is configured, verify one representative login, email, realtime notification, and background-job flow; record unavailable external services as blocked prerequisites.
 

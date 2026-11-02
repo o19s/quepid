@@ -19,7 +19,8 @@ class ProxyController < ApplicationController
   # curl -b cookies.txt -X GET "http://localhost:3000/proxy/fetch?url=http://quepid-solr.dev.o19s.com:8985/solr/media/select&q=*:*" -u 'solr:SolrRocks'
   #
   # Note: the target URL must resolve to a public IP. Loopback, link-local, and RFC1918
-  # private ranges are blocked by validate_proxy_url!.
+  # private ranges are blocked by validate_proxy_url!, unless listed in PROXY_ALLOWED_NETWORKS
+  # or the hostname is listed in PROXY_ALLOWED_HOSTS.
   #
   def fetch
     url_param = proxy_url_params
@@ -103,7 +104,8 @@ class ProxyController < ApplicationController
       IPAddr.new(addrinfo.ip_address)
     end
 
-    render json: { proxy_error: 'Proxy URL resolves to a disallowed address' }, status: :bad_request if addresses.any? { |address| blocked_proxy_address?(address) }
+    allowed_host = Rails.application.config.proxy_allowed_hosts.include?(uri.hostname.downcase.chomp('.'))
+    render json: { proxy_error: 'Proxy URL resolves to a disallowed address' }, status: :bad_request if addresses.any? { |address| blocked_proxy_address?(address, allowed_host: allowed_host) }
   rescue Addressable::URI::InvalidURIError, SocketError, IPAddr::InvalidAddressError
     render json: { proxy_error: 'Invalid proxy URL' }, status: :bad_request
   end
@@ -115,12 +117,18 @@ class ProxyController < ApplicationController
     search_endpoint&.basic_auth_credential
   end
 
-  def blocked_proxy_address? address
+  def blocked_proxy_address? address, allowed_host: false
     # An IPv4-mapped IPv6 address (::ffff:a.b.c.d) is judged by the IPv4 address it wraps.
     address = address.native if address.ipv6? && address.ipv4_mapped?
 
-    return true if address.loopback?
+    # Operators can open specific internal networks with PROXY_ALLOWED_NETWORKS.
+    return false if Rails.application.config.proxy_allowed_networks.any? { |network| network.include?(address) }
+
     return true if address.link_local?
+    # A PROXY_ALLOWED_HOSTS name may reach private addresses, but never link-local ones.
+    return false if allowed_host
+
+    return true if address.loopback?
 
     private_ranges = [
       IPAddr.new('0.0.0.0/8'), # "this host": 0.0.0.0 connects to localhost on Linux

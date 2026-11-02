@@ -26,21 +26,6 @@ Ratings appear as `P2 I3 C1` beside each item.
 | **I — Simplification impact** (higher is more benefit) | Little or no code reduction | Local simplification | Removes duplication or complexity across several paths | Substantial reduction in wrappers, code, or maintenance burden |
 | **C — Complexity / risk** (lower is easier and safer) | Trivial, isolated edit | Small change with limited regression risk | Several interacting paths or meaningful behavioral risk | Broad change, sensitive data/security contracts, or unresolved design decisions |
 
-### [MIGRATION] P2 I0 C1 — Tune Relevance offers `translations:` instead of `translate:`
-
-Custom field names are accepted again: the wizard's Title, ID and Additional
-Display Fields and Tune Relevance's Displayed Fields all use `create: true`, and
-the wizard's "could be a typo" confirm is back (`wizard_controller.js`). Two
-leftovers:
-
-- Tune Relevance's prefix list (`addDiscoveredFieldOptions` in
-  `tune_relevance_controller.js`) offers `translations:`, which splainer-search's
-  `fieldSpecSvc` doesn't recognise; the real type is `translate:`.
-- NOT-DOING's "Field option creation" still says the field controls don't create
-  new options. Delete it, or reword it to match the code.
-
----
-
 ### [MIGRATION-FOLLOWUP] P2 I0 C2 — Case list lost Legacy row actions and details (inherited from main)
 
 1. **Row actions.** Legacy rows offered Rename (inline), Delete (modal "Delete This Case — You're about to delete this case forever! …"), Archive, Export (the export modal) and Share. The list now has Share and Archive only. Rename, Delete and Export remain in the case workbench (header double-click, toolbar). Dropped all three in `aa076cb3` ("Good by angular /cases listing UI!", inside #1642): that commit deleted Legacy's `case_listing.html` and added the Rails list with Share and Archive only. Neither the PR description nor the commit says whether this was intended.

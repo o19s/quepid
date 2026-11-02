@@ -273,6 +273,130 @@ class ProxyControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  describe 'PROXY_ALLOWED_NETWORKS' do
+    test 'allows a private address inside a listed network' do
+      stub = stub_request(:get, 'http://10.0.5.20:8983/solr/select?q=*:*').to_return(body: '{}', headers: { 'Content-Type' => 'application/json' })
+
+      with_proxy_allowed_networks('10.0.5.0/24') do
+        get proxy_fetch_url params: { url: 'http://10.0.5.20:8983/solr/select', q: '*:*' }
+      end
+
+      assert_response :success
+      assert_requested stub
+    end
+
+    test 'allows a single listed IP' do
+      stub = stub_request(:get, 'http://127.0.0.1:8983/solr/select').to_return(body: '{}', headers: { 'Content-Type' => 'application/json' })
+
+      with_proxy_allowed_networks('127.0.0.1') do
+        get proxy_fetch_url params: { url: 'http://127.0.0.1:8983/solr/select' }
+      end
+
+      assert_response :success
+      assert_requested stub
+    end
+
+    test 'still blocks a private address outside the listed networks' do
+      with_proxy_allowed_networks('10.0.5.0/24') do
+        get proxy_fetch_url params: { url: 'http://10.0.6.1/' }
+      end
+
+      assert_response :bad_request
+      assert_equal 'Proxy URL resolves to a disallowed address', response.parsed_body['proxy_error']
+    end
+
+    test 'still blocks the cloud metadata endpoint when only RFC1918 is listed' do
+      with_proxy_allowed_networks('10.0.0.0/8', '172.16.0.0/12', '192.168.0.0/16') do
+        get proxy_fetch_url params: { url: 'http://169.254.169.254/latest/meta-data/' }
+      end
+
+      assert_response :bad_request
+    end
+
+    test 'matches a hostname by its resolved IPv4-mapped IPv6 address' do
+      stub = stub_request(:get, 'http://solr.internal/solr/select').to_return(body: '{}', headers: { 'Content-Type' => 'application/json' })
+
+      resolving('solr.internal', '::ffff:10.0.5.20') do
+        with_proxy_allowed_networks('10.0.5.0/24') do
+          get proxy_fetch_url params: { url: 'http://solr.internal/solr/select' }
+        end
+      end
+
+      assert_response :success
+      assert_requested stub
+    end
+
+    test 'blocks a hostname when any resolved address is outside the listed networks' do
+      resolving('solr.internal', '10.0.5.20', '127.0.0.1') do
+        with_proxy_allowed_networks('10.0.5.0/24') do
+          get proxy_fetch_url params: { url: 'http://solr.internal/solr/select' }
+        end
+      end
+
+      assert_response :bad_request
+    end
+  end
+
+  describe 'PROXY_ALLOWED_HOSTS' do
+    test 'allows a listed hostname that resolves to a private address' do
+      stub = stub_request(:get, 'http://search.internal:9200/_search').to_return(body: '{}', headers: { 'Content-Type' => 'application/json' })
+
+      resolving('search.internal', '172.18.0.5') do
+        with_proxy_allowed_hosts('search.internal') do
+          get proxy_fetch_url params: { url: 'http://search.internal:9200/_search' }
+        end
+      end
+
+      assert_response :success
+      assert_requested stub
+    end
+
+    test 'still blocks an unlisted hostname that resolves to the same private address' do
+      resolving('other.internal', '172.18.0.5') do
+        with_proxy_allowed_hosts('search.internal') do
+          get proxy_fetch_url params: { url: 'http://other.internal:9200/_search' }
+        end
+      end
+
+      assert_response :bad_request
+    end
+
+    test 'matches hostnames case-insensitively and ignores a trailing dot' do
+      stub = stub_request(:get, /search\.internal/i).to_return(body: '{}', headers: { 'Content-Type' => 'application/json' })
+
+      resolving('SEARCH.Internal.', '10.1.2.3') do
+        with_proxy_allowed_hosts('search.internal') do
+          get proxy_fetch_url params: { url: 'http://SEARCH.Internal./_search' }
+        end
+      end
+
+      assert_response :success
+      assert_requested stub
+    end
+
+    test 'still blocks a listed hostname that resolves to link-local addresses' do
+      [ '169.254.169.254', 'fe80::1' ].each do |ip|
+        resolving('search.internal', ip) do
+          with_proxy_allowed_hosts('search.internal') do
+            get proxy_fetch_url params: { url: 'http://search.internal/_search' }
+          end
+        end
+
+        assert_response :bad_request, "expected #{ip} to stay blocked"
+      end
+    end
+
+    test 'still blocks a listed hostname when any resolved address is link-local' do
+      resolving('search.internal', '10.1.2.3', '169.254.169.254') do
+        with_proxy_allowed_hosts('search.internal') do
+          get proxy_fetch_url params: { url: 'http://search.internal/_search' }
+        end
+      end
+
+      assert_response :bad_request
+    end
+  end
+
   describe 'search_endpoint_id authorization' do
     test 'does NOT attach credentials when the endpoint belongs to another user' do
       foreign_endpoint = search_endpoints(:foreign_with_credentials)
@@ -327,6 +451,17 @@ class ProxyControllerTest < ActionDispatch::IntegrationTest
   end
 
   private
+
+  # Makes `host` resolve to `ips` for the duration of the block.
+  def resolving host, *ips
+    original = Addrinfo.method(:getaddrinfo)
+    Addrinfo.define_singleton_method(:getaddrinfo) do |name, *args|
+      host == name ? ips.map { |ip| Addrinfo.ip(ip) } : original.call(name, *args)
+    end
+    yield
+  ensure
+    Addrinfo.define_singleton_method(:getaddrinfo, &original)
+  end
 
   # rubocop:disable-next Metrics/MethodLength
   def register_proxy_webmock_stubs
