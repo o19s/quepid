@@ -1,0 +1,77 @@
+# Files bin/manual_test_status leaves out of its "changed source file(s) no scenario tracks"
+# report. Exact files or directories (trailing slash), matched like tracking.yml `paths`.
+#
+# Only list files that cannot change what the UI displays: developer tooling, and server-side
+# code with no path to a rendered page, download or email. Code that is not UI but feeds what is
+# displayed (models, validators, services, API views the UI fetches, locales, CSP, sample data)
+# stays reported, so it gets added to the scenario that shows it instead.
+
+# Developer tooling: CI, linting, mutation testing, annotations, console helpers.
+- config/brakeman.ignore
+- config/bundler-audit.yml
+- config/ci.rb
+- config/environments/test.rb
+- config/initializers/console_commands.rb
+- config/javascript_lint_scope.mjs
+- config/mutant.yml
+- config/stimulus_conventions_baseline.json
+- lib/tasks/annotate_rb.rake
+- lib/tasks/quepid.rake
+- lib/tasks/tidy.rake
+
+# Samples and orphans the app never loads.
+- config/credentials.ymc.enc
+- config/database.yml.sample
+- config/secrets.yml.txt
+
+# Boot, server, logging and database-adapter plumbing.
+- config/boot.rb
+- config/environment.rb
+- config/initializers/00_enable_garbage_collection.rb
+- config/initializers/filter_parameter_logging.rb
+- config/initializers/sqlite3_schema_compatibility.rb
+- config/puma.rb
+- lib/db_adapter_env.rb
+- lib/truncating_formatter.rb
+
+# Command-line operations (sample_data.thor stays reported: it seeds what manual tests display).
+- app/services/ratings_generator.rb
+- lib/progress_bar.rb
+- lib/progress_indicator.rb
+- lib/tasks/case.thor
+- lib/tasks/db_exists.rake
+- lib/tasks/ratings.thor
+- lib/tasks/snapshots.thor
+- lib/tasks/user.thor
+
+# Usage analytics: recorded, never displayed.
+- app/lib/analytics.rb
+- app/lib/analytics/
+- app/models/ahoy/
+- config/initializers/ahoy.rb
+
+# Cross-origin access for external API clients; the UI is same-origin.
+- config/initializers/cors.rb
+
+# API responses only external clients use; the UI renders these resources server-side.
+- app/views/api/v1/books/_book.json.jbuilder
+- app/views/api/v1/books/create.json.jbuilder
+- app/views/api/v1/books/dropdown/
+- app/views/api/v1/books/index.json.jbuilder
+- app/views/api/v1/books/show.json.jbuilder
+- app/views/api/v1/books/update.json.jbuilder
+- app/views/api/v1/signups/
+- app/views/api/v1/team_books/
+- app/views/api/v1/team_members/
+- app/views/api/v1/team_scorers/
+
+# Empty placeholders.
+- app/controllers/concerns/.keep
+- app/models/.keep
+
+# Unused or empty: LLM tools nothing registers, an empty helper module, and a generator only the
+# command-line snapshot/ratings tasks use.
+- app/helpers/search_endpoints_helper.rb
+- app/tools/javascript_extractor.rb
+- app/tools/mapper_tool.rb
+- lib/doc_generator.rb
