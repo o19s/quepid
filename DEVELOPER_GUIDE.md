@@ -1021,7 +1021,9 @@ case workspace's scores and search results cannot: live search runs browser → 
 scoring runs client-side, so the server never sees the documents and has nothing to render from.
 Those re-render from a client-side store that Stimulus controllers subscribe to, writing the DOM
 directly. Reach for a Turbo Stream only when Rails is the source of truth for what changed; on this
-page that is the exception, not the default.
+page that is the exception, not the default. A rating must update scores immediately: the `scoring`
+store's `rating-changed` event triggers a client-side `scoreAll()` (`utils/live_query_events.js`),
+not a server round trip.
 
 ### Stimulus conventions
 

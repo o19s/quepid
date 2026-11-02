@@ -2,7 +2,7 @@ import fs from "node:fs"
 import path from "node:path"
 import crypto from "node:crypto"
 import { execFileSync } from "node:child_process"
-import { decodePng } from "./png-diff.mjs"
+import { decodePng, diffRegions } from "./png-diff.mjs"
 import {
   screenshotSourceFiles,
   screenshotSourceCurrent,
@@ -20,12 +20,84 @@ export function historyLocation(root) {
   return { branch, relative, directory: path.join(root, ".playwright-mcp", relative) }
 }
 
+const lineages = new Map()
+
+// Commits this branch contains, and when its merge-base with origin/main was committed.
+function lineage(root) {
+  let head
+  try {
+    head = git(root, "rev-parse", "--verify", "--quiet", "HEAD")
+  } catch {
+    return null // Unborn branch: nothing to inherit.
+  }
+  const key = `${root}\0${head}`
+  if (!lineages.has(key)) {
+    const ancestors = new Set(
+      execFileSync("git", ["-C", root, "rev-list", head], {
+        encoding: "utf8",
+        maxBuffer: 64 * 1024 * 1024
+      }).split("\n")
+    )
+    let baseTime = null
+    try {
+      const base = execFileSync("git", ["-C", root, "merge-base", head, "origin/main"], {
+        encoding: "utf8",
+        stdio: ["ignore", "pipe", "ignore"]
+      }).trim()
+      baseTime = new Date(git(root, "show", "-s", "--format=%cI", base))
+    } catch {
+      // No origin/main: inherit by ancestry alone.
+    }
+    lineages.set(key, { ancestors, baseTime })
+  }
+  return lineages.get(key)
+}
+
+// Screens this branch hasn't recorded come from other branches' histories, so a new branch
+// starts from earlier captures instead of an empty viewer. A version qualifies when its
+// commit is in this branch, or (for squash-merged branches, whose commits never are) when it
+// was captured before this branch's merge-base with origin/main was committed. Later
+// captures from sibling branches are excluded. Each screen keeps the newest qualifying
+// version; freshness checks still mark it stale where this branch's source differs. The
+// first recording or approval on this branch saves the merged history as its own.
+function inheritedScreens(root, location) {
+  const base = path.dirname(location.directory)
+  if (!fs.existsSync(base)) return {}
+  const branch = lineage(root)
+  if (!branch) return {}
+  const qualifies = (version) =>
+    branch.ancestors.has(version.commit) ||
+    (branch.baseTime !== null && new Date(version.capturedAt) <= branch.baseTime)
+  const screens = {}
+  for (const entry of fs.readdirSync(base)) {
+    const index = path.join(base, entry, "index.json")
+    if (entry === path.basename(location.directory) || !fs.existsSync(index)) continue
+    let other
+    try {
+      other = JSON.parse(fs.readFileSync(index, "utf8"))
+    } catch {
+      continue // A history being rewritten by another checkout's recorder.
+    }
+    for (const screen of Object.values(other.screens || {})) {
+      const last = screen.versions.findLastIndex(qualifies)
+      if (last < 0) continue
+      const versions = screen.versions.slice(0, last + 1)
+      const known = screens[screen.id]?.versions.at(-1)
+      if (known && known.capturedAt >= versions.at(-1).capturedAt) continue
+      screens[screen.id] = { ...screen, versions }
+    }
+  }
+  return screens
+}
+
 export function readHistory(root) {
   const location = historyLocation(root)
   const index = path.join(location.directory, "index.json")
-  return fs.existsSync(index)
+  const history = fs.existsSync(index)
     ? JSON.parse(fs.readFileSync(index, "utf8"))
     : { version: 1, branch: location.branch, screens: {} }
+  history.screens = { ...inheritedScreens(root, location), ...history.screens }
+  return history
 }
 
 export function storedImageStatus(root, version) {
@@ -104,6 +176,17 @@ export function sourceFingerprint(root, paths) {
   }
   if (!files.length) throw new Error("Source paths match no existing files")
   return hash.digest("hex")
+}
+
+function looksTheSame(root, version, image) {
+  try {
+    const before = decodePng(fs.readFileSync(path.join(root, ".playwright-mcp", version.image)))
+    const after = decodePng(fs.readFileSync(image))
+    const diff = diffRegions(before, after)
+    return !diff.dimensionMismatch && diff.pixelIdentical
+  } catch {
+    return false // An unreadable image can't show it is unchanged.
+  }
 }
 
 export function recordScreen(
@@ -218,7 +301,28 @@ export function recordScreen(
         dirty: Boolean(git(root, "status", "--porcelain", "--", ...paths)),
         capturedAt: currentTime
       })
-    if (recapture) delete screen.approval
+    // A new image that looks the same as the approved one (under the viewer's comparison)
+    // keeps its approval: the reviewer already accepted those pixels. Anything visibly
+    // different needs a new review.
+    const previous = screen.versions.at(-2)
+    const approval = screen.approval
+    const approvedPrevious =
+      !unchanged &&
+      approval &&
+      previous &&
+      approval.source === previous.source &&
+      approval.image === previous.image &&
+      approval.capturedAt === previous.capturedAt
+    if (approvedPrevious && looksTheSame(root, previous, image)) {
+      const current = screen.versions.at(-1)
+      screen.approval = {
+        ...approval,
+        source: current.source,
+        image: current.image,
+        capturedAt: current.capturedAt,
+        carriedFrom: previous.capturedAt
+      }
+    } else if (recapture) delete screen.approval
     // Context (URL, viewport, page-text hash, ...) is kept for every new
     // version so a capture can later be checked against the page it claimed.
     if (capture && !unchanged) screen.versions.at(-1).capture = capture

@@ -235,7 +235,7 @@ Retain the explicit state owners described in [Application structure](../app_str
 - Moving `utils/` DOM lifecycles into controllers is done (`f4226b05`), and global event names have shared constants (`utils/core_events.js`; see the [core event bus](../../DEVELOPER_GUIDE.md#core-event-bus)). Preserve each surface's own lifecycle. See [Persisted case UI](../app_structure.md#persisted-case-ui) for rendering and background-update ownership.
 - Follow [JavaScript delivery](../js_pipeline.md) and [JavaScript tooling](../js_tooling.md) when adding modules; retain the core/application CSS outputs and compatibility layers.
 
-Follow [Scope and change control](../../AGENTS.md#scope-and-change-control) for module moves. Moving root-level `build_css.js` or `audit_css.js` alone has modest payoff and affects build/lint paths; prioritize command drift and CI coverage.
+Follow [Scope and change control](../../AGENTS.md#scope-and-change-control) for module moves. Moving root-level `build_css.js` alone has modest payoff and affects build/lint paths; prioritize command drift and CI coverage.
 
 ### [MIGRATION-FOLLOWUP] P3 I0 C2 — Patch upstream Stimulus LSP controller detection
 

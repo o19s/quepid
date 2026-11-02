@@ -59,6 +59,19 @@ export function linkedScreenshotStatus(
   }
   for (const [partId, part] of Object.entries(tracker.parts || {})) {
     for (const [scenarioId, scenario] of Object.entries(part.scenarios || {})) {
+      // `alternates` maps a state to the default state it varies; alternates are captured
+      // on request rather than as part of every pass.
+      const alternates = scenario.alternates || {}
+      for (const [state, primary] of Object.entries(alternates)) {
+        if (
+          !scenario.screenshots?.[state] ||
+          !scenario.screenshots?.[primary] ||
+          alternates[primary]
+        )
+          throw new Error(
+            `Alternate ${scenarioId}/${state} must vary a default state of the scenario`
+          )
+      }
       for (const [state, id] of Object.entries(scenario.screenshots || {})) {
         if (screenId !== undefined && id !== screenId) continue
         if (typeof id !== "string" || !id)
@@ -92,6 +105,7 @@ export function linkedScreenshotStatus(
           scenario: scenarioId,
           state,
           id,
+          variantOf: alternates[state] || null,
           paths,
           current,
           ...(currentOnly

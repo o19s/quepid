@@ -78,6 +78,8 @@ export function setScreenshotApproval(
 ) {
   if (typeof approved !== "boolean") throw new Error("Approval must be a boolean")
   const location = historyLocation(root)
+  // An inherited screen can be approved before this branch has recorded anything.
+  fs.mkdirSync(location.directory, { recursive: true })
   const descriptor = fs.openSync(path.join(location.directory, "record.lock"), "wx")
   try {
     const history = readHistory(root)
