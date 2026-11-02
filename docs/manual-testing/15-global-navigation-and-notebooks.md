@@ -22,7 +22,7 @@ This part covers the chrome that surrounds every logged-in page — the left ico
   3. Click **Teams** and **Scorers** navbar links — confirm they navigate directly (no dropdown, just a link).
 - [ ] Repeat on a case page: **View all** actions omit active counts; **Create a case** opens the new-case wizard. **Create a book** navigates with that case's `origin_case_id`, `scorer_id` and `team_ids[]`. On management pages, creation remains ordinary links without case-derived book parameters.
 - [ ] At 768px, expand **Toggle navigation** and repeat the dropdown checks on both surfaces; the case name, try and score remain in the workspace header.
-- **Expected:** Cases and Books dropdowns share the homepage presentation on both surfaces: rounded250px menu, blue underlined recent links, matching spacing and green create buttons. Both dropdown lists load their recent items correctly (they're lazy turbo-frames, so allow a moment on slower connections) and the action buttons work.
+- **Expected:** Cases and Books dropdowns share the homepage presentation on both surfaces: rounded 250px menu, blue underlined recent links, matching spacing and green create buttons. Both dropdown lists load their recent items correctly (they're lazy turbo-frames, so allow a moment on slower connections) and the action buttons work.
 - **Edge cases:**
   - [ ] As a brand-new user with zero cases/books, confirm the dropdowns show a sensible empty state instead of an empty blank area.
   - [ ] Open a dropdown, then immediately click elsewhere — confirm it closes without lingering rendering artifacts.
@@ -42,7 +42,7 @@ This part covers the chrome that surrounds every logged-in page — the left ico
 - [ ] **Steps:**
   1. Open the avatar dropdown (top-right).
   2. As a non-admin, confirm it shows only: My profile, Log out, (divider), API Docs.
-  3. As an admin, confirm it additionally shows: Admin Home, Users, Announcements, Job Manager (each a direct shortcut, in addition to the full Admin Home dashboard in Part 14).
+  3. As an admin, confirm it additionally shows: Admin Settings, Users, Announcements, Job Manager (each a direct shortcut, in addition to the full Admin Home dashboard in Part 14).
 - **Expected:** Admin-only links are strictly hidden from non-admins (not just visually hidden — also confirm they can't be reached by guessing the URL, per Part 14.1).
 
 ### 15.5 Cookies static page
