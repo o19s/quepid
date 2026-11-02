@@ -50,7 +50,16 @@
 #
 class User < ApplicationRecord
   def self.build_for_signup attributes
-    user = by_email(attributes[:email]).where.not(stored_raw_invitation_token: nil).first if attributes[:email].present?
+    # Deliberately skips invitation_not_accepted (the gem-provided scope for this): its
+    # .distinct trips over users.options being a plain `json` column, which PostgreSQL
+    # can't compare for equality. .first never needs de-duplication anyway.
+    if attributes[:email].present?
+      user = by_email(attributes[:email])
+        .joins(:devise_invitations)
+        .merge(DeviseInvitable::Invitation.pending)
+        .merge(DeviseInvitable::Invitation.provisioning)
+        .first
+    end
     if user
       user.assign_attributes(attributes)
       user
@@ -78,11 +87,6 @@ class User < ApplicationRecord
 
   # Associations
   has_many :api_keys, dependent: :destroy
-
-  has_many :sent_devise_invitations,
-           as:         :invited_by,
-           class_name: 'DeviseInvitable::Invitation',
-           dependent:  :nullify
 
   belongs_to :default_scorer, class_name: 'Scorer', optional: true # for communal scorers there isn't a owner
 

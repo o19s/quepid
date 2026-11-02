@@ -150,9 +150,7 @@ class AccountsControllerTest < ActionController::TestCase
       end
 
       test 'deletes an inviter while preserving the pending invitation and shared case' do
-        invitee = User.invite!({ email: 'pending-account-delete@example.com', password: '' }, user) do |member|
-          member.skip_invitation = true
-        end
+        invitee = User.invite!({ email: 'pending-account-delete@example.com', password: '', skip_invitation: true }, user)
         invitation_token = invitee.invitation_token
         team = Team.create!(name: 'Account deletion sharing')
         shared_case = Case.create!(owner: user, case_name: 'Shared account deletion case')
@@ -185,9 +183,7 @@ class AccountsControllerTest < ActionController::TestCase
       test 're-renders show with only the danger-zone section showing its errors' do
         private_case = Case.create!(owner: user, case_name: 'Retained after failed deletion')
         query = private_case.queries.create!(query_text: 'Retained query')
-        invitee = User.invite!({ email: 'retained-invitation@example.com', password: '' }, user) do |member|
-          member.skip_invitation = true
-        end
+        invitee = User.invite!({ email: 'retained-invitation@example.com', password: '', skip_invitation: true }, user)
 
         assert_no_difference('User.count') do
           delete :destroy, params: { id: user.id }
