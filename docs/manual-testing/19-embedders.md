@@ -19,6 +19,7 @@ For a local run, the Ollama container needs an embedding model: `docker exec oll
   6. Save.
 - **Expected:** Check connection shows the dimension count, the exact text sent (the instruction wrapped in `Instruct: … / Query: …`) and the first few vector values. Saving redirects to the embedder's edit page with "Embedder was successfully created."
 - **Edge cases:**
+  - [ ] Submit `https://example.com/with a space` — Save shows "Service url must be a valid http:// or https:// URL" and does not create an embedder. HTTP(S) local hostnames, ports and provider path prefixes remain supported. Missing-host (`https://`) and embedded-newline rejection are covered by model tests; the browser blocks a missing-host submission and strips newlines from the URL field before submission.
   - [ ] Voyage AI with Native truncation and Dimensions `300` — Save shows "Dimensions must be one of 256, 512, 1024 or 2048 for Voyage AI".
   - [ ] Truncation **Client-side** shows the Matryoshka warning; the Native option is disabled for a provider without a dimensions parameter.
   - [ ] A wrong key or unreachable URL — Check connection shows the provider's error in red rather than failing silently.

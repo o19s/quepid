@@ -6,7 +6,7 @@
   },
   "license": "Apache-2.0",
   "engines": {
-    "node": ">=24 <25"
+    "node": ">=26 <27"
   },
   "dependencies": {
     "@floating-ui/dom": "^1.8.0",
@@ -30,7 +30,7 @@
     "@playwright/test": "^1.64.1",
     "@stryker-mutator/core": "https://github.com/davidshq/stryker-js/releases/download/crash-recovery-v10.0.0-3/stryker-mutator-core-10.0.0.tgz",
     "@stryker-mutator/vitest-runner": "https://github.com/davidshq/stryker-js/releases/download/crash-recovery-v10.0.0-3/stryker-mutator-vitest-runner-10.0.0.tgz",
-    "@types/node": "^24.19.2",
+    "@types/node": "^26.0.0",
     "@vitest/eslint-plugin": "^1.6.28",
     "chokidar": "6.0.0",
     "eslint": "^10.13.0",
@@ -64,7 +64,7 @@
     "format:css:check": "prettier --check \"app/assets/stylesheets/**/*.css\"",
     "fix:css": "stylelint --fix \"app/assets/stylesheets/**/*.css\"; status=$?; prettier --write \"app/assets/stylesheets/**/*.css\" && exit $status",
     "lint:erb": "herb-lint",
-    "lint:js": "eslint app/javascript test/javascript test/playwright scripts config/javascript_lint_scope.mjs eslint.config.mjs stryker.config.mjs build_css.js audit_css.js esbuild.config.js vitest.config.js lib db/scorers db/mapper_based_search_engines",
+    "lint:js": "eslint --cache --cache-strategy content --cache-location node_modules/.cache/eslint/ app/javascript test/javascript test/playwright scripts config/javascript_lint_scope.mjs eslint.config.mjs stryker.config.mjs build_css.js audit_css.js esbuild.config.js vitest.config.js lib db/scorers db/mapper_based_search_engines",
     "format:js": "node scripts/javascript_lint.mjs write",
     "format:js:check": "node scripts/javascript_lint.mjs check",
     "build": "yarn build:css && yarn build:core",
