@@ -250,6 +250,9 @@ describe("settings catalog defaults", () => {
       )
     }
     expect(catalog.troubleshootingWikiUrl("searchapi", "vespa")).toContain("Vespa")
+    expect(catalog.troubleshootingWikiUrl("searchapi", "qdrant")).toBe(
+      "https://github.com/o19s/quepid/wiki/Troubleshooting-Qdrant-and-Quepid"
+    )
   })
 
   it("limits escapeQuery support to solr, es and os", () => {

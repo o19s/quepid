@@ -24,4 +24,25 @@ module JsonHelper
 
     JSON.pretty_generate(json_data)
   end
+
+  # Like format_json, but accepts any value: a String that holds JSON is pretty-printed too, for
+  # read-only display - a Search API test query is often JSON, but may also be plain text.
+  # Anything that does not parse as a JSON object or array is returned as-is.
+  #
+  # Examples:
+  #   format_for_display('{"api-key":"abc"}')
+  #   # => "{\n  \"api-key\": \"abc\"\n}"
+  #
+  #   format_for_display('q=star wars')
+  #   # => 'q=star wars'
+  #
+  def format_for_display value
+    return format_json(value) unless value.is_a?(String)
+    return value unless value.lstrip.start_with?('{', '[')
+
+    parsed = JSON.parse(value)
+    parsed.is_a?(Hash) || parsed.is_a?(Array) ? JSON.pretty_generate(parsed) : value
+  rescue JSON::ParserError
+    value
+  end
 end
