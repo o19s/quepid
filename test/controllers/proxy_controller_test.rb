@@ -173,12 +173,14 @@ class ProxyControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test 'handle a proxy error cleanly' do
-    get proxy_fetch_url params: {
-      url: 'https://broken.quepidapp.com:9999/',
-    }
-    assert_response :internal_server_error
-    assert_not_nil response.parsed_body['proxy_error']
+  describe 'error handling' do
+    test 'handle a proxy error cleanly' do
+      get proxy_fetch_url params: {
+        url: 'https://broken.quepidapp.com:9999/',
+      }
+      assert_response :internal_server_error
+      assert_not_nil response.parsed_body['proxy_error']
+    end
   end
 
   describe 'authentication' do

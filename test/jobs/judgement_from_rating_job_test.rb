@@ -80,14 +80,16 @@ class JudgementFromRatingJobTest < ActiveJob::TestCase
     end
   end
 
-  test 'a queued job whose rating has since been deleted does not blow up the Linked Cases check' do
-    rating = Rating.create! query: query_with_book, doc_id: 'a_rating_about_to_vanish', rating: 2, user: user
+  describe 'a rating deleted before the job runs' do
+    test 'a queued job whose rating has since been deleted does not blow up the Linked Cases check' do
+      rating = Rating.create! query: query_with_book, doc_id: 'a_rating_about_to_vanish', rating: 2, user: user
 
-    JudgementFromRatingJob.perform_later(user, rating)
-    rating.destroy
+      JudgementFromRatingJob.perform_later(user, rating)
+      rating.destroy
 
-    assert_nothing_raised do
-      assert_not JudgementFromRatingJob.actively_populating?(book, query_with_book.case)
+      assert_nothing_raised do
+        assert_not JudgementFromRatingJob.actively_populating?(book, query_with_book.case)
+      end
     end
   end
 end

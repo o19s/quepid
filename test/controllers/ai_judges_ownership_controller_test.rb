@@ -88,59 +88,59 @@ class AiJudgesOwnershipControllerTest < ActionDispatch::IntegrationTest
       assert_response :not_found
     end
   end
-end
 
-class AiJudgesOwnershipControllerTest
-  test 'create and update use Turbo statuses and preserve book context on validation failure' do
-    assert_no_difference('AiJudge.count') do
-      post ai_judges_url, params: { book_id: books(:james_bond_movies).id, user: { name: '', system_prompt: 'Judge it.' } }
+  describe 'validation and sharing' do
+    test 'create and update use Turbo statuses and preserve book context on validation failure' do
+      assert_no_difference('AiJudge.count') do
+        post ai_judges_url, params: { book_id: books(:james_bond_movies).id, user: { name: '', system_prompt: 'Judge it.' } }
+      end
+      assert_response :unprocessable_content
+      assert_select 'input[name="user[name]"]'
+      assert_select "input[name=book_id][value='#{books(:james_bond_movies).id}']"
+
+      owned = AiJudge.create!(name: 'Owned', owner: user, system_prompt: 'Judge it.')
+      patch ai_judge_url(owned), params: { user: { name: '', system_prompt: 'changed' } }
+      assert_response :unprocessable_content
+      assert_equal 'Judge it.', owned.reload.system_prompt
     end
-    assert_response :unprocessable_content
-    assert_select 'input[name="user[name]"]'
-    assert_select "input[name=book_id][value='#{books(:james_bond_movies).id}']"
 
-    owned = AiJudge.create!(name: 'Owned', owner: user, system_prompt: 'Judge it.')
-    patch ai_judge_url(owned), params: { user: { name: '', system_prompt: 'changed' } }
-    assert_response :unprocessable_content
-    assert_equal 'Judge it.', owned.reload.system_prompt
-  end
-
-  test 'malformed options returns a retryable validation failure without saving' do
-    owned = AiJudge.create!(name: 'Owned', owner: user, system_prompt: 'Judge it.')
-    patch ai_judge_url(owned), params: { user: { name: 'Unsaved', options: '{bad' } }
-    assert_response :unprocessable_content
-    assert_equal 'Owned', owned.reload.name
-    assert_select 'input[name="user[name]"]'
-    assert_no_difference('AiJudge.count') do
-      post ai_judges_url, params: { user: { name: 'Invalid JSON', options: '{bad', system_prompt: 'Judge it.' } }
+    test 'malformed options returns a retryable validation failure without saving' do
+      owned = AiJudge.create!(name: 'Owned', owner: user, system_prompt: 'Judge it.')
+      patch ai_judge_url(owned), params: { user: { name: 'Unsaved', options: '{bad' } }
+      assert_response :unprocessable_content
+      assert_equal 'Owned', owned.reload.name
+      assert_select 'input[name="user[name]"]'
+      assert_no_difference('AiJudge.count') do
+        post ai_judges_url, params: { user: { name: 'Invalid JSON', options: '{bad', system_prompt: 'Judge it.' } }
+      end
+      assert_response :unprocessable_content
     end
-    assert_response :unprocessable_content
-  end
 
-  test 'private judges reject show update and destroy from another user' do
-    owned = AiJudge.create!(name: 'Private', owner: users(:doug), system_prompt: 'Judge it.')
-    get ai_judge_url(owned)
-    assert_response :not_found
-    patch ai_judge_url(owned), params: { user: { name: 'Changed' } }
-    assert_response :not_found
-    assert_no_difference('AiJudge.count') { delete ai_judge_url(owned) }
-    assert_response :not_found
-    assert_equal 'Private', owned.reload.name
-  end
+    test 'private judges reject show update and destroy from another user' do
+      owned = AiJudge.create!(name: 'Private', owner: users(:doug), system_prompt: 'Judge it.')
+      get ai_judge_url(owned)
+      assert_response :not_found
+      patch ai_judge_url(owned), params: { user: { name: 'Changed' } }
+      assert_response :not_found
+      assert_no_difference('AiJudge.count') { delete ai_judge_url(owned) }
+      assert_response :not_found
+      assert_equal 'Private', owned.reload.name
+    end
 
-  test 'team members can edit a shared judge while inaccessible team memberships survive' do
-    hidden_team = teams(:owned_team)
-    ai_judge.teams << hidden_team
-    patch ai_judge_url(ai_judge), params: { user: { name: 'Shared edited', team_ids: [ '' ] } }
-    assert_response :see_other
-    assert_equal 'Shared edited', ai_judge.reload.name
-    assert_includes ai_judge.teams, hidden_team
-    assert_not_includes ai_judge.teams, team
-  end
+    test 'team members can edit a shared judge while inaccessible team memberships survive' do
+      hidden_team = teams(:owned_team)
+      ai_judge.teams << hidden_team
+      patch ai_judge_url(ai_judge), params: { user: { name: 'Shared edited', team_ids: [ '' ] } }
+      assert_response :see_other
+      assert_equal 'Shared edited', ai_judge.reload.name
+      assert_includes ai_judge.teams, hidden_team
+      assert_not_includes ai_judge.teams, team
+    end
 
-  test 'cannot share a judge with an inaccessible team' do
-    post ai_judges_url, params: { user: { name: 'Private', system_prompt: 'Judge it.', team_ids: [ teams(:owned_team).id ] } }
-    assert_response :see_other
-    assert_empty AiJudge.order(:id).last.teams
+    test 'cannot share a judge with an inaccessible team' do
+      post ai_judges_url, params: { user: { name: 'Private', system_prompt: 'Judge it.', team_ids: [ teams(:owned_team).id ] } }
+      assert_response :see_other
+      assert_empty AiJudge.order(:id).last.teams
+    end
   end
 end

@@ -80,16 +80,18 @@ module Api
           end
         end
 
-        { 'alice:******' => 'alice:secret', 'bob:newpass' => 'bob:newpass', '' => '', nil => nil }.each do |submitted, expected|
-          test "API update preserves credential policy for #{submitted.inspect}" do
-            one.update!(basic_auth_credential: 'alice:secret', proxy_requests: true, api_method: 'GET')
-            patch :update, params: { id: one.id, search_endpoint: { basic_auth_credential: submitted } }
+        describe 'credential policy on update' do
+          { 'alice:******' => 'alice:secret', 'bob:newpass' => 'bob:newpass', '' => '', nil => nil }.each do |submitted, expected|
+            test "API update preserves credential policy for #{submitted.inspect}" do
+              one.update!(basic_auth_credential: 'alice:secret', proxy_requests: true, api_method: 'GET')
+              patch :update, params: { id: one.id, search_endpoint: { basic_auth_credential: submitted } }
 
-            assert_response :no_content
-            if expected.nil?
-              assert_nil one.reload.basic_auth_credential
-            else
-              assert_equal expected, one.reload.basic_auth_credential
+              assert_response :no_content
+              if expected.nil?
+                assert_nil one.reload.basic_auth_credential
+              else
+                assert_equal expected, one.reload.basic_auth_credential
+              end
             end
           end
         end

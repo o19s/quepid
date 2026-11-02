@@ -203,32 +203,34 @@ class EmbedderTest < ActiveSupport::TestCase
     end
   end
 
-  test 'deleting the owner keeps the embedder, unowned' do
-    owner = User.create!(email: 'embedder-owner@example.com', password: 'password', name: 'Owner', agreed: true)
-    embedder = build_embedder(owner: owner)
-    embedder.save!
+  describe 'dependent records' do
+    test 'deleting the owner keeps the embedder, unowned' do
+      owner = User.create!(email: 'embedder-owner@example.com', password: 'password', name: 'Owner', agreed: true)
+      embedder = build_embedder(owner: owner)
+      embedder.save!
 
-    owner.destroy!
+      owner.destroy!
 
-    assert_nil embedder.reload.owner_id
-  end
+      assert_nil embedder.reload.owner_id
+    end
 
-  test 'deleting an embedder unlinks its cases' do
-    acase = cases(:shared_with_team)
-    acase.update!(embedder: embedders(:openai_small))
+    test 'deleting an embedder unlinks its cases' do
+      acase = cases(:shared_with_team)
+      acase.update!(embedder: embedders(:openai_small))
 
-    embedders(:openai_small).destroy!
+      embedders(:openai_small).destroy!
 
-    assert_nil acase.reload.embedder_id
-  end
+      assert_nil acase.reload.embedder_id
+    end
 
-  test 'encrypts the api key at rest' do
-    embedder = build_embedder(api_key: 'sk-secret')
-    embedder.save!
+    test 'encrypts the api key at rest' do
+      embedder = build_embedder(api_key: 'sk-secret')
+      embedder.save!
 
-    raw = Embedder.connection.select_value("SELECT api_key FROM embedders WHERE id = #{embedder.id}")
+      raw = Embedder.connection.select_value("SELECT api_key FROM embedders WHERE id = #{embedder.id}")
 
-    assert_not_includes raw, 'sk-secret'
-    assert_equal 'sk-secret', embedder.reload.api_key
+      assert_not_includes raw, 'sk-secret'
+      assert_equal 'sk-secret', embedder.reload.api_key
+    end
   end
 end

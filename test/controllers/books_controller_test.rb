@@ -494,73 +494,73 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
-  # rubocop:disable Metrics/AbcSize
-  def test_functionality
-    # definitly an opportunity for refactoring!
-
-    # get the login page
-    # get '/books'
-    # assert_equal 302, status
-    # follow_redirect!
-
-    login_user_for_integration_test user
-
-    get '/books'
-    assert_equal 200, status
-
-    patch "/books/#{book.id}/combine", params: { book_ids: { "#{james_bond_movies.id}": '1' } }
-    follow_redirect!
-    assert_equal 'Combined 7 query/doc pairs.', flash[:notice]
-
-    book.reload
-    assert_equal book.query_doc_pairs.count, james_bond_movies.query_doc_pairs.count + 1
-    assert_equal book.judgements.count, james_bond_movies.judgements.count + 1
-
-    patch "/books/#{book.id}/combine",
-          params: { book_ids: { "#{james_bond_movies.id}": '1', "#{james_bond_movies.id}": '1' } }
-    follow_redirect!
-    assert_equal 'Combined 7 query/doc pairs.', flash[:notice]
-
-    book.reload
-    assert_equal book.query_doc_pairs.count, james_bond_movies.query_doc_pairs.count + 1
-    assert_equal book.judgements.count, james_bond_movies.judgements.count + 1
-
-    patch "/books/#{book.id}/combine", params: { book_ids: { "#{book.id}": '1' } }
-    follow_redirect!
-    assert_equal 'Combined 8 query/doc pairs.', flash[:notice]
-
-    book.reload
-    assert_equal 8, book.query_doc_pairs.count
-  end
-
-  # rubocop:enable Metrics/AbcSize
-  def test_more
-    login_user_for_integration_test user
-
-    assert_equal 1, book.query_doc_pairs.count
-
-    patch "/books/#{book.id}/combine", params: { book_ids: { "#{james_bond_movies.id}": '1' } }
-    follow_redirect!
-    assert_equal 'Combined 7 query/doc pairs.', flash[:notice]
-
-    assert_equal 8, book.query_doc_pairs.count
-  end
-
-  def test_differing_scales_blows_up
-    login_user_for_integration_test user
-
-    book_to_merge = Book.new(name: 'Book with a 1,2,3,4 scale', teams: book.teams,
-                             scale: [ 1, 2, 3, 4 ])
-    book_to_merge.save!
-
-    params = { book_ids: { "#{book_to_merge.id}": '1' } }
-
-    patch "/books/#{book.id}/combine", params: params
-    follow_redirect!
-    assert_equal "One of the books chosen doesn't have a scale matching [0, 1]", flash[:alert]
-  end
-
   describe 'combining books' do
+    # rubocop:disable Metrics/AbcSize
+    def test_functionality
+      # definitly an opportunity for refactoring!
+
+      # get the login page
+      # get '/books'
+      # assert_equal 302, status
+      # follow_redirect!
+
+      login_user_for_integration_test user
+
+      get '/books'
+      assert_equal 200, status
+
+      patch "/books/#{book.id}/combine", params: { book_ids: { "#{james_bond_movies.id}": '1' } }
+      follow_redirect!
+      assert_equal 'Combined 7 query/doc pairs.', flash[:notice]
+
+      book.reload
+      assert_equal book.query_doc_pairs.count, james_bond_movies.query_doc_pairs.count + 1
+      assert_equal book.judgements.count, james_bond_movies.judgements.count + 1
+
+      patch "/books/#{book.id}/combine",
+            params: { book_ids: { "#{james_bond_movies.id}": '1', "#{james_bond_movies.id}": '1' } }
+      follow_redirect!
+      assert_equal 'Combined 7 query/doc pairs.', flash[:notice]
+
+      book.reload
+      assert_equal book.query_doc_pairs.count, james_bond_movies.query_doc_pairs.count + 1
+      assert_equal book.judgements.count, james_bond_movies.judgements.count + 1
+
+      patch "/books/#{book.id}/combine", params: { book_ids: { "#{book.id}": '1' } }
+      follow_redirect!
+      assert_equal 'Combined 8 query/doc pairs.', flash[:notice]
+
+      book.reload
+      assert_equal 8, book.query_doc_pairs.count
+    end
+
+    # rubocop:enable Metrics/AbcSize
+    def test_more
+      login_user_for_integration_test user
+
+      assert_equal 1, book.query_doc_pairs.count
+
+      patch "/books/#{book.id}/combine", params: { book_ids: { "#{james_bond_movies.id}": '1' } }
+      follow_redirect!
+      assert_equal 'Combined 7 query/doc pairs.', flash[:notice]
+
+      assert_equal 8, book.query_doc_pairs.count
+    end
+
+    def test_differing_scales_blows_up
+      login_user_for_integration_test user
+
+      book_to_merge = Book.new(name: 'Book with a 1,2,3,4 scale', teams: book.teams,
+                               scale: [ 1, 2, 3, 4 ])
+      book_to_merge.save!
+
+      params = { book_ids: { "#{book_to_merge.id}": '1' } }
+
+      patch "/books/#{book.id}/combine", params: params
+      follow_redirect!
+      assert_equal "One of the books chosen doesn't have a scale matching [0, 1]", flash[:alert]
+    end
+
     test 'combine rejects an inaccessible source before merging accessible ones' do
       login_user_for_integration_test user
       inaccessible = Book.create!(name: 'Private', scale: book.scale)
@@ -719,23 +719,25 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
-  def test_combining_single_rater_strategy_into_multiple_rater_strategy_book_works
-    login_user_for_integration_test user
+  describe 'combining books with differing rater strategies' do
+    def test_combining_single_rater_strategy_into_multiple_rater_strategy_book_works
+      login_user_for_integration_test user
 
-    book_with_multiple_raters = Book.create(name:              'Book with a 1,2,3,4 scale',
-                                            teams:             single_rater_book.teams,
-                                            scale:             single_rater_book.scale,
-                                            scale_with_labels: single_rater_book.scale_with_labels)
+      book_with_multiple_raters = Book.create(name:              'Book with a 1,2,3,4 scale',
+                                              teams:             single_rater_book.teams,
+                                              scale:             single_rater_book.scale,
+                                              scale_with_labels: single_rater_book.scale_with_labels)
 
-    params = { book_ids: { "#{single_rater_book.id}": '1' } }
+      params = { book_ids: { "#{single_rater_book.id}": '1' } }
 
-    patch "/books/#{book_with_multiple_raters.id}/combine", params: params
-    follow_redirect!
-    assert_nil flash[:alert]
-    assert_equal 'Combined 2 query/doc pairs.', flash[:notice]
+      patch "/books/#{book_with_multiple_raters.id}/combine", params: params
+      follow_redirect!
+      assert_nil flash[:alert]
+      assert_equal 'Combined 2 query/doc pairs.', flash[:notice]
 
-    assert_equal 2, book_with_multiple_raters.query_doc_pairs.count
-    assert_equal 2, book_with_multiple_raters.judgements.count
+      assert_equal 2, book_with_multiple_raters.query_doc_pairs.count
+      assert_equal 2, book_with_multiple_raters.judgements.count
+    end
   end
 
   describe 'remapping judgement ratings' do
@@ -814,57 +816,59 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
-  def test_scorer_id_copies_scale_fields_when_creating_book
-    login_user_for_integration_test user
+  describe 'creating and updating books' do
+    def test_scorer_id_copies_scale_fields_when_creating_book
+      login_user_for_integration_test user
 
-    scorer = user.scorers_involved_with.first
+      scorer = user.scorers_involved_with.first
 
-    post '/books', params: {
-      book: {
-        name:      'Test Book with Scorer',
-        scorer_id: scorer.id,
-        team_ids:  [ user.teams.first.id ],
-      },
-    }
+      post '/books', params: {
+        book: {
+          name:      'Test Book with Scorer',
+          scorer_id: scorer.id,
+          team_ids:  [ user.teams.first.id ],
+        },
+      }
 
-    follow_redirect!
-    created_book = Book.last
+      follow_redirect!
+      created_book = Book.last
 
-    assert_equal scorer.scale, created_book.scale
-    assert_nil created_book.scale_with_labels
-  end
+      assert_equal scorer.scale, created_book.scale
+      assert_nil created_book.scale_with_labels
+    end
 
-  def test_updating_a_book_removes_unchecked_visible_teams
-    login_user_for_integration_test user
-    team = user.teams.first
-    book.teams << team unless book.teams.include?(team)
+    def test_updating_a_book_removes_unchecked_visible_teams
+      login_user_for_integration_test user
+      team = user.teams.first
+      book.teams << team unless book.teams.include?(team)
 
-    patch "/books/#{book.id}", params: {
-      book: {
-        name:     book.name,
-        team_ids: [],
-      },
-    }
+      patch "/books/#{book.id}", params: {
+        book: {
+          name:     book.name,
+          team_ids: [],
+        },
+      }
 
-    assert_redirected_to book_path(book)
-    assert_not_includes book.reload.team_ids, team.id
-  end
+      assert_redirected_to book_path(book)
+      assert_not_includes book.reload.team_ids, team.id
+    end
 
-  def test_creating_book_requires_a_rating_scale
-    login_user_for_integration_test user
+    def test_creating_book_requires_a_rating_scale
+      login_user_for_integration_test user
 
-    post '/books', params: {
-      book: {
-        name:     'Book without a rating scale',
-        team_ids: [ user.teams.first.id ],
-      },
-    }
+      post '/books', params: {
+        book: {
+          name:     'Book without a rating scale',
+          team_ids: [ user.teams.first.id ],
+        },
+      }
 
-    assert_response :unprocessable_content
-    assert_select '#error_explanation', /Scorer must be selected/
-    assert_select 'select[name="book[scorer_id]"].is-invalid'
-    assert_equal 'Book without a rating scale', assigns(:book).name
-    assert_not Book.exists?(name: 'Book without a rating scale')
+      assert_response :unprocessable_content
+      assert_select '#error_explanation', /Scorer must be selected/
+      assert_select 'select[name="book[scorer_id]"].is-invalid'
+      assert_equal 'Book without a rating scale', assigns(:book).name
+      assert_not Book.exists?(name: 'Book without a rating scale')
+    end
   end
 
   describe 'cancelling judge judy' do
@@ -920,27 +924,29 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test 'personal progress uses the same rank depth for judged and total pairs' do
-    login_user_for_integration_test user
-    scoped_book = Book.create!(name: 'Personal depth scope', owner: user, scale: [ 0, 1 ], rank_depth: 1)
-    3.times do |index|
-      pair = scoped_book.query_doc_pairs.create!(query_text: 'Depth', doc_id: index.to_s, position: index + 1)
-      pair.judgements.create!(user: user, rating: 1)
+  describe 'judge overview' do
+    test 'personal progress uses the same rank depth for judged and total pairs' do
+      login_user_for_integration_test user
+      scoped_book = Book.create!(name: 'Personal depth scope', owner: user, scale: [ 0, 1 ], rank_depth: 1)
+      3.times do |index|
+        pair = scoped_book.query_doc_pairs.create!(query_text: 'Depth', doc_id: index.to_s, position: index + 1)
+        pair.judgements.create!(user: user, rating: 1)
+      end
+
+      get judge_overview_book_path(scoped_book)
+      assert_response :success
+      assert_equal 1, assigns(:user_judgement_count)
+      assert_equal 1, assigns(:total_pairs)
+      assert_equal 100, assigns(:user_progress_pct)
+      assert_equal 3, assigns(:user_total_judgement_count)
+      assert_select 'div.display-5.text-success', text: '3'
+
+      scoped_book.update!(rank_depth: nil)
+      get judge_overview_book_path(scoped_book)
+      assert_equal 3, assigns(:user_judgement_count)
+      assert_equal 3, assigns(:total_pairs)
+      assert_equal 100, assigns(:user_progress_pct)
     end
-
-    get judge_overview_book_path(scoped_book)
-    assert_response :success
-    assert_equal 1, assigns(:user_judgement_count)
-    assert_equal 1, assigns(:total_pairs)
-    assert_equal 100, assigns(:user_progress_pct)
-    assert_equal 3, assigns(:user_total_judgement_count)
-    assert_select 'div.display-5.text-success', text: '3'
-
-    scoped_book.update!(rank_depth: nil)
-    get judge_overview_book_path(scoped_book)
-    assert_equal 3, assigns(:user_judgement_count)
-    assert_equal 3, assigns(:total_pairs)
-    assert_equal 100, assigns(:user_progress_pct)
   end
 
   describe 'updating' do
@@ -1010,81 +1016,84 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test 'describes the book by its distinct query and query/doc pair counts' do
-    login_user_for_integration_test user
+  describe 'judge activity' do
+    test 'describes the book by its distinct query and query/doc pair counts' do
+      login_user_for_integration_test user
 
-    scoped_book = Book.create!(name: 'Counts Book', owner: user, scale: [ 0, 1 ])
-    scoped_book.query_doc_pairs.create!(query_text: 'shirts', doc_id: 'd1', position: 1)
-    scoped_book.query_doc_pairs.create!(query_text: 'shirts', doc_id: 'd2', position: 2)
-    scoped_book.query_doc_pairs.create!(query_text: 'pants', doc_id: 'd3', position: 1)
+      scoped_book = Book.create!(name: 'Counts Book', owner: user, scale: [ 0, 1 ])
+      scoped_book.query_doc_pairs.create!(query_text: 'shirts', doc_id: 'd1', position: 1)
+      scoped_book.query_doc_pairs.create!(query_text: 'shirts', doc_id: 'd2', position: 2)
+      scoped_book.query_doc_pairs.create!(query_text: 'pants', doc_id: 'd3', position: 1)
 
-    get "/books/#{scoped_book.id}"
+      get "/books/#{scoped_book.id}"
 
-    assert_response :success
-    assert_match 'This book has 2 queries and 3 query/doc pairs.', response.body
-  end
+      assert_response :success
+      assert_match 'This book has 2 queries and 3 query/doc pairs.', response.body
+    end
 
-  test 'judge_activity renders the same partial content polled as a broadcast fallback' do
-    login_user_for_integration_test user
-    james_bond_movies.ai_judges << judge_judy unless james_bond_movies.ai_judges.include?(judge_judy)
+    test 'judge_activity renders the same partial content polled as a broadcast fallback' do
+      login_user_for_integration_test user
+      james_bond_movies.ai_judges << judge_judy unless james_bond_movies.ai_judges.include?(judge_judy)
 
-    get judge_activity_book_path(james_bond_movies)
-
-    assert_response :success
-    assert_match "judge-row-#{judge_judy.id}", response.body
-    assert_match 'Judge Judy', response.body
-  end
-
-  test 'polling judge_activity does not record a book view, while opening the book does' do
-    login_user_for_integration_test user
-
-    assert_no_enqueued_jobs only: TrackBookViewedJob do
       get judge_activity_book_path(james_bond_movies)
+
+      assert_response :success
+      assert_match "judge-row-#{judge_judy.id}", response.body
+      assert_match 'Judge Judy', response.body
     end
-    assert_response :success
 
-    assert_enqueued_jobs 1, only: TrackBookViewedJob do
-      get book_path(james_bond_movies)
+    test 'polling judge_activity does not record a book view, while opening the book does' do
+      login_user_for_integration_test user
+
+      assert_no_enqueued_jobs only: TrackBookViewedJob do
+        get judge_activity_book_path(james_bond_movies)
+      end
+      assert_response :success
+
+      assert_enqueued_jobs 1, only: TrackBookViewedJob do
+        get book_path(james_bond_movies)
+      end
     end
-  end
 
-  test 'lists assigned AI judge in Judge Activity table even with no judgements' do
-    login_user_for_integration_test user
-    james_bond_movies.ai_judges << judge_judy unless james_bond_movies.ai_judges.include?(judge_judy)
-    james_bond_movies.judgements.where(user: judge_judy).delete_all
+    test 'lists assigned AI judge in Judge Activity table even with no judgements' do
+      login_user_for_integration_test user
+      james_bond_movies.ai_judges << judge_judy unless james_bond_movies.ai_judges.include?(judge_judy)
+      james_bond_movies.judgements.where(user: judge_judy).delete_all
 
-    get "/books/#{james_bond_movies.id}"
+      get "/books/#{james_bond_movies.id}"
 
-    assert_response :success
-    assert_select "#judge-row-#{judge_judy.id}" do
-      assert_select 'button[title=?]', 'Judge documents'
+      assert_response :success
+      assert_select "#judge-row-#{judge_judy.id}" do
+        assert_select 'button[title=?]', 'Judge documents'
+      end
     end
-  end
-  test 'creating a book persists the auto-run flag on its new assignment' do
-    login_user_for_integration_test user
-    post books_path, params: {
-      book: { name: 'Auto-run new book', scorer_id: communal_scorer.id,
-              ai_judge_ids: [ judge_judy.id ], auto_run_ai_judge_ids: [ judge_judy.id ] },
-    }
-    assert_response :see_other
-    created = Book.find_by!(name: 'Auto-run new book')
-    assert_predicate created.books_ai_judges.find_by!(user_id: judge_judy.id), :auto_run?
-  end
 
-  test 'an omitted auto-run field preserves the retained assignment setting' do
-    login_user_for_integration_test user
-    james_bond_movies.books_ai_judges.find_by!(user_id: judge_judy.id).update!(auto_run: true)
-    patch book_path(james_bond_movies), params: {
-      book: { name: james_bond_movies.name, ai_judge_ids: [ judge_judy.id ] },
-    }
-    assert_response :see_other
-    assert_predicate james_bond_movies.books_ai_judges.find_by!(user_id: judge_judy.id), :auto_run?
-  end
+    test 'creating a book persists the auto-run flag on its new assignment' do
+      login_user_for_integration_test user
+      post books_path, params: {
+        book: { name: 'Auto-run new book', scorer_id: communal_scorer.id,
+                ai_judge_ids: [ judge_judy.id ], auto_run_ai_judge_ids: [ judge_judy.id ] },
+      }
+      assert_response :see_other
+      created = Book.find_by!(name: 'Auto-run new book')
+      assert_predicate created.books_ai_judges.find_by!(user_id: judge_judy.id), :auto_run?
+    end
 
-  test 'poll removes vanished rows and retains viewer-scoped prompt eligibility' do
-    login_user_for_integration_test user
-    get judge_activity_book_path(james_bond_movies), params: { known_judge_ids: '999999' }
-    assert_response :success
-    assert_select 'turbo-stream[action="remove"][target="judge-row-999999"]'
+    test 'an omitted auto-run field preserves the retained assignment setting' do
+      login_user_for_integration_test user
+      james_bond_movies.books_ai_judges.find_by!(user_id: judge_judy.id).update!(auto_run: true)
+      patch book_path(james_bond_movies), params: {
+        book: { name: james_bond_movies.name, ai_judge_ids: [ judge_judy.id ] },
+      }
+      assert_response :see_other
+      assert_predicate james_bond_movies.books_ai_judges.find_by!(user_id: judge_judy.id), :auto_run?
+    end
+
+    test 'poll removes vanished rows and retains viewer-scoped prompt eligibility' do
+      login_user_for_integration_test user
+      get judge_activity_book_path(james_bond_movies), params: { known_judge_ids: '999999' }
+      assert_response :success
+      assert_select 'turbo-stream[action="remove"][target="judge-row-999999"]'
+    end
   end
 end

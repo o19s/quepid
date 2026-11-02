@@ -293,10 +293,12 @@ class ApplicationHelperTest < ActionView::TestCase
     end
   end
 
-  test 'book and case titles keep names as typed' do
-    assert_equal 'Book ES McKey', book_title(Book.new(name: 'ES McKey'))
-    assert_equal 'book ES', book_title(Book.new(name: 'book ES'))
-    assert_equal 'Case ES McKey', case_title(Case.new(case_name: 'ES McKey'))
-    assert_equal 'case ES', case_title(Case.new(case_name: 'case ES'))
+  describe 'book and case titles' do
+    test 'book and case titles keep names as typed' do
+      assert_equal 'Book ES McKey', book_title(Book.new(name: 'ES McKey'))
+      assert_equal 'book ES', book_title(Book.new(name: 'book ES'))
+      assert_equal 'Case ES McKey', case_title(Case.new(case_name: 'ES McKey'))
+      assert_equal 'case ES', case_title(Case.new(case_name: 'case ES'))
+    end
   end
 end
