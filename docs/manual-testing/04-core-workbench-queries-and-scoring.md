@@ -73,6 +73,8 @@ Before testing individual features, get oriented:
 
 ### 4.6 Rate a document
 
+`test/playwright/rate_score_reload.spec.ts` automates the main flow (rate, score update, reload, RESET, reload) on a disposable clone; drive this scenario for what it doesn't check, such as the visual rating colors and screen-reader labels.
+
 - [ ] **Steps:**
   1. Expand a query to view its search results.
   2. Click a document's rating badge to open the rating popover.
@@ -80,9 +82,13 @@ Before testing individual features, get oriented:
   4. Reload the page and confirm it persisted.
   5. Reopen the popover and click **RESET**.
 - **Expected:** Rating saves immediately, updates the badge color/value, and rolls into the query and case score. RESET clears the rating back to the unrated `--` badge (screen readers announce "Rate document: Unrated"). Rating triggers, scale values and RESET are buttons usable with Enter/Space; numeric values (and enabled scale labels) identify ratings without color.
-- **Edge cases:**
-  - [ ] Rate a document that can't be uniquely identified (missing/duplicate doc id) — confirm the "This document can't be uniquely identified..." banner appears instead of a rating control.
-  - [ ] Rate documents until you reach the scorer's "depth of rating" cutoff — confirm the "Results above are counted in scoring" note appears at the right rank.
+
+### 4.6b Rating edge cases: unidentifiable documents and the depth-of-rating cutoff
+
+- [ ] **Steps:**
+  1. Rate a document that can't be uniquely identified (missing/duplicate doc id) — confirm the "This document can't be uniquely identified..." banner appears instead of a rating control.
+  2. Rate documents until you reach the scorer's "depth of rating" cutoff — confirm the "Results above are counted in scoring" note appears at the right rank.
+- **Expected:** Unidentifiable documents show the banner instead of a rating control, and the scoring note appears at the scorer's cutoff rank.
 
 ### 4.7 Case & query score badges
 
@@ -218,22 +224,36 @@ Every expanded query row has a small toolbar beyond the tools already covered ab
   - [ ] Leave both fields blank and save — should succeed without error (notes are optional).
   - [ ] Confirm the **Information Need** value entered here is the same one referenced/exported by the "Information Need" export/import format in Part 6.1/6.2 — edit it here, then run an Information Need export, and confirm it round-trips correctly.
 
-### 4.17 Workbench boot & case/try navigation
+### 4.17 Workbench boot
+
+Navigation is covered by 4.17b; missing cases, tries and routes by 4.17c.
 
 - [ ] **Steps:**
   1. Navigate directly to `/case/:id/try/:try_number` for an existing case. Confirm the workbench boots (header, toolbar, query list) with no console errors.
      In the Network panel, confirm bootstrap does not GET `/api/users/current` or `/api/cases/:id`: the initial user/case data comes from the authorized Rails page. Queries, scorers and other independently owned data still load through APIs.
-  2. From the header's **Relevancy Cases** dropdown, click a different case. Confirm the browser does a full page navigation (URL changes, page reloads) to that case's workbench, which then boots correctly.
-  3. Navigate to bare `/case` (no id). Confirm it loads your most recent non-archived case's workbench rather than a "Not Found" page.
-  4. Navigate to a path Rails doesn't route at all (e.g. `/case/x/y/z/garbage`). Confirm you get Rails' own 404 rather than a client-side application shell.
-  5. Hard-reload an existing case, expand a query and immediately open **Set Options**. Confirm it shows that query's current options; cancel, then filter/sort the list and collapse the query. Confirm the controls work without another bootstrap or duplicate actions.
-- **Expected:** Navigation loads the workbench (or a real 404) via a normal server-rendered page load — case/try switching is no longer an in-page SPA transition.
+  2. Hard-reload an existing case, expand a query and immediately open **Set Options**. Confirm it shows that query's current options; cancel, then filter/sort the list and collapse the query. Confirm the controls work without another bootstrap or duplicate actions.
+- **Expected:** The workbench boots from the server-rendered page, and its controls work without another bootstrap or duplicate actions.
+- **Edge cases:**
+  - [ ] Force customer-engine searches to fail. Confirm the booted toolbar remains usable and the search error is visible; remove the failure and reload to confirm successful recovery.
+
+### 4.17b Case and try navigation
+
+- [ ] **Steps:**
+  1. From the header's **Relevancy Cases** dropdown, click a different case. Confirm the browser does a full page navigation (URL changes, page reloads) to that case's workbench, which then boots correctly.
+  2. Navigate to bare `/case` (no id). Confirm it loads your most recent non-archived case's workbench rather than a "Not Found" page.
+- **Expected:** Navigation loads the workbench via a normal server-rendered page load — case/try switching is no longer an in-page SPA transition.
+- **Edge cases:**
+  - [ ] Switch try via "revert to last try" or a Settings-tab save that changes the selected try — confirm this also does a full navigation to the new try's URL.
+  - [ ] On a disposable case with two tries, delete the latest try through `DELETE /api/cases/:id/tries/:n`, then reload `/case/:id`. Confirm the remaining try boots and rerunning searches saves a score. Deleting the only remaining try must return 400 and leave the case usable.
+  - [ ] A logged-in user with zero cases hitting bare `/case` sees the "You don't have any Cases created in Quepid" flash instead of a blank or broken page.
+
+### 4.17c Missing cases, missing tries and unrouted paths
+
+- [ ] **Steps:**
+  1. Navigate to a path Rails doesn't route at all (e.g. `/case/x/y/z/garbage`). Confirm you get Rails' own 404 rather than a client-side application shell.
+- **Expected:** Unrouted paths get Rails' own 404, not a client-side application shell.
 - **Edge cases:**
   - [ ] Navigate to an existing case with a nonexistent try number. Confirm a visible try-not-existing error and a hidden toolbar; returning to a valid try must boot normally. Missing or inaccessible case IDs must return a 404 page headed "Case N isn't available" that explains the case may be deleted or not shared with your teams, offers View all cases / View your teams / Create a case buttons, and embeds no workspace data.
-  - [ ] Force customer-engine searches to fail. Confirm the booted toolbar remains usable and the search error is visible; remove the failure and reload to confirm successful recovery.
-  - [ ] On a disposable case with two tries, delete the latest try through `DELETE /api/cases/:id/tries/:n`, then reload `/case/:id`. Confirm the remaining try boots and rerunning searches saves a score. Deleting the only remaining try must return 400 and leave the case usable.
-  - [ ] Switch try via "revert to last try" or a Settings-tab save that changes the selected try — confirm this also does a full navigation to the new try's URL.
-  - [ ] A logged-in user with zero cases hitting bare `/case` sees the "You don't have any Cases created in Quepid" flash instead of a blank or broken page.
 
 ### 4.18 Browse query results
 
