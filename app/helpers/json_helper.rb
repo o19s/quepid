@@ -26,9 +26,8 @@ module JsonHelper
   end
 
   # Like format_json, but accepts any value: a String that holds JSON is pretty-printed too, for
-  # read-only display. Mapper-based engines (Qdrant, Vespa) store custom headers as
-  # a JSON string, and a Search API test query is often JSON. Anything that does
-  # not parse as a JSON object or array is returned as-is.
+  # read-only display - a Search API test query is often JSON, but may also be plain text.
+  # Anything that does not parse as a JSON object or array is returned as-is.
   #
   # Examples:
   #   format_for_display('{"api-key":"abc"}')
