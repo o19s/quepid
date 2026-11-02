@@ -101,6 +101,18 @@ class ApplicationHelperTest < ActionView::TestCase
     assert_equal 'btn btn-link text-warning p-0', active.at_css('button')['class']
   end
 
+  test 'archive_toggle_button appends info to the confirmation only when archiving, not unarchiving' do
+    urls = { archive: '/cases/1/archive', unarchive: '/cases/1/unarchive' }
+
+    archiving = Nokogiri::HTML.fragment(archive_toggle_button(Case.new(archived: false), name: 'Movies', urls: urls,
+                                                               info: 'Extra detail.')).at_css('form')
+    assert_equal 'Archive Movies? Extra detail.', archiving['data-turbo-confirm']
+
+    unarchiving = Nokogiri::HTML.fragment(archive_toggle_button(Case.new(archived: true), name: 'Movies', urls: urls,
+                                                                 info: 'Extra detail.')).at_css('form')
+    assert_equal 'Unarchive Movies?', unarchiving['data-turbo-confirm']
+  end
+
   test 'metric_card colors the value, icon and border and renders the block below the caption' do
     html = metric_card('42%', 'Fully Judged', '3 of 7 pairs', icon: 'bi-trophy', color: 'success') { 'extra' }
     card = Nokogiri::HTML.fragment(html).at_css('.card')
@@ -281,10 +293,12 @@ class ApplicationHelperTest < ActionView::TestCase
     end
   end
 
-  test 'book and case titles keep names as typed' do
-    assert_equal 'Book ES McKey', book_title(Book.new(name: 'ES McKey'))
-    assert_equal 'book ES', book_title(Book.new(name: 'book ES'))
-    assert_equal 'Case ES McKey', case_title(Case.new(case_name: 'ES McKey'))
-    assert_equal 'case ES', case_title(Case.new(case_name: 'case ES'))
+  describe 'book and case titles' do
+    test 'book and case titles keep names as typed' do
+      assert_equal 'Book ES McKey', book_title(Book.new(name: 'ES McKey'))
+      assert_equal 'book ES', book_title(Book.new(name: 'book ES'))
+      assert_equal 'Case ES McKey', case_title(Case.new(case_name: 'ES McKey'))
+      assert_equal 'case ES', case_title(Case.new(case_name: 'case ES'))
+    end
   end
 end
