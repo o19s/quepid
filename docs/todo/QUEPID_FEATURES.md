@@ -76,7 +76,7 @@
 | Visualization | Vega-Lite (QGraph, frog report, analytics); D3 + CalHeatmap in admin/analytics bundles |
 | Analytics | Ahoy Matey 5.5.0 |
 | BI Dashboard | Blazer 3.5.2 |
-| Node (build) | Node 24.x (`package.json` engines: `>=24 <25`) |
+| Node (build) | Node 26.x (`package.json` engines: `>=26 <27`) |
 
 ---
 
@@ -1171,7 +1171,7 @@ Used for:
 ### Production Build Features
 
 - Multi-stage Docker build (base → build → final)
-- Node.js 24.21.0 for asset compilation (`Dockerfile.prod` `NODE_VERSION`)
+- Node.js 26.13.0 for asset compilation (`Dockerfile.prod` `NODE_VERSION`)
 - jemalloc for memory optimization
 - Propshaft asset precompilation
 - Puma web server via Foreman

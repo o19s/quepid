@@ -99,6 +99,7 @@ Follow [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md) for development conventions.
 
 ## JavaScript
 
+- Use Node.js 26.x everywhere; follow [the development prerequisites](DEVELOPER_GUIDE.md#prerequisites-1) for the supported runtime and keep version selectors, Docker images, CI and Node type definitions aligned.
 - Use yarn instead of npm for package management.
 - When a change removes the last caller of a module, service or event, delete it in the same change: the module, its specs, and any emitters or listeners left with nothing on the other end. Do not leave unreachable code.
 
