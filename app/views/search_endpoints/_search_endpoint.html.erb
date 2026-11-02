@@ -20,7 +20,7 @@
 
   <p>
     <strong>Custom headers:</strong>
-    <%= text_area_tag 'custom_headers', format_for_display(search_endpoint.custom_headers), data: codemirror_data(mode: "application/json", height: 100, width: 500, readonly: true) %>
+    <%= text_area_tag 'custom_headers', format_json(search_endpoint.custom_headers), data: codemirror_data(mode: "application/json", height: 100, width: 500, readonly: true) %>
   </p>
 
   <p>
