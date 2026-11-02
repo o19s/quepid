@@ -14,11 +14,7 @@
 #  completed_case_wizard       :boolean          default(FALSE), not null
 #  email                       :string(80)
 #  email_marketing             :boolean          default(FALSE), not null
-#  invitation_accepted_at      :datetime
-#  invitation_created_at       :datetime
 #  invitation_limit            :integer
-#  invitation_sent_at          :datetime
-#  invitation_token            :string(255)
 #  invitations_count           :integer          default(0)
 #  llm_key                     :string(4000)
 #  locked                      :boolean
@@ -37,15 +33,12 @@
 #  updated_at                  :datetime         not null
 #  default_scorer_id           :integer
 #  escalates_to_id             :integer
-#  invited_by_id               :integer
 #  owner_id                    :integer
 #
 # Indexes
 #
 #  index_users_on_default_scorer_id     (default_scorer_id)
 #  index_users_on_escalates_to_id       (escalates_to_id)
-#  index_users_on_invitation_token      (invitation_token) UNIQUE
-#  index_users_on_invited_by_id         (invited_by_id)
 #  index_users_on_name                  (name)
 #  index_users_on_reset_password_token  (reset_password_token) UNIQUE
 #  index_users_on_type                  (type)
@@ -56,7 +49,6 @@
 #
 #  fk_rails_...  (default_scorer_id => scorers.id)
 #  fk_rails_...  (escalates_to_id => users.id) ON DELETE => nullify
-#  fk_rails_...  (invited_by_id => users.id)
 #
 class AiJudge < User
   encrypts :llm_key, deterministic: false

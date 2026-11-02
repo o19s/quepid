@@ -138,19 +138,12 @@ Devise.setup do |config|
   # Default: true
   # config.resend_invitation = false
 
-  # The class name of the inviting model. If this is nil,
-  # the #invited_by association is declared to be polymorphic.
-  # Default: nil
-  config.invited_by_class_name = 'User'
-
-  # The foreign key to the inviting model (if invited_by_class_name is set)
-  # Default: :invited_by_id
-  # config.invited_by_foreign_key = :invited_by_id
-
-  # The column name used for counter_cache column. If this is nil,
-  # the #invited_by association is declared without counter_cache.
-  # Default: nil
-  # config.invited_by_counter_cache = :invitations_count
+  # Persist the invited resource immediately when the invitation is sent,
+  # instead of deferring creation until the invitation is accepted. Quepid's
+  # invite flow (team invites, force-created import users) assumes the
+  # invitee record exists right away, so this restores that behavior.
+  # Default: false
+  config.create_resource_on_invitation = true
 
   # Auto-login after the user accepts the invite. If this is false,
   # the user will need to manually log in after accepting the invite.

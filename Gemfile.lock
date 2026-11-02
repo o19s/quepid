@@ -171,7 +171,7 @@ GEM
       railties (>= 7.0)
       responders
       warden (~> 1.2.3)
-    devise_invitable (3.0.2)
+    devise_invitable (3.0.3)
       actionmailer (>= 7.0)
       devise (>= 5.0)
     diff-lcs (2.0.0)
