@@ -120,6 +120,21 @@ class Case < ApplicationRecord
 
   scope :nightly_run, -> { where(nightly: true) }
 
+  # Joins only the given user's metadata row: an unfiltered join returns the
+  # case once per user who has viewed it and orders by other users' views.
+  scope :with_metadata_for, ->(user) {
+    joins(sanitize_sql_array(
+            [ 'LEFT OUTER JOIN case_metadata ON case_metadata.case_id = cases.id AND case_metadata.user_id = ?', user.id ]
+          ))
+  }
+
+  # Most recently viewed by the user first; never-viewed cases last, newest first.
+  scope :recently_viewed_by, ->(user) {
+    with_metadata_for(user)
+      .order(Arel.sql('case_metadata.last_viewed_at IS NULL ASC, ' \
+                      'case_metadata.last_viewed_at DESC, cases.id DESC'))
+  }
+
   # load up the queries count for the case, alternative to counter_cache
   scope :with_counts, -> {
                         select <<~SQL.squish

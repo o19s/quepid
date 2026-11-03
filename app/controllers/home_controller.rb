@@ -16,9 +16,7 @@ class HomeController < ApplicationController
     # with_counts adds a `case.queries_count` field, which avoids loading
     # all queries and makes bullet happy.
     @cases = @current_user.cases_involved_with.not_archived.with_counts
-      .includes([ :metadata ])
-      .order(Arel.sql('case_metadata.last_viewed_at IS NULL ASC, ' \
-                      'case_metadata.last_viewed_at DESC, cases.id DESC'))
+      .recently_viewed_by(@current_user)
       .limit(10)
 
     LatestCaseScores.preload(@cases)

@@ -327,6 +327,23 @@ class CaseTest < ActiveSupport::TestCase
     end
   end
 
+  describe 'recently_viewed_by scope' do
+    let(:doug)        { users(:doug) }
+    let(:first_case)  { cases(:one) }
+    let(:second_case) { cases(:two) }
+
+    it "lists each case once, ordered by the user's own views, not other users'" do
+      CaseMetadatum.create!(case: first_case, user: doug, last_viewed_at: 2.days.ago)
+      CaseMetadatum.create!(case: second_case, user: doug, last_viewed_at: 1.day.ago)
+      CaseMetadatum.create!(case: first_case, user: users(:random), last_viewed_at: 1.minute.ago)
+      CaseMetadatum.create!(case: first_case, user: users(:joe), last_viewed_at: 2.minutes.ago)
+
+      ids = Case.where(id: [ first_case.id, second_case.id ]).with_counts.recently_viewed_by(doug).map(&:id)
+
+      assert_equal [ second_case.id, first_case.id ], ids
+    end
+  end
+
   describe 'reset_sync_flags_without_book callback' do
     test 'resets sync flags when book is removed' do
       books(:book_of_star_wars_judgements)

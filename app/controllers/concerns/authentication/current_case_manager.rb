@@ -41,9 +41,7 @@ module Authentication
       return [] unless current_user
 
       current_user.cases_involved_with.not_archived.with_counts
-        .includes([ :metadata ])
-        .order(Arel.sql('case_metadata.last_viewed_at IS NULL ASC, ' \
-                        'case_metadata.last_viewed_at DESC, cases.id DESC'))
+        .recently_viewed_by(current_user)
         .limit(count)
     end
 

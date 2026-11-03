@@ -26,6 +26,7 @@ The home dashboard (`/`) is the landing page after login. It surfaces recent cas
 - **Edge cases:**
   - [ ] Confirm archived cases never appear in this list.
   - [ ] Confirm the "up to 4" and "most recently viewed" logic — view a case you haven't touched in a while and confirm it moves up after viewing.
+  - [ ] Only your own views count: with a second account, open a case shared with you both; it must not move up in your Case Summary cards or the **Relevancy Cases** dropdown's recent cases (15.1).
 
 ### 2.3 Book summary cards
 
