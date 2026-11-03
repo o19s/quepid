@@ -55,3 +55,28 @@ only then collapse to one predicate.
 The `(user_id, case_id)` index is not unique, and the metadata endpoint uses `find_or_create_by`, so two concurrent case opens (for example two tabs) can create two rows. `Case.with_metadata_for` joins on that pair, so a duplicate lists the case twice on the case-list API, the home page and the recent-cases menu. `book_metadata` has the same non-unique `(user_id, book_id)` index, and `TrackBookViewedJob` uses the same `find_or_create_by`.
 
 **Fix direction:** A migration that deletes duplicates (keeping the latest `last_viewed_at`) and makes the index unique, for both tables, then `create_or_find_by` in the controller and the job. Run it against both MySQL and Postgres.
+
+### [PREEXISTING] P3 I2 C3 — Complex methods (Metrics/*)
+
+Candidates for extraction into smaller methods or services:
+
+- `[PREEXISTING]` P3 I2 C3 — `FetchService` — `app/services/fetch_service.rb`
+
+`FetchService` is 518 lines and `BooksController` is 607. Inspect the 75
+`rubocop:disable` occurrences across `app/` individually; they include non-Metrics
+exclusions and do not all represent complexity debt. Extract concrete
+responsibilities when the relevant behavior is being changed and can be tested
+independently. `LatestCaseScores` and `CaseScoreSamples` provide service examples.
+
+`BooksController` has non-CRUD member actions:
+`archive`, `unarchive`, `combine`, `run_judge_judy`, `assign_anonymous`,
+`delete_ratings_by_assignee`, `reset_unrateable`, `reset_judge_later`,
+`delete_query_doc_pairs_below_position`, `eric_steered_us_wrong`,
+`remap_judgement_ratings` and `judgement_stats`. Rails
+convention is a small resourceful controller per noun, for example
+`Books::ArchivesController#create/destroy`, `Books::CombinationsController`
+and `Books::RatingRemapsController`. `Books::ExportController` and
+`Books::ImportController` already follow this pattern. `TeamsController`,
+`HomeController` and `MapperWizardsController` are the next
+candidates. Do this opportunistically, when an action is touched for another
+reason.
