@@ -71,6 +71,22 @@ module Api
             end
           end
 
+          it 'copies curator variables onto the clone and leaves the source unchanged' do
+            the_try.curator_variables.create!(name: 'boost', value: '2')
+
+            post :create, params: { case_id: the_case.id, try_number: the_try.try_number }
+
+            assert_response :ok
+
+            created_try = the_case.tries.find_by!(try_number: response.parsed_body['try_number'])
+
+            source_vars = the_try.reload.curator_vars_map
+
+            assert_equal [ :boost ], source_vars.keys
+            assert_equal source_vars, created_try.curator_vars_map
+            assert_equal source_vars.stringify_keys, response.parsed_body['curator_vars']
+          end
+
           describe 'analytics' do
             it 'posts event' do
               expects_any_ga_event_call
