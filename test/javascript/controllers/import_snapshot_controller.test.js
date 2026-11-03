@@ -131,7 +131,7 @@ describe("ImportSnapshotController importSnapshots", () => {
       overrides: {
         sendSnapshotToAPI: vi
           .fn()
-          .mockRejectedValueOnce(new Error("boom"))
+          .mockRejectedValueOnce(new Error("Case not found!"))
           .mockResolvedValueOnce({})
       }
     })
@@ -157,7 +157,9 @@ describe("ImportSnapshotController importSnapshots", () => {
 
     await expect(
       ImportSnapshotController.prototype.importSnapshots.call(controller, rows)
-    ).rejects.toThrow("1 snapshot(s) failed to import")
+    ).rejects.toThrow(
+      '1 snapshot(s) failed to import (case 4, "Snap A": Case not found!). 1 other snapshot(s) were imported.'
+    )
 
     expect(controller.sendSnapshotToAPI).toHaveBeenCalledTimes(2)
   })

@@ -1456,6 +1456,35 @@ describe("WizardController", () => {
       vi.unstubAllGlobals()
     })
 
+    it("keeps the modal open and shows the failure when the case can't be deleted", async () => {
+      const assign = vi.fn()
+      vi.stubGlobal("location", { assign, search: "", protocol: "http:" })
+      const controller = mount()
+      controller.capability.case.delete.mockReturnValue(Promise.reject(new Error("Forbidden")))
+
+      controller.close({ preventDefault: vi.fn() })
+      await flush()
+
+      expect(modal.hide).not.toHaveBeenCalled()
+      expect(assign).not.toHaveBeenCalled()
+      expect(controller.error).toBe("Unable to delete this draft case: Forbidden")
+      vi.unstubAllGlobals()
+    })
+
+    it("Use Mapper Wizard shows the failure when the draft case can't be deleted", async () => {
+      const assign = vi.fn()
+      vi.stubGlobal("location", { assign, search: "", protocol: "http:" })
+      const controller = mount()
+      controller.capability.case.delete.mockReturnValue(Promise.reject(new Error("Forbidden")))
+
+      await controller.goToMapperWizard({ preventDefault: vi.fn() })
+
+      expect(modal.hide).not.toHaveBeenCalled()
+      expect(assign).not.toHaveBeenCalled()
+      expect(controller.error).toBe("Unable to delete this draft case: Forbidden")
+      vi.unstubAllGlobals()
+    })
+
     it("just hides the modal if the wizard never finished loading", () => {
       const controller = mount()
       controller.capability = null

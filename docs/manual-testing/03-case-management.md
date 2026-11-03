@@ -63,7 +63,7 @@ The wizard's later steps are 3.2c (Endpoint), 3.2d (Display Fields and Queries) 
 - **Edge cases:**
   - [ ] Existing endpoint choices exclude Static File endpoints without showing the old sharability warning.
   - [ ] Enter an invalid/unreachable endpoint URL and use "ping it", then **Continue** — both stay on the Endpoint step and show the error plus that engine's troubleshooting: for Solr, the proxy quick fix (only while not proxying), a direct link to the URL with an external-link arrow icon, the `queryresponsewriter` curl command (including any basic-auth credential), and the troubleshooting wiki link; for Elasticsearch/OpenSearch, the proxy and CORS advice and the POST question. **Skip Validation** appears only after a connection failure (not after a mapper error).
-  - [ ] Choose the generic **Search API** engine — "Custom Mapper Required" appears and Continue is unavailable; **Use Mapper Wizard** deletes the draft case and opens the Mapper Wizard.
+  - [ ] Choose the generic **Search API** engine — "Custom Mapper Required" appears and Continue is unavailable; **Use Mapper Wizard** deletes the draft case and opens the Mapper Wizard. If that delete fails (e.g. force a 403 in DevTools), the wizard stays open with "Unable to delete this draft case: …" at the top; the corner × abandon behaves the same way.
   - [ ] Custom Headers: the None / API Key / Custom selector fills a starting template and the editor is read-only on None; choosing an existing endpoint that has headers shows them as Custom.
   - [ ] Check each engine's per-engine hints: the URL-format tip, Basic Authentication hidden for Vectara/Algolia, and the "Static File endpoints are NOT sharable" note when the account has static endpoints.
   - [ ] The API method select (JSONP / GET) appears only for Solr, inside the collapsed **Solr Configuration** section, and not at all when the instance requires proxying. Custom Headers, Basic Authentication and the proxy option sit in the collapsed **Advanced** section; other engines, including an existing mapper endpoint stored as `AUTO`, keep their method.
@@ -119,7 +119,7 @@ The wizard's later steps are 3.2c (Endpoint), 3.2d (Display Fields and Queries) 
   5. Click **Import**.
 - **Expected:** Snapshot(s) get created against the referenced case, one snapshot per distinct `Snapshot Name`, viewable from that case's Compare Snapshots / History tools (Part 5).
 - **Edge cases:**
-  - [ ] Reference a `Case ID` that doesn't exist — should show a clear error, not silently create an orphaned snapshot.
+  - [ ] Reference a `Case ID` that doesn't exist — the alert names each failed case ID and snapshot with the API's reason (e.g. `1 snapshot(s) failed to import (case 999, "Snap A": Case not found!).`), says how many other snapshots were imported, and no orphaned snapshot is created.
   - [ ] Upload a CSV missing/misnamed headers — should be rejected with a clear message.
   - [ ] Upload a CSV with two different `Snapshot Name` values — confirm two separate snapshots are created correctly split by name.
   - [ ] Try submitting with no file chosen — the Import button should stay disabled until a file is selected (button starts `disabled`).

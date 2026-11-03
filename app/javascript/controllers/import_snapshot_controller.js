@@ -133,25 +133,28 @@ export default class extends ImportFormControllerBase {
     // Convert to API format and send requests sequentially: snapshots for the same
     // case commonly share query text, and sending them concurrently races the
     // server's find-or-create-query logic into a MySQL deadlock.
-    let failureCount = 0
+    const failures = []
+    let importedCount = 0
 
     for (const [caseId, caseData] of Object.entries(cases)) {
       for (const [snapshotName, snapshot] of Object.entries(caseData.snapshots)) {
         try {
           await this.sendSnapshotToAPI(caseId, snapshot)
+          importedCount += 1
         } catch (error) {
           console.error(
             `Snapshot import failed for case ${caseId}, snapshot "${snapshotName}":`,
             error
           )
-          failureCount += 1
+          failures.push(`case ${caseId}, "${snapshotName}": ${error?.message || "unknown error"}`)
         }
       }
     }
 
-    if (failureCount > 0) {
+    if (failures.length > 0) {
+      const imported = importedCount > 0 ? ` ${importedCount} other snapshot(s) were imported.` : ""
       throw new Error(
-        `${failureCount} snapshot(s) failed to import. Some may have been imported successfully.`
+        `${failures.length} snapshot(s) failed to import (${failures.join("; ")}).${imported}`
       )
     }
   }

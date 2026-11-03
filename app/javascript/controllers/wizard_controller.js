@@ -242,11 +242,7 @@ export default class extends Controller {
       getOrCreateBsModal(this.element)?.hide()
       return
     }
-    const selectedCase = this.capability.case.selected()
-    this.capability.case.delete(selectedCase)?.then(() => {
-      getOrCreateBsModal(this.element)?.hide()
-      window.location.assign(this.capability.navigation.rootUrl())
-    })
+    this.deleteDraftCaseThen(this.capability.navigation.rootUrl())
   }
 
   next(event) {
@@ -448,11 +444,20 @@ export default class extends Controller {
   // Abandon this draft case first so it isn't left behind.
   goToMapperWizard(event) {
     event?.preventDefault()
+    return this.deleteDraftCaseThen(this.mapperWizardUrlValue)
+  }
+
+  deleteDraftCaseThen(url) {
     const selectedCase = this.capability.case.selected()
-    return this.capability.case.delete(selectedCase)?.then(() => {
-      getOrCreateBsModal(this.element)?.hide()
-      window.location.assign(this.mapperWizardUrlValue)
-    })
+    return this.capability.case
+      .delete(selectedCase)
+      ?.then(() => {
+        getOrCreateBsModal(this.element)?.hide()
+        window.location.assign(url)
+      })
+      .catch((error) => {
+        this.fail(`Unable to delete this draft case: ${error?.message || "unknown error"}`)
+      })
   }
 
   // Adds a suggested field, replacing the partly typed token it was suggested for.
