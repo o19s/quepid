@@ -1112,7 +1112,7 @@ Used for:
 | REQUIRE_PROXY_WITH_BASIC_AUTH_CREDENTIALS | false | Require `proxy_requests` for endpoints with basic-auth credentials and hide those credentials from API responses |
 | OPENID_CONNECT_BASE_URL / _CLIENT_ID / _CLIENT_SECRET / _ISSUER / _BUTTON_TEXT | empty (button text: "Sign in with OpenID Connect") | Generic OpenID Connect login; the first four are all required |
 | OLLAMA_SERVICE_URL | `http://ollama:11434` (production), `http://ollama:31434` (other environments) | Ollama endpoint for local LLM features |
-| QUEPID_CONSIDER_ALL_REQUESTS_LOCAL | unset | When set (any value), production shows full error reports (`consider_all_requests_local`) |
+| QUEPID_CONSIDER_ALL_REQUESTS_LOCAL | unset | Production shows full error reports (`consider_all_requests_local`) unless it is unset, empty, `false`, `0` or `off`; any other value turns them on |
 
 ### Legal & Compliance
 

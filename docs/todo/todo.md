@@ -1,11 +1,12 @@
 # Todo
 
-**Last updated:** 2026-10-25
+**Last updated:** 2026-11-03
 
 Outstanding follow-ups from the AngularJS removal, which landed on `main` in
 `8d4fc1cd` (#1842). Open parity decisions stay here; restructuring and
 `[PREEXISTING]` bugs, hardening and cleanup are in
-[after-angular-removal.md](after-angular-removal.md). When something is fixed, remove its entry — do not add a completed section or keep resolved items for history.
+[after-angular-removal.md](after-angular-removal.md). Add new entries here, not
+there. When something is fixed, remove its entry — do not add a completed section or keep resolved items for history.
 
 Items requiring unresolved team decisions retain a **Decision needed** note.
 
@@ -44,3 +45,13 @@ Ratings appear as `P2 I3 C1` beside each item.
 `isResultsView` treats any falsy value as the default view while `renderState`
 defaults only `undefined`. Define the valid state values, fix with a test, and
 only then collapse to one predicate.
+
+---
+
+### [PREEXISTING] P3 I0 C2 — `case_metadata` and `book_metadata` allow duplicate rows per user
+
+**Location:** `db/schema.rb` (`case_metadata_user_id_case_id_index`, `index_book_metadata_on_user_id_and_book_id`), `Api::V1::CaseMetadataController#update`, `TrackBookViewedJob`, `Case.with_metadata_for`
+
+The `(user_id, case_id)` index is not unique, and the metadata endpoint uses `find_or_create_by`, so two concurrent case opens (for example two tabs) can create two rows. `Case.with_metadata_for` joins on that pair, so a duplicate lists the case twice on the case-list API, the home page and the recent-cases menu. `book_metadata` has the same non-unique `(user_id, book_id)` index, and `TrackBookViewedJob` uses the same `find_or_create_by`.
+
+**Fix direction:** A migration that deletes duplicates (keeping the latest `last_viewed_at`) and makes the index unique, for both tables, then `create_or_find_by` in the controller and the job. Run it against both MySQL and Postgres.

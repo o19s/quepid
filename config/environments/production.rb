@@ -15,7 +15,7 @@ Rails.application.configure do
 
   # Full error reports are controlled by a setting and caching is turned on.
   # Let's be able to see error messages if needed.
-  config.consider_all_requests_local = ENV['QUEPID_CONSIDER_ALL_REQUESTS_LOCAL'].present?
+  config.consider_all_requests_local = true == ActiveModel::Type::Boolean.new.cast(ENV.fetch('QUEPID_CONSIDER_ALL_REQUESTS_LOCAL', nil))
 
   config.action_controller.default_protect_from_forgery = false
 

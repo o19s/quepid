@@ -5,12 +5,13 @@ back while the AngularJS-removal branch was under a parity-only scope freeze. Th
 branch landed on `main` in `8d4fc1cd` (#1842), so these are now ordinary PRs.
 `[PREEXISTING]` bugs, security and backend fixes are here too, from the
 [pre-existing section](#preexisting-found-during-parity-testing) onwards. Open
-parity decisions stay in [todo.md](todo.md).
+parity decisions stay in [todo.md](todo.md), and new entries of any kind go there
+too.
 
 Entries use the same provenance markers and `P I C` ratings as
 [todo.md](todo.md). When something is done, remove its entry.
 
-## Legacy behaviour kept only for parity
+## Legacy behaviour
 
 The user chose to restore these to Legacy (`8ceb99e9`) while parity gated the
 branch. Revisit them as product decisions.
@@ -51,15 +52,6 @@ five snapshots where Legacy allowed three, so the squeeze reaches six columns
 (`.diff-column` in `qscore.css`, cells built in `search_results_controller.js`).
 Options: give the Matches chart a minimum width, hide it in comparison columns, or
 let the comparison scroll sideways past a minimum column width.
-
-### [MIGRATION-FOLLOWUP] P3 I0 C1 — Make the no-cases message archive-aware
-
-`CoreController#set_case_or_bootstrap` redirects to `/cases` with "You don't have
-any Cases created in Quepid…" whenever the user has no non-archived case. A user
-whose cases are all archived gets the same message, although they do have cases.
-Legacy behaved the same way (its client flashed the text when `caseNo` was 0), so
-this is parity. A better message would point at the Archived filter when
-`cases_involved_with.archived` is not empty.
 
 ## Frontend consolidation
 
@@ -109,76 +101,6 @@ labels and removing redundant pass-throughs while preserving the exact
 predicate. Do not merge engine sets with different meanings or alter lookup,
 escaping, query DSL, or snapshot-field rules.
 
-### [MIGRATION-FOLLOWUP] P3 I1 C3 — Snapshot CSV import contracts
-
-Caller-specific failure policies are documented in
-[Snapshot CSV import contracts](../core_ui_implementation_reference.md#snapshot-csv-import-contracts).
-
-Each one also builds its import URL differently.
-
-"Required headers present, no parse errors, not empty" validation exists three
-times with different messages (the third is `wizard_contracts.js#validateStaticHeaders`).
-
-**Defer upload-loop consolidation.** Preserve each caller's continue/stop
-policy, payloads, order, and error messages. Choosing one failure or validation
-policy is a behavior change.
-
-### [MIGRATION-FOLLOWUP] P3 I1 C2 — Client-built API paths
-
-Server-passed URL templates (`__CASE_ID__` and similar) are now filled only
-through `fillUrlTemplate` (`utils/url_template`), which encodes each value and
-throws when the template and the values disagree.
-
-About 80 call sites still build `api/...` paths on the client, which the
-DEVELOPER_GUIDE discourages. New code should take server-rendered URLs; migrate
-existing call sites when they are touched.
-
-### [MIGRATION-FOLLOWUP] P3 I0 C3 — Request-generation abstractions
-
-There are seven versions: `qscore_case_controller` (`diffRefreshGeneration`),
-`judgements_core_controller` (`openGeneration`), `query_collection_store`
-(`_searchGeneration`), `live_query_collection`, `case_runtime`, `query_runtime`
-(`ratingsGeneration`), and the `AbortController` in
-`team_member_autocomplete_controller`.
-
-**Defer.** These counters govern request races and invalidation; AbortController
-also cancels work. A shared token helper saves few lines and must not replace
-caller-specific cancellation or stale-response rules.
-
-
-### [MIGRATION-FOLLOWUP] P3 I0 C2 — Success-and-redirect helpers
-
-Current delays are documented in
-[Success-and-redirect timing](../core_ui_implementation_reference.md#success-and-redirect-timing).
-
-**Defer.** One delay changes the current contract. A helper preserving each
-caller's delay, URL, notice, and navigation method saves very little.
-
-### [MIGRATION-FOLLOWUP] P3 I1 C2 — Busy-state helpers
-
-Existing implementations are documented in
-[Busy-state contracts](../core_ui_implementation_reference.md#busy-state-contracts).
-
-**Defer a universal helper.** Disabled controls, spinner classes, visibility,
-and HTML replacement have different contracts. Consolidate only demonstrably
-identical operations; leave modal-level progress bars and distinct state
-transitions alone.
-
-### [MIGRATION-FOLLOWUP] P2 I1 C2 — Choose explicit error-message policies
-
-`utils/error_message.js:8` provides `errorMessage`; `:27` provides
-`serverMessage`. `query_lifecycle_controller.js:69` uses the former, whereas
-`share_case_core_controller.js:299,342`, `judgements_core_controller.js:299,462`,
-and `import_ratings_core_controller.js:273` use `error.message || fallback`.
-Mapper Wizard interpolates `error.message` directly in several catch blocks
-(`mapper_wizard_controller.js:166,222,292,404,470`). Frog Report additionally
-rewrites an `HttpError`'s message before displaying it
-(`frog_report_controller.js:278`).
-
-**Fix direction:** apply the [Error-message policies](../../DEVELOPER_GUIDE.md#error-message-policies)
-explicitly at each boundary, with focused tests for intentional changes. Preserve
-the [Import-ratings error precedence](../core_ui_implementation_reference.md#import-ratings-error-precedence).
-
 ### Review boundaries
 
 See [Scope and change control](../../AGENTS.md#scope-and-change-control)
@@ -202,16 +124,6 @@ and persistence decisions first.
 
 Moved from todo.md's Developer Experience Review on 2026-10-19. The
 `[PREEXISTING]` entries predate the AngularJS removal.
-
-### [MIGRATION-FOLLOWUP] P3 I2 C3 — Clarify frontend ownership and delivery boundaries
-
-Retain the explicit state owners described in [Application structure](../app_structure.md#core-frontend-app).
-
-- [MIGRATION-FOLLOWUP] P3 I1 C2 — Group coherent subsystems in `utils/` when their boundaries are understood. Search, scoring, snapshots, case state, Bootstrap and DOM helpers currently share that directory; imposing `domain/`, `ui/` and `net/` everywhere is not a prerequisite.
-- Moving `utils/` DOM lifecycles into controllers is done (`f4226b05`), and global event names have shared constants (`utils/core_events.js`; see the [core event bus](../../DEVELOPER_GUIDE.md#core-event-bus)). Preserve each surface's own lifecycle. See [Persisted case UI](../app_structure.md#persisted-case-ui) for rendering and background-update ownership.
-- Follow [JavaScript delivery](../js_pipeline.md) and [JavaScript tooling](../js_tooling.md) when adding modules; retain the core/application CSS outputs and compatibility layers.
-
-Follow [Scope and change control](../../AGENTS.md#scope-and-change-control) for module moves. Moving root-level `build_css.js` alone has modest payoff and affects build/lint paths; prioritize command drift and CI coverage.
 
 ### [MIGRATION-FOLLOWUP] P3 I0 C2 — Patch upstream Stimulus LSP controller detection
 
@@ -255,14 +167,6 @@ a 400-query `large_data` case that is ~40 MB of the 54 MB retained heap. Fix it
 in splainer-search (share strings, or don't clone read-only response data), then
 tighten `PER_QUERY_BUDGET_KB` in `test/playwright/large_case.perf.spec.ts` and
 measure with `yarn test:perf`.
-
-### [PREEXISTING] P2 I0 C1 — "Show only rated" fires every rated-docs request at once
-
-`toggleShowOnlyRated` (`live_query_runtime_owner.js`) calls `refreshRatedDocs`
-for every query that isn't ready, outside `pAll`, ignoring both the concurrency
-of 10 and the try's `requestsPerMinute`. On a 5000-query case that is 5000
-simultaneous requests to the user's engine. Legacy's `queriesSvc` did the same.
-Route the refreshes through `pAll`.
 
 ### [PREEXISTING] P2 I0 C2 — One failed search skips scoring the whole case
 
@@ -384,13 +288,13 @@ The proxy validates the initial DNS resolution and blocks private ranges, but Fa
 
 ---
 
-### [PREEXISTING] P1 I0 C1 — `SEARCH_ENDPOINT_VIEWS_ADMIN_ONLY` is ignored
+### [PREEXISTING] P1 I0 C1 — `SEARCH_ENDPOINT_VIEWS_ADMIN_ONLY` is ignored - EP review needed
 
-**Location:** `app/controllers/search_endpoints_controller.rb`, `config/initializers/customize_quepid.rb:132`
+**Location:** `app/controllers/search_endpoints_controller.rb`, `app/controllers/mapper_wizards_controller.rb`, `config/initializers/customize_quepid.rb:132`
 
-`32b427b6` (#1592) added `require_admin_if_restricted` so that, with `SEARCH_ENDPOINT_VIEWS_ADMIN_ONLY=true`, only administrators can manage search endpoints. `dc2f46af` ("Basic Auth Credentials are encrypted", on `main`) removed the `before_action` and the method; nothing else in that commit relates to it. The setting is still read and is still documented in `QUEPID_FEATURES.md`, so a deployment that enables it silently lets every user manage endpoints.
+`32b427b6` (#1592) added `require_admin_if_restricted` to both controllers so that, with `SEARCH_ENDPOINT_VIEWS_ADMIN_ONLY=true`, only administrators can manage search endpoints. `dc2f46af` ("Basic Auth Credentials are encrypted", on `main`) removed the `before_action` and the method from both controllers and deleted the "admin restriction" controller tests, in the same commit that started masking stored credentials. That looks deliberate, but the commit message doesn't say so. The setting is still read and is still documented in `QUEPID_FEATURES.md`, so a deployment that enables it silently lets every user manage endpoints.
 
-**Fix direction:** Restore the guard with a controller test for both values of the setting. If the removal was intended, delete the setting and its documentation instead.
+**Decision needed:** Restore the guard (both controllers, with the deleted tests), or delete the setting and its documentation.
 
 ---
 
@@ -429,27 +333,6 @@ Deployments that omit the env vars use publicly known keys, so encrypted fields 
 **Also open:** [PREEXISTING] P2 I0 C2 — no rate limiting on proxy fetch (production concern when `proxy_requests: true`).
 
 ---
-
-### [PREEXISTING] P2 I0 C1 — Password reset enumerates accounts
-
-**Observed:** Unknown email → "email was not found"; known email → neutral "you will receive…" message.
-
-**Cause:** `config.paranoid` commented out in `config/initializers/devise.rb`.
-
-**Fix direction:** Enable `config.paranoid = true` (or normalize both responses).
-
-### [PREEXISTING] P2 I0 C1 — `QUEPID_CONSIDER_ALL_REQUESTS_LOCAL=false` enables detailed errors
-
-**Location:** `config/environments/production.rb:18`, `.env.example`
-
-`consider_all_requests_local` is set from `ENV[...].present?`, so any value,
-including the `false` that `.env.example` recommends, shows detailed error pages
-(stack traces, request details) in production. Only an unset or empty variable
-disables them.
-
-**Fix direction:** Parse the value as a boolean (for example
-`ActiveModel::Type::Boolean.new.cast(ENV[...])`) and add a test. Deployments
-that rely on any non-empty value enabling detailed errors will change behavior.
 
 ### [PREEXISTING] P1 I0 C2 — No minimum password length
 
@@ -524,36 +407,6 @@ One warning (the JSON template) still covers template names derived from `file_f
 
 ## [PREEXISTING] Product bugs
 
-### [PREEXISTING] P3 I0 C1 — Book settings 422 page loses the scorer and the settings tab
-
-**Location:** `app/controllers/books_controller.rb` (`update`), `app/helpers/books_helper.rb` (`book_settings_active?`)
-
-**Observed:** When `update` fails validation, `respond_with` re-renders the edit form. `update` never sets the `scorer_id` virtual attribute the way `edit` does (`matching_scorer_id_for_book`), so the scorer dropdown can come back blank. `book_settings_active?` only matches `action_name == 'edit'`, so the settings nav item isn't highlighted on the re-rendered page. At the `be9b319a` baseline, `update` also didn't set `scorer_id`. The tab helper came from #1792, a feature PR rather than migration work.
-
-**Fix direction:** Set `@book.scorer_id` in `update` when errors are present (unless the submitted value is already set), and treat `update` as the settings page in `book_settings_active?`. Add a controller test for the failed-update render.
-
----
-
-### [PREEXISTING] P2 I0 C1 — A newly added query jumps from the bottom to the top on reload
-
-**Location:** `app/controllers/api/v1/queries_controller.rb` (`create`)
-
-**Observed:** Adding a query shows it at the bottom of a Manual-sorted list, but after a reload (or anything that re-bootstraps the case, such as Rerun My Searches! creating a new try) it is at the top. The `create` response's `display_order` lists the new id last, while `index` lists it first. The `Case#queries` scope orders `arranged_at IS NULL DESC`, so a new, unarranged query sorts first in the database, and `create` builds `display_order` from the association it just built on, which appears to put the in-memory record last. Reproduced 2026-10-04 on case 598. The controller is unchanged from `main`, and the `be9b319a` Angular client also applied the `create` response's `display_order`, so this predates the migration (source evidence only, not replayed).
-
-**Fix direction:** Reload the association (`@case.queries.reload`) before building `display_order` in `create`, and add a controller test that `create` and `index` return the same order.
-
----
-
-### [PREEXISTING] P3 I0 C1 — Case wizard's Use Mapper Wizard fails silently when the draft case can't be deleted
-
-**Location:** `app/javascript/controllers/wizard_controller.js` (`goToMapperWizard`)
-
-**Observed:** **Use Mapper Wizard** deletes the draft case, then closes the modal and navigates to the Mapper Wizard. The delete promise has no rejection handler, so if the delete fails (network error, 403) the button does nothing, the modal stays open, and the only trace is an unhandled rejection in the console. At `be9b319a`, `goToMapperWizard` chained only `.then` on `caseSvc.deleteCase`, which had no error handling, and the only `$http` interceptor was CSRF, so this predates the migration (source comparison only, not replayed).
-
-**Fix direction:** Add a `.catch` that shows the failure in the wizard's alert (`this.fail(...)`), and a unit test for a rejected delete.
-
----
-
 ### [PREEXISTING] P2 I0 C2 — Bulk judging reshuffles documents between pages
 
 `BulkJudgeController#new` shuffles each query group before pagination on every request, so consecutive pages can repeat documents and omit others. Current browser replay confirms overlap; Angular `8ceb99e9` has the same ordering code (source comparison only; live historical replay pending). Preserve a stable ordering across a judging session before paginating.
@@ -581,16 +434,6 @@ The separate coercion/aggregation decision is in [Judgement coercion and aggrega
 ### [PREEXISTING] P2 I0 C2 — Cloning a case doesn't keep manual query order
 
 Cloning case 6 swapped its first two queries. `Case#clone_case` dups each query and appends it, and `Arrangement::Item#prepend_node_to_list` overwrites the copied arrangement on create and prepends each clone, so iterating the original order can reverse it. The deterministic ordering on `Case#queries` does not fix that callback. Re-sequence the clones in the original order after creation (or explicitly avoid prepending during cloning) and cover it with a model test.
-
----
-
-### [PREEXISTING] P2 I0 C1 — Snapshot CSV import hides per-snapshot failure reasons
-
-`import_snapshot_controller.js#importSnapshots` logs individual API errors to
-the console, then throws only "1 snapshot(s) failed to import. Some may have
-been imported successfully." An unknown case therefore produces a generic
-alert even when the API explains "Case not found!". Surface the case ID,
-snapshot name and API reason in the alert, and distinguish partial success.
 
 ---
 
@@ -639,16 +482,6 @@ and scores, so keep it separate from behavior-preserving cleanup.
 ---
 
 ## [PREEXISTING] Backend correctness and authorization
-
-### [PREEXISTING] P1 I0 C1 — Book update saves memberships even when the update fails
-
-**Location:** `app/controllers/books_controller.rb` (`update`)
-
-**Observed:** `update` writes team and AI-judge memberships (`assign_book_memberships`: `TeamSharing#assign_teams`, `@book.ai_judges =` and auto-run flag saves) before calling `@book.update`. Those association writes persist immediately. If the update then fails validation, the 422 page shows errors, but the membership changes are already saved and the other field changes aren't. The user sees "failed" while part of the form is saved. At the `be9b319a` baseline, `update` had the same order (`@book.teams.replace` and `@book.ai_judges <<` before `update`).
-
-**Fix direction:** Wrap the membership changes and `update` in `Book.transaction` and roll back when `update` returns false. Keep the file purges outside the transaction or after it succeeds. Add a controller test where a failing update leaves teams and AI judges unchanged.
-
----
 
 ### [PREEXISTING] P2 I0 C2 — Search-endpoint lookups reuse archived, unowned and duplicate endpoints
 
@@ -700,25 +533,6 @@ those can be truncated before it is saved.
 V8/parser path, and add regression cases for braces in strings, comments, and
 regular expressions.
 
-### [PREEXISTING] P2 I0 C1 — Whitespace-prefixed JSON takes the bare-query path
-
-**Location:** `app/models/try.rb:188` (`json_query_params?`)
-
-`json_query_params?` checks only whether the raw value starts with `{`.
-Whitespace-prefixed JSON is accepted by `JSON.parse` but is classified as bare
-text, so `resolved_api_method` can select the wrong request method.
-
-**Fix direction:** Strip surrounding whitespace for dispatch (while preserving
-the original payload), and add tests for leading/trailing whitespace.
-
-### [PREEXISTING] P3 I0 C1 — Rating remap returns 500 for out-of-range values
-
-**Location:** `app/controllers/books_controller.rb:440` (`remap_judgement_ratings`)
-
-From `e77dcfb8` (#1751, on `main`). Submitted values pass through `to_f` and are interpolated into a SQL `CASE`. A value such as `1e400` becomes `Infinity`, the SQL is invalid and the request fails with a 500. Non-numeric text silently becomes `0.0`.
-
-**Fix direction:** Parse with `Float(value, exception: false)`, reject non-finite or non-numeric values with a flash alert, and add a controller test for both.
-
 ### [PREEXISTING] P1 I0 C1 — Book collaborators can run an AI judge they cannot access
 
 **Decision needed:** Should a book collaborator be able to run (or cancel) an AI judge that the book owner assigned to the book but that the collaborator does not own and that is not shared with them via a team? Running spends the judge owner's LLM key.
@@ -739,33 +553,7 @@ From `e77dcfb8` (#1751, on `main`). Submitted values pass through `to_f` and are
 
 **Options:** keep `nullify` for team-shared records only and destroy private ones; reassign to the deleting admin or a team member; or keep as is and document it.
 
-### [PREEXISTING] P2 I0 C1 — Home page and recent-cases menu order by other users' views
-
-**Location:** `app/controllers/home_controller.rb` (`show`), `app/controllers/concerns/authentication/current_case_manager.rb` (`recent_cases`)
-
-**Observed:** Manual pass 2026-10-28 (18.1) found `GET /api/cases` duplicating cases and ordering by other users' `last_viewed_at`. `c9ab0f86` fixed `fetch_full_cases` by joining only the current user's metadata row. The other two callers still use `.includes(:metadata)` and order by any user's `case_metadata.last_viewed_at`, so they very likely have the same cross-user ordering problem. The unfiltered ordering came from `379e5bf3` (2023-08-24, #795).
-
-**Fix direction:** Add a test where another user has a newer view, then apply the same per-user join, ideally as one shared "recently viewed" scope used by all three callers.
-
-### [PREEXISTING] P3 I0 C1 — Bulk query create stores blank queries
-
-**Location:** `app/controllers/api/v1/bulk/queries_controller.rb` (`create`)
-
-**Observed:** Manual pass 2026-10-28 (18.3): bulk create stores `""` and `"  "` as queries, because `Query.insert_all` skips the `presence` validation on `query_text`. Once a blank query exists, a blank single create returns 200 because `queries_controller.rb#create` finds the existing row before validating.
-
-**Fix direction:** Strip each query and drop blanks before `insert_all`, and have single create reject a blank `query_text` before the existence check. Add controller tests for both.
-
----
-
 ## [PREEXISTING] Code quality
-
-### [PREEXISTING] P3 I0 C1 — Unsafe integer coercion in snapshot search
-
-**Location:** `app/controllers/api/v1/snapshots/search_controller.rb:59-60`
-
-`params[:rows].to_i` / `params[:start].to_i` without validation; non-numeric strings coerce to `0`.
-
----
 
 ### [PREEXISTING] P2 I1 C2 — BookImporter: judge identifiers `validate` doesn't check import silently as anonymous
 
@@ -828,61 +616,6 @@ Status cleanup alone does not change scoring inputs.
 deleted (`DeserializationError`), but `retry_on` remains commented out.
 Decide on a default retry policy for the jobs that take Active Record arguments.
 
-### [PREEXISTING] P2 I1 C1 — Linked Cases card queries the job queue per case
-
-**Location:** `app/views/books/_linked_cases_list.html.erb:17-18`, `app/jobs/update_case_ratings_job.rb` (`active_for`)
-
-From `dafb7f52` (#1792, on `main`). Each render checks four job classes for every linked case, and each check loads every unfinished Solid Queue row of that class. `UpdateCaseRatingsJob.active_for` then runs one query per queued job to find its book, because the job's arguments carry pair ids, not the book. The card re-renders on every `BroadcastLinkedCasesJob`, and AI judging queues one sync per judgement, so a render during a run costs (linked cases × queued sync jobs) queries.
-
-**Fix direction:** Drop the `UpdateCaseRatingsJob` check: a pair sync takes a fraction of a second, so its pulse is almost never visible. If the pulse is kept, look up each job class once per book rather than once per case, and pass the book as a job argument so the filter can be done in SQL. Recording sync start/finish on the book is the fuller fix if the page is still slow during AI judging.
-
-### [PREEXISTING] P2 I0 C1 — Overlapping AI-judge runs fail on duplicate judgements
-
-**Location:** `app/jobs/run_judge_judy_job.rb` (`limits_concurrency`, `judge_pairs`)
-
-The one-run-per-book-and-judge lock expires after its `duration`: Solid Queue's 3-minute default on `main`, 30 minutes here. A "judge all" run on a large book outlasts it, so a second manual run can start alongside the first. Nothing reserves a pair for a run, so both can pick the same pair; the unique `(user_id, query_doc_pair_id)` index then raises `RecordNotUnique` at `judgement.save!` and that job fails.
-
-**Fix direction:** Rescue `RecordNotUnique` on the save, treat the pair as judged and continue. Add a job test that pre-creates the judgement the job is about to save.
-
----
-
-## [PREEXISTING] RuboCop deferrals
-
-These candidates still carry inline Metrics suppressions. Search the codebase
-for `rubocop:disable` and check `.rubocop.yml` for the full current lint scope.
-
-### [PREEXISTING] P3 I1 C2 — Metrics/ParameterLists
-
-- `[PREEXISTING]` P3 I1 C2 — `Case#clone_case` — `app/models/case.rb:150`
-- `[PREEXISTING]` P3 I1 C2 — `HttpClientService#initialize` — `app/services/http_client_service.rb:33`
-
-### [PREEXISTING] P3 I2 C3 — Complex methods (Metrics/*)
-
-Candidates for extraction into smaller methods or services:
-
-- `[PREEXISTING]` P3 I2 C3 — `FetchService` — `app/services/fetch_service.rb`
-
-`FetchService` is 518 lines and `BooksController` is 607. Inspect the 75
-`rubocop:disable` occurrences across `app/` individually; they include non-Metrics
-exclusions and do not all represent complexity debt. Extract concrete
-responsibilities when the relevant behavior is being changed and can be tested
-independently. `LatestCaseScores` and `CaseScoreSamples` provide service examples.
-
-`BooksController` has non-CRUD member actions:
-`archive`, `unarchive`, `combine`, `run_judge_judy`, `assign_anonymous`,
-`delete_ratings_by_assignee`, `reset_unrateable`, `reset_judge_later`,
-`delete_query_doc_pairs_below_position`, `eric_steered_us_wrong`,
-`remap_judgement_ratings` and `judgement_stats`. Rails
-convention is a small resourceful controller per noun, for example
-`Books::ArchivesController#create/destroy`, `Books::CombinationsController`
-and `Books::RatingRemapsController`. `Books::ExportController` and
-`Books::ImportController` already follow this pattern. `TeamsController`,
-`HomeController` and `MapperWizardsController` are the next
-candidates. Do this opportunistically, when an action is touched for another
-reason.
-
----
-
 ## [PREEXISTING] Consolidated DRY review
 
 ### [PREEXISTING] P2 I0 C1 — Blank-to-`nil` conversion turns `false` into `nil`
@@ -891,17 +624,6 @@ reason.
 `convert_blank_values_to_nil`; `false.blank?` is true, so `false` becomes `nil`,
 which looks unintended. Decide the correct behavior and fix it with a test in
 both places. Do not share the function (request handling vs. Thor task).
-
-### [PREEXISTING] P3 I1 C3 — Controller index filtering — deferred
-
-Review ownership and filtering semantics independently before extracting a
-concern. The team filter currently uses `joins` (Cases), `includes` plus a hash
-`where` (Books), and a subquery (SearchEndpoints). SearchEndpoints parses
-`archived` with `bool.deserialize`; the others use `deserialize_bool_param`.
-
-A shared concern is appropriate only where accessible/owned scopes, archive
-behavior, duplicate handling, and responses have the same contract. Preserve
-those scopes and boolean semantics during extraction.
 
 ### [PREEXISTING] P2 I2 C3 — Server search request building duplicates and drifts
 
@@ -915,17 +637,7 @@ building is different: it drifts from the client and is buggy.
 Placeholder substitution already goes through one helper, `QueryTemplate`.
 Multi-valued GET params are tracked in
 [`FetchService` drops repeated GET params](#preexisting-p1-i0-c2--fetchservice-drops-repeated-get-params-such-as-solr-fq---ep-review-needed).
-What remains here is server escaping and, if it ever pays off, a `FieldSpec`
-value object on `Try`.
-
-**Field-spec investigation — extraction deferred:** Isolated probes found only
-token splitting shared between Ruby's RRE-export ID lookup and Solr field-list
-builder. Browser rules differ for missing IDs, multiple aliases, `+` separators,
-JSON definitions and function fields. Unifying them can change fetched fields,
-exports and scores; preserving separate rules offers little duplication reduction.
-No live search verification performed.
-
-A server escaping fix changes fetched results and background scores; verify it
+What remains here is server escaping. A server escaping fix changes fetched results and background scores; verify it
 separately.
 
 ### [PREEXISTING] P1 I2 C3 — Align client and server scoring inputs and aggregation
@@ -957,29 +669,33 @@ scorer module so both sides run the same code.
   every instantiated record whose `scorer_id` is nil. Move the `archived`
   default into the migration (as a column default) or into an `attribute`
   default, and set the scorer `before_validation on: :create` instead.
-- [PREEXISTING] P3 I0 C1 — **`where(...).first`.** Review remaining scalar-primary-key
-  lookups for scoped `find_by`, retaining authorization and existing nil/redirect/404
-  handling. Leave non-unique try-number/document-ID, ordered/history and ambiguous
-  email-or-ID selection unchanged. Optional/request-parameter IDs remain deferred
-  because arrays can match multiple rows and `find_by` drops implicit ID ordering.
 
 ## Someday
 
-### [PREEXISTING] P3 I1 C2 — Log skipped rows in TREC and similar exports for review
+### [PREEXISTING] P3 I2 C3 — Complex methods (Metrics/*)
 
-`TrecExport` skips snapshot docs that have no rating, and the other text and CSV exports leave out or blank rows they can't render. Nothing tells the user or an admin that rows were dropped.
+Candidates for extraction into smaller methods or services:
 
-**Future idea only:** record each skipped row (export format, case, snapshot, query, doc, reason) in a log or a small reviewable list, so people can see what an export left out. The export itself must keep succeeding; logging must never raise or block the download.
+- `[PREEXISTING]` P3 I2 C3 — `FetchService` — `app/services/fetch_service.rb`
 
-Revisit if users report exports that look incomplete.
+`FetchService` is 518 lines and `BooksController` is 607. Inspect the 75
+`rubocop:disable` occurrences across `app/` individually; they include non-Metrics
+exclusions and do not all represent complexity debt. Extract concrete
+responsibilities when the relevant behavior is being changed and can be tested
+independently. `LatestCaseScores` and `CaseScoreSamples` provide service examples.
 
-### [PREEXISTING] P2 I1 C1 — Try API clone loses tuning variables
-
-Scenario 18.2 reproduced a clone with empty `curator_vars` from a source containing
-`boost=2`. `Api::V1::Clone::TriesController#create` calls
-`@try.add_curator_vars` on the source instead of the new try. The same call exists
-at Legacy `8ceb99e9` (source comparison only; no historical live replay).
-Copy variables onto the clone and verify source immutability and cloned args.
+`BooksController` has non-CRUD member actions:
+`archive`, `unarchive`, `combine`, `run_judge_judy`, `assign_anonymous`,
+`delete_ratings_by_assignee`, `reset_unrateable`, `reset_judge_later`,
+`delete_query_doc_pairs_below_position`, `eric_steered_us_wrong`,
+`remap_judgement_ratings` and `judgement_stats`. Rails
+convention is a small resourceful controller per noun, for example
+`Books::ArchivesController#create/destroy`, `Books::CombinationsController`
+and `Books::RatingRemapsController`. `Books::ExportController` and
+`Books::ImportController` already follow this pattern. `TeamsController`,
+`HomeController` and `MapperWizardsController` are the next
+candidates. Do this opportunistically, when an action is touched for another
+reason.
 
 ### [PREEXISTING] P2 I1 C2 — Judging shortcut can submit while the explanation modal opens
 
