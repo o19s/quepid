@@ -64,13 +64,13 @@ class TeamSharing
   def track_shared record
     case record
     when Case
-      Analytics::Tracker.track_case_shared_event @user, record, @team
+      Analytics::Tracker.track_case_shared_event record
     when Book
-      Analytics::Tracker.track_book_shared_event @user, record, @team
+      Analytics::Tracker.track_book_shared_event record
     when SearchEndpoint
-      Analytics::Tracker.track_search_endpoint_shared_event @user, record, @team
+      Analytics::Tracker.track_search_endpoint_shared_event record
     when Scorer
-      Analytics::Tracker.track_scorer_shared_event @user, record, @team
+      Analytics::Tracker.track_scorer_shared_event record
     end
   end
 end

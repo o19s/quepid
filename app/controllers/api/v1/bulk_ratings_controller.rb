@@ -23,7 +23,7 @@ module Api
         end
 
         JudgementSync.from_ratings current_user, ratings
-        Analytics::Tracker.track_rating_bulk_updated_event current_user, @query
+        Analytics::Tracker.track_rating_bulk_updated_event @query
         head :no_content
       end
 
@@ -35,7 +35,7 @@ module Api
           end
         end
 
-        Analytics::Tracker.track_rating_bulk_deleted_event current_user, @query
+        Analytics::Tracker.track_rating_bulk_deleted_event @query
         head :no_content
       end
 

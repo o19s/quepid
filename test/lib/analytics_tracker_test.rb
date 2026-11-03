@@ -3,6 +3,8 @@
 require 'test_helper'
 
 class AnalyticsTrackerTest < ActiveSupport::TestCase
+  cover 'Analytics::Tracker*'
+
   setup do
     @previous_ahoy = Thread.current[:ahoy]
     @delivery = Class.new do
@@ -39,65 +41,65 @@ class AnalyticsTrackerTest < ActiveSupport::TestCase
 
   # Method, arguments (symbols refer to setup records), stored name, exact payload.
   [
-    [ :track_query_doc_pairs_bulk_updated_event, [ :user, :book, true ], 'books:populated_empty_book',
+    [ :track_query_doc_pairs_bulk_updated_event, [ :book, true ], 'books:populated_empty_book',
       { category: 'Books', action: 'Populated empty book', label: 'Book name', value: 84 } ],
-    [ :track_query_doc_pairs_bulk_updated_event, [ :user, :book, false ], 'books:refreshed_a_book',
+    [ :track_query_doc_pairs_bulk_updated_event, [ :book, false ], 'books:refreshed_a_book',
       { category: 'Books', action: 'Refreshed a book', label: 'Book name', value: 84 } ],
     [ :track_case_created_event, [ :user, :case, true ], 'cases:created_first_case',
       { category: 'Cases', action: 'Created First Case', label: 'actor@example.test', value: 1 } ],
     [ :track_case_created_event, [ :user, :case, false ], 'cases:created_a_case',
       { category: 'Cases', action: 'Created a Case', label: 'Case name', value: 3 } ],
-    [ :track_case_updated_event, [ :user, :case ], 'cases:updated_a_case',
+    [ :track_case_updated_event, [ :case ], 'cases:updated_a_case',
       { category: 'Cases', action: 'Updated a Case', label: 'Case name', value: nil } ],
-    [ :track_case_archived_event, [ :user, :case ], 'cases:archived_a_case',
+    [ :track_case_archived_event, [ :case ], 'cases:archived_a_case',
       { category: 'Cases', action: 'Archived a Case', label: 'Case name', value: nil } ],
-    [ :track_case_deleted_event, [ :user, :case ], 'cases:deleted_a_case',
+    [ :track_case_deleted_event, [ :case ], 'cases:deleted_a_case',
       { category: 'Cases', action: 'Deleted a Case', label: 'Case name', value: nil } ],
-    [ :track_case_shared_event, [ :user, :case, :team ], 'cases:shared_a_case',
+    [ :track_case_shared_event, [ :case ], 'cases:shared_a_case',
       { category: 'Cases', action: 'Shared a Case', label: 'Case name', value: nil } ],
-    [ :track_user_swapped_protocol, [ :user, :case, 'https' ], 'cases:swapped_to_protocol',
+    [ :track_user_swapped_protocol, [ :case, 'https' ], 'cases:swapped_to_protocol',
       { category: 'Cases', action: 'Swapped to Protocol', label: 'Case name', value: 'https', case_id: 42 } ],
-    [ :track_query_created_event, [ :user, :query ], 'queries:created_a_query',
+    [ :track_query_created_event, [ :query ], 'queries:created_a_query',
       { category: 'Queries', action: 'Created a Query', label: 'Query text', value: 6 } ],
-    [ :track_query_deleted_event, [ :user, :query ], 'queries:deleted_a_query',
+    [ :track_query_deleted_event, [ :query ], 'queries:deleted_a_query',
       { category: 'Queries', action: 'Deleted a Query', label: 'Query text', value: nil } ],
-    [ :track_query_moved_event, [ :user, :query, :case ], 'queries:moved_a_query',
+    [ :track_query_moved_event, [ :query ], 'queries:moved_a_query',
       { category: 'Queries', action: 'Moved a Query', label: 'Query text', value: nil } ],
-    [ :track_query_notes_updated_event, [ :user, :query ], 'queries:updated_query_notes',
+    [ :track_query_notes_updated_event, [ :query ], 'queries:updated_query_notes',
       { category: 'Queries', action: 'Updated Query Notes', label: 'Query text', value: nil } ],
-    [ :track_query_options_updated_event, [ :user, :query ], 'queries:updated_query_options',
+    [ :track_query_options_updated_event, [ :query ], 'queries:updated_query_options',
       { category: 'Queries', action: 'Updated Query Options', label: 'Query text', value: nil } ],
-    [ :track_rating_created_event, [ :user, :rating ], 'ratings:rated_a_query',
+    [ :track_rating_created_event, [ :rating ], 'ratings:rated_a_query',
       { category: 'Ratings', action: 'Rated a Query', label: 'Query text', value: 2.5 } ],
-    [ :track_rating_deleted_event, [ :user, :rating ], 'ratings:reset_a_query_rating',
+    [ :track_rating_deleted_event, [ :rating ], 'ratings:reset_a_query_rating',
       { category: 'Ratings', action: 'Reset a Query Rating', label: 'Query text', value: nil } ],
-    [ :track_rating_bulk_updated_event, [ :user, :query ], 'ratings:bulk_updated_query_ratings',
+    [ :track_rating_bulk_updated_event, [ :query ], 'ratings:bulk_updated_query_ratings',
       { category: 'Ratings', action: 'Bulk Updated Query Ratings', label: 'Query text', value: nil } ],
-    [ :track_rating_bulk_deleted_event, [ :user, :query ], 'ratings:bulk_deleted_query_ratings',
+    [ :track_rating_bulk_deleted_event, [ :query ], 'ratings:bulk_deleted_query_ratings',
       { category: 'Ratings', action: 'Bulk Deleted Query Ratings', label: 'Query text', value: nil } ],
     [ :track_scorer_created_event, [ :user, :scorer ], 'scorers:created_a_scorer',
       { category: 'Scorers', action: 'Created a Scorer', label: 'Scorer name', value: 4 } ],
-    [ :track_scorer_updated_event, [ :user, :scorer ], 'scorers:updated_a_scorer',
+    [ :track_scorer_updated_event, [ :scorer ], 'scorers:updated_a_scorer',
       { category: 'Scorers', action: 'Updated a Scorer', label: 'Scorer name', value: nil } ],
-    [ :track_scorer_deleted_event, [ :user, :scorer ], 'scorers:deleted_a_scorer',
+    [ :track_scorer_deleted_event, [ :scorer ], 'scorers:deleted_a_scorer',
       { category: 'Scorers', action: 'Deleted a Scorer', label: 'Scorer name', value: nil } ],
-    [ :track_scorer_shared_event, [ :user, :scorer, :team ], 'scorers:shared_a_scorer',
+    [ :track_scorer_shared_event, [ :scorer ], 'scorers:shared_a_scorer',
       { category: 'Scorers', action: 'Shared a Scorer', label: 'Scorer name', value: nil } ],
-    [ :track_snapshot_created_event, [ :user, :snapshot ], 'snapshots:created_a_snapshot',
+    [ :track_snapshot_created_event, [ :snapshot ], 'snapshots:created_a_snapshot',
       { category: 'Snapshots', action: 'Created a Snapshot', label: 'Snapshot name', value: 5 } ],
-    [ :track_snapshot_deleted_event, [ :user, :snapshot ], 'snapshots:deleted_a_snapshot',
+    [ :track_snapshot_deleted_event, [ :snapshot ], 'snapshots:deleted_a_snapshot',
       { category: 'Snapshots', action: 'Deleted a Snapshot', label: 'Snapshot name', value: nil } ],
-    [ :track_team_created_event, [ :user, :team ], 'teams:created_an_team',
+    [ :track_team_created_event, [ :team ], 'teams:created_an_team',
       { category: 'Teams', action: 'Created an Team', label: 'Team name', value: 1 } ],
-    [ :track_team_updated_event, [ :user, :team ], 'teams:updated_an_team',
+    [ :track_team_updated_event, [ :team ], 'teams:updated_an_team',
       { category: 'Teams', action: 'Updated an Team', label: 'Team name', value: nil } ],
-    [ :track_team_deleted_event, [ :user, :team ], 'teams:deleted_an_team',
+    [ :track_team_deleted_event, [ :team ], 'teams:deleted_an_team',
       { category: 'Teams', action: 'Deleted an Team', label: 'Team name', value: nil } ],
-    [ :track_member_added_to_team_event, [ :user, :team, :member ], 'teams:added_member_to_an_team',
+    [ :track_member_added_to_team_event, [ :team ], 'teams:added_member_to_an_team',
       { category: 'Teams', action: 'Added Member to an Team', label: 'Team name', value: 2 } ],
-    [ :track_member_removed_from_team_event, [ :user, :team, :member ], 'teams:removed_member_from_an_team',
+    [ :track_member_removed_from_team_event, [ :team ], 'teams:removed_member_from_an_team',
       { category: 'Teams', action: 'Removed Member from an Team', label: 'Team name', value: 2 } ],
-    [ :track_try_saved_event, [ :user, :try ], 'case_tries:saved_a_case_try',
+    [ :track_try_saved_event, [ :try ], 'case_tries:saved_a_case_try',
       { category: 'Case Tries', action: 'Saved a Case Try', label: 'Case name', value: 7 } ],
     [ :track_signup_event, [ :user ], 'users:signed_up',
       { category: 'Users', action: 'Signed Up', label: 'actor@example.test', value: nil } ],
@@ -117,7 +119,7 @@ class AnalyticsTrackerTest < ActiveSupport::TestCase
   end
 
   test 'book sharing preserves its event payload' do
-    Analytics::Tracker.track_book_shared_event @user, @book, @team
+    Analytics::Tracker.track_book_shared_event @book
 
     assert_equal [
       [ 'books:shared_a_book', { category: 'Books', action: 'Shared a Book', label: 'Book name', value: nil } ]
@@ -126,7 +128,7 @@ class AnalyticsTrackerTest < ActiveSupport::TestCase
 
   test 'search endpoint sharing preserves its event payload' do
     endpoint = Struct.new(:fullname, keyword_init: true).new(fullname: 'Endpoint name')
-    Analytics::Tracker.track_search_endpoint_shared_event @user, endpoint, @team
+    Analytics::Tracker.track_search_endpoint_shared_event endpoint
 
     assert_equal [
       [ 'search_endpoints:shared_a_search_endpoint', { category: 'Search Endpoints', action: 'Shared a Search Endpoint', label: 'Endpoint name', value: nil } ]

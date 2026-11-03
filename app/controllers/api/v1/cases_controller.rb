@@ -87,14 +87,14 @@ module Api
           # archiving a case means current user takes it over, that should be better expressed.
           @case.owner = current_user
           @case.mark_archived!
-          Analytics::Tracker.track_case_archived_event current_user, @case
+          Analytics::Tracker.track_case_archived_event @case
           respond_with @case
         elsif @case.update update_params
           if update_params[:book_id]
             @book = Book.find(update_params[:book_id])
             TrackBookViewedJob.perform_now current_user, @book
           end
-          Analytics::Tracker.track_case_updated_event current_user, @case
+          Analytics::Tracker.track_case_updated_event @case
           respond_with @case
         else
           render json: @case.errors, status: :bad_request
@@ -105,7 +105,7 @@ module Api
 
       def destroy
         @case.really_destroy
-        Analytics::Tracker.track_case_deleted_event current_user, @case
+        Analytics::Tracker.track_case_deleted_event @case
 
         head :no_content
       end

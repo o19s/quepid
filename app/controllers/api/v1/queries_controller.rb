@@ -61,7 +61,7 @@ module Api
           @query.insert_at(params[:position].to_i) if params[:position]
           @case.save
 
-          Analytics::Tracker.track_query_created_event current_user, @query
+          Analytics::Tracker.track_query_created_event @query
           vectorize_new_query
 
           # Reload so the order matches #index: the association still holds the
@@ -107,7 +107,7 @@ module Api
         @case.rearrange_queries
         @case.save
 
-        Analytics::Tracker.track_query_moved_event current_user, @query, @case
+        Analytics::Tracker.track_query_moved_event @query
 
         respond_with @query
       end
@@ -116,7 +116,7 @@ module Api
       def destroy
         @query.remove_from_list
         @query.destroy
-        Analytics::Tracker.track_query_deleted_event current_user, @query
+        Analytics::Tracker.track_query_deleted_event @query
 
         # Make sure queries have the right `arranged_next` and `arranged_at`
         # values after the query has been removed

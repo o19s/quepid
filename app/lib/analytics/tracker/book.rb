@@ -3,7 +3,7 @@
 module Analytics
   module Tracker
     module Book
-      def track_query_doc_pairs_bulk_updated_event _user, book, empty = false
+      def track_query_doc_pairs_bulk_updated_event book, empty = false
         if empty
           track 'Books', 'Populated empty book', label: book.name, value: book.id
         else
@@ -11,7 +11,7 @@ module Analytics
         end
       end
 
-      def track_book_shared_event _user, book, _team
+      def track_book_shared_event book
         track 'Books', 'Shared a Book', label: book.name
       end
     end

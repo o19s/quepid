@@ -11,23 +11,23 @@ module Analytics
         end
       end
 
-      def track_case_updated_event _user, acase
+      def track_case_updated_event acase
         track 'Cases', 'Updated a Case', label: acase.case_name
       end
 
-      def track_case_archived_event _user, acase
+      def track_case_archived_event acase
         track 'Cases', 'Archived a Case', label: acase.case_name
       end
 
-      def track_case_deleted_event _user, acase
+      def track_case_deleted_event acase
         track 'Cases', 'Deleted a Case', label: acase.case_name
       end
 
-      def track_case_shared_event _user, acase, _team
+      def track_case_shared_event acase
         track 'Cases', 'Shared a Case', label: acase.case_name
       end
 
-      def track_user_swapped_protocol _user, acase, protocol
+      def track_user_swapped_protocol acase, protocol
         track 'Cases', 'Swapped to Protocol', label: acase.case_name, value: protocol, case_id: acase.id
       end
     end

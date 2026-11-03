@@ -30,7 +30,7 @@ module Api
 
         changed = @case.embedder_id != embedder&.id
         if @case.update(embedder: embedder)
-          Analytics::Tracker.track_case_updated_event current_user, @case
+          Analytics::Tracker.track_case_updated_event @case
           VectorizeCaseQueriesJob.enqueue_for(@case) if changed
           load_state
           render :index

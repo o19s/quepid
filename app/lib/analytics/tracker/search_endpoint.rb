@@ -3,7 +3,7 @@
 module Analytics
   module Tracker
     module SearchEndpoint
-      def track_search_endpoint_shared_event _user, endpoint, _team
+      def track_search_endpoint_shared_event endpoint
         track 'Search Endpoints', 'Shared a Search Endpoint', label: endpoint.fullname
       end
     end

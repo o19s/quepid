@@ -50,7 +50,7 @@ module Api
         update_params = book_params.except(:scorer_id)
         apply_scorer_to_book(@book, book_params[:scorer_id]) if book_params[:scorer_id].present?
         if @book.update update_params
-          # Analytics::Tracker.track_case_updated_event current_user, @case
+          # Analytics::Tracker.track_case_updated_event @case
           respond_with @book
         else
           render json: @book.errors, status: :bad_request

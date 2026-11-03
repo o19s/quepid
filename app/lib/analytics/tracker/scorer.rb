@@ -7,15 +7,15 @@ module Analytics
         track 'Scorers', 'Created a Scorer', label: scorer.name, value: user.owned_scorers.count
       end
 
-      def track_scorer_updated_event _user, scorer
+      def track_scorer_updated_event scorer
         track 'Scorers', 'Updated a Scorer', label: scorer.name
       end
 
-      def track_scorer_deleted_event _user, scorer
+      def track_scorer_deleted_event scorer
         track 'Scorers', 'Deleted a Scorer', label: scorer.name
       end
 
-      def track_scorer_shared_event _user, scorer, _team
+      def track_scorer_shared_event scorer
         track 'Scorers', 'Shared a Scorer', label: scorer.name
       end
     end

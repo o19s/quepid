@@ -22,7 +22,7 @@ class TeamMembership
   def add member
     return false unless append(member)
 
-    track_added(member)
+    track_added
     true
   end
 
@@ -33,7 +33,7 @@ class TeamMembership
     append(member)
     return false unless @team.save
 
-    track_added(member)
+    track_added
     true
   end
 
@@ -42,7 +42,7 @@ class TeamMembership
     return false unless @team.members.exists?(member.id)
 
     @team.members.delete(member)
-    Analytics::Tracker.track_member_removed_from_team_event(@user, @team, member) if track
+    Analytics::Tracker.track_member_removed_from_team_event(@team) if track
     true
   end
 
@@ -56,7 +56,7 @@ class TeamMembership
     true
   end
 
-  def track_added member
-    Analytics::Tracker.track_member_added_to_team_event(@user, @team, member)
+  def track_added
+    Analytics::Tracker.track_member_added_to_team_event(@team)
   end
 end

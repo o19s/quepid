@@ -62,7 +62,7 @@ module Api
 
         if case_saved
           @try.add_curator_vars params[:curator_vars]
-          Analytics::Tracker.track_try_saved_event current_user, @try
+          Analytics::Tracker.track_try_saved_event @try
 
           respond_with @try
         else

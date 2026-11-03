@@ -28,7 +28,7 @@ module Api
         @team.members << current_user
 
         if @team.save
-          Analytics::Tracker.track_team_created_event current_user, @team
+          Analytics::Tracker.track_team_created_event @team
           respond_with @team
         else
           render json: @team.errors, status: :bad_request
@@ -37,7 +37,7 @@ module Api
 
       def update
         if @team.update team_params
-          Analytics::Tracker.track_team_updated_event current_user, @team
+          Analytics::Tracker.track_team_updated_event @team
           respond_with @team
         else
           render json: @team.errors, status: :bad_request
@@ -48,7 +48,7 @@ module Api
 
       def destroy
         @team.destroy
-        Analytics::Tracker.track_team_deleted_event current_user, @team
+        Analytics::Tracker.track_team_deleted_event @team
 
         head :no_content
       end

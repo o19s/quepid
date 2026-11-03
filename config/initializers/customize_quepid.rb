@@ -107,11 +107,6 @@ Rails.application.config.openid_connect_issuer = ENV.fetch('OPENID_CONNECT_ISSUE
 # Optional value for your OpenID Connect Signin Button
 Rails.application.config.openid_connect_button_text = ENV.fetch('OPENID_CONNECT_BUTTON_TEXT', 'Sign in with OpenID Connect')
 
-# == Domain Quepid is Running Under
-# Certain features, like sending emails and Google Analytics require you to set the domain that Quepid
-# is set up under.
-Rails.application.config.quepid_domain = ENV.fetch('QUEPID_DOMAIN', '')
-
 # == Ollama Service URL
 # The development Docker stack listens on port 31434; production's Docker
 # stack uses the standard Ollama port. Override this with OLLAMA_SERVICE_URL

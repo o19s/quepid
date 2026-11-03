@@ -10,7 +10,7 @@ module Api
           @rating = @query.ratings.find_or_create_by doc_id: @doc_id
 
           if @rating.update rating_params
-            Analytics::Tracker.track_rating_created_event current_user, @rating
+            Analytics::Tracker.track_rating_created_event @rating
             JudgementSync.from_ratings current_user, [ @rating ]
             respond_with @rating
           else
@@ -23,7 +23,7 @@ module Api
           # Deleting a rating that is already gone is a no-op, so double clicks and stale tabs don't 500.
           if @rating
             @rating.delete
-            Analytics::Tracker.track_rating_deleted_event current_user, @rating
+            Analytics::Tracker.track_rating_deleted_event @rating
           end
 
           head :no_content

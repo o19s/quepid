@@ -12,7 +12,7 @@ class CoreController < ApplicationController
   def index
     # The initial workspace data includes user-scoped endpoint credentials.
     response.cache_control.replace(private: true, no_store: true)
-    Analytics::Tracker.track_user_swapped_protocol current_user, @case, params['protocolToSwitchTo'] if params['protocolToSwitchTo']
+    Analytics::Tracker.track_user_swapped_protocol @case, params['protocolToSwitchTo'] if params['protocolToSwitchTo']
   end
 
   def new

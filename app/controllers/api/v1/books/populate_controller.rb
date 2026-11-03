@@ -32,7 +32,7 @@ module Api
           blob = DeferredPayload.stash!(query_doc_pairs_params, filename: "book_populate_#{@book.id}.bin.zip")
 
           # Pass the blob directly to the job instead of creating an attachment
-          Analytics::Tracker.track_query_doc_pairs_bulk_updated_event current_user, @book, @book.query_doc_pairs.empty?
+          Analytics::Tracker.track_query_doc_pairs_bulk_updated_event @book, @book.query_doc_pairs.empty?
           @book.queue_job(:populate) do
             PopulateBookJob.perform_later @book, @case, blob
           end

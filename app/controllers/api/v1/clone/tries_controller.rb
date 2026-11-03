@@ -27,7 +27,7 @@ module Api
 
           if @new_try.save && @case.save
             @new_try.add_curator_vars @try.curator_vars_map
-            Analytics::Tracker.track_try_saved_event current_user, @new_try
+            Analytics::Tracker.track_try_saved_event @new_try
 
             respond_with @new_try, location: -> { api_case_try_path(@case, @new_try) }
           else

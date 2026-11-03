@@ -10,7 +10,7 @@ module Api
 
         def update
           if @query.update query_params
-            Analytics::Tracker.track_query_options_updated_event current_user, @query
+            Analytics::Tracker.track_query_options_updated_event @query
             respond_with @query
           else
             render json: @query.errors, status: :bad_request

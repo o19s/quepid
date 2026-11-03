@@ -21,7 +21,7 @@ module Api
         end
 
         if @case.update scorer_id: scorer_id
-          Analytics::Tracker.track_case_updated_event current_user, @case
+          Analytics::Tracker.track_case_updated_event @case
           respond_with @case
         else
           render json: @case.errors, status: :bad_request

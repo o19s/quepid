@@ -14,7 +14,7 @@ module Analytics
 
         @case.save
 
-        Analytics::Tracker.track_case_updated_event current_user, @case
+        Analytics::Tracker.track_case_updated_event @case
         redirect_to analytics_tries_visualization_path(@case)
       end
     end

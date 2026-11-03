@@ -20,7 +20,7 @@ class TeamsController < ApplicationController
     if @team.cases.exists?(kase.id)
       @team.cases.delete(kase)
       flash[:notice] = "Case #{kase.case_name} removed from the team."
-      Analytics::Tracker.track_case_deleted_event(current_user, kase)
+      Analytics::Tracker.track_case_deleted_event(kase)
     else
       flash[:alert] = "Case #{kase.case_name} is not associated with this team."
     end
@@ -111,7 +111,7 @@ class TeamsController < ApplicationController
     if @team.cases.exists?(kase.id)
       kase.owner = current_user
       kase.mark_archived!
-      Analytics::Tracker.track_case_archived_event(current_user, kase)
+      Analytics::Tracker.track_case_archived_event(kase)
       flash[:notice] = "Case #{kase.case_name} archived."
     else
       flash[:alert] = "Case #{kase.case_name} is not associated with this team."

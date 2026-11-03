@@ -63,7 +63,7 @@ module Api
 
         begin
           if @scorer.update scorer_params
-            Analytics::Tracker.track_scorer_updated_event current_user, @scorer
+            Analytics::Tracker.track_scorer_updated_event @scorer
             respond_with @scorer
           else
             render json: @scorer.errors, status: :bad_request
@@ -132,7 +132,7 @@ module Api
         end
 
         @scorer.destroy
-        Analytics::Tracker.track_scorer_deleted_event current_user, @scorer
+        Analytics::Tracker.track_scorer_deleted_event @scorer
 
         head :no_content
       end

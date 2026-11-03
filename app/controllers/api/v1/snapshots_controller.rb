@@ -43,7 +43,7 @@ module Api
           DeferredPayload.stash!(snapshot_params, filename: "snapshot_#{@snapshot.id}.bin.zip", attachment: @snapshot.snapshot_file)
           PopulateSnapshotJob.perform_later @snapshot
 
-          Analytics::Tracker.track_snapshot_created_event current_user, @snapshot
+          Analytics::Tracker.track_snapshot_created_event @snapshot
 
           @with_docs = false # don't show individual docs in the response
           respond_with @snapshot
@@ -54,7 +54,7 @@ module Api
 
       def destroy
         @snapshot.destroy
-        Analytics::Tracker.track_snapshot_deleted_event current_user, @snapshot
+        Analytics::Tracker.track_snapshot_deleted_event @snapshot
 
         head :no_content
       end
