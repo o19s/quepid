@@ -53,7 +53,7 @@ class UpdateCaseRatingsJobTest < ActiveJob::TestCase
     query_doc_pair.destroy
 
     assert_nothing_raised do
-      assert_not UpdateCaseRatingsJob.actively_syncing?(book, case_with_book)
+      assert_not UpdateCaseRatingsJob.actively_syncing_book?(book)
     end
   end
 end

@@ -3,26 +3,24 @@
 class UpdateCaseRatingsJob < ApplicationJob
   queue_as :default
 
-  # Finds in-flight (not finished) SolidQueue rows for this job class whose
-  # query_doc_pair belongs to the given book. Unlike UpdateCaseJob, this
-  # job's only argument is a query_doc_pair - there's no book or case
-  # GlobalID serialized directly, so each candidate job's query_doc_pair has
-  # to be resolved to find its book. RatingsManager#sync_ratings_for_query_doc_pair
-  # applies to every case on that book with auto_populate_case_judgements
-  # enabled (no per-case filtering), so a running job for the book covers
-  # kase whenever that flag is set.
-  def self.active_for book, kase
-    return [] unless kase.auto_populate_case_judgements?
+  # Whether an in-flight (not finished) SolidQueue row for this job class has a
+  # query_doc_pair in the given book. Unlike UpdateCaseJob, this job's only
+  # argument is a query_doc_pair - there's no book or case GlobalID serialized
+  # directly, so each candidate job's query_doc_pair has to be resolved to find
+  # its book. RatingsManager#sync_ratings_for_query_doc_pair applies to every
+  # case on that book with auto_populate_case_judgements enabled (no per-case
+  # filtering), so the answer is per book: a list of linked cases checks the
+  # queue once, and applies it to each case with that flag set.
+  def self.actively_syncing_book? book
+    pending_jobs.any? { |job| job_targets_book?(job, book) }
+  end
 
+  def self.pending_jobs
     SolidQueue::Job
       .where(class_name: name, finished_at: nil)
       .where.missing(:failed_execution)
-      .select { |job| job_targets_book?(job, book) }
   end
-
-  def self.actively_syncing? book, kase
-    active_for(book, kase).any?
-  end
+  private_class_method :pending_jobs
 
   def self.job_targets_book? job, book
     args = job.arguments['arguments'] || []

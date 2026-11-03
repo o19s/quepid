@@ -2,6 +2,7 @@
 <% if cases.any? %>
   <div class="card-body">
     <div class="d-grid" style="grid-template-columns: 1fr auto 1fr;">
+      <% ratings_syncing = cases.any?(&:auto_populate_case_judgements?) && UpdateCaseRatingsJob.actively_syncing_book?(book) %>
       <% cases.each_with_index do |kase, index| %>
         <div class="d-flex align-items-center justify-content-center py-2 <%= 'border-bottom' unless kase == cases.last %>" style="grid-column: 1; grid-row: <%= index + 1 %>;">
           <div class="text-center">
@@ -15,7 +16,7 @@
           <% sends_pairs = kase.auto_populate_book_pairs? %>
           <% receives_ratings = kase.auto_populate_case_judgements? %>
           <% populating_book = PopulateBookJob.actively_populating?(book, kase) || JudgementFromRatingJob.actively_populating?(book, kase) %>
-          <% syncing_case = UpdateCaseJob.actively_syncing?(book, kase) || UpdateCaseRatingsJob.actively_syncing?(book, kase) %>
+          <% syncing_case = UpdateCaseJob.actively_syncing?(book, kase) || (kase.auto_populate_case_judgements? && ratings_syncing) %>
           <% if sends_pairs && receives_ratings %>
             <i class="case-book-sync-icon bi bi-arrow-left-right text-success <%= 'icon-pulse' if populating_book || syncing_case %>" title="Sends query/doc pairs to book and receives judgement ratings back"></i>
           <% elsif sends_pairs %>

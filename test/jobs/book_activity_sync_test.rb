@@ -116,15 +116,28 @@ class BookActivitySyncTest < ActiveJob::TestCase
     AutoRunJudgeJudyJob.queue_adapter = auto_adapter
   end
 
-  test 'array-based forward sync jobs are detected only for their book and automatic cases' do
-    kase = cases(:case_with_book)
-    kase.update!(book: book, auto_populate_case_judgements: true)
+  test 'array-based forward sync jobs are detected only for their book' do
     SolidQueue::Job.create!(class_name: 'UpdateCaseRatingsJob', queue_name: 'default',
                             arguments: { 'arguments' => [ [ book.query_doc_pairs.first.id ] ] })
-    assert UpdateCaseRatingsJob.actively_syncing?(book, kase)
-    assert_not UpdateCaseRatingsJob.actively_syncing?(books(:empty_book), kase)
-    kase.update!(auto_populate_case_judgements: false)
-    assert_not UpdateCaseRatingsJob.actively_syncing?(book, kase)
+    assert UpdateCaseRatingsJob.actively_syncing_book?(book)
+    assert_not UpdateCaseRatingsJob.actively_syncing_book?(books(:empty_book))
+  end
+
+  test 'linked cases pulse for a forward sync only when they receive ratings' do
+    receiving = cases(:case_with_book)
+    receiving.update!(book: book, auto_populate_book_pairs: false, auto_populate_case_judgements: true)
+    sending = cases(:random_case)
+    sending.update!(book: book, auto_populate_book_pairs: true, auto_populate_case_judgements: false)
+    SolidQueue::Job.create!(class_name: 'UpdateCaseRatingsJob', queue_name: 'default',
+                            arguments: { 'arguments' => [ [ book.query_doc_pairs.first.id ] ] })
+
+    html = Nokogiri::HTML.fragment(
+      ApplicationController.render(partial: 'books/linked_cases_list',
+                                   locals:  { book: book, cases: book.cases.where(id: [ receiving.id, sending.id ]) })
+    )
+
+    assert html.at_css("#case-sync-icon-#{receiving.id} .icon-pulse")
+    assert_nil html.at_css("#case-sync-icon-#{sending.id} .icon-pulse")
   end
 
   test 'array-based reverse sync jobs are detected only for the rating case' do
