@@ -100,7 +100,7 @@ test("provider switching, image preference persistence, scale gating and Jev tra
   await jsonOptions.fill('{"judge_options":{"llm_provider":"openai"}}')
   await page.getByRole("tab", { name: "Structured Fields", exact: true }).click()
   await expect(page.locator("#judge_options_llm_service_url")).toHaveValue("https://api.openai.com")
-  await expect(page.locator("#judge_options_llm_model")).toHaveValue("gpt-4o")
+  await expect(page.locator("#judge_options_llm_model")).toHaveValue("gpt-6-luna")
   await expect(page.locator("#judge_options_llm_timeout")).toHaveValue("30")
   await page.getByRole("tab", { name: "JSON", exact: true }).click()
   expect(JSON.parse(await jsonOptions.inputValue()).judge_options.llm_service_url).toBe(

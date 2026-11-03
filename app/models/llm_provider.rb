@@ -148,11 +148,11 @@ class LlmProvider
       key:                 'openai',
       label:               'OpenAI',
       default_service_url: 'https://api.openai.com',
-      default_model:       'gpt-4o',
+      default_model:       'gpt-6-luna',
       help_html:           <<~HTML.squish,
         <strong>OpenAI</strong> &mdash; Direct API access.<br>
         <b>URL:</b> <code>https://api.openai.com</code><br>
-        <b>Model:</b> e.g. <code>gpt-4o</code>, <code>gpt-4.1</code><br>
+        <b>Model:</b> e.g. <code>gpt-6-luna</code><br>
         <b>Key:</b> Your OpenAI API key (starts with <code>sk-</code>)<br>
         <b>API Version:</b> Leave blank
       HTML
@@ -162,11 +162,11 @@ class LlmProvider
       label:               'Azure OpenAI',
       auth_style:          :api_key,
       default_service_url: 'https://RESOURCE.openai.azure.com',
-      default_model:       'gpt-4.1',
+      default_model:       'gpt-6-luna',
       help_html:           <<~HTML.squish,
         <strong>Azure OpenAI</strong> &mdash; OpenAI models hosted on Azure.<br>
         <b>URL:</b> <code>https://YOUR-RESOURCE.openai.azure.com</code><br>
-        <b>Model:</b> Your deployment name, e.g. <code>gpt-4.1</code>, <code>gpt-5.1</code><br>
+        <b>Model:</b> Your deployment name, e.g. <code>gpt-6-luna</code>, <code>gpt-6-sol</code><br>
         <b>Key:</b> Azure resource API key<br>
         <b>API Version:</b> Set to use deployment-based routing
         (e.g. <code>2024-12-01-preview</code>), or leave blank for <code>/openai/v1/</code> path
@@ -178,11 +178,11 @@ class LlmProvider
       auth_style:          :api_key,
       default_service_url: 'https://RESOURCE.services.ai.azure.com',
       default_api_version: '2025-01-01-preview',
-      default_model:       'gpt-4o',
+      default_model:       'gpt-6-luna',
       help_html:           <<~HTML.squish,
         <strong>Azure AI Foundry</strong> &mdash; Unified Azure AI endpoint.<br>
         <b>URL:</b> <code>https://YOUR-RESOURCE.services.ai.azure.com</code><br>
-        <b>Model:</b> Model name, e.g. <code>gpt-4o</code><br>
+        <b>Model:</b> Model name, e.g. <code>gpt-6-luna</code><br>
         <b>Key:</b> Azure AI services key<br>
         <b>API Version:</b> Defaults to <code>2025-01-01-preview</code>
       HTML
