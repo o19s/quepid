@@ -47,7 +47,7 @@ module Api
         q_params              = query_params
         q_params[:query_text] = q_params[:query_text].strip if q_params[:query_text]
 
-        if @case.queries.exists?(query_text: q_params[:query_text])
+        if q_params[:query_text].present? && @case.queries.exists?(query_text: q_params[:query_text])
           # sometimes the query is already created even though we are hitting this..
           @query = @case.queries.find_by(query_text: q_params[:query_text])
           @display_order = @case.queries.map(&:id)
@@ -64,7 +64,9 @@ module Api
           Analytics::Tracker.track_query_created_event current_user, @query
           vectorize_new_query
 
-          @display_order = @case.queries.map(&:id)
+          # Reload so the order matches #index: the association still holds the
+          # just-built query at the end, whatever its persisted position.
+          @display_order = @case.queries.reload.map(&:id)
 
           respond_with @query, @display_order
         else

@@ -40,6 +40,13 @@ module Api
             end
           end
 
+          test 'strips query text and skips blank queries' do
+            post :create, params: { case_id: acase.id, queries: [ ' one ', '', '  ', 'two' ] }
+
+            assert_response :ok
+            assert_equal %w[one two], acase.reload.queries.map(&:query_text)
+          end
+
           test 'adds queries in the specified order' do
             data = {
               case_id: acase.id,

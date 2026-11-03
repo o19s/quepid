@@ -31,7 +31,7 @@ Before testing individual features, get oriented:
 - [ ] **Steps:**
   1. Type a query string into the add-query input at the top of the query list.
   2. Click **Add query**.
-- **Expected:** The query is added, searched, and scored; it appears in the list with a spinner shown while the search is in flight.
+- **Expected:** The query is added, searched, and scored; it appears in the list with a spinner shown while the search is in flight. With **Manual** sort the new query appears at the top of the list, and stays there after a reload.
 - **Edge cases:**
   - [ ] Submit empty/whitespace-only input — button should be disabled or a no-op.
   - [ ] On a case using a `static` search endpoint, confirm Add is disabled with a message that adding isn't supported.

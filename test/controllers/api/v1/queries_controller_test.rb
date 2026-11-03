@@ -26,6 +26,15 @@ module Api
           assert_includes response.parsed_body['query_text'], "can't be blank"
         end
 
+        test 'rejects blank query text even when a blank query already exists' do
+          acase.queries.create!(query_text: 'placeholder').update_column(:query_text, '')
+
+          post :create, params: { case_id: acase.id, query: { query_text: '   ' } }
+
+          assert_response :bad_request
+          assert_includes response.parsed_body['query_text'], "can't be blank"
+        end
+
         test 'to the end of the query list if no position is provided' do
           query_text = 'New Query'
           post :create, params: { case_id: acase.id, query: { query_text: query_text } }
@@ -53,6 +62,30 @@ module Api
 
           assert_not_nil display_order
           assert_instance_of Array, display_order
+        end
+
+        test 'returns the same display order as index' do
+          post :create, params: { case_id: acase.id, query: { query_text: 'New Query' } }
+
+          assert_response :ok
+          created_order = response.parsed_body['display_order']
+
+          get :index, params: { case_id: acase.id }
+
+          assert_response :ok
+          assert_equal response.parsed_body['display_order'], created_order
+        end
+
+        test 'returns the same display order as index when a position is given' do
+          post :create, params: { case_id: acase.id, query: { query_text: 'New Query' }, position: 2 }
+
+          assert_response :ok
+          created_order = response.parsed_body['display_order']
+
+          get :index, params: { case_id: acase.id }
+
+          assert_response :ok
+          assert_equal response.parsed_body['display_order'], created_order
         end
 
         test 'at the proper position when one is provided' do

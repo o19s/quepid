@@ -22,7 +22,8 @@ module Api
           # This logic is very similar to the ratings_importer.rb logic.
           queries_to_import = []
 
-          unique_queries = params.expect(queries: []).uniq
+          # insert_all skips Query's presence validation, so drop blanks here.
+          unique_queries = params.expect(queries: []).map { |text| text.to_s.strip }.compact_blank.uniq
 
           # b. Fetch all the existing queries
           queries_params = {
