@@ -236,7 +236,7 @@ Quepid substitutes:
 
 ```json
 {"query": {"nearest": {"text": "#$query##", "model": "qdrant/bm25"}},
- "using": "bm25", "with_payload": true, "limit": 10}
+ "using": "bm25", "with_payload": true}
 ```
 
 To run the case against dense retrieval instead, edit that in the **Query Sandbox** — swap
@@ -244,8 +244,10 @@ the model and the `using` name:
 
 ```json
 {"query": {"nearest": {"text": "#$query##", "model": "sentence-transformers/all-minilm-l6-v2"}},
- "using": "dense", "with_payload": true, "limit": 10}
+ "using": "dense", "with_payload": true}
 ```
+
+(`limit` isn't shown here — see below.)
 
 Two cases pointed at the same endpoint with these two query params, side by side, is the
 straightforward way to measure lexical against semantic retrieval on your own judgements.
@@ -257,9 +259,11 @@ straightforward way to measure lexical against semantic retrieval on your own ju
   screen. That is why the preset sets `supports_pagination: false` and why "Peek at the next
   page of results" does not appear — both call sites gate on `numFound > docs.length`, which
   a self-reported count can never satisfy.
-- **`limit` must be a number.** Change it to `"10"` in the Query Sandbox and Qdrant's API
-  rejects the request with a deserialization error. This is also why the page size is baked
-  into the query params rather than driven by the pagination params.
+- **Page size comes from "Number of Results to Show", not the query params.** `limit` must be
+  a real JSON number - Qdrant's API rejects a string like `"10"` with a deserialization error
+  - so rather than let it be hand-edited (and risk that), Quepid strips it out of the Query
+  Sandbox entirely and injects it from the try's "Number of Results to Show" setting whenever
+  it actually queries Qdrant.
 - **The id field drives rated-document lookup.** With the case's id field left at `id`, the
   mapper filters already-rated documents with `has_id`; point it at a payload key instead and
   it matches string and canonical safe integer values with separate `match`/`any`
