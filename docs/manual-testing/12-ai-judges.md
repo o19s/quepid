@@ -79,6 +79,7 @@ Successful edits display **AI Judge was successfully updated.**, retaining the e
   - [ ] Simulate (or naturally trigger) the LLM failing to return a usable rating for a given pair — confirm that specific judgement is marked `unrateable` rather than the whole run erroring out.
   - [ ] Trigger a run when the book already has zero unjudged pairs left — confirm it completes immediately having processed 0, without error.
   - [ ] Confirm a run with no available pairs completes without new judgements; availability follows the book's selection strategy and Rank Depth.
+  - [ ] Start a second **Judge All Pairs** run for the same judge after the first has run past its 30-minute concurrency lock — the two runs may pick the same pair; confirm neither job fails, and each pair ends with one judgement from that judge.
 
 ### 12.6 AI Judge image options
 

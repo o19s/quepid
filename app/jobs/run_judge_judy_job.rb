@@ -100,7 +100,8 @@ class RunJudgeJudyJob < ApplicationJob
       break if query_doc_pair.nil?
 
       judgement = judge_pair(llm_service, scale, query_doc_pair, judge, source)
-      judgement.save!
+      next unless save_judgement(judgement)
+
       counter += 1
       # Sync this one pair's case ratings immediately, same as every human
       # judging path (JudgementsController, BulkJudgeController) - cheaper
@@ -122,6 +123,19 @@ class RunJudgeJudyJob < ApplicationJob
   end
 
   private
+
+  # False when an overlapping run (the concurrency lock can expire on long
+  # runs) judged this pair while we waited on the LLM. The pair is judged, and
+  # pair selection skips it from now on, so the caller moves on.
+  def save_judgement judgement
+    judgement.save!
+  rescue ActiveRecord::RecordNotUnique
+    false
+  rescue ActiveRecord::RecordInvalid => e
+    raise unless e.record.errors.of_kind?(:user_id, :taken)
+
+    false
+  end
 
   def cancellation_requested?
     arguments = SolidQueue::Job.where(active_job_id: job_id).pick(:arguments)

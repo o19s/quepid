@@ -219,6 +219,26 @@ class RunJudgeJudyJobTest < ActiveJob::TestCase
       assert_in_delta(0.0, judgement.rating)
     end
 
+    test 'skips a pair an overlapping run judged first instead of failing' do
+      job = RunJudgeJudyJob.new
+      raced_pair_ids = []
+      job.define_singleton_method(:judge_pair) do |llm_service, scale, query_doc_pair, judge, source|
+        judgement = super(llm_service, scale, query_doc_pair, judge, source)
+        if raced_pair_ids.empty?
+          raced_pair_ids << query_doc_pair.id
+          Judgement.create!(query_doc_pair: query_doc_pair, user: judge, rating: 1)
+        end
+        judgement
+      end
+
+      job.perform(book, judge_judy, 1)
+
+      judged_pair_ids = book.judgements.where(user: judge_judy).pluck(:query_doc_pair_id)
+
+      assert_equal 2, judged_pair_ids.size
+      assert_includes judged_pair_ids, raced_pair_ids.first
+    end
+
     test 'syncs case ratings per judged pair rather than one bulk update at the end' do
       assert_no_enqueued_jobs(only: UpdateCaseJob) do
         assert_enqueued_with(job: UpdateCaseRatingsJob) do
