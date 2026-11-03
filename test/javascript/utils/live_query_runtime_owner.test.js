@@ -206,6 +206,22 @@ describe("createLiveQueryRuntimeOwner", () => {
     document.removeEventListener("queries-state:changed", stateChanged)
   })
 
+  it("limits show-only-rated refreshes to 10 in flight at once", async () => {
+    const stores = buildStores()
+    const search = buildOwner({ store: stores })
+    const pending = []
+    const refreshRatedDocs = vi
+      .spyOn(search.queryCapabilities, "refreshRatedDocs")
+      .mockImplementation(() => new Promise((resolve) => pending.push(resolve)))
+    for (let id = 1; id <= 25; id++) stores.queries.upsert({ queryId: id, ratingsReady: false })
+
+    search.queryCommands.toggleShowOnlyRated()
+
+    expect(refreshRatedDocs).toHaveBeenCalledTimes(10)
+    pending.splice(0).forEach((resolve) => resolve())
+    await vi.waitFor(() => expect(refreshRatedDocs).toHaveBeenCalledTimes(20))
+  })
+
   it("toggles a query's expanded state in both stores, and ignores unknown queries", () => {
     const stores = buildStores()
     const search = buildOwner({ store: stores })

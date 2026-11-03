@@ -39,6 +39,7 @@ import {
   evaluateMapperFunctions as evaluateMapperFunctionsFor,
   matchFeaturesExplain,
   normalizeSearchResults,
+  pAll,
   runSearchAll,
   settingsWithTryOverrides
 } from "utils/query_service"
@@ -476,11 +477,11 @@ export function createLiveQueryRuntimeOwner({
     queryCollectionStore.setShowOnlyRated(!getShowOnlyRated())
 
     if (getShowOnlyRated()) {
-      Object.values(getLiveQueries()).forEach(function (query) {
-        if (!query.ratingsReady) {
-          queryCapabilities.refreshRatedDocs(query.queryId)
-        }
-      })
+      // Throttled like Rerun My Searches!, so a large case doesn't send every request at once.
+      const refreshes = Object.values(getLiveQueries())
+        .filter((query) => !query.ratingsReady)
+        .map((query) => () => queryCapabilities.refreshRatedDocs(query.queryId))
+      pAll(refreshes, currSettings.selectedTry?.requestsPerMinute).catch(() => {})
     }
     publishQueryListState()
   }

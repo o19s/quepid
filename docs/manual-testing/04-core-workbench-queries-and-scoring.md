@@ -296,6 +296,7 @@ Navigation is covered by 4.17b; missing cases, tries and routes by 4.17c.
   - [ ] "Show only rated" on Solr and ES/OS cases — each should filter via the engine (results contain exactly the rated doc IDs); confirm no error on an engine that can't look up by id.
   - [ ] With 25 matching rated documents and ten rows per request, confirm the rated count is 25 and **Peek at the next page of results** appends distinct documents beyond the first ten.
   - [ ] On a SearchAPI mapper supporting rated lookup, enable the rated filter with no ratings, then rate a document and refresh. The newly rated document appears without reloading the workspace.
+  - [ ] On a case with more than ten queries, turn on **Show only rated** with the Network tab open: at most ten rated-docs requests are in flight at once, and a try with a requests-per-minute limit sends them no faster than that limit.
   - [ ] While a rescore runs, confirm the "Updating Queries" progress banner appears and clears when done.
   - [ ] With more than ten queries, force every search to fail (e.g. a broken endpoint URL); confirm every query gets an error and the progress banner clears instead of stalling at 10 / N. Repeat with mixed successes and failures, then restore the endpoint and retry successfully.
 
