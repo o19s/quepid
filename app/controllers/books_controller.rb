@@ -267,22 +267,31 @@ class BooksController < ApplicationController
   end
 
   def update
-    assign_book_memberships
+    # Memberships are written as soon as they are assigned, so roll them back
+    # with the rest of the form if the update fails validation.
+    saved = false
+    Book.transaction do
+      assign_book_memberships
 
-    # Handle scorer selection
-    apply_scorer_to_book(@book, book_params[:scorer_id]) if book_params[:scorer_id].present?
+      # Handle scorer selection
+      apply_scorer_to_book(@book, book_params[:scorer_id]) if book_params[:scorer_id].present?
 
-    @book.update(book_params.except(
-                   :team_ids, :ai_judge_ids, :auto_run_ai_judge_ids, :link_the_case, :origin_case_id, :scorer_id,
-                   :delete_export_file, :delete_import_file,
-                   :auto_populate_book_pairs,
-                   :auto_populate_case_judgements
-                 ))
+      saved = @book.update(book_params.except(
+                             :team_ids, :ai_judge_ids, :auto_run_ai_judge_ids, :link_the_case, :origin_case_id, :scorer_id,
+                             :delete_export_file, :delete_import_file,
+                             :auto_populate_book_pairs,
+                             :auto_populate_case_judgements
+                           ))
+      raise ActiveRecord::Rollback unless saved
+    end
 
-    @book.export_file.purge if '1' == book_params[:delete_export_file]
-    @book.import_file.purge if '1' == book_params[:delete_import_file]
-
-    flash[:notice] = 'Book was successfully updated.' if @book.save
+    if saved
+      @book.export_file.purge if '1' == book_params[:delete_export_file]
+      @book.import_file.purge if '1' == book_params[:delete_import_file]
+      flash[:notice] = 'Book was successfully updated.'
+    else
+      @book.scorer_id = book_params[:scorer_id].presence || matching_scorer_id_for_book(current_user, @book)
+    end
 
     @ai_judges = accessible_ai_judges
     @other_books = current_user.books_involved_with.where.not(id: @book.id)
@@ -438,10 +447,11 @@ class BooksController < ApplicationController
   end
 
   def remap_judgement_ratings
-    changes = (params[:rating_map] || {}).to_unsafe_h.each_with_object({}) do |(old_rating, new_rating), acc|
-      next if new_rating.blank? || old_rating.to_r == new_rating.to_r
+    changes, invalid = parse_rating_map(params[:rating_map])
 
-      acc[old_rating.to_f] = new_rating.to_f
+    if invalid.any?
+      redirect_to book_path(@book), alert: "Ratings must be numbers: #{invalid.join(', ')}.", status: :see_other
+      return
     end
 
     if changes.empty?
@@ -507,6 +517,25 @@ class BooksController < ApplicationController
 
   def accessible_ai_judges
     AiJudge.for_user(current_user).preload(:escalates_to, :escalated_from)
+  end
+
+  # Returns [{ old_rating => new_rating }, [unparseable new ratings]]. Blank and
+  # unchanged entries are skipped; values must be finite numbers because they
+  # are interpolated into SQL.
+  def parse_rating_map rating_map
+    invalid = []
+    changes = (rating_map || {}).to_unsafe_h.each_with_object({}) do |(old_rating, new_rating), acc|
+      next if new_rating.blank?
+
+      old_value = Float(old_rating, exception: false)
+      new_value = Float(new_rating, exception: false)
+      unless old_value&.finite? && new_value&.finite?
+        invalid << new_rating
+        next
+      end
+      acc[old_value] = new_value unless old_value == new_value
+    end
+    [ changes, invalid ]
   end
 
   def assign_book_memberships

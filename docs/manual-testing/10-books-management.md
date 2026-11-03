@@ -47,7 +47,7 @@ A **Book** is Quepid's offline relevance-judgement workflow: a set of query/docu
 
   - [ ] Submit a foreign team ID or an inaccessible/human AI judge ID in a create/update request — expect 404, no new book and no changes to existing memberships.
 
-  - [ ] Bypass browser required-field validation and submit a blank Name; expect a 422 Settings form with the validation error and ratings-remap section rendered. Reopen Settings and confirm the stored name is unchanged.
+  - [ ] Bypass browser required-field validation and submit a blank Name; expect a 422 Settings form with the validation error and ratings-remap section rendered, the chosen Rating Scale still selected and the Settings tab highlighted. Change a team or AI judge selection in the same submit. Reopen Settings and confirm the stored name, teams and AI judges are unchanged.
 
 ### 10.4 Book Overview / Show page
 
@@ -110,6 +110,7 @@ A **Book** is Quepid's offline relevance-judgement workflow: a set of query/docu
   - [ ] Chained mappings (e.g. 3→2 and 2→1 together) — confirm each original value maps exactly once (3 does not end up as 1).
   - [ ] A book with no rated judgements or case ratings — the form shows "No rated judgements or case ratings found in this book." instead of a table.
   - [ ] Blank a "Map To" input — that value is left unchanged rather than nulled.
+  - [ ] Submit a non-numeric or non-finite target (e.g. `abc` or `1e400`, via DevTools) — expect "Ratings must be numbers: …" and no data touched.
   - [ ] After remapping, confirm the book's Rating Scale (Settings) is **not** changed automatically; update it separately if the scale should change.
 
 ### 10.7 Import a new book from JSON

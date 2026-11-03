@@ -87,7 +87,8 @@ module BooksHelper
   # Books::ImportController also has its own #edit action - action_name
   # alone can't tell those two apart.
   def book_settings_active?
-    'books' == controller_name && 'edit' == action_name
+    # update only renders when it fails, re-showing the settings form
+    'books' == controller_name && %w[edit update].include?(action_name)
   end
 
   # Returns AI judges that are available to add to this book

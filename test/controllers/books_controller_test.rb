@@ -235,6 +235,22 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
     assert_equal original, book.reload.team_ids.sort
   end
 
+  test 'a failed update leaves memberships unchanged and re-renders the settings form' do
+    login_user_for_integration_test user
+    original_teams = book.team_ids.sort
+    assert_not_empty original_teams
+
+    Bullet.enable = false
+    scorer = user.scorers_involved_with.order(:id).first
+    patch book_path(book), params: { book: { name: '', team_ids: [], scorer_id: scorer.id } }
+    Bullet.enable = true
+
+    assert_response :unprocessable_content
+    assert_equal original_teams, book.reload.team_ids.sort
+    assert_select "select[name='book[scorer_id]'] option[selected][value='#{scorer.id}']", count: 1
+    assert_select "a.nav-link.active[href='#{edit_book_path(book)}']"
+  end
+
   test 'create rejects a human submitted as an AI judge' do
     login_user_for_integration_test user
     assert_no_difference 'Book.count' do
@@ -769,6 +785,22 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
 
       follow_redirect!
       assert_equal 'No ratings changed.', flash[:notice]
+    end
+
+    test 'rejects non-finite and non-numeric new ratings without changing anything' do
+      login_user_for_integration_test doug
+
+      %w[1e400 abc].each do |bad_value|
+        patch "/books/#{james_bond_movies.id}/remap_judgement_ratings",
+              params: { rating_map: { '3.0' => bad_value, '2.0' => '1' } }
+
+        assert_redirected_to book_path(james_bond_movies)
+        follow_redirect!
+
+        assert_equal "Ratings must be numbers: #{bad_value}.", flash[:alert]
+        assert_equal [ 0, 1, 2, 3 ],
+                     james_bond_movies.judgements.where.not(rating: nil).pluck(:rating).sort.map(&:to_i)
+      end
     end
 
     test 'handles chained remapping without double-updating (3→2, 2→1)' do
