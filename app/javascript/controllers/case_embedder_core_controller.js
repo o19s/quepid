@@ -66,6 +66,9 @@ export default class extends CoreModalControllerBase {
     }
   }
 
+  // Also keeps the modal's own summary/button in step with each poll while it's open -- not
+  // just the rest of the page -- so a run that finishes while the modal is still open shows it,
+  // instead of staying on "vectorising…" until the modal is closed and reopened.
   applyState(state) {
     if (state?.vectors) {
       document.dispatchEvent(
@@ -74,6 +77,9 @@ export default class extends CoreModalControllerBase {
         })
       )
     }
+
+    this.state = state
+    this.renderVectors()
 
     clearTimeout(this.pollTimer)
     if (state?.vectors?.running) this.pollTimer = setTimeout(() => this.poll(), POLL_MS)
@@ -169,8 +175,6 @@ export default class extends CoreModalControllerBase {
       const data = await response.json().catch(() => ({}))
       if (!response.ok) throw new Error(data.error || `Unable to re-vectorize (${response.status})`)
 
-      this.state = data
-      this.renderVectors()
       this.applyState(data)
     } catch (error) {
       this.showAlert(error.message, "danger")
@@ -205,7 +209,6 @@ export default class extends CoreModalControllerBase {
       const data = await response.json().catch(() => ({}))
       if (!response.ok) throw new Error(data.error || `Unable to save (${response.status})`)
 
-      this.state = data
       this.applyState(data)
       document.dispatchEvent(
         new CustomEvent(CORE_EVENTS.CASE_HEADER_STALE, {

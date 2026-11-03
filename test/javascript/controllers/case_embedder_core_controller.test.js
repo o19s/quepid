@@ -194,6 +194,22 @@ describe("CaseEmbedderCoreController", () => {
       document.removeEventListener(CORE_EVENTS.QUERY_VECTORS_CHANGED, received)
     })
 
+    it("updates its own summary and button as polling finds the run has finished", async () => {
+      vi.useFakeTimers()
+      const modal = buildModalController()
+      const done = { ...WITH_VECTORS, vectors: { ...WITH_VECTORS.vectors, running: false } }
+      vi.spyOn(modal, "fetchState").mockResolvedValue(done)
+
+      modal.applyState(WITH_VECTORS)
+      expect(modal.vectorSummaryTarget.textContent).toBe("18 current · 2 pending — vectorising…")
+      expect(modal.revectorizeButtonTarget.disabled).toBe(true)
+
+      await vi.advanceTimersByTimeAsync(3000)
+
+      expect(modal.vectorSummaryTarget.textContent).toBe("18 current · 2 pending")
+      expect(modal.revectorizeButtonTarget.disabled).toBe(false)
+    })
+
     it("checks once on page load whether a run is under way", async () => {
       const modal = buildModalController()
       const fetchState = vi.spyOn(modal, "fetchState").mockResolvedValue(STATE)
