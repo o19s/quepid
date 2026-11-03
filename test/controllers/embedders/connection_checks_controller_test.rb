@@ -19,12 +19,12 @@ module Embedders
     end
 
     test 'embeds a sample with unsaved form values' do
-      stub = stub_openai('sk-typed')
+      stub = stub_openai('sk-test-openai')
 
       post connection_check_embedders_url, params: {
         text:     'star wars',
-        embedder: { provider: 'openai', service_url: 'https://api.openai.com', model: 'text-embedding-3-small',
-                    api_key: 'sk-typed', truncation: 'native', dimensions: '512', timeout: '30' },
+        embedder: { connection_id: connections(:openai).id, model: 'text-embedding-3-small',
+                    truncation: 'native', dimensions: '512' },
       }
 
       assert_response :success
@@ -35,12 +35,11 @@ module Embedders
       assert_equal 'star wars', body['input']
     end
 
-    test 'a saved embedder with a blank key is tested with its saved key' do
+    test 'a saved embedder is tested with its connection\'s key' do
       stub = stub_openai('sk-test-openai')
 
       post embedder_connection_check_url(embedder), params: {
-        embedder: { provider: 'openai', service_url: embedder.service_url, model: embedder.model, api_key: '',
-                    truncation: 'native', dimensions: '512', timeout: '30' },
+        embedder: { model: embedder.model, truncation: 'native', dimensions: '512' },
       }
 
       assert_response :success
@@ -49,26 +48,28 @@ module Embedders
 
     test 'an embedder the user cannot see is not found' do
       post embedder_connection_check_url(embedders(:private_ollama)), params: {
-        embedder: { provider: 'ollama', service_url: 'http://ollama:11434', model: 'all-minilm' },
+        embedder: { provider: 'ollama', model: 'all-minilm' },
       }
 
       assert_response :not_found
     end
 
-    test 'a new OpenAI embedder without a key is refused before calling out' do
+    test 'a new embedder without a connection is refused before calling out' do
       post connection_check_embedders_url, params: {
-        embedder: { provider: 'openai', service_url: 'https://api.openai.com', model: 'm', timeout: '30' },
+        embedder: { provider: 'openai', model: 'm' },
       }
 
       assert_response :unprocessable_content
-      assert_match(/Api key is required for OpenAI/, response.parsed_body['error'])
+      assert_match(/Connection is required/, response.parsed_body['error'])
     end
 
     test 'reports invalid settings without calling out' do
-      post connection_check_embedders_url, params: { embedder: { provider: 'openai', service_url: '', model: '' } }
+      post connection_check_embedders_url, params: {
+        embedder: { connection_id: connections(:openai).id, model: '', truncation: 'none' },
+      }
 
       assert_response :unprocessable_content
-      assert_match(/Service url/, response.parsed_body['error'])
+      assert_match(/Model/, response.parsed_body['error'])
     end
 
     test 'reports a provider error' do
@@ -76,7 +77,7 @@ module Embedders
         .to_return(status: 500, body: 'boom')
 
       post connection_check_embedders_url, params: {
-        embedder: { provider: 'openai', service_url: 'https://api.openai.com', model: 'm', api_key: 'sk-x', timeout: '30' },
+        embedder: { connection_id: connections(:openai).id, model: 'm' },
       }
 
       assert_response :bad_gateway

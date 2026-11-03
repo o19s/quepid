@@ -218,7 +218,7 @@ class ConnectionsControllerTest < ActionDispatch::IntegrationTest
     login_user_for_integration_test users(:doug)
 
     assert_difference -> { Connection.count }, -1 do
-      delete connection_url(connection)
+      delete connection_url(connections(:anthropic))
     end
     assert_redirected_to connections_url
   end

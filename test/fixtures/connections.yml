@@ -1,3 +1,28 @@
+# == Schema Information
+#
+# Table name: connections
+#
+#  id                  :bigint           not null, primary key
+#  archived            :boolean          default(FALSE), not null
+#  auth_header         :string(100)
+#  auth_scheme         :string(20)       default("bearer"), not null
+#  base_url            :string(500)
+#  extra_headers       :json
+#  name                :string(255)      not null
+#  options             :json
+#  requests_per_minute :integer          default(0), not null
+#  secret              :string(4000)
+#  service             :string(50)       not null
+#  timeout             :integer          default(30), not null
+#  created_at          :datetime         not null
+#  updated_at          :datetime         not null
+#  owner_id            :integer
+#
+# Indexes
+#
+#  index_connections_on_owner_id_and_id  (owner_id,id)
+#
+
 # Owned by doug and shared with `shared`, so random (a member) can use it but not change it.
 openai:
   name:        OpenAI

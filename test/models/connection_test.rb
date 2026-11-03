@@ -2,6 +2,30 @@
 
 require 'test_helper'
 
+# == Schema Information
+#
+# Table name: connections
+#
+#  id                  :bigint           not null, primary key
+#  archived            :boolean          default(FALSE), not null
+#  auth_header         :string(100)
+#  auth_scheme         :string(20)       default("bearer"), not null
+#  base_url            :string(500)
+#  extra_headers       :json
+#  name                :string(255)      not null
+#  options             :json
+#  requests_per_minute :integer          default(0), not null
+#  secret              :string(4000)
+#  service             :string(50)       not null
+#  timeout             :integer          default(30), not null
+#  created_at          :datetime         not null
+#  updated_at          :datetime         not null
+#  owner_id            :integer
+#
+# Indexes
+#
+#  index_connections_on_owner_id_and_id  (owner_id,id)
+#
 class ConnectionTest < ActiveSupport::TestCase
   let(:connection) { connections(:openai) }
   let(:doug) { users(:doug) }
@@ -66,6 +90,40 @@ class ConnectionTest < ActiveSupport::TestCase
     test 'requires a known service and an http(s) URL' do
       assert_not build(service: 'nope').valid?
       assert_not build(base_url: 'ftp://x').valid?
+    end
+
+    test 'accepts complete http(s) URLs including local hosts and provider paths' do
+      urls = [
+        'https://api.openai.com',
+        'HTTPS://api.openai.com/v1',
+        'http://ollama:11434',
+        'http://localhost:8080/v1/',
+        'http://[::1]:11434/api',
+        'https://example.com/provider/v1?api-version=2026-01-01'
+      ]
+
+      urls.each do |url|
+        assert_predicate build(base_url: url), :valid?, url
+      end
+    end
+
+    test 'rejects malformed URLs and unsupported schemes' do
+      urls = [
+        'https://',
+        'https:///v1',
+        'https://example.com:invalid',
+        'https://example.com/with a space',
+        "https://example.com\nhttps://other.example.com",
+        'ftp://example.com',
+        '//example.com'
+      ]
+
+      urls.each do |url|
+        connection = build(base_url: url)
+
+        assert_not connection.valid?, url
+        assert_includes connection.errors[:base_url], 'must be a valid http:// or https:// URL'
+      end
     end
 
     test 'strips a trailing slash from the URL' do
@@ -217,7 +275,7 @@ class ConnectionTest < ActiveSupport::TestCase
       assert_not build(retry_statuses_text: '99').valid?
     end
 
-    test 'an embedder on the connection retries as it says, and one with its own settings uses the defaults' do
+    test 'an embedder on the connection retries as it says' do
       voyage = connections(:voyage)
       voyage.update!(retry_max: 1, retry_statuses_text: '503', retry_interval: 0)
       embedder = Embedder.new(name: 'V', provider: 'voyage', model: 'voyage-3.5', owner: users(:doug), connection: voyage)
@@ -225,8 +283,6 @@ class ConnectionTest < ActiveSupport::TestCase
 
       assert_raises(EmbedderAdapters::Error) { embedder.embed('star wars') }
       assert_requested stub, times: 2
-
-      assert_empty Embedder.new(service_url: 'http://x').retry_options
     end
   end
 

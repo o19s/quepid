@@ -27,15 +27,12 @@ module Api
       #       embedder: Hash{
       #         name: String,
       #         provider: String,
-      #         service_url: String,
-      #         model: String,
-      #         api_key: String,
       #         connection_id: Integer,
+      #         model: String,
       #         dimensions: Integer,
       #         truncation: String,
       #         instruction: String,
       #         input_template: String,
-      #         timeout: Integer,
       #         archived: Boolean,
       #         team_ids: Array<Integer>
       #       }
@@ -45,17 +42,15 @@ module Api
       #   [JSON{
       #     "embedder": {
       #       "name": "OpenAI small, 512 dims",
-      #       "provider": "openai",
-      #       "service_url": "https://api.openai.com",
+      #       "connection_id": 1,
       #       "model": "text-embedding-3-small",
-      #       "api_key": "sk-...",
       #       "dimensions": 512,
       #       "truncation": "native"
       #     }
       #   }]
       #
-      # With connection_id the embedder takes its provider, URL, key and timeout from that
-      # connection (one the user can use whose service makes embeddings), and ignores its own.
+      # The embedder takes its provider, URL, key and timeout from connection_id (one the user can
+      # use whose service makes embeddings) -- it has none of its own.
       def create
         @embedder = current_user.owned_embedders.build(embedder_params.except(:team_ids))
 
@@ -67,11 +62,9 @@ module Api
         end
       end
 
-      # A blank or masked api_key leaves the saved key alone.
       # @request_body_example rename [JSON{ "embedder": { "name": "Renamed" }}]
       def update
         update_params = embedder_params.except(:team_ids)
-        update_params = update_params.except(:api_key) if Embedder.keep_existing_key?(update_params[:api_key])
 
         @embedder.assign_attributes(update_params)
 

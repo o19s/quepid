@@ -2,10 +2,8 @@
 
 module Embedders
   # Backs the embedder form's Check connection button: embeds a sample text with the *current* form
-  # values, saved or not, and reports what came back. Never writes to the database.
-  #
-  # Without an embedder_id the check runs on the unsaved form. With one, a blank key means
-  # "use the saved one", since the form never shows it.
+  # values, saved or not, and reports what came back. Never writes to the database. The key itself
+  # is never on this form -- it comes from whichever connection is chosen.
   class ConnectionChecksController < ApplicationController
     SAMPLE_TEXT = 'star wars'
 
@@ -26,7 +24,6 @@ module Embedders
     def build_embedder
       saved = current_user.embedders_involved_with.find(params.expect(:embedder_id)) if params.key?(:embedder_id)
       attributes = embedder_params
-      attributes = attributes.except(:api_key) if saved && Embedder.keep_existing_key?(attributes[:api_key])
 
       embedder = saved ? saved.dup : Embedder.new
       # The one checking is who would use the connection.

@@ -7,9 +7,7 @@ require 'test_helper'
 # Table name: embedders
 #
 #  id             :bigint           not null, primary key
-#  api_key        :string(4000)
 #  archived       :boolean          default(FALSE), not null
-#  connection_id  :bigint
 #  dimensions     :integer
 #  input_template :text(65535)
 #  instruction    :text(65535)
@@ -17,11 +15,10 @@ require 'test_helper'
 #  name           :string(255)      not null
 #  options        :json
 #  provider       :string(50)       not null
-#  service_url    :string(500)
-#  timeout        :integer          default(30), not null
 #  truncation     :string(20)       default("none"), not null
 #  created_at     :datetime         not null
 #  updated_at     :datetime         not null
+#  connection_id  :bigint
 #  owner_id       :integer
 #
 # Indexes
@@ -32,11 +29,11 @@ require 'test_helper'
 class EmbedderTest < ActiveSupport::TestCase
   def build_embedder attributes = {}
     Embedder.new({
-      name:        'Test',
-      provider:    'openai',
-      service_url: 'https://api.openai.com',
-      model:       'text-embedding-3-small',
-      api_key:     'sk-test',
+      name:       'Test',
+      provider:   'openai',
+      connection: connections(:openai),
+      owner:      users(:doug),
+      model:      'text-embedding-3-small',
     }.merge(attributes))
   end
 
@@ -50,45 +47,6 @@ class EmbedderTest < ActiveSupport::TestCase
 
       assert_not embedder.valid?
       assert_includes embedder.errors[:provider], 'is not a known provider'
-    end
-
-    test 'requires an http(s) service url' do
-      assert_not build_embedder(service_url: 'api.openai.com').valid?
-      assert_not build_embedder(service_url: '').valid?
-    end
-
-    test 'accepts complete http(s) service urls including local hosts and provider paths' do
-      urls = [
-        'https://api.openai.com',
-        'HTTPS://api.openai.com/v1',
-        'http://ollama:11434',
-        'http://localhost:8080/v1/',
-        'http://[::1]:11434/api',
-        'https://example.com/provider/v1?api-version=2026-01-01'
-      ]
-
-      urls.each do |url|
-        assert_predicate build_embedder(service_url: url), :valid?, url
-      end
-    end
-
-    test 'rejects malformed service urls and unsupported schemes' do
-      urls = [
-        'https://',
-        'https:///v1',
-        'https://example.com:invalid',
-        'https://example.com/with a space',
-        "https://example.com\nhttps://other.example.com",
-        'ftp://example.com',
-        '//example.com'
-      ]
-
-      urls.each do |url|
-        embedder = build_embedder(service_url: url)
-
-        assert_not embedder.valid?, url
-        assert_includes embedder.errors[:service_url], 'must be a valid http:// or https:// URL'
-      end
     end
 
     test 'requires dimensions when truncating' do
@@ -106,18 +64,9 @@ class EmbedderTest < ActiveSupport::TestCase
     end
 
     test 'native truncation is limited to the sizes the provider allows' do
-      assert_not build_embedder(provider: 'voyage', truncation: 'native', dimensions: 300).valid?
-      assert_predicate build_embedder(provider: 'voyage', truncation: 'native', dimensions: 1024), :valid?
+      assert_not build_embedder(provider: 'voyage', connection: connections(:voyage), truncation: 'native', dimensions: 300).valid?
+      assert_predicate build_embedder(provider: 'voyage', connection: connections(:voyage), truncation: 'native', dimensions: 1024), :valid?
       assert_predicate build_embedder(truncation: 'native', dimensions: 300), :valid?
-    end
-
-    test 'OpenAI and Voyage need a key; Ollama does not' do
-      embedder = build_embedder(api_key: nil)
-
-      assert_not embedder.valid?
-      assert_includes embedder.errors[:api_key], 'is required for OpenAI'
-      assert_not build_embedder(provider: 'voyage', api_key: '').valid?
-      assert_predicate build_embedder(provider: 'ollama', service_url: 'http://ollama:11434', api_key: nil), :valid?
     end
 
     test 'input template must contain {query}' do
@@ -180,12 +129,11 @@ class EmbedderTest < ActiveSupport::TestCase
   end
 
   describe '#fingerprint' do
-    test 'changes with settings that change the vectors, not with name or key' do
+    test 'changes with settings that change the vectors, not with name' do
       embedder = build_embedder
       original = embedder.fingerprint
 
       embedder.name = 'Renamed'
-      embedder.api_key = 'sk-other'
 
       assert_equal original, embedder.fingerprint
 
@@ -208,7 +156,8 @@ class EmbedderTest < ActiveSupport::TestCase
   describe 'dependent records' do
     test 'deleting the owner keeps the embedder, unowned' do
       owner = User.create!(email: 'embedder-owner@example.com', password: 'password', name: 'Owner', agreed: true)
-      embedder = build_embedder(owner: owner)
+      connection = Connection.create!(name: 'Test', service: 'openai', base_url: 'https://api.openai.com', secret: 'sk-test', owner: owner)
+      embedder = build_embedder(owner: owner, connection: connection)
       embedder.save!
 
       owner.destroy!
@@ -224,16 +173,6 @@ class EmbedderTest < ActiveSupport::TestCase
 
       assert_nil acase.reload.embedder_id
     end
-
-    test 'encrypts the api key at rest' do
-      embedder = build_embedder(api_key: 'sk-secret')
-      embedder.save!
-
-      raw = Embedder.connection.select_value("SELECT api_key FROM embedders WHERE id = #{embedder.id}")
-
-      assert_not_includes raw, 'sk-secret'
-      assert_equal 'sk-secret', embedder.reload.api_key
-    end
   end
 
   describe 'on a connection' do
@@ -244,8 +183,8 @@ class EmbedderTest < ActiveSupport::TestCase
       Embedder.new({ name: 'Voyage', model: 'voyage-3.5', owner: owner, connection: voyage }.merge(attributes))
     end
 
-    test 'takes its URL and timeout from the connection, whatever was set on the embedder' do
-      embedder = on_connection(provider: 'voyage', service_url: 'https://elsewhere.example', timeout: 99)
+    test 'takes its URL and timeout from the connection' do
+      embedder = on_connection(provider: 'voyage')
 
       assert_predicate embedder, :valid?
       assert_equal 'https://api.voyageai.com', embedder.service_url
@@ -276,10 +215,6 @@ class EmbedderTest < ActiveSupport::TestCase
       end
     end
 
-    test 'needs no key of its own, even for a provider that always requires one' do
-      assert_predicate on_connection(api_key: nil), :valid?
-    end
-
     test 'sends the key the way the connection says' do
       assert_equal({ 'Authorization' => 'Bearer pa-test-voyage' }, on_connection.request_headers)
 
@@ -287,14 +222,9 @@ class EmbedderTest < ActiveSupport::TestCase
       assert_equal({ 'x-api-key' => 'pa-test-voyage' }, on_connection.request_headers)
     end
 
-    test 'an embedder without a connection keeps using its own key' do
-      assert_equal({ 'Authorization' => 'Bearer sk-test' }, build_embedder.request_headers)
-      assert_empty build_embedder(provider: 'ollama', service_url: 'http://ollama:11434', api_key: nil).request_headers
-    end
-
-    test 'masks the connection\'s key, not its own' do
-      assert_equal Embedder::MASKED_API_KEY, on_connection(api_key: nil).masked_api_key
-      assert_equal '', on_connection(api_key: 'ignored', connection: connections(:private_ollama)).masked_api_key
+    test 'masks the connection\'s key' do
+      assert_equal Embedder::MASKED_API_KEY, on_connection.masked_api_key
+      assert_equal '', on_connection(connection: connections(:private_ollama)).masked_api_key
     end
 
     test 'the connection must be able to make embeddings' do
@@ -326,12 +256,6 @@ class EmbedderTest < ActiveSupport::TestCase
       assert_not_equal before, on_connection.fingerprint
     end
 
-    test 'an embedder gives the same fingerprint on a connection as with the same settings of its own' do
-      own = build_embedder(provider: 'voyage', service_url: 'https://api.voyageai.com', model: 'voyage-3.5')
-
-      assert_equal own.fingerprint, on_connection.fingerprint
-    end
-
     test 'changing the connection\'s URL re-vectorises the cases of its embedders' do
       embedder = on_connection.tap(&:save!)
       kase = cases(:shared_with_team)
@@ -357,12 +281,11 @@ class EmbedderTest < ActiveSupport::TestCase
       assert_equal 'cohere', embedder.reload.provider
     end
 
-    test 'a new embedder needs a connection, or settings of its own' do
+    test 'a new embedder needs a connection' do
       embedder = Embedder.new(name: 'x', provider: 'openai', model: 'm', owner: owner)
 
       assert_not embedder.valid?
       assert_includes embedder.errors[:connection].join, 'is required'
-      assert_predicate build_embedder, :valid?
     end
 
     test 'an embedder on a connection can move to another, not back to its own settings' do
@@ -371,13 +294,6 @@ class EmbedderTest < ActiveSupport::TestCase
 
       assert_not embedder.valid?
       assert_includes embedder.errors[:connection].join, 'can be changed but not removed'
-    end
-
-    test 'an embedder from before connections can be saved without one' do
-      embedder = embedders(:openai_small)
-
-      assert_nil embedder.connection_id
-      assert embedder.update(name: 'Renamed')
     end
 
     test 'deleting a connection unlinks its embedders instead of deleting them' do

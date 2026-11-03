@@ -40,7 +40,7 @@ module Api
       test 'create' do
         assert_difference 'Embedder.count' do
           post :create, format: :json, params: { embedder: {
-            name: 'Ollama', provider: 'ollama', service_url: 'http://ollama:11434', model: 'nomic-embed-text',
+            name: 'Ollama', provider: 'ollama', connection_id: connections(:shared_ollama).id, model: 'nomic-embed-text',
             team_ids: [ team.id ]
           } }
         end
@@ -56,15 +56,6 @@ module Api
 
         assert_response :bad_request
         assert_predicate response.parsed_body['provider'], :present?
-      end
-
-      test 'update keeps the key when the masked value is sent back' do
-        put :update, format: :json, params: { id: embedder.id, embedder: { name: 'Renamed', api_key: Embedder::MASKED_API_KEY } }
-
-        assert_response :ok
-        embedder.reload
-        assert_equal 'Renamed', embedder.name
-        assert_equal 'sk-test-openai', embedder.api_key
       end
 
       test 'destroy' do
@@ -109,14 +100,7 @@ module Api
           assert_equal connections(:openai), embedder.reload.connection
         end
 
-        test 'an embedder from before connections can be updated without one' do
-          patch :update, params: { id: embedder.id, embedder: { name: 'Renamed' } }, format: :json
-
-          assert_response :ok
-          assert_equal 'Renamed', embedder.reload.name
-        end
-
-        test 'create needs a connection or settings of its own' do
+        test 'create needs a connection' do
           post :create, params: { embedder: { name: 'x', provider: 'openai', model: 'm' } }, format: :json
 
           assert_response :bad_request

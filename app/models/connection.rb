@@ -83,7 +83,8 @@ class Connection < ApplicationRecord
 
   validates :name, presence: true
   validates :service, inclusion: { in: ->(_) { ConnectionService.keys }, message: 'is not a known service' }
-  validates :base_url, presence: true, format: { with: %r{\Ahttps?://}i, message: 'must start with http:// or https://' }
+  validates :base_url, presence: true
+  validate :http_base_url
   validates :auth_scheme, inclusion: { in: AUTH_SCHEMES }
   validates :auth_header, presence: true, format: { with: /\A[A-Za-z0-9-]+\z/, message: 'must be a valid header name' }, if: -> { 'header' == auth_scheme }
   validates :secret, length: { maximum: 1000 }, allow_blank: true
@@ -284,6 +285,17 @@ class Connection < ApplicationRecord
 
   def normalise_base_url
     self.base_url = base_url.to_s.strip.chomp('/') if base_url.present?
+  end
+
+  def http_base_url
+    return if base_url.blank?
+
+    uri = URI.parse(base_url)
+    return if uri.is_a?(URI::HTTP) && uri.host.present?
+
+    errors.add(:base_url, 'must be a valid http:// or https:// URL')
+  rescue URI::InvalidURIError
+    errors.add(:base_url, 'must be a valid http:// or https:// URL')
   end
 
   def secret_present_when_required

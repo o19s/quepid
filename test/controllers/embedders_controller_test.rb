@@ -13,14 +13,12 @@ class EmbeddersControllerTest < ActionDispatch::IntegrationTest
 
   def embedder_form_params overrides = {}
     {
-      name:        'Voyage',
-      provider:    'voyage',
-      service_url: 'https://api.voyageai.com',
-      model:       'voyage-3.5',
-      api_key:     'pa-new',
-      truncation:  'native',
-      dimensions:  '1024',
-      timeout:     '30',
+      name:          'Voyage',
+      provider:      'voyage',
+      connection_id: connections(:voyage).id,
+      model:         'voyage-3.5',
+      truncation:    'native',
+      dimensions:    '1024',
     }.merge(overrides)
   end
 
@@ -69,7 +67,7 @@ class EmbeddersControllerTest < ActionDispatch::IntegrationTest
     created = Embedder.last
     assert_redirected_to edit_embedder_url(created)
     assert_equal user, created.owner
-    assert_equal 'pa-new', created.api_key
+    assert_equal connections(:voyage), created.connection
     assert_equal [ team ], created.teams.to_a
   end
 
@@ -81,35 +79,11 @@ class EmbeddersControllerTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_content
   end
 
-  test 'create rejects a malformed service url without saving it' do
-    assert_no_difference 'Embedder.count' do
-      post embedders_url, params: { embedder: embedder_form_params(service_url: 'https://') }
-    end
-
-    assert_response :unprocessable_content
-    assert_select '.alert-danger li', text: 'Service url must be a valid http:// or https:// URL'
-  end
-
   test 'the form never renders the saved key' do
     get edit_embedder_url(embedder)
 
     assert_response :success
     assert_no_match 'sk-test-openai', response.body
-  end
-
-  test 'update with a blank key keeps the saved key' do
-    patch embedder_url(embedder), params: { embedder: { name: 'Renamed', api_key: '', team_ids: [ team.id.to_s ] } }
-
-    assert_redirected_to edit_embedder_url(embedder)
-    embedder.reload
-    assert_equal 'Renamed', embedder.name
-    assert_equal 'sk-test-openai', embedder.api_key
-  end
-
-  test 'update replaces the key when a new one is typed' do
-    patch embedder_url(embedder), params: { embedder: { api_key: 'sk-rotated' } }
-
-    assert_equal 'sk-rotated', embedder.reload.api_key
   end
 
   test 'a clone of an embedder on a connection keeps the connection' do
@@ -120,7 +94,7 @@ class EmbeddersControllerTest < ActionDispatch::IntegrationTest
     assert_select "select#embedder_connection_id option[selected][value='#{connections(:openai).id}']"
 
     post embedders_url, params: { embedder: embedder_form_params(name: 'Clone', provider: 'openai', model: 'text-embedding-3-small',
-                                                                 connection_id: connections(:openai).id).except(:service_url, :api_key) }
+                                                                 connection_id: connections(:openai).id) }
 
     assert_equal connections(:openai), Embedder.last.connection
   end
@@ -144,8 +118,7 @@ class EmbeddersControllerTest < ActionDispatch::IntegrationTest
     let(:openai_connection) { connections(:openai) }
 
     def connection_embedder_params overrides = {}
-      { name: 'On Voyage', provider: 'voyage', service_url: 'https://ignored.example', model: 'voyage-3.5',
-        connection_id: voyage.id, timeout: '30' }.merge(overrides)
+      { name: 'On Voyage', provider: 'voyage', model: 'voyage-3.5', connection_id: voyage.id }.merge(overrides)
     end
 
     test 'the connection field comes right below the provider' do
@@ -176,7 +149,7 @@ class EmbeddersControllerTest < ActionDispatch::IntegrationTest
     end
 
     test 'an Ollama embedder lists only the Ollama connections' do
-      ollama = Embedder.create!(name: 'Ollama', provider: 'ollama', service_url: 'http://ollama:11434',
+      ollama = Embedder.create!(name: 'Ollama', provider: 'ollama', connection: connections(:shared_ollama),
                                 model: 'qwen3-embedding:0.6b', owner: user)
 
       get edit_embedder_url(ollama)
@@ -188,8 +161,8 @@ class EmbeddersControllerTest < ActionDispatch::IntegrationTest
     end
 
     test 'a Voyage embedder lists only the Voyage connections' do
-      voyage_embedder = Embedder.create!(name: 'Voyage', provider: 'voyage', service_url: 'https://api.voyageai.com',
-                                         model: 'voyage-3.5', api_key: 'pa-x', owner: user)
+      voyage_embedder = Embedder.create!(name: 'Voyage', provider: 'voyage', connection: voyage,
+                                         model: 'voyage-3.5', owner: user)
 
       get edit_embedder_url(voyage_embedder)
 
@@ -247,38 +220,6 @@ class EmbeddersControllerTest < ActionDispatch::IntegrationTest
       assert_equal openai_connection, embedder.reload.connection
     end
 
-    test 'an embedder from before connections keeps working and can be saved without one' do
-      assert_nil embedder.connection_id
-      assert_equal 'https://api.openai.com', embedder.service_url
-
-      patch embedder_url(embedder), params: { embedder: { name: 'Renamed', team_ids: [ team.id.to_s ] } }
-
-      assert_equal 'Renamed', embedder.reload.name
-      assert_nil embedder.connection_id
-      assert_equal 'sk-test-openai', embedder.api_key
-    end
-
-    test 'the form says an old embedder still uses its own URL and key, and has nothing to check yet' do
-      get edit_embedder_url(embedder)
-
-      assert_select '.alert-warning[role=alert]', text: /old, deprecated configuration and needs to be migrated to a connection/
-      assert_select '.alert-warning[role=alert] a[data-bs-toggle=collapse]', text: 'Details'
-      assert_select '.alert-warning .collapse#embedder-legacy-details', text: /choose a connection above/
-      assert_select '#embedder-legacy-details dd', text: 'https://api.openai.com'
-      assert_select '#embedder-legacy-details dd', text: /only the owner can see it/
-      assert_select '#embedder-legacy-details', text: /sk-test-openai/, count: 0
-      assert_select 'button[data-embedder-form-target=checkButton][disabled]'
-      assert_select '[data-embedder-form-target=checkHint]:not([hidden])', text: /add a connection/
-    end
-
-    test 'the owner of an old embedder sees its key in the details, to copy into a connection' do
-      embedder.update_column :owner_id, user.id
-
-      get edit_embedder_url(embedder)
-
-      assert_select '#embedder-legacy-details dd code', text: 'sk-test-openai'
-    end
-
     test 'the form has no URL, key or timeout fields: they come from the connection' do
       get new_embedder_url
 
@@ -298,8 +239,6 @@ class EmbeddersControllerTest < ActionDispatch::IntegrationTest
     end
 
     test 'the Check connection button is enabled on an embedder that has a connection' do
-      embedder.update!(connection: openai_connection)
-
       get edit_embedder_url(embedder)
 
       assert_select 'button[data-embedder-form-target=checkButton]:not([disabled])'

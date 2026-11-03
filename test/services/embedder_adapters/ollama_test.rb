@@ -5,12 +5,11 @@ require 'test_helper'
 module EmbedderAdapters
   class OllamaTest < ActiveSupport::TestCase
     let(:embedder) do
-      Embedder.new(name: 'Test', provider: 'ollama', service_url: 'http://ollama:11434',
-                   model: 'qwen3-embedding:0.6b', instruction: 'Find films', timeout: 30)
+      Embedder.new(name: 'Test', provider: 'ollama', connection: connections(:private_ollama),
+                   model: 'qwen3-embedding:0.6b', instruction: 'Find films')
     end
 
     test 'posts rendered inputs to /api/embed without a key' do
-      embedder.api_key = 'ignored'
       stub = stub_request(:post, 'http://ollama:11434/api/embed')
         .with(body: { model: 'qwen3-embedding:0.6b', input: [ "Instruct: Find films\nQuery: star wars" ], truncate: true }) do |request|
           !request.headers.key?('Authorization')

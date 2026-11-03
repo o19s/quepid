@@ -323,7 +323,8 @@ Still open:
    keep working and are warned about (the deprecation period, §3). Done.
 4. AI judges move onto connections, the same way. Not started.
 5. `HttpClient` replaces `LlmConnection`, built from a connection; rate limits enforced. Not started.
-6. The data migration, then, separately, dropping the old columns (§3).
+6. The data migration, then, separately, dropping the old columns (§3). Done for embedders
+   (§9); not started for judges.
 7. Search endpoints, under their own ADR.
 
 ## 8. Tests
@@ -362,15 +363,20 @@ Still open:
   Connection dropdown, which lists the active connections the user can use _for the embedder's
   provider_ (an Ollama embedder offers only Ollama connections; with none, a link offers to create
   one). The rest of the form is in three tabs, Model, Instructions and Access. The Check connection
-  button is disabled, with a hint to add a connection, until one is chosen. A new embedder needs a
+  button is disabled, with a hint to add a connection, until one is chosen. Every embedder needs a
   connection; one can move to another connection but not back to settings of its own.
-  The embedder's own `service_url`, `api_key` and `timeout` columns are **kept**, and the API still
-  accepts them: an embedder made before connections has no connection and keeps working from them
-  (the form notes this and leaves them alone), until the data migration and clean-up described in §3
-  have run. The fingerprint reads the effective provider and URL, so an
-  embedder on a connection has the same fingerprint as one with the same settings of its own, and
-  changing the connection's URL or service marks its embedders' vectors stale and re-vectorises
-  their cases.
+- **Embedders' data migration and clean-up (§3) are done**, ahead of a deprecation period: this
+  branch had not shipped to users yet, so the staged rollout §3 describes for a live consumer
+  wasn't needed here. `BackfillConnectionsFromEmbedders` gave every embedder with its own
+  settings a connection (one per distinct owner/service/URL/key, reusing it where several
+  embedders matched; an ownerless embedder got an instance-wide connection rather than being
+  skipped, since there was no deprecation period keeping its columns around as a fallback), and
+  `RemoveLegacyColumnsFromEmbedders` then dropped `service_url`, `api_key` and `timeout` from
+  `embedders` in the same pass. The model's dual-read fallback, the form's "old, deprecated
+  configuration" notice, and the API's old fields are gone along with the columns. The
+  fingerprint reads the effective provider and URL, so an embedder on a connection has the same
+  fingerprint as one with the same settings of its own did, and changing the connection's URL or
+  service marks its embedders' vectors stale and re-vectorises their cases.
 - A connection can't be deleted while embedders use it (the UI says how many); deleting its owner's
   account deletes it and unlinks them. Switching a connection to a service that can't make
   embeddings is refused while embedders use it.
@@ -383,6 +389,6 @@ the connection owner's key. Embedders already work this way for their own keys, 
 alone; the fix is to allow an embedder to be shared only with teams that can also use its connection.
 
 Not built: renaming `LlmConnection` to `HttpClient` and building it from a `Connection`; moving
-AI judges onto connections; the migration of existing embedders' and judges' own settings to
-connections, and dropping those columns; the rate limit (the field is stored, nothing
-enforces it); search endpoints.
+AI judges onto connections, and the matching migration of their own settings to connections and
+dropping those columns; the rate limit (the field is stored, nothing enforces it); search
+endpoints.
