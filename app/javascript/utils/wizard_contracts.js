@@ -1,6 +1,6 @@
 // Match Try#searchapi_args for engines that also accept bare query text.
 export function searchApiValidationArgs(value, bareQueryParam) {
-  if (!bareQueryParam || value.startsWith("{")) return value
+  if (!bareQueryParam || value.trimStart().startsWith("{")) return value
   if (!/^\s*[\w.-]+=/.test(value)) return { [bareQueryParam]: value }
 
   const params = Object.create(null)

@@ -87,6 +87,7 @@ describe("edge cases", () => {
     expect(searchApiValidationArgs("hello a=1", "q")).toEqual({ q: "hello a=1" })
     expect(plain(searchApiValidationArgs("  a=1&b=2", "q"))).toEqual({ a: "1", b: "2" })
     expect(searchApiValidationArgs('{"a":1}', "q")).toBe('{"a":1}')
+    expect(searchApiValidationArgs('\n  {"a":1}', "q")).toBe('\n  {"a":1}')
     expect(searchApiValidationArgs("a=1", undefined)).toBe("a=1")
   })
 

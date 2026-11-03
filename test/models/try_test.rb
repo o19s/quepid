@@ -270,6 +270,14 @@ class TryTest < ActiveSupport::TestCase
       assert_predicate try, :json_query_params?
     end
 
+    test 'true for JSON query_params with surrounding whitespace' do
+      try = tries(:one)
+      json = '{"query": "#$query##"}'
+      try.query_params = "\n  #{json}\n"
+
+      assert_predicate try, :json_query_params?
+    end
+
     test 'false for bare text query_params' do
       try = tries(:one)
       try.query_params = 'q=#$query##'
@@ -283,6 +291,14 @@ class TryTest < ActiveSupport::TestCase
       try = tries(:one)
       try.search_endpoint.api_method = 'AUTO'
       try.query_params = '{"yql": "select * from movies where true"}'
+
+      assert_equal 'POST', try.resolved_api_method
+    end
+
+    test 'resolves to POST when JSON query_params has leading whitespace' do
+      try = tries(:one)
+      try.search_endpoint.api_method = 'GET'
+      try.query_params = "  \n{\"yql\": \"select * from movies where true\"}"
 
       assert_equal 'POST', try.resolved_api_method
     end

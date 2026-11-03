@@ -186,7 +186,7 @@ class Try < ApplicationRecord
   # Public so it can be served on the try's JSON representation (see _try.json.jbuilder),
   # not just used internally by #solr_args/#searchapi_args/#resolved_api_method above.
   def json_query_params?
-    query_params.to_s.starts_with?('{')
+    query_params.to_s.lstrip.start_with?('{')
   end
 
   # A JSON query_params always POSTs, regardless of how api_method is configured - GET's
