@@ -82,7 +82,7 @@ Having at least two logged-in sessions (e.g., one normal browser + one private/i
   4. Enter a new password and confirmation, click **Change my password**.
 - **Expected:** You can then log in with the new password; the old password no longer works.
 - **Edge cases:**
-  - [ ] Request a reset for an email that doesn't exist — currently shows "Could not send reset password instructions because the email was not found" (Devise `config.paranoid` is off), so account existence is revealed. Known and accepted; confirm the message still appears and nothing is sent.
+  - [ ] Request a reset for an email that doesn't exist — shows the same "If your email address exists in our database, you will receive a password recovery link…" notice as a real address (Devise `config.paranoid` is on), so account existence isn't revealed. Confirm nothing is sent.
   - [ ] Try to reuse an already-used or expired reset link — should be rejected.
   - [ ] Submit mismatched new password / confirmation — should show a validation error; the floating label stays above the rejected value, and the header/avatar still use the saved profile.
   - [ ] Submit a very short password (e.g. `abc`) — Quepid enforces no minimum password length (Devise `:validatable` is not used), so it is accepted. Known and accepted; this is not a failure.

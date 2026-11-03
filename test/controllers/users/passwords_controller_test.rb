@@ -22,6 +22,18 @@ module Users
         assert_not_nil user.reload.reset_password_token
       end
 
+      test 'answers an unknown email exactly like a known one, so accounts cannot be enumerated' do
+        post user_password_url, params: { user: { email: user.email } }
+        known_location = response.location
+        known_notice   = flash[:notice]
+
+        post user_password_url, params: { user: { email: 'nobody-here@example.com' } }
+
+        assert_redirected_to known_location
+        assert_equal known_notice, flash[:notice]
+        assert_match(/If your email address exists/, flash[:notice])
+      end
+
       test 'blocks the request and redirects to sign in when email is not configured' do
         without_email_notifications do
           post user_password_url, params: { user: { email: user.email } }
