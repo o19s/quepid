@@ -6,6 +6,7 @@ import { getOrCreateBsModal } from "utils/bs_modal"
 import coreFlash from "utils/core_flash"
 import { getCoreStores } from "utils/core_store_access"
 import { isSameId } from "utils/record_identity"
+import { fillUrlTemplate } from "utils/url_template"
 
 const STREAM_TYPE = "text/vnd.turbo-stream.html"
 
@@ -120,7 +121,7 @@ export default class extends Controller {
   }
 
   annotationUrl(annotationId) {
-    return this.annotationUrlTemplateValue.replaceAll("__ANNOTATION_ID__", String(annotationId))
+    return fillUrlTemplate(this.annotationUrlTemplateValue, { ANNOTATION_ID: annotationId })
   }
 
   scorePayload() {

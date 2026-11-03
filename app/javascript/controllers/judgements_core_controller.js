@@ -10,9 +10,8 @@ import { getCoreCapabilities } from "utils/core_capability_access"
 import { populateBook } from "utils/book_sync"
 import { caseRuntime } from "utils/case_runtime"
 import { isSameId } from "utils/record_identity"
+import { fillUrlTemplate } from "utils/url_template"
 
-const CASE_ID_PLACEHOLDER = "__CASE_ID__"
-const BOOK_ID_PLACEHOLDER = "__BOOK_ID__"
 const BACKGROUND_QUERY_THRESHOLD = 50
 const REDIRECT_DELAY_MS = 500
 
@@ -238,7 +237,7 @@ export default class extends CoreModalControllerBase {
     this._setSectionsVisible({ books: false, noTeams: false, noBooks: false })
 
     try {
-      const caseUrl = this.caseUrlTemplateValue.replaceAll(CASE_ID_PLACEHOLDER, this.currentCaseId)
+      const caseUrl = fillUrlTemplate(this.caseUrlTemplateValue, { CASE_ID: this.currentCaseId })
       const caseId = this.currentCaseId
       const caseData = await caseRuntime.read(caseId, { url: caseUrl })
       if (this.openGeneration !== generation || !isSameId(this.currentCaseId, caseId)) return
@@ -266,7 +265,7 @@ export default class extends CoreModalControllerBase {
         }
       }
 
-      const url = this.catalogUrlTemplateValue.replaceAll(CASE_ID_PLACEHOLDER, caseId)
+      const url = fillUrlTemplate(this.catalogUrlTemplateValue, { CASE_ID: caseId })
       const response = await apiFetch(url, { headers: { Accept: "text/html" } })
       if (!response.ok) {
         throw new HttpError({
@@ -335,10 +334,9 @@ export default class extends CoreModalControllerBase {
       const show = this.activeBookId != null
       this.toggleVisible(this.judgeLinkTarget, show)
       if (show) {
-        this.judgeLinkTarget.href = this.judgeUrlTemplateValue.replaceAll(
-          BOOK_ID_PLACEHOLDER,
-          String(this.activeBookId)
-        )
+        this.judgeLinkTarget.href = fillUrlTemplate(this.judgeUrlTemplateValue, {
+          BOOK_ID: this.activeBookId
+        })
       }
     }
   }
@@ -363,7 +361,7 @@ export default class extends CoreModalControllerBase {
   }
 
   async _saveBookSettings() {
-    const url = this.caseUrlTemplateValue.replaceAll(CASE_ID_PLACEHOLDER, this.currentCaseId)
+    const url = fillUrlTemplate(this.caseUrlTemplateValue, { CASE_ID: this.currentCaseId })
     const bookId = this.activeBookId
     const payload = {
       book_id: bookId,
@@ -389,11 +387,12 @@ export default class extends CoreModalControllerBase {
   }) {
     const processInBackground = this.queriesCount >= BACKGROUND_QUERY_THRESHOLD
     const caseId = this.currentCaseId
-    const url = this.refreshUrlTemplateValue
-      .replaceAll(BOOK_ID_PLACEHOLDER, String(this.activeBookId))
-      .replaceAll(CASE_ID_PLACEHOLDER, caseId)
-      .replaceAll("__CREATE_MISSING__", String(!!createMissingQueries))
-      .replaceAll("__BACKGROUND__", String(processInBackground))
+    const url = fillUrlTemplate(this.refreshUrlTemplateValue, {
+      BOOK_ID: this.activeBookId,
+      CASE_ID: caseId,
+      CREATE_MISSING: !!createMissingQueries,
+      BACKGROUND: processInBackground
+    })
 
     this.setProgress(true)
     try {

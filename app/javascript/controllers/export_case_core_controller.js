@@ -16,10 +16,7 @@ import { getCoreCapabilities } from "utils/core_capability_access"
 import { bulkActionQueries } from "utils/query_documents"
 import { caseRuntime } from "utils/case_runtime"
 import { isSameId } from "utils/record_identity"
-
-const CASE_ID_PLACEHOLDER = "__CASE_ID__"
-const SNAPSHOT_ID_PLACEHOLDER = "__SNAPSHOT_ID__"
-const FORMAT_PLACEHOLDER = "__FORMAT__"
+import { fillUrlTemplate } from "utils/url_template"
 
 function httpErrorFor(response) {
   return new HttpError({ status: response.status, statusText: response.statusText })
@@ -220,10 +217,9 @@ export default class extends CoreModalControllerBase {
     if (this.hasScoresLinkTarget)
       this.scoresLinkTarget.href = this._url(this.scoresUrlTemplateValue)
     if (this.hasRatingsLinkTarget)
-      this.ratingsLinkTarget.href = this._url(this.ratingsExportUrlTemplateValue).replaceAll(
-        FORMAT_PLACEHOLDER,
-        "json"
-      )
+      this.ratingsLinkTarget.href = this._url(this.ratingsExportUrlTemplateValue, {
+        FORMAT: "json"
+      })
     if (this.hasQuepidPeekLinkTarget)
       this.quepidPeekLinkTarget.href = this._url(this.quepidExportUrlTemplateValue)
     if (this.hasApiSnapshotWrapperTarget) this.apiSnapshotWrapperTarget.classList.add("d-none")
@@ -275,7 +271,7 @@ export default class extends CoreModalControllerBase {
   }
 
   _downloadRatingsExport(format, fileFormat, fileSuffix) {
-    const url = this._url(this.ratingsExportUrlTemplateValue).replaceAll(FORMAT_PLACEHOLDER, format)
+    const url = this._url(this.ratingsExportUrlTemplateValue, { FORMAT: format })
     const params = new URLSearchParams({ file_format: fileFormat })
     const snapshotId = this._selectedBasicSnapshotId()
     if (fileFormat.endsWith("_snapshot") && snapshotId) params.set("snapshot_id", snapshotId)
@@ -305,13 +301,10 @@ export default class extends CoreModalControllerBase {
   }
 
   _snapshotShowUrl(snapshotId) {
-    return this._url(this.snapshotShowUrlTemplateValue).replaceAll(
-      SNAPSHOT_ID_PLACEHOLDER,
-      snapshotId
-    )
+    return this._url(this.snapshotShowUrlTemplateValue, { SNAPSHOT_ID: snapshotId })
   }
 
-  _url(template) {
-    return template.replaceAll(CASE_ID_PLACEHOLDER, this.currentCaseId)
+  _url(template, values = {}) {
+    return fillUrlTemplate(template, { CASE_ID: this.currentCaseId, ...values })
   }
 }

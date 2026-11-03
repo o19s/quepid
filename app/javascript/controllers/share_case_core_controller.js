@@ -5,6 +5,7 @@ import { apiFetch } from "api/fetch"
 import { deactivateListItem } from "utils/share_case_teams"
 import { caseNameFromHeader } from "utils/case_header"
 import { isSameId } from "utils/record_identity"
+import { fillUrlTemplate } from "utils/url_template"
 
 /**
  * Share / unshare from the core case toolbar — list UI, API stay-on-page.
@@ -206,7 +207,7 @@ export default class extends CoreModalControllerBase {
       isSameId(caseId, this.currentCaseId)
     this.setLoading(true)
     try {
-      const url = this.catalogUrlTemplateValue.replaceAll("__CASE_ID__", caseId)
+      const url = fillUrlTemplate(this.catalogUrlTemplateValue, { CASE_ID: caseId })
       const response = await apiFetch(url, { headers: { Accept: "text/html" } })
       if (!response.ok || response.redirected) throw new Error("Unable to load teams")
       const html = new DOMParser().parseFromString(await response.text(), "text/html")
@@ -272,7 +273,7 @@ export default class extends CoreModalControllerBase {
     this.clearAlert()
 
     try {
-      const url = this.teamCasesUrlTemplateValue.replaceAll("__TEAM_ID__", teamId)
+      const url = fillUrlTemplate(this.teamCasesUrlTemplateValue, { TEAM_ID: teamId })
       await postJson(url, { id: Number(caseId) })
 
       const row = this.teamRows.find((item) => isSameId(item.dataset.teamId, teamId))
@@ -318,9 +319,10 @@ export default class extends CoreModalControllerBase {
     this.clearAlert()
 
     try {
-      const url = this.teamCaseUrlTemplateValue
-        .replaceAll("__TEAM_ID__", teamId)
-        .replaceAll("__CASE_ID__", caseId)
+      const url = fillUrlTemplate(this.teamCaseUrlTemplateValue, {
+        TEAM_ID: teamId,
+        CASE_ID: caseId
+      })
       await deleteJson(url)
 
       const row = this.sharedRows.find((item) => isSameId(item.dataset.teamId, teamId))

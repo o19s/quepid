@@ -8,6 +8,7 @@ import { getCoreCapabilities } from "utils/core_capability_access"
 import { bulkActionQueries } from "utils/query_documents"
 import { getQuepidRootUrl } from "utils/quepid_root"
 import coreFlash from "utils/core_flash"
+import { fillUrlTemplate } from "utils/url_template"
 
 export function buildFrogReportStats(queries) {
   const withResults = queries.filter((query) => (query.docs || []).length > 0).length
@@ -253,10 +254,11 @@ export default class extends Controller {
     this.refreshIconTarget.classList.add("spintime")
     this.errorTarget.classList.add("d-none")
     const background = this.queries().length >= 50
-    const url = this.refreshUrlTemplateValue
-      .replaceAll("__BOOK_ID__", state.bookId)
-      .replaceAll("__BACKGROUND__", background ? "true" : "false")
     try {
+      const url = fillUrlTemplate(this.refreshUrlTemplateValue, {
+        BOOK_ID: state.bookId,
+        BACKGROUND: background
+      })
       await putJson(url, {})
       if (!background) {
         const refreshQueries = getCoreCapabilities().queryLifecycle?.refreshQueries

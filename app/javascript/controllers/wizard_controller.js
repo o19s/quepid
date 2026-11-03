@@ -22,6 +22,7 @@ import {
   searchApiValidationArgs,
   validateStaticHeaders
 } from "utils/wizard_contracts"
+import { fillUrlTemplate } from "utils/url_template"
 
 const steps = ["welcome", "name", "endpoint", "fields", "query", "finish"]
 const FIELD_MODIFIERS = ["media:", "thumb:", "image:"]
@@ -563,10 +564,9 @@ export default class extends Controller {
         getQuepidRootUrl()
       )
       const snapshotId = importedSnapshots.at(-1)?.id
-      this.staticSearchUrl = this.snapshotSearchUrlTemplateValue.replaceAll(
-        "__SNAPSHOT_ID__",
-        String(snapshotId)
-      )
+      this.staticSearchUrl = fillUrlTemplate(this.snapshotSearchUrlTemplateValue, {
+        SNAPSHOT_ID: snapshotId
+      })
       this.settings.searchUrl = this.staticSearchUrl
       this.staticQueries = [
         ...new Set(this.staticRows.map((row) => row["Query Text"]).filter(Boolean))

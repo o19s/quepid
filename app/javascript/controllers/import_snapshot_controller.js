@@ -3,6 +3,7 @@ import { postJson } from "api/json"
 import { HttpError } from "api/http_error"
 import { parseCsv } from "utils/csv"
 import { buildSnapshotImportGroups, SNAPSHOT_CSV_HEADERS } from "utils/snapshot_import"
+import { fillUrlTemplate } from "utils/url_template"
 
 export default class extends ImportFormControllerBase {
   static targets = [
@@ -157,7 +158,7 @@ export default class extends ImportFormControllerBase {
 
   async sendSnapshotToAPI(caseId, snapshotData) {
     // Case IDs come from the uploaded CSV, so the server passes a URL template.
-    const url = this.importsUrlTemplateValue.replaceAll("__CASE_ID__", String(caseId))
+    const url = fillUrlTemplate(this.importsUrlTemplateValue, { CASE_ID: caseId })
 
     try {
       return await postJson(url, { snapshots: [snapshotData] })

@@ -3,6 +3,7 @@ import { deleteJson, postJson } from "api/json"
 import coreFlash from "utils/core_flash"
 import { serverMessage } from "utils/error_message"
 import { caseNameFromHeader } from "utils/case_header"
+import { fillUrlTemplate } from "utils/url_template"
 
 const ACTION_LABELS = {
   archive: "Archive",
@@ -55,7 +56,7 @@ export default class extends CoreModalControllerBase {
     const template = this._urlTemplateFor(this.selectedAction)
     if (!template) return
 
-    const url = template.replaceAll("__CASE_ID__", this.currentCaseId)
+    const url = fillUrlTemplate(template, { CASE_ID: this.currentCaseId })
     const action = this.selectedAction
     this.submitting = true
     this.submitButtonTarget.disabled = true

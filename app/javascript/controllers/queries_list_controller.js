@@ -10,6 +10,7 @@ import { getCoreCapabilities } from "utils/core_capability_access"
 import coreFlash from "utils/core_flash"
 import { isSameId } from "utils/record_identity"
 import { paginationRange } from "utils/pagination"
+import { fillUrlTemplate } from "utils/url_template"
 
 /**
  * Query-list collection rendering, toolbar, and drag lifecycle. The collection
@@ -423,7 +424,7 @@ export default class extends Controller {
   }
 
   queryUrl(template, queryId) {
-    return template.replaceAll("__QUERY_ID__", String(queryId))
+    return fillUrlTemplate(template, { QUERY_ID: queryId })
   }
 
   // A new row: the row and expanded-query shells from the ERB templates, wired to this query.

@@ -4,6 +4,7 @@ import { serverMessage } from "utils/error_message"
 import { getQuepidRootUrl } from "utils/quepid_root"
 import { caseNameFromHeader } from "utils/case_header"
 import { isSameId } from "utils/record_identity"
+import { fillUrlTemplate } from "utils/url_template"
 
 const REDIRECT_DELAY_MS = 1000
 
@@ -91,7 +92,7 @@ export default class extends CoreModalControllerBase {
     const caseId = this.currentCaseId
 
     try {
-      const url = this.triesUrlTemplateValue.replaceAll("__CASE_ID__", caseId)
+      const url = fillUrlTemplate(this.triesUrlTemplateValue, { CASE_ID: caseId })
       const data = await getJson(url)
       // Bail if the case changed while this request was in flight (e.g. the
       // modal was reopened for a different case) — an outdated response must

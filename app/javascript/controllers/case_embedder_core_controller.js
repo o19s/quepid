@@ -1,6 +1,7 @@
 import CoreModalControllerBase from "controllers/core_modal_controller_base"
 import { apiFetch } from "api/fetch"
 import { CORE_EVENTS } from "utils/core_events"
+import { fillUrlTemplate } from "utils/url_template"
 
 const POLL_MS = 3000
 const STATUS_LABELS = {
@@ -96,7 +97,7 @@ export default class extends CoreModalControllerBase {
   }
 
   async fetchState(caseId) {
-    const url = this.indexUrlTemplateValue.replaceAll("__CASE_ID__", caseId)
+    const url = fillUrlTemplate(this.indexUrlTemplateValue, { CASE_ID: caseId })
     const response = await apiFetch(url, { headers: { Accept: "application/json" } })
     if (!response.ok) throw new Error(`Unable to load embedders (${response.status})`)
 
@@ -161,7 +162,7 @@ export default class extends CoreModalControllerBase {
     this.revectorizeButtonTarget.disabled = true
 
     try {
-      const url = this.vectorizeUrlTemplateValue.replaceAll("__CASE_ID__", this.caseId)
+      const url = fillUrlTemplate(this.vectorizeUrlTemplateValue, { CASE_ID: this.caseId })
       const response = await apiFetch(`${url}?force=true`, {
         method: "POST",
         headers: { Accept: "application/json" }
@@ -195,9 +196,10 @@ export default class extends CoreModalControllerBase {
     this.submitButtonTarget.disabled = true
 
     try {
-      const url = this.updateUrlTemplateValue
-        .replaceAll("__CASE_ID__", this.caseId)
-        .replaceAll("__EMBEDDER_ID__", String(this.selectedId))
+      const url = fillUrlTemplate(this.updateUrlTemplateValue, {
+        CASE_ID: this.caseId,
+        EMBEDDER_ID: this.selectedId
+      })
       const response = await apiFetch(url, {
         method: "PUT",
         headers: { Accept: "application/json" }

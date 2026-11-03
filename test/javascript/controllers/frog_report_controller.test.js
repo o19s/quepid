@@ -252,11 +252,11 @@ describe("FrogReportController", () => {
       caseState: { bookId: 3, caseNo: 9 },
       queryLifecycle: { refreshQueries }
     })
-    controller.refreshUrlTemplateValue = "refresh?background=__BACKGROUND__"
+    controller.refreshUrlTemplateValue = "refresh/__BOOK_ID__?background=__BACKGROUND__"
 
     await controller.refresh()
 
-    expect(fetch.mock.calls[0][0]).toBe("refresh?background=true")
+    expect(fetch.mock.calls[0][0]).toBe("refresh/3?background=true")
     expect(refreshQueries).not.toHaveBeenCalled()
     expect(assign).toHaveBeenCalledOnce()
   })
@@ -267,12 +267,31 @@ describe("FrogReportController", () => {
       vi.fn(() => Promise.resolve(new Response("{}", { status: 500, statusText: "Server Error" })))
     )
     const controller = buildController({ caseState: { bookId: 3, caseNo: 9 } })
-    controller.refreshUrlTemplateValue = "refresh"
+    controller.refreshUrlTemplateValue = "refresh/__BOOK_ID__?background=__BACKGROUND__"
 
     await controller.refresh()
 
     expect(controller.errorTarget.textContent).toBe(
       "An error (500 Server Error) occurred, please try again."
+    )
+    expect(controller.errorTarget.classList.contains("d-none")).toBe(false)
+    expect(controller.refreshButtonTarget.disabled).toBe(false)
+  })
+
+  it("shows the error and re-enables refresh when the URL template is missing a placeholder", async () => {
+    vi.stubGlobal("fetch", vi.fn())
+    vi.spyOn(console, "error").mockImplementation(() => {})
+    const controller = buildController({ caseState: { bookId: 3, caseNo: 9 } })
+    controller.refreshUrlTemplateValue = "refresh?background=__BACKGROUND__"
+
+    await controller.refresh()
+
+    expect(fetch).not.toHaveBeenCalled()
+    expect(controller.errorTarget.textContent).toBe(
+      "An error (Invalid request URL) occurred, please try again."
+    )
+    expect(console.error).toHaveBeenCalledWith(
+      expect.stringContaining("has no placeholder for BOOK_ID")
     )
     expect(controller.errorTarget.classList.contains("d-none")).toBe(false)
     expect(controller.refreshButtonTarget.disabled).toBe(false)
@@ -332,7 +351,7 @@ describe("FrogReportController", () => {
         caseState: { bookId: 3, caseNo: 9 },
         queryLifecycle: { refreshQueries }
       })
-      controller.refreshUrlTemplateValue = "refresh"
+      controller.refreshUrlTemplateValue = "refresh/__BOOK_ID__?background=__BACKGROUND__"
       const pending = controller.refresh()
       controller.disconnect()
       controller.errorTarget.textContent = "new connection"

@@ -63,22 +63,8 @@ this is parity. A better message would point at the Archived filter when
 
 ## Frontend consolidation
 
-Moved from [todo.md](todo.md) on 2026-10-19. These change or restructure the
+Moved from [todo.md](todo.md). These change or restructure the
 Stimulus frontend.
-
-### [MIGRATION-FOLLOWUP] P3 I2 C3 — Server-rendered modal lists
-
-See [Persisted case UI](../app_structure.md#persisted-case-ui) for the accepted
-HTML-endpoint boundary.
-
-`diff_core` (snapshot selects) and `export_case_core` still build lists from JSON
-in JS. They could become partials loaded through lazy
-`<turbo-frame src=...>`, like `DropdownController#cases_core`, and modal form
-posts could be answered with Turbo Streams.
-
-Case Frames/Streams already work with Drive disabled. Keep the workspace's
-full-document navigation boundary and prove annotation list and edit-modal parity
-before expanding the conversion.
 
 ### [PREEXISTING] P3 I1 C2 — Rating-color consistency
 
@@ -102,19 +88,19 @@ reduces complexity; preserve scale semantics.
 most of the rules are written out somewhere else:
 
 - **"Store document fields in the snapshot"** (`static || !supportsLookupById`)
-  is written three times: `snapshot_bridge_controller.js:57`,
+  is written three times: `snapshot_bridge_controller.js:62`,
   `snapshot_hydration.js:11` and `snapshot_hydration.js:80`.
 - **`["solr", "es", "os"]`** is still hardcoded three times, with different
-  meanings: `query_runtime.js:363`, `settings_catalog_runtime.js:182`
-  (`supportsEscapeQuery`) and `live_query_runtime_owner.js:689` (with
+  meanings: `query_runtime.js:376`, `settings_catalog_runtime.js:183`
+  (`supportsEscapeQuery`) and `live_query_runtime_owner.js:695` (with
   `"searchapi"` added).
 - **`usesJsonQueryParams`** lives in `search_endpoint_runtime.js:40`, and
-  `tune_relevance_controller.js:405` adds its own Search API "starts with `{`"
+  `tune_relevance_controller.js:589` adds its own Search API "starts with `{`"
   exception on top.
 - **Too many layers:** pure checks pass through two or three runtime layers.
   `isEsLikeEngine` becomes `isEsOrOsEngine` and then `isEsOrOs`, which is wired
   up twice in `core_workspace_runtime.js` (lines 176 and 228) and once more in
-  `live_query_runtime_owner.js:400`.
+  `live_query_runtime_owner.js:406`.
 - **Engine names:** `browse_query.js:1` has its own engine display name instead
   of using `searchEngineLabel`.
 
@@ -122,15 +108,6 @@ most of the rules are written out somewhere else:
 labels and removing redundant pass-throughs while preserving the exact
 predicate. Do not merge engine sets with different meanings or alter lookup,
 escaping, query DSL, or snapshot-field rules.
-
-### [MIGRATION-FOLLOWUP] P3 I1 C3 — Refresh-ratings orchestration
-
-Current thresholds, reloads, redirects and errors are documented in
-[Refresh-ratings orchestration](../core_ui_implementation_reference.md#refresh-ratings-orchestration).
-
-**Defer.** These flows alter scoring inputs and differ in stale-response
-handling, reload completion, errors, and redirects. Extracting only the threshold
-and PUT offers little reduction. Keep the existing reload event contracts.
 
 ### [MIGRATION-FOLLOWUP] P3 I1 C3 — Snapshot CSV import contracts
 
@@ -146,17 +123,15 @@ times with different messages (the third is `wizard_contracts.js#validateStaticH
 policy, payloads, order, and error messages. Choosing one failure or validation
 policy is a behavior change.
 
-### [MIGRATION-FOLLOWUP] P3 I1 C2 — Server-owned URLs and template replacement
+### [MIGRATION-FOLLOWUP] P3 I1 C2 — Client-built API paths
 
-Eleven controllers fill server-passed URL templates with
-`.replaceAll("__CASE_ID__", …)` and similar placeholders. Some wrap the value in `String()`, none
-encode it, and nothing catches a placeholder that was never filled. Separately,
-about 80 call sites build `api/...` paths on the client, which the
-DEVELOPER_GUIDE discourages.
+Server-passed URL templates (`__CASE_ID__` and similar) are now filled only
+through `fillUrlTemplate` (`utils/url_template`), which encodes each value and
+throws when the template and the values disagree.
 
-**Defer as proposed.** Encoding values and throwing for unresolved placeholders
-add behavior. A replacement-only helper could preserve the contract but offers
-limited LOC savings. [MIGRATION-FOLLOWUP] P3 I1 C3 — Moving client URLs to Rails ownership is a separate task.
+About 80 call sites still build `api/...` paths on the client, which the
+DEVELOPER_GUIDE discourages. New code should take server-rendered URLs; migrate
+existing call sites when they are touched.
 
 ### [MIGRATION-FOLLOWUP] P3 I0 C3 — Request-generation abstractions
 
@@ -192,13 +167,13 @@ transitions alone.
 ### [MIGRATION-FOLLOWUP] P2 I1 C2 — Choose explicit error-message policies
 
 `utils/error_message.js:8` provides `errorMessage`; `:27` provides
-`serverMessage`. `query_lifecycle_controller.js:60` uses the former, whereas
-`share_case_core_controller.js:295,336`, `judgements_core_controller.js:295`,
-and `import_ratings_core_controller.js:220` use `error.message || fallback`.
+`serverMessage`. `query_lifecycle_controller.js:69` uses the former, whereas
+`share_case_core_controller.js:299,342`, `judgements_core_controller.js:299,462`,
+and `import_ratings_core_controller.js:273` use `error.message || fallback`.
 Mapper Wizard interpolates `error.message` directly in several catch blocks
-(`mapper_wizard_controller.js:149,205,366,431`). Frog Report additionally
+(`mapper_wizard_controller.js:166,222,292,404,470`). Frog Report additionally
 rewrites an `HttpError`'s message before displaying it
-(`frog_report_controller.js:206`).
+(`frog_report_controller.js:278`).
 
 **Fix direction:** apply the [Error-message policies](../../DEVELOPER_GUIDE.md#error-message-policies)
 explicitly at each boundary, with focused tests for intentional changes. Preserve
@@ -225,9 +200,10 @@ and persistence decisions first.
 
 ## Developer experience
 
-Moved from todo.md's Developer Experience Review on 2026-10-19.
+Moved from todo.md's Developer Experience Review on 2026-10-19. The
+`[PREEXISTING]` entries predate the AngularJS removal.
 
-### [MIGRATION-FOLLOWUP] P3 I2 C3 — 5. Clarify frontend ownership and delivery boundaries
+### [MIGRATION-FOLLOWUP] P3 I2 C3 — Clarify frontend ownership and delivery boundaries
 
 Retain the explicit state owners described in [Application structure](../app_structure.md#core-frontend-app).
 
@@ -255,6 +231,13 @@ reports a nonexistent `bs` controller. Verify Bootstrap targets produce no
 Stimulus diagnostics while real Stimulus target validation still works, then
 remove the temporary `data-bs-target` entry from `ignoredAttributes` in the
 same config.
+
+### [PREEXISTING] P2 I2 C2 — Reuse the running dev server: documentation and `bin/docker` support
+
+1. **Documentation.** Replace conflicting operational advice with safe, complete procedures for identifying and reusing the running server, using the established destinations in the [Documentation index](../README.md). The guide currently recommends throwaway commands during development, killing port owners, resetting the environment and pruning Docker resources, while agent guidance requires preserving the server. Once the shared procedures are correct, link to them from `AGENTS.md` and remove duplicated human-facing policy. Retain agent-specific safeguards.
+2. **Tooling.** `bin/docker s` / `q` start servers through `docker compose run`; `r`, `b` and `c` create separate containers. Add an explicit exec command that recognizes actual `quepid-app-run-*` servers and refuses ambiguous choices, preserving startup semantics. The documented procedures should then point at it.
+
+Until that exists, use `docker exec <actual-server-container>`. `docker compose exec app` can reach the :3003 diff-baseline container instead of the dev server, so name the container. Do not infer that the server is stopped from an empty Compose service listing.
 
 ## [PREEXISTING] Found during parity testing
 
@@ -367,15 +350,6 @@ Worker or equivalent browser isolation. The batch path already uses the shared
 scorer runtime through V8/MiniRacer; keep browser and batch scorer behavior
 aligned when adding isolation.
 
-### [PREEXISTING] P3 I0 C1 — Wizard Finish reuses archived search endpoints
-
-Scenario 7.13: new-engine Finish attached an archived endpoint with dummy
-credentials, so searches failed. `SearchEndpoint.find_or_initialize_for_user`
-(from #1705, `b1a9d26b`) doesn't exclude archived rows. Same on `main` with the
-required-proxy flag on or off. Fix: add `.not_archived` to the lookup and cover
-it with a controller test. Keep reusing credentialed endpoints when Finish sends
-a blank credential: hidden-credential deployments rely on it.
-
 ## [PREEXISTING] Security
 
 ### [PREEXISTING] P0 I0 C3 — User API IDOR and cross-account write path
@@ -412,7 +386,7 @@ The proxy validates the initial DNS resolution and blocks private ranges, but Fa
 
 ### [PREEXISTING] P1 I0 C1 — `SEARCH_ENDPOINT_VIEWS_ADMIN_ONLY` is ignored
 
-**Location:** `app/controllers/search_endpoints_controller.rb`, `config/initializers/customize_quepid.rb:130`
+**Location:** `app/controllers/search_endpoints_controller.rb`, `config/initializers/customize_quepid.rb:132`
 
 `32b427b6` (#1592) added `require_admin_if_restricted` so that, with `SEARCH_ENDPOINT_VIEWS_ADMIN_ONLY=true`, only administrators can manage search endpoints. `dc2f46af` ("Basic Auth Credentials are encrypted", on `main`) removed the `before_action` and the method; nothing else in that commit relates to it. The setting is still read and is still documented in `QUEPID_FEATURES.md`, so a deployment that enables it silently lets every user manage endpoints.
 
@@ -422,7 +396,7 @@ The proxy validates the initial DNS resolution and blocks private ranges, but Fa
 
 ### [PREEXISTING] P1 I0 C2 — Team member suggestions expose other accounts
 
-**Location:** `app/controllers/teams_controller.rb:268-366` (`suggest_members`)
+**Location:** `app/controllers/teams_controller.rb:275-373` (`suggest_members`)
 
 From `e52cec3a` (#1642, on `main`). A full email address matches any registered user, regardless of team or domain, and returns their name, email and avatar, so any signed-in team member can test whether an address has an account. Prefix and name matches are limited to shared teams or the caller's email domain; for a public domain such as `gmail.com` that is every user on that domain. Each request also logs about a dozen timing lines at `info` and returns an `X-Performance-Timing` header.
 
@@ -434,7 +408,7 @@ From `e52cec3a` (#1642, on `main`). A full email address matches any registered 
 
 ### [PREEXISTING] P1 I0 C3 — Static Active Record encryption keys committed as production fallbacks
 
-**Location:** `config/application.rb:58-60`
+**Location:** `config/application.rb:59-61`
 
 Deployments that omit the env vars use publicly known keys, so encrypted fields are recoverable by anyone with the database.
 
@@ -446,13 +420,59 @@ Deployments that omit the env vars use publicly known keys, so encrypted fields 
 
 **Decision needed:** Agree on supported cross-origin clients, trusted deployment origins, proxy authentication and rate limits before restricting the existing interfaces.
 
-**Location:** `app/controllers/proxy_controller.rb:5-8`, `config/initializers/cors.rb:6-17`, `config/environments/production.rb:41-50`
+**Location:** `app/controllers/proxy_controller.rb:5-8`, `config/initializers/cors.rb:6-17`, `config/environments/production.rb:49-50`
 
 `fetch` skips CSRF verification (`skip_before_action :verify_authenticity_token`) for GET and POST while requiring login, so cross-site POSTs from an authenticated session remain possible. Production also allows every CORS origin, disables Action Cable request forgery protection, and accepts every Action Cable origin.
 
 **Fix direction:** Restrict CORS to configured origins with credentials off unless needed; derive Action Cable allowed origins from the deployment host list; give the proxy a CSRF token or a deliberately token-authenticated route.
 
 **Also open:** [PREEXISTING] P2 I0 C2 — no rate limiting on proxy fetch (production concern when `proxy_requests: true`).
+
+---
+
+### [PREEXISTING] P2 I0 C1 — Password reset enumerates accounts
+
+**Observed:** Unknown email → "email was not found"; known email → neutral "you will receive…" message.
+
+**Cause:** `config.paranoid` commented out in `config/initializers/devise.rb`.
+
+**Fix direction:** Enable `config.paranoid = true` (or normalize both responses).
+
+### [PREEXISTING] P2 I0 C1 — `QUEPID_CONSIDER_ALL_REQUESTS_LOCAL=false` enables detailed errors
+
+**Location:** `config/environments/production.rb:18`, `.env.example`
+
+`consider_all_requests_local` is set from `ENV[...].present?`, so any value,
+including the `false` that `.env.example` recommends, shows detailed error pages
+(stack traces, request details) in production. Only an unset or empty variable
+disables them.
+
+**Fix direction:** Parse the value as a boolean (for example
+`ActiveModel::Type::Boolean.new.cast(ENV[...])`) and add a test. Deployments
+that rely on any non-empty value enabling detailed errors will change behavior.
+
+### [PREEXISTING] P1 I0 C2 — No minimum password length
+
+**Observed:** Resetting a password through the reset link with `abc` succeeds and the user can then log in with it. Manual test 1.4's short-password edge case expects a validation error.
+
+**Cause:** `User` validates only presence and `maximum: 80` on `password` (`app/models/user.rb`). `config.password_length = 8..72` in `config/initializers/devise.rb` is never applied because `:validatable` is not enabled.
+
+**Fix direction:** Add a minimum length validation (match the Devise 8..72 setting) on password create/change paths, then check seed data, fixtures, and existing tests for shorter passwords.
+
+---
+
+### [PREEXISTING] P2 I0 C3 — The CSP is effectively off
+
+`config/initializers/content_security_policy.rb` sets only `font_src` and a
+`report_uri` of `/csp-violation-report-endpoint`. No route serves that path.
+`script-src`, `object-src` and the nonce generator are all commented out.
+Rails 8's default is a nonce-based policy, and `javascript_importmap_tags`
+already supports nonces.
+
+**Fix:** enable `script_src :self`
+plus nonces in report-only mode first, then enforce it. The core page's Solr JSONP needs the search endpoint
+hosts in `script-src`, or a per-request allow-list. Either remove
+`report_uri` or add the endpoint.
 
 ---
 
@@ -467,6 +487,8 @@ eliminate warnings, remove their fingerprints and rerun the CI Brakeman gate.
 24 suppressed warnings, no scan errors and no obsolete fingerprints. Focused
 authentication and sampling tests pass (14 tests, 44 assertions); the added
 authentication coverage passes RuboCop. These checks do not resolve the findings below.
+
+**Current count (2026-11-02):** `config/brakeman.ignore` holds 22 fingerprints.
 
 #### [PREEXISTING] P1 I0 C3 — Restrict nested case-import attributes
 
@@ -500,40 +522,7 @@ One warning (the JSON template) still covers template names derived from `file_f
 
 ---
 
-## [PREEXISTING] P2 — Security
-
-### [PREEXISTING] P2 I0 C1 — Password reset enumerates accounts
-
-**Observed:** Unknown email → "email was not found"; known email → neutral "you will receive…" message.
-
-**Cause:** `config.paranoid` commented out in `config/initializers/devise.rb`.
-
-**Fix direction:** Enable `config.paranoid = true` (or normalize both responses).
-
-### [PREEXISTING] P2 I0 C1 — `QUEPID_CONSIDER_ALL_REQUESTS_LOCAL=false` enables detailed errors
-
-**Location:** `config/environments/production.rb:18`, `.env.example`
-
-`consider_all_requests_local` is set from `ENV[...].present?`, so any value,
-including the `false` that `.env.example` recommends, shows detailed error pages
-(stack traces, request details) in production. Only an unset or empty variable
-disables them.
-
-**Fix direction:** Parse the value as a boolean (for example
-`ActiveModel::Type::Boolean.new.cast(ENV[...])`) and add a test. Deployments
-that rely on any non-empty value enabling detailed errors will change behavior.
-
-### [PREEXISTING] P1 I0 C2 — No minimum password length
-
-**Observed:** Resetting a password through the reset link with `abc` succeeds and the user can then log in with it. Manual test 1.4's short-password edge case expects a validation error.
-
-**Cause:** `User` validates only presence and `maximum: 80` on `password` (`app/models/user.rb`). `config.password_length = 8..72` in `config/initializers/devise.rb` is never applied because `:validatable` is not enabled.
-
-**Fix direction:** Add a minimum length validation (match the Devise 8..72 setting) on password create/change paths, then check seed data, fixtures, and existing tests for shorter passwords.
-
----
-
-## [PREEXISTING] P2 — Product bugs
+## [PREEXISTING] Product bugs
 
 ### [PREEXISTING] P3 I0 C1 — Book settings 422 page loses the scorer and the settings tab
 
@@ -578,8 +567,8 @@ that rely on any non-empty value enabling detailed errors will change behavior.
 **Cause:** No model-level validation ties `Judgement#rating` to `query_doc_pair.book.scale`.
 
 **Audit result (done):** Two call sites *legitimately* write ratings outside the discrete scale, both gated on `book.support_implicit_judgements?`:
-- `[PREEXISTING]` `BookCombiner#merge_judgement` (`app/services/book_combiner.rb:41`, called by `BooksController#combine`) averages two existing ratings — `(judgement.rating + j.rating) / 2` — and explicitly skips rounding when `support_implicit_judgements` is true (e.g. `(0+3)/2 = 1.5` on a `[0,1,2,3]` scale).
-- `[PREEXISTING]` `JudgementFromRatingJob#perform` (`app/jobs/judgement_from_rating_job.rb:24`) copies a case-level `Rating#rating` straight into `judgement.rating` via `judgement.save!` (raises on failure) — that value comes from the case's scorer scale, which has no guaranteed relationship to the book's judgement scale.
+- `[PREEXISTING]` `BookCombiner#merge_judgement` (`app/services/book_combiner.rb:42`, called by `BooksController#combine`) averages two existing ratings — `(judgement.rating + source.rating) / 2` — and explicitly skips rounding when `support_implicit_judgements` is true (e.g. `(0+3)/2 = 1.5` on a `[0,1,2,3]` scale).
+- `[PREEXISTING]` `JudgementFromRatingJob#perform` (`app/jobs/judgement_from_rating_job.rb:47`) copies a case-level `Rating#rating` straight into `judgement.rating` via `judgement.save!` (raises on failure) — that value comes from the case's scorer scale, which has no guaranteed relationship to the book's judgement scale.
 
 `BookImporter`/`RatingsImporter` are fine: `RatingsImporter` writes the unrelated `Rating` model, and `BookImporter#import_judgement` already silently no-ops on failed saves.
 
@@ -611,7 +600,7 @@ snapshot name and API reason in the alert, and distinguish partial success.
 
 #### `BooksController#combine` collapses anonymous judgements into one averaged row
 
-**Location:** `app/services/book_combiner.rb:41` — `BookCombiner#merge_judgement`
+**Location:** `app/services/book_combiner.rb:42` — `BookCombiner#merge_judgement`
 
 The merge loop upserts each source judgement with `pair.judgements.find_or_initialize_by(user: source.user)`. `Judgement` deliberately permits several nil-user rows per pair (`validates :user_id, uniqueness: { scope: :query_doc_pair_id }, unless: -> { user_id.nil? }`), so *every* anonymous judgement in the source book matches the same target row. N anonymous judgements collapse to 1 — and because the same loop averages (`(judgement.rating + source.rating) / 2`), the surviving rating is an order-dependent running mean, not a true average.
 
@@ -649,7 +638,7 @@ and scores, so keep it separate from behavior-preserving cleanup.
 
 ---
 
-## [PREEXISTING] P1 — Backend correctness and authorization
+## [PREEXISTING] Backend correctness and authorization
 
 ### [PREEXISTING] P1 I0 C1 — Book update saves memberships even when the update fails
 
@@ -661,38 +650,21 @@ and scores, so keep it separate from behavior-preserving cleanup.
 
 ---
 
-### [PREEXISTING] P2 I0 C2 — Core search-endpoint lookup matches archived and other users' endpoints
+### [PREEXISTING] P2 I0 C2 — Search-endpoint lookups reuse archived, unowned and duplicate endpoints
 
-**Location:** `app/controllers/core_controller.rb` (`populate_from_params`)
+**Location:** `app/controllers/core_controller.rb:54-85` (`populate_from_params`), `app/models/search_endpoint.rb` (`find_or_initialize_for_user`)
 
-**Observed:** When `/case/:id` gets `searchEngine` params, it calls `SearchEndpoint.find_or_create_by(search_engine:, endpoint_url:, api_method:, basic_auth_credential:)`. That lookup is global: an archived endpoint, or one owned by a team or user the current user can't see, can be attached to the try. The baseline `be9b319a` had the identical call.
+**Decision needed:** How matching should treat credentials when the matched endpoint belongs to someone else (reuse it, ignore the submitted credentials, or always create a user-owned endpoint). Settle this before broadening the core lookup's scope beyond `.not_archived`.
 
-**Fix direction:** Add `.not_archived` to the lookup, and scope it to `current_user.search_endpoints_involved_with`. Creating a new endpoint should then set the owner. Add a controller test with an archived endpoint that matches.
+Two lookups attach an existing endpoint to a try, and both go wrong:
 
-**Decision needed:** How matching should treat credentials when the matched endpoint belongs to someone else (reuse it, ignore the submitted credentials, or always create a user-owned endpoint). Settle this before broadening the scope beyond `.not_archived`.
+1. **Wizard Finish reuses archived endpoints.** Scenario 7.13: new-engine Finish attached an archived endpoint with dummy credentials, so searches failed. `SearchEndpoint.find_or_initialize_for_user` (from #1705, `b1a9d26b`) scopes to the user's endpoints but doesn't exclude archived rows. Same on `main` with the required-proxy flag on or off. Keep reusing credentialed endpoints when Finish sends a blank credential: hidden-credential deployments rely on it.
+2. **The core lookup is global.** When `/case/:id` gets `searchEngine` params, it calls `SearchEndpoint.find_or_create_by(search_engine:, endpoint_url:, api_method:, basic_auth_credential:)`, so an archived endpoint, or one owned by a team or user the current user can't see, can be attached to the try. The baseline `be9b319a` had the identical call.
+3. **The core lookup can never match a stored credential.** Since `dc2f46af` (on `main`) `basic_auth_credential` is encrypted non-deterministically, so a query on it never matches a stored value. Every load of `/case/:id` with `searchEngine` and a `basicAuthCredential` parameter creates another ownerless endpoint and attaches it to the try. An empty value is encrypted too, so it never matches either; the wizard's http↔https reload always sends `basicAuthCredential=`, so each reload of that URL adds an endpoint (confirmed in the browser on 2026-10-19). `find_or_initialize_for_user` already excludes the credential from its lookup for this reason.
+
+**Fix direction:** Add `.not_archived` to `find_or_initialize_for_user`. Have `populate_from_params` use it (lookup without the credential), set or compare the credential afterwards, and set the owner on create. Tests: Finish with a matching archived endpoint; a core load with a matching archived endpoint; reloading the same core URL twice creates at most one endpoint.
 
 ---
-
-### [PREEXISTING] P1 I0 C1 — `FetchService` query substitution treats `\0`/`\1` as backreferences - EP review needed
-
-**Location:** `app/services/fetch_service.rb` — `build_get_params`
-
-`#$query##` is substituted twice. `build_get_params` uses
-`gsub(string, string)`, so `\0` or `\1` in the query text is treated as a
-backreference and the server sends a different query than the user typed.
-`replace_values` already uses the safe block form. Background scores can
-silently differ from the case page.
-
-**Fix direction:** Use the block form (or a shared substitution helper) and add
-a test with backslash sequences in the query text.
-
-**Investigation:** Isolated Ruby/browser-template probes confirmed ordinary text,
-quotes, Unicode and URL characters are preserved by block substitution, matching
-existing POST and browser Solr handling. Current GET substitution also collapses
-doubled backslashes and raises on `\k<name>`. Queries compensating for this
-corruption may produce different future background results/scores after the fix;
-stored queries and historical scores remain unchanged. No full suite or live
-search verification performed.
 
 ### [PREEXISTING] P1 I0 C2 — `FetchService` drops repeated GET params such as Solr `fq` - EP review needed
 
@@ -728,31 +700,6 @@ those can be truncated before it is saved.
 V8/parser path, and add regression cases for braces in strings, comments, and
 regular expressions.
 
-### [PREEXISTING] P1 I0 C2 — Safe LLM judgement handling misses malformed success bodies - EP review needed
-
-**Location:** `app/services/llm_service.rb` — `perform_safe_judgement`;
-`app/services/llm_judge_adapters/base.rb` — `extract_judgement`
-
-`extract_judgement` calls `JSON.parse` on model content, but
-`perform_safe_judgement` does not rescue `JSON::ParserError` or a missing
-content value. A successful HTTP response with malformed model output can
-escape the safe-judgement path and leave the job unhandled.
-
-**Fix direction:** Treat malformed/missing content as an unrateable judgement
-with the same recorded explanation as other safe-judgement failures, and add
-tests for malformed JSON and missing provider content.
-
-**Impact/question:** Stubbed service/adapter/middleware probes confirmed malformed
-model JSON, missing content and non-object JSON escape handling. The job stops
-before saving that judgement or broadcasting completion; earlier judgements remain
-saved, with no configured automatic job retry for these errors. Recording Unrateable
-would let the run continue but exclude that pair from normal selection for the same
-judge until reset/removal. Should these failures follow that existing policy or
-remain eligible for an explicit retry? Prefer a specific adapter response error
-over rescuing programming errors broadly. Persistence effects were source-traced;
-no full suite or live provider verification performed. Manual pass 2026-10-28
-(12.5) hit the same `JSON::ParserError` escape.
-
 ### [PREEXISTING] P2 I0 C1 — Whitespace-prefixed JSON takes the bare-query path
 
 **Location:** `app/models/try.rb:188` (`json_query_params?`)
@@ -763,14 +710,6 @@ text, so `resolved_api_method` can select the wrong request method.
 
 **Fix direction:** Strip surrounding whitespace for dispatch (while preserving
 the original payload), and add tests for leading/trailing whitespace.
-
-### [PREEXISTING] P2 I0 C1 — Core search-endpoint lookup can never match a stored credential
-
-**Location:** `app/controllers/core_controller.rb:54-85` (`populate_from_params`)
-
-`populate_from_params` calls `SearchEndpoint.find_or_create_by` including `basic_auth_credential`. Since `dc2f46af` (on `main`) that column is encrypted non-deterministically, so a query on it never matches a stored value. Every load of `/case/:id` with `searchEngine` and a `basicAuthCredential` parameter creates another ownerless endpoint and attaches it to the try. An empty value is encrypted too, so it never matches either; the wizard's http↔https reload always sends `basicAuthCredential=`, so each reload of that URL adds an endpoint (confirmed in the browser on 2026-10-19). `SearchEndpoint.find_or_initialize_for_user` already excludes the credential from its lookup for this reason. Related to the global-lookup entry above; fix them together.
-
-**Fix direction:** Look up without the credential (reuse `find_or_initialize_for_user`), set or compare the credential afterwards, and set the owner on create. Add a controller test that reloading the same URL twice creates at most one endpoint.
 
 ### [PREEXISTING] P3 I0 C1 — Rating remap returns 500 for out-of-range values
 
@@ -818,7 +757,7 @@ From `e77dcfb8` (#1751, on `main`). Submitted values pass through `to_f` and are
 
 ---
 
-## [PREEXISTING] P3 — Code quality
+## [PREEXISTING] Code quality
 
 ### [PREEXISTING] P3 I0 C1 — Unsafe integer coercion in snapshot search
 
@@ -866,13 +805,13 @@ Mutant (`config/mutant.yml`) found code no test can reach through the public ent
 
 ---
 
-## [PREEXISTING] P2 — Background jobs
+## [PREEXISTING] Background jobs
 
 ### [PREEXISTING] P1 I2 C3 — Import/populate jobs leave state and idempotency to best effort
 
 **Decision needed:** Define failure/retry states, uploaded-blob retention and repeated-submission semantics; automatic cleanup must not erase retryable work.
 
-**Location:** `app/jobs/import_book_job.rb:7-21` (and similar populate jobs)
+**Location:** `app/jobs/import_book_job.rb` (and similar populate jobs)
 
 Jobs set status strings before working and clear them only on success, so a failure can leave a book permanently busy and leave uploaded blobs in place. Several import paths use `find_or_create_by` plus later updates, vulnerable to duplicate work from retries or concurrent requests. Related to the anonymous-judgement re-import entry above.
 
@@ -914,8 +853,8 @@ for `rubocop:disable` and check `.rubocop.yml` for the full current lint scope.
 
 ### [PREEXISTING] P3 I1 C2 — Metrics/ParameterLists
 
-- `[PREEXISTING]` P3 I1 C2 — `Case#clone_case` — `app/models/case.rb:144`
-- `[PREEXISTING]` P3 I1 C2 — `HttpClientService#initialize` — `app/services/http_client_service.rb:32`
+- `[PREEXISTING]` P3 I1 C2 — `Case#clone_case` — `app/models/case.rb:150`
+- `[PREEXISTING]` P3 I1 C2 — `HttpClientService#initialize` — `app/services/http_client_service.rb:33`
 
 ### [PREEXISTING] P3 I2 C3 — Complex methods (Metrics/*)
 
@@ -923,7 +862,7 @@ Candidates for extraction into smaller methods or services:
 
 - `[PREEXISTING]` P3 I2 C3 — `FetchService` — `app/services/fetch_service.rb`
 
-`FetchService` is 522 lines and `BooksController` is 607. Inspect the 73
+`FetchService` is 518 lines and `BooksController` is 607. Inspect the 75
 `rubocop:disable` occurrences across `app/` individually; they include non-Metrics
 exclusions and do not all represent complexity debt. Extract concrete
 responsibilities when the relevant behavior is being changed and can be tested
@@ -973,8 +912,11 @@ Inside `FetchService`:
 This backlog accepts keeping response parsing in both Ruby and JS. Request
 building is different: it drifts from the client and is buggy.
 
-**Fix:** one substitution helper, a small `FieldSpec` value object on `Try`, and
-multi-valued GET params.
+Placeholder substitution already goes through one helper, `QueryTemplate`.
+Multi-valued GET params are tracked in
+[`FetchService` drops repeated GET params](#preexisting-p1-i0-c2--fetchservice-drops-repeated-get-params-such-as-solr-fq---ep-review-needed).
+What remains here is server escaping and, if it ever pays off, a `FieldSpec`
+value object on `Try`.
 
 **Field-spec investigation — extraction deferred:** Isolated probes found only
 token splitting shared between Ruby's RRE-export ID lookup and Solr field-list
@@ -983,8 +925,8 @@ JSON definitions and function fields. Unifying them can change fetched fields,
 exports and scores; preserving separate rules offers little duplication reduction.
 No live search verification performed.
 
-Substitution, multi-valued filters and server escaping fixes change fetched
-results and background scores; verify them separately.
+A server escaping fix changes fetched results and background scores; verify it
+separately.
 
 ### [PREEXISTING] P1 I2 C3 — Align client and server scoring inputs and aggregation
 
@@ -1007,24 +949,11 @@ So a case can score differently in the UI and in a background evaluation.
 **Fix:** move input assembly (`bestDocs`) and case aggregation into the shared
 scorer module so both sides run the same code.
 
-### [PREEXISTING] P2 I0 C3 — The CSP is effectively off
-
-`config/initializers/content_security_policy.rb` sets only `font_src` and a
-`report_uri` of `/csp-violation-report-endpoint`. No route serves that path.
-`script-src`, `object-src` and the nonce generator are all commented out.
-Rails 8's default is a nonce-based policy, and `javascript_importmap_tags`
-already supports nonces.
-
-**Fix:** enable `script_src :self`
-plus nonces in report-only mode first, then enforce it. The core page's Solr JSONP needs the search endpoint
-hosts in `script-src`, or a per-request allow-list. Either remove
-`report_uri` or add the endpoint.
-
 ### [PREEXISTING] P3 I1 C2 — Small Rails idiom issues
 
 - [PREEXISTING] P3 I1 C2 — **`Case` initialization.** `Case` uses `after_initialize` to default
   `archived` and to call `set_scorer`
-  (`app/models/case.rb:95,99`). `set_scorer` can query the database for
+  (`app/models/case.rb:101,105`). `set_scorer` can query the database for
   every instantiated record whose `scorer_id` is nil. Move the `archived`
   default into the migration (as a column default) or into an `attribute`
   default, and set the scorer `before_validation on: :create` instead.
@@ -1033,20 +962,6 @@ hosts in `script-src`, or a per-request allow-list. Either remove
   handling. Leave non-unique try-number/document-ID, ordered/history and ambiguous
   email-or-ID selection unchanged. Optional/request-parameter IDs remain deferred
   because arrays can match multiple rows and `find_by` drops implicit ID ordering.
-
-## [PREEXISTING] Developer Experience Review
-
-### [PREEXISTING] P2 I2 C1 — 2. Reconcile onboarding, Docker and frontend documentation
-
-Use the established destinations in the [Documentation index](../README.md).
-
-- [PREEXISTING] P2 I2 C1 — Replace conflicting operational advice with safe, complete procedures for identifying and reusing the running server. The guide currently recommends throwaway commands during development, killing port owners, resetting the environment and pruning Docker resources, while agent guidance requires preserving the server. Once the shared procedures are correct, link to them from `AGENTS.md` and remove duplicated human-facing policy. Retain agent-specific safeguards.
-
-### [PREEXISTING] P2 I2 C2 — 3. Add safe execution support for existing server containers
-
-`bin/docker s` / `q` start servers through `docker compose run`; `r`, `b` and `c` create separate containers. Add an explicit exec command that recognizes actual `quepid-app-run-*` servers and refuses ambiguous choices, preserving startup semantics.
-
-Until that exists, use `docker exec <actual-server-container>` or `docker compose exec app` for an existing service container. Do not infer that the server is stopped from an empty Compose service listing.
 
 ## Someday
 

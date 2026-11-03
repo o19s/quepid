@@ -4,6 +4,7 @@ import { putJson } from "api/json"
 import { apiFetch } from "api/fetch"
 import { serverMessage } from "utils/error_message"
 import { getQuepidRootUrl } from "utils/quepid_root"
+import { fillUrlTemplate } from "utils/url_template"
 
 /**
  * Pick-scorer modal for the core case toolbar. Lists communal (+ custom, when
@@ -90,9 +91,10 @@ export default class extends CoreModalControllerBase {
     const generation = this.openGeneration
 
     try {
-      const url = this.caseScorerUrlTemplateValue
-        .replaceAll("__CASE_ID__", caseId)
-        .replaceAll("__SCORER_ID__", String(scorerId))
+      const url = fillUrlTemplate(this.caseScorerUrlTemplateValue, {
+        CASE_ID: caseId,
+        SCORER_ID: scorerId
+      })
       await putJson(url, {})
 
       document.dispatchEvent(

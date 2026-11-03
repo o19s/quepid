@@ -4,6 +4,7 @@ import { putJson } from "api/json"
 import { fromTextArea } from "modules/editor"
 import coreFlash from "utils/core_flash"
 import { getCoreCapabilities } from "utils/core_capability_access"
+import { fillUrlTemplate } from "utils/url_template"
 
 /**
  * Core per-query options editor. The live Query object remains runtime-owned,
@@ -33,7 +34,7 @@ export default class extends CoreModalControllerBase {
     this.openGeneration = (this.openGeneration || 0) + 1
     this.queryId = button?.closest("[data-query-id]")?.dataset.queryId || ""
     this.saveUrl = this.queryId
-      ? this.saveUrlTemplateValue.replaceAll("__QUERY_ID__", this.queryId)
+      ? fillUrlTemplate(this.saveUrlTemplateValue, { QUERY_ID: this.queryId })
       : ""
     const options = getCoreCapabilities().queryCapabilities?.getQuery?.(this.queryId)?.options
 
