@@ -374,5 +374,18 @@ class CoreControllerTest < ActionController::TestCase
       assert_redirected_to cases_path
       assert_equal CoreController::NO_CASES_MESSAGE, flash[:alert]
     end
+
+    test 'sends a user whose cases are all archived to the archived list' do
+      user = User.create!(name: 'Archived Only', email: 'archived_only@example.com', password: 'password', agreed: true)
+      Case.create!(case_name: 'Old case', owner: user, archived: true)
+      login_user user
+
+      assert_no_difference 'Case.count' do
+        get :index
+      end
+
+      assert_redirected_to cases_path(archived: '1')
+      assert_equal CoreController::ALL_CASES_ARCHIVED_MESSAGE, flash[:alert]
+    end
   end
 end

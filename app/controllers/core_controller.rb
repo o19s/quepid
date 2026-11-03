@@ -3,6 +3,7 @@
 # This hosts the main case application that runs in the client.
 class CoreController < ApplicationController
   NO_CASES_MESSAGE = "You don't have any Cases created in Quepid. Click 'Create a Case' from the Relevancy Cases dropdown to get started."
+  ALL_CASES_ARCHIVED_MESSAGE = "All of your Cases are archived. Unarchive one below, or click 'Create a Case' from the Relevancy Cases dropdown to start a new one."
 
   layout 'application'
   before_action :set_case_or_bootstrap, except: :new
@@ -40,6 +41,8 @@ class CoreController < ApplicationController
 
         return render(:case_not_found, status: :not_found)
       end
+
+      return redirect_to(cases_path(archived: '1'), alert: ALL_CASES_ARCHIVED_MESSAGE) if current_user.cases_involved_with.archived.exists?
 
       return redirect_to(cases_path, alert: NO_CASES_MESSAGE)
     end

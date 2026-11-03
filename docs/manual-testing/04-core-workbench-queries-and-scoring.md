@@ -246,6 +246,7 @@ Navigation is covered by 4.17b; missing cases, tries and routes by 4.17c.
   - [ ] Switch try via "revert to last try" or a Settings-tab save that changes the selected try — confirm this also does a full navigation to the new try's URL.
   - [ ] On a disposable case with two tries, delete the latest try through `DELETE /api/cases/:id/tries/:n`, then reload `/case/:id`. Confirm the remaining try boots and rerunning searches saves a score. Deleting the only remaining try must return 400 and leave the case usable.
   - [ ] A logged-in user with zero cases hitting bare `/case` sees the "You don't have any Cases created in Quepid" flash instead of a blank or broken page.
+  - [ ] A user whose cases are all archived hitting bare `/case` lands on `/cases` with the **Archived** filter on and the "All of your Cases are archived" flash.
 
 ### 4.17c Missing cases, missing tries and unrouted paths
 
