@@ -344,8 +344,8 @@ Still open:
    keep working and are warned about (the deprecation period, §3). Done.
 4. AI judges move onto connections, the same way. Not started.
 5. `HttpClient` replaces `LlmConnection`, built from a connection; rate limits enforced. Not started.
-6. The data migration, then, separately, dropping the old columns (§3). Done for embedders
-   (§9); not started for judges.
+6. The data migration, then, separately, dropping the old columns (§3). Old columns dropped for
+   embedders; no existing embedders required a data migration (§9). Not started for judges.
 7. Search endpoints, under their own ADR.
 
 ## 8. Tests
@@ -359,7 +359,7 @@ Still open:
   capability for a consumer is rejected by the picker and by validation.
 - Access: a user can use only connections they own or that are shared with their teams, plus
   communal ones; the diversity endpoint still refuses a connection the user cannot see.
-- Migration: backfill gives one connection per embedder and judge with the same owner and teams;
+- Migration (judges): backfill gives one connection per judge with the same owner and teams;
   dual read prefers the connection; a consumer with both reads the connection.
 - Fingerprint: editing a connection's URL changes the embedder fingerprint; editing its secret,
   name or timeout does not.
@@ -386,14 +386,9 @@ Still open:
   one). The rest of the form is in three tabs, Model, Instructions and Access. The Check connection
   button is disabled, with a hint to add a connection, until one is chosen. Every embedder needs a
   connection; one can move to another connection but not back to settings of its own.
-- **Embedders' data migration and clean-up (§3) are done**, ahead of a deprecation period: this
-  branch had not shipped to users yet, so the staged rollout §3 describes for a live consumer
-  wasn't needed here. `BackfillConnectionsFromEmbedders` gave every embedder with its own
-  settings a connection (one per distinct owner/service/URL/key, reusing it where several
-  embedders matched; an ownerless embedder got a communal connection rather than being
-  skipped, since there was no deprecation period keeping its columns around as a fallback), and
-  `RemoveLegacyColumnsFromEmbedders` then dropped `service_url`, `api_key` and `timeout` from
-  `embedders` in the same pass. The model's dual-read fallback, the form's "old, deprecated
+- **Embedders' clean-up (§3) is done**: there are no existing embedders to migrate, so no data
+  migration or deprecation period is needed. `RemoveLegacyColumnsFromEmbedders` drops
+  `service_url`, `api_key` and `timeout` from `embedders`. The model's dual-read fallback, the form's "old, deprecated
   configuration" notice, and the API's old fields are gone along with the columns. The
   fingerprint reads the effective provider and URL, so an embedder on a connection has the same
   fingerprint as one with the same settings of its own did, and changing the connection's URL or

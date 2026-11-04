@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-# Every embedder has a connection after BackfillConnectionsFromEmbedders; its own URL, key and
-# timeout are no longer read anywhere (ADR 0005 §3's clean-up). provider is not dropped - it stays
+# There are no existing embedders to migrate; their own URL, key and timeout are no longer read
+# anywhere (ADR 0005 §3's clean-up). provider is not dropped - it stays
 # on Embedder, kept in sync from the connection (Connection#sync_embedder_providers).
 class RemoveLegacyColumnsFromEmbedders < ActiveRecord::Migration[8.1]
   def change
