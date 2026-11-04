@@ -1,5 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
-import { element } from "utils/dom"
+import { element, showMatchingHelp } from "utils/dom"
 import { runCheck } from "utils/run_check"
 
 // Embedder form (app/views/embedders/_form.html.erb): shows only the fields the chosen
@@ -70,9 +70,7 @@ export default class extends Controller {
   refresh() {
     const preset = this.preset
 
-    this.helpTargets.forEach((help) => {
-      help.hidden = help.dataset.provider !== this.providerTarget.value
-    })
+    showMatchingHelp(this.helpTargets, "provider", this.providerTarget.value)
     this.refreshConnection()
     this.instructionFieldsTarget.hidden = !preset.supports_instructions
     if (this.hasNoInstructionsTarget)

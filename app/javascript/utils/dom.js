@@ -6,3 +6,10 @@ export function element(tag, { className, text } = {}, children = []) {
   node.append(...children)
   return node
 }
+
+// Shows only the help panel whose dataset[key] matches value; hides the rest.
+export function showMatchingHelp(helpTargets, key, value) {
+  helpTargets.forEach((help) => {
+    help.hidden = help.dataset[key] !== value
+  })
+}

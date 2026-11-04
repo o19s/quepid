@@ -1,5 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
-import { element } from "utils/dom"
+import { element, showMatchingHelp } from "utils/dom"
 import { runCheck } from "utils/run_check"
 
 // Connection form (app/views/connections/_form.html.erb): fills in a service's defaults when the
@@ -53,9 +53,7 @@ export default class extends Controller {
     // The name a blank one becomes, shown as the placeholder so it is no surprise on save.
     if (this.hasNameTarget) this.nameTarget.placeholder = `${preset.label || "Service"} Connection`
 
-    this.helpTargets.forEach((help) => {
-      help.hidden = help.dataset.service !== this.serviceTarget.value
-    })
+    showMatchingHelp(this.helpTargets, "service", this.serviceTarget.value)
     this.apiVersionRowTarget.hidden = !preset.uses_api_version
     this.authHeaderRowTarget.hidden = scheme !== "header"
     this.secretRowTarget.hidden = scheme === "none"

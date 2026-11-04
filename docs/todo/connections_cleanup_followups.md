@@ -16,15 +16,6 @@ Ratings appear as `P2 I3 C1` beside each item, same scale as [todo.md](todo.md):
 | **I — Simplification impact** (higher is more benefit) | Little or no code reduction | Local simplification | Removes duplication or complexity across several paths | Substantial reduction in wrappers, code, or maintenance burden |
 | **C — Complexity / risk** (lower is easier and safer) | Trivial, isolated edit | Small change with limited regression risk | Several interacting paths or meaningful behavioral risk | Broad change, sensitive data/security contracts, or unresolved design decisions |
 
-### P3 I1 C1 — the service/provider help-panel toggle is duplicated
-
-`connection_form_controller.js#refresh` and `embedder_form_controller.js#refresh` both run the
-identical "show only the help panel whose dataset key matches the selected value" loop, differing
-only in the dataset key (`service` vs. `provider`). Trivial on its own, and now that
-`check()`'s shared scaffolding moved into `app/javascript/utils/run_check.js` and
-`app/javascript/utils/dom.js`, this could ride along as a second tiny export from the same utils
-file.
-
 ### P3 I1 C1 — `Connection`'s two "deferred parse error on a synthetic text field" ivars
 
 `retry_statuses_text=` and `extra_headers_text=` both: clear a dedicated `@..._error` ivar, parse
