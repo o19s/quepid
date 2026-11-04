@@ -314,7 +314,27 @@ Still open:
   `extra_headers` and `options` are not a place for secrets.
 - Search endpoints (§2.7): the `search` capability and when a secret may reach a browser.
 - When the data migration and the clean-up (§3) run, and whether the migration reuses one
-  connection for consumers of one owner with the same service, URL and key (§3 says yes).
+  connection for consumers of one owner with the same service, URL and key (§3 says yes). Done
+  for embedders; still open for judges.
+- Embedder-specific duplication that should generalize once AI judges move onto connections,
+  not before (nothing to prove the shape against yet): "does this connection fit/is it usable"
+  lives on `Embedder` (`connection_fits_and_is_usable`/`connection_problem`) and is mirrored from
+  the other direction on `Connection` (`service_still_makes_embeddings`, hardcoding the
+  `'embeddings'` capability string); `Connection` also reaches into `embedders` by name for
+  provider-sync and re-vectorization (`sync_embedder_providers`, `revectorize_embedder_cases`)
+  and for "in use" checks (`ConnectionsController#destroy`/`#show`). When judges land, prefer a
+  capability-parameterized shared concern (consumer side) and a generic consumers/capability
+  registry (connection side) over a second copy keyed to `chat`/`typed_judge`.
+- `EmbeddersHelper#embedder_connection_options`/`#embedder_connection_offered?` build the
+  capability-filtered connection picker only for embedders, even though §2.3 says judges need
+  the identical picker filtered on `chat`/`typed_judge`. Extract a capability-parameterized
+  version when judges build their own picker, rather than recreating the method.
+- `Connection#masked_secret`/`self.keep_existing_secret?`/`basic_secret_has_user_and_password`
+  re-derive the same "mask a credential, detect a resubmitted masked value, require a colon for
+  basic auth" logic the pre-existing `MaskableCredential` concern already has for
+  `SearchEndpoint#basic_auth_credential`. The concern is hardcoded to that one attribute name, so
+  it doesn't drop in as-is; worth generalizing it to take a configurable attribute instead of
+  deriving the same logic a third time.
 
 ## 7. Phasing
 
