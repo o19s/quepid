@@ -24,7 +24,7 @@ class BackfillConnectionsFromEmbedders < ActiveRecord::Migration[8.1]
   def up
     connections_by_key = {}
 
-    LegacyEmbedder.where(connection_id: nil).find_each do |embedder|
+    LegacyEmbedder.where(connection_id: nil).includes(:teams).find_each do |embedder|
       key = [ embedder.owner_id, embedder.provider, embedder.service_url, embedder.api_key ]
       connection = connections_by_key[key] ||= build_connection_for(embedder)
       connection.teams |= embedder.teams.to_a

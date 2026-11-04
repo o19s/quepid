@@ -105,11 +105,8 @@ class Embedder < ApplicationRecord
     connection&.timeout
   end
 
-  # The headers a request carries: the connection's, however it sends its key.
-  delegate :request_headers, to: :connection
-
-  # The connection's retry settings.
-  delegate :retry_options, to: :connection
+  # The headers a request carries (however the connection sends its key) and its retry settings.
+  delegate :request_headers, :retry_options, to: :connection
 
   def adapter
     provider_definition.adapter_class.new(self)
@@ -158,6 +155,19 @@ class Embedder < ApplicationRecord
   # Cases per embedder for list pages, in one grouped query.
   def self.cases_count_by_embedder_id embedder_ids
     Case.where(embedder_id: embedder_ids).group(:embedder_id).count
+  end
+
+  # A connection spends its owner's key, so the one being set must be one `user` can use -- not
+  # merely one the embedder's owner can, since a team member may be editing it. The one already
+  # on the embedder stays allowed, so changing the name of an embedder never trips over it.
+  # Controllers call this before saving, so a rejected connection shows up alongside other
+  # validation errors instead of a bare 500 from the association assignment.
+  def connection_usable_by? user
+    return true if connection_id.nil? || connection_id == connection_id_was
+    return true if user.connections_involved_with.exists?(id: connection_id)
+
+    errors.add(:connection, "isn't one you can use")
+    false
   end
 
   def mark_archived!

@@ -54,7 +54,7 @@ module Api
       def create
         @embedder = current_user.owned_embedders.build(embedder_params.except(:team_ids))
 
-        if usable_connection? && @embedder.save
+        if @embedder.connection_usable_by?(current_user) && @embedder.save
           apply_team_ids(@embedder, embedder_params[:team_ids]) if embedder_params.key?(:team_ids)
           respond_with @embedder
         else
@@ -68,7 +68,7 @@ module Api
 
         @embedder.assign_attributes(update_params)
 
-        if usable_connection? && @embedder.save
+        if @embedder.connection_usable_by?(current_user) && @embedder.save
           apply_team_ids(@embedder, embedder_params[:team_ids]) if embedder_params.key?(:team_ids)
           respond_with @embedder
         else
@@ -95,16 +95,6 @@ module Api
         kept = embedder.team_ids - user_team_ids
 
         embedder.team_ids = kept | selected
-      end
-
-      # See EmbeddersController#usable_connection?.
-      def usable_connection?
-        id = @embedder.connection_id
-        return true if id.nil? || id == @embedder.connection_id_was
-        return true if current_user.connections_involved_with.exists?(id: id)
-
-        @embedder.errors.add(:connection, "isn't one you can use")
-        false
       end
 
       def embedder_params

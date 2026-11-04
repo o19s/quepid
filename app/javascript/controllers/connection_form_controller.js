@@ -1,5 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
 import { apiFetch } from "api/fetch"
+import { setButtonLoading } from "utils/button_loading"
 
 // Connection form (app/views/connections/_form.html.erb): fills in a service's defaults when the
 // service changes, shows only the fields the chosen authentication needs, and runs the Check
@@ -72,7 +73,7 @@ export default class extends Controller {
     // The edit form overrides its method to PATCH; the check endpoint is a POST.
     data.delete("_method")
 
-    this.setButtonLoading(this.checkButtonTarget, true)
+    setButtonLoading(this.checkButtonTarget, true)
     this.checkResultTarget.replaceChildren()
 
     try {
@@ -96,22 +97,7 @@ export default class extends Controller {
       alert.textContent = error.message
       this.checkResultTarget.replaceChildren(alert)
     } finally {
-      this.setButtonLoading(this.checkButtonTarget, false)
-    }
-  }
-
-  setButtonLoading(button, loading) {
-    if (loading) {
-      button.disabled = true
-      this.buttonContent = [...button.childNodes]
-      const spinner = document.createElement("span")
-      spinner.className = "spinner-border spinner-border-sm"
-      spinner.setAttribute("role", "status")
-      spinner.setAttribute("aria-hidden", "true")
-      button.replaceChildren(spinner, " Loading...")
-    } else {
-      button.disabled = false
-      if (this.buttonContent) button.replaceChildren(...this.buttonContent)
+      setButtonLoading(this.checkButtonTarget, false)
     }
   }
 }

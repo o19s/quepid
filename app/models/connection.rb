@@ -137,7 +137,7 @@ class Connection < ApplicationRecord
   end
 
   def api_version= value
-    self.options = (options || {}).merge('api_version' => value.presence).compact
+    set_option 'api_version', value.presence
   end
 
   # How a call retries when the service says "later" (LlmConnection's defaults apply to whatever
@@ -148,7 +148,7 @@ class Connection < ApplicationRecord
   end
 
   def retry_max= value
-    set_option 'retry_max', value.to_s.strip.presence&.to_i
+    set_numeric_option 'retry_max', value, :to_i
   end
 
   def retry_interval
@@ -156,7 +156,7 @@ class Connection < ApplicationRecord
   end
 
   def retry_interval= value
-    set_option 'retry_interval', value.to_s.strip.presence&.to_f
+    set_numeric_option 'retry_interval', value, :to_f
   end
 
   def retry_statuses
@@ -259,9 +259,7 @@ class Connection < ApplicationRecord
 
   # Where the vectors come from changed, so what the embedders' cases hold is stale.
   def revectorize_embedder_cases
-    embedders.find_each do |embedder|
-      embedder.cases.find_each { |kase| VectorizeCaseQueriesJob.enqueue_for(kase) }
-    end
+    Case.where(embedder_id: embedders.select(:id)).find_each { |kase| VectorizeCaseQueriesJob.enqueue_for(kase) }
   end
 
   def service_still_makes_embeddings
@@ -313,6 +311,12 @@ class Connection < ApplicationRecord
 
   def set_option key, value
     self.options = (options || {}).merge(key => value).compact
+  end
+
+  # A blank retry setting means "use LlmConnection's default", so a blank string -> nil rather
+  # than 0 or 0.0.
+  def set_numeric_option key, value, coerce
+    set_option key, value.to_s.strip.presence&.public_send(coerce)
   end
 
   def retry_settings_are_sensible

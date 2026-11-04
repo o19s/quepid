@@ -1,5 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
 import { apiFetch } from "api/fetch"
+import { setButtonLoading } from "utils/button_loading"
 
 // Embedder form (app/views/embedders/_form.html.erb): shows only the fields the chosen
 // provider can use, fills in its defaults when the provider changes, and runs the Check connection
@@ -146,7 +147,7 @@ export default class extends Controller {
     data.delete("_method")
     data.set("text", this.checkTextTarget.value)
 
-    this.setButtonLoading(this.checkButtonTarget, true)
+    setButtonLoading(this.checkButtonTarget, true)
     this.checkResultTarget.replaceChildren()
 
     try {
@@ -176,21 +177,7 @@ export default class extends Controller {
         element("div", { className: "alert alert-danger small mb-0", text: error.message })
       )
     } finally {
-      this.setButtonLoading(this.checkButtonTarget, false)
-    }
-  }
-
-  setButtonLoading(button, loading) {
-    if (loading) {
-      button.disabled = true
-      this.buttonContent = [...button.childNodes]
-      const spinner = element("span", { className: "spinner-border spinner-border-sm" })
-      spinner.setAttribute("role", "status")
-      spinner.setAttribute("aria-hidden", "true")
-      button.replaceChildren(spinner, " Loading...")
-    } else {
-      button.disabled = false
-      if (this.buttonContent) button.replaceChildren(...this.buttonContent)
+      setButtonLoading(this.checkButtonTarget, false)
     }
   }
 }

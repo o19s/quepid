@@ -5,7 +5,7 @@ class EmbeddersController < ApplicationController
   before_action :set_embedder, only: [ :show, :edit, :update, :destroy, :clone ]
 
   def index
-    @embedders = current_user.embedders_involved_with.includes(:owner, :teams).order(:name)
+    @embedders = current_user.embedders_involved_with.includes(:owner, :teams, :connection).order(:name)
   end
 
   def show
@@ -36,7 +36,7 @@ class EmbeddersController < ApplicationController
   def create
     @embedder = current_user.owned_embedders.build(embedder_params)
 
-    if usable_connection? && @embedder.save
+    if @embedder.connection_usable_by?(current_user) && @embedder.save
       apply_team_ids(@embedder, params.dig(:embedder, :team_ids))
       redirect_to edit_embedder_path(@embedder), notice: 'Embedder was successfully created.'
     else
@@ -47,7 +47,7 @@ class EmbeddersController < ApplicationController
   def update
     @embedder.assign_attributes(embedder_params)
 
-    if usable_connection? && @embedder.save
+    if @embedder.connection_usable_by?(current_user) && @embedder.save
       apply_team_ids(@embedder, params.dig(:embedder, :team_ids))
       redirect_to edit_embedder_path(@embedder), notice: 'Embedder was successfully updated.'
     else
@@ -83,18 +83,6 @@ class EmbeddersController < ApplicationController
     kept_teams = embedder.teams.reject { |t| user_teams.any? { |ut| ut.id == t.id } }
     selected_teams = user_teams.select { |t| selected_ids.include?(t.id) }
     embedder.teams.replace(kept_teams | selected_teams)
-  end
-
-  # A connection spends its owner's key, so the one picked must be one this user can use -- not
-  # merely one the embedder's owner can, since a team member may be editing it. The one already
-  # on the embedder stays allowed, so changing the name of an embedder never trips over it.
-  def usable_connection?
-    id = @embedder.connection_id
-    return true if id.nil? || id == @embedder.connection_id_was
-    return true if current_user.connections_involved_with.exists?(id: id)
-
-    @embedder.errors.add(:connection, "isn't one you can use")
-    false
   end
 
   def embedder_params

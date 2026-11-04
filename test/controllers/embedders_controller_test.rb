@@ -118,7 +118,7 @@ class EmbeddersControllerTest < ActionDispatch::IntegrationTest
     let(:openai_connection) { connections(:openai) }
 
     def connection_embedder_params overrides = {}
-      { name: 'On Voyage', provider: 'voyage', model: 'voyage-3.5', connection_id: voyage.id }.merge(overrides)
+      embedder_form_params({ name: 'On Voyage' }.merge(overrides))
     end
 
     test 'the connection field comes right below the provider' do

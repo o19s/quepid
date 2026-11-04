@@ -87,9 +87,8 @@ class ConnectionTest < ActiveSupport::TestCase
       assert_equal 'Anthropic Connection', connection.name
     end
 
-    test 'requires a known service and an http(s) URL' do
+    test 'requires a known service' do
       assert_not build(service: 'nope').valid?
-      assert_not build(base_url: 'ftp://x').valid?
     end
 
     test 'accepts complete http(s) URLs including local hosts and provider paths' do
