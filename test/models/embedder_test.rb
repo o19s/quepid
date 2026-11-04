@@ -154,15 +154,18 @@ class EmbedderTest < ActiveSupport::TestCase
   end
 
   describe 'dependent records' do
-    test 'deleting the owner keeps the embedder, unowned' do
+    test 'deleting an owner who does not own its connection keeps the embedder, unowned' do
       owner = User.create!(email: 'embedder-owner@example.com', password: 'password', name: 'Owner', agreed: true)
-      connection = Connection.create!(name: 'Test', service: 'openai', base_url: 'https://api.openai.com', secret: 'sk-test', owner: owner)
+      owner.teams << teams(:shared)
+      connection = connections(:openai)
       embedder = build_embedder(owner: owner, connection: connection)
       embedder.save!
 
       owner.destroy!
 
       assert_nil embedder.reload.owner_id
+      assert_equal connection.id, embedder.connection_id
+      assert_equal Embedder::MASKED_API_KEY, embedder.masked_api_key
     end
 
     test 'deleting an embedder unlinks its cases' do

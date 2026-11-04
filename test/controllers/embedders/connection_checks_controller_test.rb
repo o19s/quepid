@@ -46,6 +46,36 @@ module Embedders
       assert_requested stub
     end
 
+    test 'checks the unchanged connection of a shared embedder after connection access is withdrawn' do
+      connections(:openai).teams.clear
+      stub = stub_openai('sk-test-openai')
+      original_attributes = embedder.attributes
+
+      post embedder_connection_check_url(embedder), params: {
+        text:     'unsaved sample',
+        embedder: { connection_id: embedder.connection_id, name: 'Unsaved name', model: 'unsaved-model',
+                    truncation: 'native', dimensions: '512' },
+      }
+
+      assert_response :success
+      assert_requested stub
+      assert_equal 'unsaved sample', response.parsed_body['input']
+      assert_equal original_attributes, embedder.reload.attributes
+    end
+
+    test 'a saved embedder cannot switch its check to an inaccessible connection' do
+      stub = stub_request(:post, 'http://ollama:11434/api/embed')
+
+      post embedder_connection_check_url(embedder), params: {
+        embedder: { connection_id: connections(:private_ollama).id, provider: 'ollama', model: 'm' },
+      }
+
+      assert_response :unprocessable_content
+      assert_match(/isn't one you can use/, response.parsed_body['error'])
+      assert_not_requested stub
+      assert_equal connections(:openai).id, embedder.reload.connection_id
+    end
+
     test 'an embedder the user cannot see is not found' do
       post embedder_connection_check_url(embedders(:private_ollama)), params: {
         embedder: { provider: 'ollama', model: 'all-minilm' },

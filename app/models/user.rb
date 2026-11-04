@@ -213,6 +213,14 @@ class User < ApplicationRecord
   before_create :set_defaults
   before_destroy :check_scorer_ownership_before_removing!, prepend: true
   before_destroy :check_judgements_before_removing!, prepend: true
+  before_destroy :check_connections_before_removing!, prepend: true
+
+  def check_connections_before_removing!
+    return unless Embedder.exists?(connection_id: owned_connections.select(:id))
+
+    errors.add(:base, "Please point embedders using this user's connections at another connection, or delete those embedders, before deleting this user.")
+    throw(:abort)
+  end
 
   def check_judgements_before_removing!
     if judgements.any?

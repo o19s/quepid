@@ -25,7 +25,9 @@ module Embedders
       saved = current_user.embedders_involved_with.find(params.expect(:embedder_id)) if params.key?(:embedder_id)
       attributes = embedder_params
 
-      embedder = saved ? saved.dup : Embedder.new
+      # Keep the saved identity and original connection for the unchanged-connection access
+      # checks. Assigning form values and validating only changes this in-memory instance.
+      embedder = saved || Embedder.new
       # The one checking is who would use the connection.
       embedder.owner ||= current_user
       embedder.assign_attributes(attributes)

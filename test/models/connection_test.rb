@@ -62,6 +62,7 @@ class ConnectionTest < ActiveSupport::TestCase
 
     test 'deleting the owner deletes the connection instead of making it communal' do
       private_ollama = connections(:private_ollama)
+      embedders(:private_ollama).destroy!
       joey.destroy
 
       assert_not Connection.exists?(private_ollama.id)

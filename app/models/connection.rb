@@ -66,9 +66,8 @@ class Connection < ApplicationRecord
 
   belongs_to :owner, class_name: 'User', optional: true
 
-  # Nullify, not restrict: deleting the owner must always destroy their connections (see
-  # User#owned_connections), which cascades here. The controller is what refuses an interactive
-  # delete while an embedder still uses the connection.
+  # Nullify, not restrict: unused connections are destroyed with their owner. User's deletion
+  # guard and the connections controller refuse deletion while an embedder uses a connection.
   has_many :embedders, dependent: :nullify, inverse_of: :connection
 
   include ForUserScope

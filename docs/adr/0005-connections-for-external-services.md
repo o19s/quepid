@@ -377,7 +377,8 @@ Still open:
   use and see it, but not read the secret, change its URL, or check it with the saved secret: all
   three would let them send the owner's key somewhere else. This is stricter than embedders, which
   any team member can edit.
-- Deleting a user deletes their connections. Unlinking them would make them communal.
+- Deleting a user deletes their unused connections. Deletion is blocked while any embedder uses
+  one of their connections. Unlinking connections from their owner would make them communal.
 
 - **Embedders use a connection.** `embedders.connection_id` is optional in the database. The embedder
   form no longer has URL, key or timeout fields: they come from the connection chosen in a
@@ -394,7 +395,7 @@ Still open:
   fingerprint as one with the same settings of its own did, and changing the connection's URL or
   service marks its embedders' vectors stale and re-vectorises their cases.
 - A connection can't be deleted while embedders use it (the UI says how many); deleting its owner's
-  account deletes it and unlinks them. Switching a connection to a service that can't make
+  account is also blocked until those embedders use another connection or are deleted. Switching a connection to a service that can't make
   embeddings is refused while embedders use it.
 - Picking a connection is checked against the user doing it, not only the embedder's owner, because
   a team member may be editing someone else's embedder.

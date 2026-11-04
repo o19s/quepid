@@ -27,15 +27,19 @@ For a local run, the Ollama container needs an embedding model: `docker exec oll
 ### 19.2 Edit, clone, share and delete an embedder
 
 - [ ] **Steps:**
-  1. Open a saved embedder. Confirm the API key field is empty, with the placeholder "Saved — leave blank to keep it".
-  2. Click **Check connection** without typing a key — it should use the saved key.
+  1. Open a saved embedder. Confirm its saved connection is selected; URL, key and timeout come from that connection.
+  2. Click **Check connection** — it should use the saved connection's key.
+     As a teammate with access to the embedder but no direct access to its connection, confirm
+     the check still works with the saved connection. Change the model or sample text before
+     checking and reload afterward to confirm the check did not save those changes. A check
+     cannot switch to a different connection the teammate cannot use.
   3. Change the name, check a team under **Teams to Share this Embedder With**, save.
-  4. From the list, **Clone** it and save the clone without typing a key.
+  4. From the list, **Clone** it, confirm the same connection is selected, and save the clone.
   5. Sign in as a member of the shared team and confirm the embedder appears in their list.
   6. Delete the clone from the list (confirmation dialog).
   7. Open the team's page (**Teams** → the team). Find the **Embedders** card.
   8. Click the red ⊗ on the shared embedder and confirm.
-- **Expected:** The saved key is never rendered into the page; blank keeps it; the clone keeps the source's key; the shared embedder is visible to team members; deleted embedders disappear from the list. The team page lists the team's embedders (provider, model, size, owner, how many cases use it) with a **Create Embedder** button that pre-selects the team; step 8 shows "… unshared from …", the card empties, and cases already using the embedder keep it.
+- **Expected:** The saved key is never rendered into the page; the clone keeps the source's connection; the shared embedder is visible to team members; deleted embedders disappear from the list. The team page lists the team's embedders (provider, model, size, owner, how many cases use it) with a **Create Embedder** button that pre-selects the team; step 8 shows "… unshared from …", the card empties, and cases already using the embedder keep it.
 
 ### 19.3 Pick a case's embedder
 

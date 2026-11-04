@@ -59,6 +59,20 @@ class EmbeddersControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test 'only saved embedder forms check through their existing identity' do
+    get edit_embedder_url(embedder)
+
+    assert_select '[data-embedder-form-check-url-value=?]', embedder_connection_check_path(embedder)
+
+    get new_embedder_url
+
+    assert_select '[data-embedder-form-check-url-value=?]', connection_check_embedders_path
+
+    get clone_embedder_url(embedder)
+
+    assert_select '[data-embedder-form-check-url-value=?]', connection_check_embedders_path
+  end
+
   test 'create saves an embedder owned by the user and shares it' do
     assert_difference 'Embedder.count' do
       post embedders_url, params: { embedder: embedder_form_params(team_ids: [ team.id.to_s ]) }

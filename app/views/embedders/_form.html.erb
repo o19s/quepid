@@ -3,7 +3,7 @@
 <div class="card"
      data-controller="embedder-form"
      data-embedder-form-presets-value="<%= EmbedderProvider.presets.to_json %>"
-     data-embedder-form-check-url-value="<%= connection_check_embedders_path %>"
+     data-embedder-form-check-url-value="<%= embedder.persisted? ? embedder_connection_check_path(embedder) : connection_check_embedders_path %>"
      data-embedder-form-new-connection-url-value="<%= new_connection_path %>">
   <div class="card-header">
     <h5 class="mb-0"><%= render 'embedders/icon' %> Embedder<%= render 'embedders/beta' %></h5>
