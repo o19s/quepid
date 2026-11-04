@@ -38,7 +38,7 @@ class ConnectionTest < ActiveSupport::TestCase
   end
 
   describe 'who can use and change a connection' do
-    test 'usable by its owner, a member of a team it is shared with, and everyone if instance-wide' do
+    test 'usable by its owner, a member of a team it is shared with, and everyone if communal' do
       assert_includes doug.connections_involved_with, connection
       assert_includes random.connections_involved_with, connection
       assert_includes random.connections_involved_with, connections(:instance_elasticsearch)
@@ -52,15 +52,15 @@ class ConnectionTest < ActiveSupport::TestCase
       assert_not connection.manageable_by?(nil)
     end
 
-    test 'an instance-wide connection is managed by administrators only' do
-      instance_wide = connections(:instance_elasticsearch)
+    test 'a communal connection is managed by administrators only' do
+      communal = connections(:instance_elasticsearch)
 
-      assert_predicate instance_wide, :instance_wide?
-      assert instance_wide.manageable_by?(doug)
-      assert_not instance_wide.manageable_by?(random)
+      assert_predicate communal, :communal?
+      assert communal.manageable_by?(doug)
+      assert_not communal.manageable_by?(random)
     end
 
-    test 'deleting the owner deletes the connection instead of making it instance-wide' do
+    test 'deleting the owner deletes the connection instead of making it communal' do
       private_ollama = connections(:private_ollama)
       joey.destroy
 

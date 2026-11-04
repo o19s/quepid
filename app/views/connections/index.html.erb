@@ -56,8 +56,8 @@
                   </button>
                 </td>
                 <td>
-                  <% if connection.instance_wide? %>
-                    <span class="badge bg-info text-dark">Everyone</span>
+                  <% if connection.communal? %>
+                    <span class="badge bg-info text-dark">Communal</span>
                   <% elsif connection.owner == current_user %>
                     <span class="badge bg-secondary">You</span>
                   <% else %>

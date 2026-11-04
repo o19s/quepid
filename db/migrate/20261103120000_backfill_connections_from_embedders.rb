@@ -6,8 +6,8 @@
 #
 # ADR 0005 said to skip an ownerless embedder, since the old columns stayed around as a safety net
 # during a deprecation period. That safety net doesn't apply here - the very next migration drops
-# those columns - so an ownerless embedder gets an instance-wide connection instead (owner_id: nil
-# is exactly what makes a Connection instance-wide), rather than losing its URL and key.
+# those columns - so an ownerless embedder gets a communal connection instead (owner_id: nil is
+# exactly what makes a Connection communal), rather than losing its URL and key.
 class BackfillConnectionsFromEmbedders < ActiveRecord::Migration[8.1]
   # The real Embedder no longer declares api_key as encrypted, or service_url/timeout as plain
   # columns (they now read through connection, which is nil for exactly the rows this migration

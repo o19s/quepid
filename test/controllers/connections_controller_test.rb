@@ -29,7 +29,7 @@ class ConnectionsControllerTest < ActionDispatch::IntegrationTest
     assert_select 'td', text: connection.name
     assert_select 'td', text: connections(:instance_elasticsearch).name
     assert_select 'td', text: connections(:private_ollama).name, count: 0
-    assert_select 'td .badge', text: 'Everyone'
+    assert_select 'td .badge', text: 'Communal'
   end
 
   test 'index has a status column that asks for each connection separately' do
@@ -74,7 +74,7 @@ class ConnectionsControllerTest < ActionDispatch::IntegrationTest
     presets = JSON.parse(form['data-connection-form-presets-value'])
     assert_equal 'https://api.openai.com', presets.dig('openai', 'base_url')
     assert_select "input[name='connection[team_ids][]'][value='#{team.id}'][checked]"
-    assert_select 'input#connection_instance_wide', count: 0
+    assert_select 'input#connection_communal', count: 0
   end
 
   test 'the form has General, Advanced and Access tabs, with the settings sorted into them' do
@@ -142,19 +142,19 @@ class ConnectionsControllerTest < ActionDispatch::IntegrationTest
     assert_select '.alert-danger'
   end
 
-  test 'a user cannot make an instance-wide connection' do
-    post connections_url, params: { connection: connection_params(instance_wide: '1') }
+  test 'a user cannot make a communal connection' do
+    post connections_url, params: { connection: connection_params(communal: '1') }
 
     assert_equal user, Connection.order(:id).last.owner
   end
 
-  test 'an administrator can make an instance-wide connection, which takes no teams' do
+  test 'an administrator can make a communal connection, which takes no teams' do
     login_user_for_integration_test users(:doug)
 
-    post connections_url, params: { connection: connection_params(instance_wide: '1', team_ids: [ team.id.to_s ]) }
+    post connections_url, params: { connection: connection_params(communal: '1', team_ids: [ team.id.to_s ]) }
 
     created = Connection.order(:id).last
-    assert_predicate created, :instance_wide?
+    assert_predicate created, :communal?
     assert_empty created.teams
   end
 
@@ -223,15 +223,15 @@ class ConnectionsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to connections_url
   end
 
-  test 'only an administrator manages an instance-wide connection' do
-    instance_wide = connections(:instance_elasticsearch)
+  test 'only an administrator manages a communal connection' do
+    communal = connections(:instance_elasticsearch)
 
-    delete connection_url(instance_wide)
-    assert Connection.exists?(instance_wide.id)
+    delete connection_url(communal)
+    assert Connection.exists?(communal.id)
 
     login_user_for_integration_test users(:doug)
-    delete connection_url(instance_wide)
-    assert_not Connection.exists?(instance_wide.id)
+    delete connection_url(communal)
+    assert_not Connection.exists?(communal.id)
   end
 
   test 'the sidebar links to connections' do

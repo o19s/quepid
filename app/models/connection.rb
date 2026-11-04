@@ -8,7 +8,7 @@
 # Owned by a user and shared with teams, like a SearchEndpoint or Embedder. Using a connection
 # spends its owner's secret, so only the owner can change it -- someone it is shared with can use
 # it but never read it, and can't point it at a server of their own. A connection with no owner is
-# instance-wide: everyone can use it and administrators manage it.
+# communal: everyone can use it and administrators manage it.
 # == Schema Information
 #
 # Table name: connections
@@ -97,7 +97,7 @@ class Connection < ApplicationRecord
   validate :service_still_makes_embeddings, on: :update
 
   # Every connection the user may use: their own, those shared with a team of theirs, and the
-  # instance-wide ones. Creating or changing one is narrower: see #manageable_by?.
+  # communal ones. Creating or changing one is narrower: see #manageable_by?.
   def self.usable_by user
     where(id: for_user(user).select(:id)).or(where(owner_id: nil))
   end
@@ -108,15 +108,15 @@ class Connection < ApplicationRecord
     @service_definition = ConnectionService.find(service)
   end
 
-  def instance_wide?
+  def communal?
     owner_id.nil?
   end
 
-  # The owner changes a connection; so does an administrator for an instance-wide one.
+  # The owner changes a connection; so does an administrator for a communal one.
   def manageable_by? user
     return false if user.nil?
 
-    instance_wide? ? user.administrator? : owner_id == user.id
+    communal? ? user.administrator? : owner_id == user.id
   end
 
   def masked_secret

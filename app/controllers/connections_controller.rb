@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # Manage the connections to external services (ADR 0005). Anyone who can use a connection can see
-# it; only its owner (or, for an instance-wide one, an administrator) can change or delete it,
+# it; only its owner (or, for a communal one, an administrator) can change or delete it,
 # because using a connection spends its secret and changing its URL could send that secret
 # somewhere else.
 class ConnectionsController < ApplicationController
@@ -35,7 +35,7 @@ class ConnectionsController < ApplicationController
 
   def create
     @connection = Connection.new(connection_params)
-    @connection.owner = instance_wide_requested? ? nil : current_user
+    @connection.owner = communal_requested? ? nil : current_user
 
     if @connection.save
       apply_team_ids(@connection, params.dig(:connection, :team_ids))
@@ -89,14 +89,14 @@ class ConnectionsController < ApplicationController
   end
 
   # Only an administrator can make a connection that everyone on the instance can use.
-  def instance_wide_requested?
-    current_user.administrator? && ActiveModel::Type::Boolean.new.cast(params.dig(:connection, :instance_wide))
+  def communal_requested?
+    current_user.administrator? && ActiveModel::Type::Boolean.new.cast(params.dig(:connection, :communal))
   end
 
   # Only touch teams the current user can see, so saving can't unshare the connection from a
   # team the submitting user isn't a member of. Same rule as EmbeddersController#apply_team_ids.
   def apply_team_ids connection, team_ids
-    return connection.teams.clear if connection.instance_wide?
+    return connection.teams.clear if connection.communal?
 
     user_teams = current_user.teams.to_a
     selected_ids = Array(team_ids).compact_blank.map(&:to_i)

@@ -186,16 +186,16 @@
           <div class="tab-pane fade" id="connection-access" role="tabpanel" aria-labelledby="connection-access-tab" tabindex="0">
             <p class="text-muted small">Who can use this connection. Anyone it is shared with makes calls with its key, but never sees it and can't change the connection.</p>
 
-            <% if current_user.administrator? && (!connection.persisted? || connection.instance_wide?) %>
+            <% if current_user.administrator? && (!connection.persisted? || connection.communal?) %>
               <div class="form-check mb-3">
-                <%= check_box_tag 'connection[instance_wide]', '1', connection.persisted? ? connection.instance_wide? : false,
-                      id: 'connection_instance_wide', class: 'form-check-input', disabled: connection.persisted? %>
-                <%= label_tag 'connection_instance_wide', 'Available to everyone on this instance', class: 'form-check-label' %>
+                <%= check_box_tag 'connection[communal]', '1', connection.persisted? ? connection.communal? : false,
+                      id: 'connection_communal', class: 'form-check-input', disabled: connection.persisted? %>
+                <%= label_tag 'connection_communal', 'Communal — available to every user on this instance', class: 'form-check-label' %>
                 <div class="form-text">An administrator manages it; everyone can use it without seeing the key. Can't be changed later.</div>
               </div>
             <% end %>
 
-            <% unless connection.persisted? && connection.instance_wide? %>
+            <% unless connection.persisted? && connection.communal? %>
               <div class="mb-3">
                 <%= render 'shared/team_picker', form: form, label: 'Teams to Share this Connection With',
                       help_text: "Anyone on a team it's shared with can use this connection, and calls are made with its key, but they can't see or change it. Leave unchecked to keep it private to you." %>

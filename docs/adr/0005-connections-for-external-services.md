@@ -105,7 +105,7 @@ the task.
 | `timeout`             | seconds                                                                                                             |
 | `requests_per_minute` | 0 means no limit; shared by everything that uses the connection (§2.6)                                              |
 | `options`             | JSON, for what only some services need (Azure `api_version`)                                                        |
-| `owner_id`            | null for an instance-wide connection (§2.5)                                                                         |
+| `owner_id`            | null for a communal connection (§2.5)                                                                                |
 | `archived`            | as embedders and search endpoints                                                                                   |
 
 Plus `teams_connections`, as `teams_embedders` and `teams_search_endpoints` work today.
@@ -170,13 +170,14 @@ needs, and a `capabilities` hash holding what each use needs:
 
 A connection can have several users: one OpenAI connection can back an AI judge and two embedders.
 
-### 2.5 Ownership, sharing and instance-wide connections
+### 2.5 Ownership, sharing and communal connections
 
 - Same rule as embedders: a user sees the connections they own and those shared with their teams.
   Using a connection spends its owner's secret, so sharing a connection with a team lets members
   make calls on that key. That is today's rule for embedders; it now also covers judging, and the
   sharing UI says so.
-- A connection with no owner is **instance-wide**, visible to everyone, like communal scorers.
+- A connection with no owner is **communal**, visible to everyone -- the same term, and the same
+  no-owner shape, Scorer already uses for its communal scorers.
   An administrator creates it. The Ollama container the deployment already runs becomes one,
   replacing the special handling that fills the Ollama URL in at runtime. Its secret is never
   shown to anyone but administrators.
@@ -295,7 +296,7 @@ Settled by what was built:
 
 - **Timeout:** only the connection's. A consumer has no override; the embedder form has no timeout
   field.
-- **Who may create an instance-wide connection:** administrators only, and it can't be changed
+- **Who may create a communal connection:** administrators only, and it can't be changed
   afterwards. They also manage it.
 - **Names:** the model and the UI both say "Connection".
 
@@ -318,7 +319,7 @@ Still open:
 ## 7. Phasing
 
 1. `Connection` and `ConnectionService`; the old provider classes read through. Done.
-2. A Connections page; instance-wide connections; the Check connection button. Done.
+2. A Connections page; communal connections; the Check connection button. Done.
 3. Embedders move onto connections: a picker on the form, new ones require a connection, old ones
    keep working and are warned about (the deprecation period, §3). Done.
 4. AI judges move onto connections, the same way. Not started.
@@ -337,7 +338,7 @@ Still open:
 - Model: `secret` encrypted and masked; `basic` requires `user:password`; a service with no
   capability for a consumer is rejected by the picker and by validation.
 - Access: a user can use only connections they own or that are shared with their teams, plus
-  instance-wide ones; the diversity endpoint still refuses a connection the user cannot see.
+  communal ones; the diversity endpoint still refuses a connection the user cannot see.
 - Migration: backfill gives one connection per embedder and judge with the same owner and teams;
   dual read prefers the connection; a consumer with both reads the connection.
 - Fingerprint: editing a connection's URL changes the embedder fingerprint; editing its secret,
@@ -350,13 +351,13 @@ Still open:
   `LlmProvider` and `EmbedderProvider`, plus Elasticsearch, OpenSearch and Solr), `User#owned_connections`,
   `User#connections_involved_with`, `Team#connections`.
 - A **Connections** page in the sidebar: list, create, edit, delete, a read-only view for a
-  connection shared with you, team sharing, instance-wide connections for administrators, and a
+  connection shared with you, team sharing, communal connections for administrators, and a
   **Check connection** button that works on the unsaved form.
-- Only the owner changes a connection (an administrator for an instance-wide one). A team member can
+- Only the owner changes a connection (an administrator for a communal one). A team member can
   use and see it, but not read the secret, change its URL, or check it with the saved secret: all
   three would let them send the owner's key somewhere else. This is stricter than embedders, which
   any team member can edit.
-- Deleting a user deletes their connections. Unlinking them would make them instance-wide.
+- Deleting a user deletes their connections. Unlinking them would make them communal.
 
 - **Embedders use a connection.** `embedders.connection_id` is optional in the database. The embedder
   form no longer has URL, key or timeout fields: they come from the connection chosen in a
@@ -369,7 +370,7 @@ Still open:
   branch had not shipped to users yet, so the staged rollout §3 describes for a live consumer
   wasn't needed here. `BackfillConnectionsFromEmbedders` gave every embedder with its own
   settings a connection (one per distinct owner/service/URL/key, reusing it where several
-  embedders matched; an ownerless embedder got an instance-wide connection rather than being
+  embedders matched; an ownerless embedder got a communal connection rather than being
   skipped, since there was no deprecation period keeping its columns around as a fallback), and
   `RemoveLegacyColumnsFromEmbedders` then dropped `service_url`, `api_key` and `timeout` from
   `embedders` in the same pass. The model's dual-read fallback, the form's "old, deprecated

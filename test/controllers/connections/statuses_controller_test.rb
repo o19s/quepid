@@ -84,7 +84,7 @@ module Connections
       assert_not_requested :get, /ollama/
     end
 
-    test 'an instance-wide connection can be asked by anyone' do
+    test 'a communal connection can be asked by anyone' do
       stub_request(:get, 'http://elasticsearch:9200').to_return(status: 200, body: '{}')
 
       get connection_status_url(connections(:instance_elasticsearch)), as: :json

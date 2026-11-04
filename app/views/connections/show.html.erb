@@ -19,7 +19,7 @@
         </dd>
         <dt class="col-sm-3">Owner</dt>
         <dd class="col-sm-9">
-          <%= @connection.instance_wide? ? 'Everyone on this instance' : @connection.owner.fullname %>
+          <%= @connection.communal? ? 'Communal' : @connection.owner.fullname %>
         </dd>
         <dt class="col-sm-3">Shared with</dt>
         <dd class="col-sm-9"><%= @connection.teams.any? ? @connection.teams.map(&:name).to_sentence : 'No teams' %></dd>
