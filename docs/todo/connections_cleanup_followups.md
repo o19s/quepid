@@ -16,20 +16,6 @@ Ratings appear as `P2 I3 C1` beside each item, same scale as [todo.md](todo.md):
 | **I — Simplification impact** (higher is more benefit) | Little or no code reduction | Local simplification | Removes duplication or complexity across several paths | Substantial reduction in wrappers, code, or maintenance burden |
 | **C — Complexity / risk** (lower is easier and safer) | Trivial, isolated edit | Small change with limited regression risk | Several interacting paths or meaningful behavioral risk | Broad change, sensitive data/security contracts, or unresolved design decisions |
 
-### P2 I2 C2 — `apply_team_ids` is the same method, copy-pasted three times
-
-`EmbeddersController#apply_team_ids`, `AiJudgesController#apply_team_ids` and
-`ConnectionsController#apply_team_ids` all do the identical "only touch teams the submitting user
-belongs to" dance (kept vs. selected, filtered by the user's own `current_user.teams`), each with
-a comment pointing at one of the others ("Same rule as X#apply_team_ids") acknowledging the
-duplication rather than fixing it. No shared concern exists for any of the three.
-`ConnectionsController` layers a communal-connection early-return (clear teams outright) on top
-of the same base logic.
-
-Fix: extract a small controller concern (e.g. `TeamAssignable`) providing
-`apply_team_ids(record, team_ids)` against `current_user`, included by all three controllers.
-`ConnectionsController`'s communal early-return can stay a one-line override.
-
 ### P3 I1 C2 — `check(event)` Stimulus actions share a boilerplate skeleton
 
 `connection_form_controller.js#check` and `embedder_form_controller.js#check` both: build

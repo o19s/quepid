@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 class EmbeddersController < ApplicationController
+  include TeamAssignable
+
   before_action :set_team, only: [ :new, :clone ]
   before_action :set_embedder, only: [ :show, :edit, :update, :destroy, :clone ]
 
@@ -72,17 +74,6 @@ class EmbeddersController < ApplicationController
 
     redirect_to embedders_path,
                 notice: "The embedder you are looking for either doesn't exist or you don't have permissions."
-  end
-
-  # Only touch teams the current user can see, so saving can't unshare the embedder from a
-  # team the submitting user isn't a member of. Same rule as AiJudgesController#apply_team_ids.
-  def apply_team_ids embedder, team_ids
-    user_teams = current_user.teams.to_a
-    selected_ids = Array(team_ids).compact_blank.map(&:to_i)
-
-    kept_teams = embedder.teams.reject { |t| user_teams.any? { |ut| ut.id == t.id } }
-    selected_teams = user_teams.select { |t| selected_ids.include?(t.id) }
-    embedder.teams.replace(kept_teams | selected_teams)
   end
 
   def embedder_params

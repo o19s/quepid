@@ -5,6 +5,8 @@
 # because using a connection discloses its secret to the external service, and changing its URL
 # could send that secret somewhere else.
 class ConnectionsController < ApplicationController
+  include TeamAssignable
+
   before_action :set_team, only: [ :new ]
   before_action :set_connection, only: [ :show, :edit, :update, :destroy ]
   before_action :require_manageable, only: [ :edit, :update, :destroy ]
@@ -93,17 +95,11 @@ class ConnectionsController < ApplicationController
     current_user.administrator? && ActiveModel::Type::Boolean.new.cast(params.dig(:connection, :communal))
   end
 
-  # Only touch teams the current user can see, so saving can't unshare the connection from a
-  # team the submitting user isn't a member of. Same rule as EmbeddersController#apply_team_ids.
+  # A communal connection belongs to everyone, so it isn't scoped to any team.
   def apply_team_ids connection, team_ids
     return connection.teams.clear if connection.communal?
 
-    user_teams = current_user.teams.to_a
-    selected_ids = Array(team_ids).compact_blank.map(&:to_i)
-
-    kept_teams = connection.teams.reject { |t| user_teams.any? { |ut| ut.id == t.id } }
-    selected_teams = user_teams.select { |t| selected_ids.include?(t.id) }
-    connection.teams.replace(kept_teams | selected_teams)
+    super
   end
 
   # The form never shows the saved secret, so a blank or masked one means "keep it".

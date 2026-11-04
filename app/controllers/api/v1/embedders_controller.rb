@@ -4,6 +4,8 @@ module Api
   module V1
     # @tags embedders
     class EmbeddersController < Api::ApiController
+      include TeamAssignable
+
       before_action :set_embedder, only: [ :show, :update, :destroy ]
 
       # @parameter archived(query) [Boolean] Whether to list archived embedders instead of active ones.
@@ -86,15 +88,6 @@ module Api
 
       def set_embedder
         @embedder = current_user.embedders_involved_with.find(params.expect(:id))
-      end
-
-      # Only teams the current user belongs to are added or removed; others are kept.
-      def apply_team_ids embedder, team_ids
-        user_team_ids = current_user.teams.pluck(:id)
-        selected = Array(team_ids).compact_blank.map(&:to_i) & user_team_ids
-        kept = embedder.team_ids - user_team_ids
-
-        embedder.team_ids = kept | selected
       end
 
       def embedder_params
