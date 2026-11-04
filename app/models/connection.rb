@@ -6,9 +6,9 @@
 # task (a model, a prompt, a vector size) stay on the thing that does the task. See ADR 0005.
 #
 # Owned by a user and shared with teams, like a SearchEndpoint or Embedder. Using a connection
-# spends its owner's secret, so only the owner can change it -- someone it is shared with can use
-# it but never read it, and can't point it at a server of their own. A connection with no owner is
-# communal: everyone can use it and administrators manage it.
+# discloses its owner's secret to the external service, so only the owner can change it -- someone
+# it is shared with can use it but never read it, and can't point it at a server of their own. A
+# connection with no owner is communal: everyone can use it and administrators manage it.
 # == Schema Information
 #
 # Table name: connections
@@ -66,7 +66,9 @@ class Connection < ApplicationRecord
 
   belongs_to :owner, class_name: 'User', optional: true
 
-  # Deleting a connection unlinks the embedders on it; the UI refuses to while any use it.
+  # Nullify, not restrict: deleting the owner must always destroy their connections (see
+  # User#owned_connections), which cascades here. The controller is what refuses an interactive
+  # delete while an embedder still uses the connection.
   has_many :embedders, dependent: :nullify, inverse_of: :connection
 
   include ForUserScope

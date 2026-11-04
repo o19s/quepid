@@ -2,8 +2,8 @@
 
 # Manage the connections to external services (ADR 0005). Anyone who can use a connection can see
 # it; only its owner (or, for a communal one, an administrator) can change or delete it,
-# because using a connection spends its secret and changing its URL could send that secret
-# somewhere else.
+# because using a connection discloses its secret to the external service, and changing its URL
+# could send that secret somewhere else.
 class ConnectionsController < ApplicationController
   before_action :set_team, only: [ :new ]
   before_action :set_connection, only: [ :show, :edit, :update, :destroy ]
