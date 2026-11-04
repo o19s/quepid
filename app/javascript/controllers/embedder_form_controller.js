@@ -1,6 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
-import { apiFetch } from "api/fetch"
-import { setButtonLoading } from "utils/button_loading"
+import { element } from "utils/dom"
+import { runCheck } from "utils/run_check"
 
 // Embedder form (app/views/embedders/_form.html.erb): shows only the fields the chosen
 // provider can use, fills in its defaults when the provider changes, and runs the Check connection
@@ -147,45 +147,24 @@ export default class extends Controller {
     data.delete("_method")
     data.set("text", this.checkTextTarget.value)
 
-    setButtonLoading(this.checkButtonTarget, true)
-    this.checkResultTarget.replaceChildren()
-
-    try {
-      const response = await apiFetch(this.checkUrlValue, {
-        method: "POST",
-        headers: { Accept: "application/json" },
-        body: data
-      })
-      const result = await response.json()
-      if (!response.ok) throw new Error(result.error || `Request failed (${response.status})`)
-
-      const preview = result.preview.map((value) => value.toFixed(5)).join(", ")
-      const sent = element("code", { className: "text-break", text: result.input })
-      sent.style.whiteSpace = "pre-wrap"
-      this.checkResultTarget.replaceChildren(
-        element("div", { className: "alert alert-success small mb-0" }, [
-          element("div", {}, [
-            element("strong", { text: `${result.dimensions} dimensions` }),
-            ` in ${result.elapsed_ms} ms`
-          ]),
-          element("div", {}, ["Sent: ", sent]),
-          element("div", {}, ["Vector: ", element("code", { text: `[${preview}, …]` })])
-        ])
-      )
-    } catch (error) {
-      this.checkResultTarget.replaceChildren(
-        element("div", { className: "alert alert-danger small mb-0", text: error.message })
-      )
-    } finally {
-      setButtonLoading(this.checkButtonTarget, false)
-    }
+    await runCheck(this.checkUrlValue, data, {
+      checkResultTarget: this.checkResultTarget,
+      checkButtonTarget:  this.checkButtonTarget,
+      onSuccess:          (result, checkResultTarget) => {
+        const preview = result.preview.map((value) => value.toFixed(5)).join(", ")
+        const sent = element("code", { className: "text-break", text: result.input })
+        sent.style.whiteSpace = "pre-wrap"
+        checkResultTarget.replaceChildren(
+          element("div", { className: "alert alert-success small mb-0" }, [
+            element("div", {}, [
+              element("strong", { text: `${result.dimensions} dimensions` }),
+              ` in ${result.elapsed_ms} ms`
+            ]),
+            element("div", {}, ["Sent: ", sent]),
+            element("div", {}, ["Vector: ", element("code", { text: `[${preview}, …]` })])
+          ])
+        )
+      }
+    })
   }
-}
-
-function element(tag, { className, text } = {}, children = []) {
-  const node = document.createElement(tag)
-  if (className) node.className = className
-  if (text !== undefined) node.textContent = text
-  node.append(...children)
-  return node
 }

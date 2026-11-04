@@ -16,28 +16,14 @@ Ratings appear as `P2 I3 C1` beside each item, same scale as [todo.md](todo.md):
 | **I — Simplification impact** (higher is more benefit) | Little or no code reduction | Local simplification | Removes duplication or complexity across several paths | Substantial reduction in wrappers, code, or maintenance burden |
 | **C — Complexity / risk** (lower is easier and safer) | Trivial, isolated edit | Small change with limited regression risk | Several interacting paths or meaningful behavioral risk | Broad change, sensitive data/security contracts, or unresolved design decisions |
 
-### P3 I1 C2 — `check(event)` Stimulus actions share a boilerplate skeleton
-
-`connection_form_controller.js#check` and `embedder_form_controller.js#check` both: build
-`FormData`, strip `_method`, call `setButtonLoading(true)`, clear `checkResultTarget`, `apiFetch`
-POST, parse JSON, throw on `!response.ok`, render success/error into `checkResultTarget`,
-`finally` reset the button. Only the success-rendering body differs (a status-colored alert vs. a
-vector/dimensions preview), so the shared scaffolding — not the whole method — is a real
-~15-line duplication per controller.
-
-Fix: a shared `runCheck(checkUrl, formData, { checkResultTarget, checkButtonTarget, onSuccess })`
-helper (alongside the already-extracted `app/javascript/utils/button_loading.js`), taking only
-the result-rendering as a callback. Skipped during the `/simplify` pass because the
-result-rendering genuinely differs and a shared-skeleton refactor on a live "Check connection"
-feature deserves its own look, not a drive-by.
-
 ### P3 I1 C1 — the service/provider help-panel toggle is duplicated
 
 `connection_form_controller.js#refresh` and `embedder_form_controller.js#refresh` both run the
 identical "show only the help panel whose dataset key matches the selected value" loop, differing
-only in the dataset key (`service` vs. `provider`). Trivial on its own; only worth doing if the
-`check()` extraction above happens anyway and this rides along as a second tiny export from the
-same utils file.
+only in the dataset key (`service` vs. `provider`). Trivial on its own, and now that
+`check()`'s shared scaffolding moved into `app/javascript/utils/run_check.js` and
+`app/javascript/utils/dom.js`, this could ride along as a second tiny export from the same utils
+file.
 
 ### P3 I1 C1 — `Connection`'s two "deferred parse error on a synthetic text field" ivars
 

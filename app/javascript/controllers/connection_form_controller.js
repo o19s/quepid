@@ -1,6 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
-import { apiFetch } from "api/fetch"
-import { setButtonLoading } from "utils/button_loading"
+import { element } from "utils/dom"
+import { runCheck } from "utils/run_check"
 
 // Connection form (app/views/connections/_form.html.erb): fills in a service's defaults when the
 // service changes, shows only the fields the chosen authentication needs, and runs the Check
@@ -73,31 +73,16 @@ export default class extends Controller {
     // The edit form overrides its method to PATCH; the check endpoint is a POST.
     data.delete("_method")
 
-    setButtonLoading(this.checkButtonTarget, true)
-    this.checkResultTarget.replaceChildren()
-
-    try {
-      const response = await apiFetch(this.checkUrlValue, {
-        method: "POST",
-        headers: { Accept: "application/json" },
-        body: data
-      })
-      const result = await response.json()
-      if (!response.ok) throw new Error(result.error || `Request failed (${response.status})`)
-
-      const tone = { ok: "success", reachable: "warning" }[result.status] || "danger"
-      const timing = result.elapsed_ms === null ? "" : ` (${result.elapsed_ms} ms)`
-      const alert = document.createElement("div")
-      alert.className = `alert alert-${tone} small mb-0`
-      alert.textContent = `${result.message}${timing}`
-      this.checkResultTarget.replaceChildren(alert)
-    } catch (error) {
-      const alert = document.createElement("div")
-      alert.className = "alert alert-danger small mb-0"
-      alert.textContent = error.message
-      this.checkResultTarget.replaceChildren(alert)
-    } finally {
-      setButtonLoading(this.checkButtonTarget, false)
-    }
+    await runCheck(this.checkUrlValue, data, {
+      checkResultTarget: this.checkResultTarget,
+      checkButtonTarget:  this.checkButtonTarget,
+      onSuccess:          (result, checkResultTarget) => {
+        const tone = { ok: "success", reachable: "warning" }[result.status] || "danger"
+        const timing = result.elapsed_ms === null ? "" : ` (${result.elapsed_ms} ms)`
+        checkResultTarget.replaceChildren(
+          element("div", { className: `alert alert-${tone} small mb-0`, text: `${result.message}${timing}` })
+        )
+      }
+    })
   }
 }
