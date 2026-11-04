@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_24_233000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_02_124010) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -272,6 +272,29 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_24_233000) do
     t.datetime "updated_at", precision: nil, null: false
     t.float "value"
     t.index ["try_id"], name: "try_id"
+  end
+
+  create_table "devise_invitations", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
+    t.string "invitation_token"
+    t.datetime "invitation_created_at"
+    t.datetime "invitation_sent_at"
+    t.datetime "invitation_accepted_at"
+    t.datetime "superseded_at"
+    t.string "superseded_reason"
+    t.datetime "revoked_at"
+    t.datetime "resource_created_at"
+    t.json "invite_key", null: false
+    t.string "invite_key_digest", null: false
+    t.string "invitable_type"
+    t.bigint "invitable_id"
+    t.string "invited_by_type"
+    t.bigint "invited_by_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["invitable_type", "invitable_id"], name: "index_devise_invitations_on_invitable"
+    t.index ["invitable_type", "invite_key_digest"], name: "index_devise_invitations_on_type_and_invite_key"
+    t.index ["invitation_token"], name: "index_devise_invitations_on_invitation_token", unique: true
+    t.index ["invited_by_type", "invited_by_id"], name: "index_devise_invitations_on_invited_by"
   end
 
   create_table "embedders", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
@@ -844,13 +867,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_24_233000) do
     t.integer "default_scorer_id"
     t.string "email", limit: 80
     t.boolean "email_marketing", default: false, null: false
-    t.datetime "invitation_accepted_at", precision: nil
-    t.datetime "invitation_created_at", precision: nil
     t.integer "invitation_limit"
-    t.datetime "invitation_sent_at", precision: nil
-    t.string "invitation_token"
     t.integer "invitations_count", default: 0
-    t.integer "invited_by_id"
     t.string "llm_key", limit: 4000
     t.boolean "locked"
     t.datetime "locked_at", precision: nil
@@ -870,8 +888,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_24_233000) do
     t.index ["default_scorer_id"], name: "index_users_on_default_scorer_id"
     t.index ["email"], name: "ix_user_username", unique: true
     t.index ["escalates_to_id"], name: "index_users_on_escalates_to_id"
-    t.index ["invitation_token"], name: "index_users_on_invitation_token", unique: true, length: 191
-    t.index ["invited_by_id"], name: "index_users_on_invited_by_id"
     t.index ["name"], name: "index_users_on_name"
     t.index ["owner_id"], name: "index_users_owner_id"
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true, length: 191
@@ -931,6 +947,5 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_24_233000) do
   add_foreign_key "tries", "cases", name: "tries_ibfk_1"
   add_foreign_key "users", "scorers", column: "default_scorer_id"
   add_foreign_key "users", "users", column: "escalates_to_id", on_delete: :nullify
-  add_foreign_key "users", "users", column: "invited_by_id"
   add_foreign_key "web_requests", "snapshot_queries"
 end
