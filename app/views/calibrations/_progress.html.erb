@@ -1,0 +1,25 @@
+<%# locals: (run:) %>
+<% total = run.sample.size %>
+<% answered = run.answered_count %>
+<div id="calibration-progress-<%= run.id %>" class="d-flex align-items-center gap-3 mb-3" data-rendered-at="<%= calibration_rendered_at %>">
+  <%= calibration_status_badge(run) %>
+  <% if run.active? %>
+    <div class="progress flex-grow-1" style="height: 1.25rem;" role="progressbar"
+         aria-valuenow="<%= answered %>" aria-valuemin="0" aria-valuemax="<%= total %>">
+      <div class="progress-bar progress-bar-striped progress-bar-animated"
+           style="width: <%= total.positive? ? (answered * 100 / total) : 0 %>%"></div>
+    </div>
+    <span class="text-muted small text-nowrap"><%= answered %> / <%= total %> pairs</span>
+    <%= button_to 'Cancel', cancel_book_calibration_path(run.book, run), method: :patch,
+                  class: 'btn btn-sm btn-outline-danger' %>
+  <% else %>
+    <span class="text-muted small flex-grow-1"><%= answered %> of <%= total %> pairs answered</span>
+    <% if (run.cancelled? || run.failed?) && answered < total %>
+      <%= button_to 'Resume', resume_book_calibration_path(run.book, run), method: :patch,
+                    class: 'btn btn-sm btn-outline-primary' %>
+    <% end %>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#rerun_modal_<%= run.id %>">
+      <i class="bi bi-sliders" aria-hidden="true"></i> Tune and run again…
+    </button>
+  <% end %>
+</div>
