@@ -7,7 +7,8 @@ import {
   queryParamsMode,
   queryParamsWarning,
   urlBucket,
-  validateNumberOfRows
+  validateNumberOfRows,
+  withoutQdrantLimit
 } from "utils/tune_relevance"
 
 describe("tune relevance utilities", () => {
@@ -33,6 +34,18 @@ describe("tune relevance utilities", () => {
   it("formats valid JSON and rejects invalid JSON", () => {
     expect(formatJson('{"q":"law"}')).toBe('{\n  "q": "law"\n}')
     expect(formatJson("q=law")).toBeNull()
+  })
+
+  it("strips limit out of a Qdrant query so it isn't shown as editable", () => {
+    expect(withoutQdrantLimit('{"query": "#$query##", "limit": 10}')).toBe(
+      '{\n  "query": "#$query##"\n}'
+    )
+  })
+
+  it("leaves query params with no limit key, or that aren't a JSON object, unchanged", () => {
+    expect(withoutQdrantLimit('{"query": "#$query##"}')).toBe('{"query": "#$query##"}')
+    expect(withoutQdrantLimit("q=law")).toBe("q=law")
+    expect(withoutQdrantLimit("")).toBe("")
   })
 
   it("validates the result count bounds", () => {

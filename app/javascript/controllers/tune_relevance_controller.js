@@ -15,7 +15,8 @@ import {
   queryParamsMode,
   queryParamsWarning,
   urlBucket,
-  validateNumberOfRows
+  validateNumberOfRows,
+  withoutQdrantLimit
 } from "utils/tune_relevance"
 import coreFlash from "utils/core_flash"
 import { normalizeSearchEngine, searchEngineLabel } from "utils/search_engines"
@@ -208,9 +209,11 @@ export default class extends Controller {
     const editorShell = this.hasEditorShellTarget ? this.editorShellTarget : null
     if (editorShell) editorShell.hidden = isStatic
     const value = this.settings.queryParams || ""
-    const editorValue = /^[^=&\s]+=/.test(value.trimStart())
-      ? value.replace(/(?<![\r\n])&/g, "\n&")
-      : value
+    const displayValue =
+      this.settings.mapperBasedSearchEngineId === "qdrant" ? withoutQdrantLimit(value) : value
+    const editorValue = /^[^=&\s]+=/.test(displayValue.trimStart())
+      ? displayValue.replace(/(?<![\r\n])&/g, "\n&")
+      : displayValue
     if (this.editor && this.editor.getValue() !== editorValue) {
       this.formattingQueryEditor = true
       try {

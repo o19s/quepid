@@ -272,6 +272,25 @@ describe("TuneRelevanceController", () => {
       }
     )
 
+    it("strips Qdrant's limit from the displayed query but leaves the saved value alone until edited", () => {
+      const { controller, settings } = mount()
+      settings.mapperBasedSearchEngineId = "qdrant"
+      settings.selectedTry.mapperBasedSearchEngineId = "qdrant"
+      settings.selectedTry.queryParams = '{"query": "#$query##", "limit": 10}'
+      const textarea = document.createElement("textarea")
+      controller.element.append(textarea)
+      controller.hasQueryEditorTarget = true
+      controller.queryEditorTarget = textarea
+      controller.mountEditor()
+      try {
+        controller.refreshQueryEditor()
+        expect(controller.editor.getValue()).toBe('{\n  "query": "#$query##"\n}')
+        expect(settings.selectedTry.queryParams).toBe('{"query": "#$query##", "limit": 10}')
+      } finally {
+        controller.editor.view.destroy()
+      }
+    })
+
     it("keeps CodeMirror edits in the selected try when extracting knobs and switching tabs", () => {
       const { controller, settings } = mount()
       const textarea = document.createElement("textarea")

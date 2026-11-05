@@ -137,8 +137,12 @@ class MapperBasedSearchEngine
       # pagination_hits_param/pagination_offset_param would not change that and would
       # actively break search: splainer-search's searchApiSearcherPreprocessorSvc defaults
       # those params as STRINGS ('10'/'0'), and Qdrant's Rust API rejects "limit": "10" with
-      # a deserialization error. The page size is baked into query_params below as a real
-      # integer instead, editable in the Query Sandbox.
+      # a deserialization error. "limit" is instead injected as a real integer from
+      # Try#number_of_rows by the mapper's own requestArgsMapper (see mapper_file below),
+      # called at request-build time both client-side (query_service.js) and server-side
+      # (FetchService, via V8MapperExecutor#apply_request_args_mapper) - and stripped from
+      # what the Query Sandbox shows/lets a user edit (tune_relevance_controller.js). The
+      # literal below is only ever a fallback default for a brand-new try before the first save.
       supports_pagination:        false,
       # A live demo tile, same idea as Vespa's: search_url points at the quepid-tmdb Qdrant
       # Cloud cluster's tmdb collection (restored per docs/endpoints_qdrant.md), so the tile

@@ -51,6 +51,19 @@ docsMapper = function (data) {
   return docs;
 };
 
+// requestArgsMapper - Qdrant's limit can't be driven through pagination_hits_param (see
+// mapper_based_search_engine.rb's Qdrant comment: splainer-search would send it as a string,
+// and Qdrant's Rust API rejects "limit": "10") - so it isn't part of the editable query_params
+// at all (tune_relevance_controller.js strips it from the Query Sandbox). It's injected here
+// instead, as a real integer, from "Number of Results to Show" - called for every outgoing
+// request, client-side (query_service.js's buildSearcherRequest) and server-side (FetchService,
+// via V8MapperExecutor#apply_request_args_mapper).
+requestArgsMapper = function (args, numberOfRows) {
+  const limit = Number(numberOfRows);
+  if (Number.isFinite(limit)) args.limit = limit;
+  return args;
+};
+
 // ratedDocsQueryParamsMapper - Builds a one-off query_params string that looks up exactly the
 // given rated doc IDs, for the "Already Rated Documents" section of the
 // Find-and-Rate-Missing-Documents modal. query_service.js's rated-document lookup has no generic
