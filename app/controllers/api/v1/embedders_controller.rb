@@ -4,6 +4,7 @@ module Api
   module V1
     # @tags embedders
     class EmbeddersController < Api::ApiController
+      include Embedders::ParameterFiltering
       include TeamAssignable
 
       before_action :set_embedder, only: [ :show, :update, :destroy ]
@@ -91,7 +92,7 @@ module Api
       end
 
       def embedder_params
-        params.expect(embedder: [ *Embedder::PERMITTED_PARAMS, :archived, { team_ids: [] } ])
+        params.expect(embedder: [ *embedder_parameter_keys, :archived, { team_ids: [] } ])
       end
     end
   end

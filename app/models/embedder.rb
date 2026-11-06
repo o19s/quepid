@@ -46,10 +46,6 @@ class Embedder < ApplicationRecord
   # long the provider took, in milliseconds.
   CheckResult = Data.define(:input, :dimensions, :preview, :elapsed_ms)
 
-  # Fields the embedder form and API accept; controllers permit this plus their own extras
-  # (e.g. :archived, :team_ids).
-  PERMITTED_PARAMS = [ :name, :provider, :model, :dimensions, :truncation, :instruction, :input_template, :connection_id ].freeze
-
   # Request context only; the owner-access validation still applies when no assigning user is set.
   attr_accessor :connection_assignment_user
 

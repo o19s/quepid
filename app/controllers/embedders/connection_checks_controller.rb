@@ -5,6 +5,8 @@ module Embedders
   # values, saved or not, and reports what came back. Never writes to the database. The key itself
   # is never on this form -- it comes from whichever connection is chosen.
   class ConnectionChecksController < ApplicationController
+    include ParameterFiltering
+
     SAMPLE_TEXT = 'star wars'
 
     def create
@@ -38,7 +40,7 @@ module Embedders
     end
 
     def embedder_params
-      params.expect(embedder: Embedder::PERMITTED_PARAMS)
+      permitted_embedder_params
     end
   end
 end

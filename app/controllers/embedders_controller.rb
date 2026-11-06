@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 class EmbeddersController < ApplicationController
+  include Embedders::ParameterFiltering
   include TeamAssignable
 
   before_action :set_team, only: [ :new, :clone ]
@@ -80,6 +81,6 @@ class EmbeddersController < ApplicationController
   end
 
   def embedder_params
-    params.expect(embedder: Embedder::PERMITTED_PARAMS)
+    permitted_embedder_params
   end
 end
