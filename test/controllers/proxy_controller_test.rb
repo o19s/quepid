@@ -3,6 +3,8 @@
 require 'test_helper'
 
 class ProxyControllerTest < ActionDispatch::IntegrationTest
+  cover 'ProxyController#validate_proxy_url!'
+
   let(:user) { users(:joey) }
 
   # Hostnames used in this file's stubs that don't resolve via real DNS. The proxy's
@@ -394,6 +396,135 @@ class ProxyControllerTest < ActionDispatch::IntegrationTest
       end
 
       assert_response :bad_request
+    end
+  end
+
+  describe 'admin-managed allowlist entries' do
+    def stored_network value
+      ProxyAllowlistEntry.create!(kind: ProxyAllowlistEntry::NETWORK, value: value)
+    end
+
+    def stored_host value
+      ProxyAllowlistEntry.create!(kind: ProxyAllowlistEntry::HOST, value: value)
+    end
+
+    def stub_ok url
+      stub_request(:get, url).to_return(body: '{}', headers: { 'Content-Type' => 'application/json' })
+    end
+
+    test 'are ignored, without querying them, when the flag is off' do
+      stored_network('10.0.5.0/24')
+      queries = []
+      callback = ->(*, payload) { queries << payload[:sql] if payload[:sql].include?('proxy_allowlist_entries') }
+
+      with_proxy_allowlist_admin_managed(false) do
+        ActiveSupport::Notifications.subscribed(callback, 'sql.active_record') do
+          get proxy_fetch_url params: { url: 'http://10.0.5.20/' }
+        end
+      end
+
+      assert_response :bad_request
+      assert_equal 'Proxy URL resolves to a disallowed address', response.parsed_body['proxy_error']
+      assert_empty queries
+    end
+
+    test 'a stored network allows an address inside it when the flag is on' do
+      stored_network('10.0.5.0/24')
+      stub = stub_ok('http://10.0.5.20/')
+
+      with_proxy_allowlist_admin_managed(true) do
+        get proxy_fetch_url params: { url: 'http://10.0.5.20/' }
+      end
+
+      assert_response :success
+      assert_requested stub
+    end
+
+    test 'a stored host resolving to a private address is allowed' do
+      stored_host('search.internal')
+      stub = stub_ok('http://search.internal/_search')
+
+      resolving('search.internal', '10.1.2.3') do
+        with_proxy_allowlist_admin_managed(true) do
+          get proxy_fetch_url params: { url: 'http://search.internal/_search' }
+        end
+      end
+
+      assert_response :success
+      assert_requested stub
+    end
+
+    test 'a stored host resolving to loopback, unspecified or link-local is blocked' do
+      stored_host('search.internal')
+
+      [ '127.0.0.1', '::1', '0.0.0.0', '::', '169.254.169.254', 'fe80::1' ].each do |ip|
+        resolving('search.internal', ip) do
+          with_proxy_allowlist_admin_managed(true) do
+            get proxy_fetch_url params: { url: 'http://search.internal/_search' }
+          end
+        end
+
+        assert_response :bad_request, "expected #{ip} to stay blocked"
+      end
+    end
+
+    test 'stored network rows covering loopback, inserted directly, still cannot reach it' do
+      now = Time.current
+      ProxyAllowlistEntry.insert_all!(%w[127.0.0.0/8 0.0.0.0/8].map { |value| { kind: ProxyAllowlistEntry::NETWORK, value: value, created_at: now, updated_at: now } })
+
+      with_proxy_allowlist_admin_managed(true) do
+        [ 'http://127.0.0.1/', 'http://0.0.0.0:3000/' ].each do |url|
+          get proxy_fetch_url params: { url: url }
+          assert_response :bad_request, url
+        end
+      end
+    end
+
+    test 'an address allowed by ENV stays allowed after the stored entry is deleted' do
+      entry = stored_network('10.0.5.0/24')
+      stub = stub_ok('http://10.0.5.20/')
+
+      with_proxy_allowlist_admin_managed(true) do
+        with_proxy_allowed_networks('10.0.5.0/24') do
+          entry.destroy!
+          get proxy_fetch_url params: { url: 'http://10.0.5.20/' }
+        end
+      end
+
+      assert_response :success
+      assert_requested stub
+    end
+
+    test 'editing a stored network takes effect on the next request' do
+      entry = stored_network('10.0.5.0/24')
+      stub = stub_ok('http://10.0.6.20/')
+
+      with_proxy_allowlist_admin_managed(true) do
+        entry.update!(value: '10.0.6.0/24')
+
+        get proxy_fetch_url params: { url: 'http://10.0.6.20/' }
+        assert_response :success
+
+        get proxy_fetch_url params: { url: 'http://10.0.5.20/' }
+        assert_response :bad_request
+      end
+
+      assert_requested stub
+    end
+
+    test 'an ENV host resolving to loopback is still allowed with the flag on' do
+      stub = stub_ok('http://search.internal/_search')
+
+      resolving('search.internal', '127.0.0.1') do
+        with_proxy_allowlist_admin_managed(true) do
+          with_proxy_allowed_hosts('search.internal') do
+            get proxy_fetch_url params: { url: 'http://search.internal/_search' }
+          end
+        end
+      end
+
+      assert_response :success
+      assert_requested stub
     end
   end
 

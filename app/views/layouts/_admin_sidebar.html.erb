@@ -11,6 +11,11 @@
     <li class="nav-item">
       <%= link_to 'Announcements', admin_announcements_path, class: "nav-link rounded-0 py-2 px-3 border-bottom #{'active' if request.path.start_with?(admin_announcements_path)}" %>
     </li>
+    <% if Rails.application.config.proxy_allowlist_admin_managed %>
+      <li class="nav-item">
+        <%= link_to 'Proxy Allowlist', admin_proxy_allowlist_entries_path, class: "nav-link rounded-0 py-2 px-3 border-bottom #{'active' if request.path.start_with?(admin_proxy_allowlist_entries_path)}" %>
+      </li>
+    <% end %>
     <li class="nav-item">
       <%= link_to 'Websocket Tester', admin_websocket_tester_index_path, class: "nav-link rounded-0 py-2 px-3 border-bottom #{'active' if current_page?(admin_websocket_tester_index_path)}" %>
     </li>

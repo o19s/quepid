@@ -1411,6 +1411,24 @@ addresses, but link-local addresses stay blocked.
 
 Invalid entries in either variable are ignored with a warning in the Rails log.
 
+To manage additional entries without a restart, set
+`PROXY_ALLOWLIST_ADMIN_MANAGED=true` and restart once. Quepid administrators
+then get a Proxy Allowlist page in the admin area, where they can add, edit and
+remove networks and hostnames. These entries are additive: they widen the ENV
+lists and never remove or override an ENV entry, which the page lists
+read-only. They also have hard limits that ENV entries do not: they can never
+reach loopback (including `0.0.0.0`) or link-local addresses (including cloud
+metadata), and networks
+broader than /16 (IPv4) or /48 (IPv6) are refused, so use
+`PROXY_ALLOWED_NETWORKS` for anything wider. Changes apply to the next proxied
+request. Each entry records who added it and who last changed it, and every
+add, edit and remove is written to the Rails log. Entries apply to every
+logged-in user's proxy requests, and the first account to sign up becomes an
+administrator, so only enable the flag once your administrator accounts exist.
+Turning the flag off ignores stored entries without deleting them. The
+development `docker-compose.yml` turns the flag on so the end-to-end tests cover
+the page.
+
 ## Seed Data
 
 The following accounts are created through the `bin/setup_docker` process. They all follow the following format:

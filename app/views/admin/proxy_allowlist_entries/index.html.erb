@@ -1,0 +1,95 @@
+<%= page_header "Proxy Allowlist" do %>
+  <div class="btn-toolbar mb-2 mb-md-0">
+    <%= page_create_button 'New Allowlist Entry', new_admin_proxy_allowlist_entry_path %>
+  </div>
+<% end %>
+
+<div class="alert alert-warning" role="alert">
+  Entries added here let <strong>every logged-in user's</strong> proxy requests reach these internal networks and hosts.
+  They add to the ENV lists and can never reach loopback (including 0.0.0.0) or link-local addresses; networks broader than /16 (IPv4) or /48 (IPv6) are refused.
+  See <%= link_to 'Proxying to internal search engines', 'https://github.com/o19s/quepid/blob/main/DEVELOPER_GUIDE.md#proxying-to-internal-search-engines', target: '_blank', rel: 'noopener' %>.
+</div>
+
+<div class="card mb-3" id="env-entries">
+  <div class="card-header">From ENV (read-only)</div>
+  <div class="card-body">
+    <% if @env_networks.empty? && @env_hosts.empty? %>
+      <p class="text-muted mb-0">No entries in <code>PROXY_ALLOWED_NETWORKS</code> or <code>PROXY_ALLOWED_HOSTS</code>.</p>
+    <% else %>
+      <div class="table-responsive">
+        <table class="table table-sm mb-0">
+          <thead>
+            <tr>
+              <th>Kind</th>
+              <th>Value</th>
+              <th>Source</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @env_networks.each do |network| %>
+              <tr>
+                <td>network</td>
+                <td><code><%= "#{network}/#{network.prefix}" %></code></td>
+                <td><code>PROXY_ALLOWED_NETWORKS</code></td>
+              </tr>
+            <% end %>
+            <% @env_hosts.each do |host| %>
+              <tr>
+                <td>host</td>
+                <td><code><%= host %></code></td>
+                <td><code>PROXY_ALLOWED_HOSTS</code></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<div class="card" id="managed-entries">
+  <div class="card-header">Managed here</div>
+  <div class="card-body">
+    <% if @entries.empty? %>
+      <p class="text-muted mb-0">No entries yet. Add one with the New Allowlist Entry button above.</p>
+    <% else %>
+      <div class="table-responsive">
+        <table class="table table-hover table-sm mb-0">
+          <thead>
+            <tr>
+              <th>Kind</th>
+              <th>Value</th>
+              <th>Note</th>
+              <th>Added</th>
+              <th>Last changed</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @entries.each do |entry| %>
+              <tr id="<%= dom_id(entry) %>">
+                <td><%= entry.kind %></td>
+                <td><code><%= entry.value %></code></td>
+                <td><%= entry.note %></td>
+                <td>
+                  <%= entry.created_by&.email || 'unknown' %><br>
+                  <span class="text-muted small"><%= entry.created_at.strftime("%B %d %Y, %l:%M%P") %></span>
+                </td>
+                <td>
+                  <%= entry.updated_by&.email || 'unknown' %><br>
+                  <span class="text-muted small"><%= entry.updated_at.strftime("%B %d %Y, %l:%M%P") %></span>
+                </td>
+                <td class="text-nowrap">
+                  <div class="d-flex gap-2 align-items-center">
+                    <%= link_to 'Edit', edit_admin_proxy_allowlist_entry_path(entry) %>
+                    <%= button_to 'Delete', admin_proxy_allowlist_entry_path(entry), method: :delete, class: 'btn btn-sm btn-outline-danger', form: { data: { turbo_confirm: "Remove #{entry.value} from the proxy allowlist?" } } %>
+                  </div>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% end %>
+  </div>
+</div>
