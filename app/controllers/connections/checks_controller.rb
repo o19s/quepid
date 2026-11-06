@@ -8,6 +8,8 @@ module Connections
   # "use the saved one" -- but only for someone who can manage that connection: a check sends the
   # secret to whatever URL the form holds, so anyone else could aim it at a server of their own.
   class ChecksController < ApplicationController
+    include ParameterFiltering
+
     def create
       connection = build_connection
       return head(:not_found) if connection.nil?
@@ -43,7 +45,7 @@ module Connections
     end
 
     def connection_params
-      params.expect(connection: Connection::PERMITTED_PARAMS)
+      permitted_connection_params
     end
   end
 end

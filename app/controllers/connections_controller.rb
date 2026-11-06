@@ -3,6 +3,8 @@
 # Manage reusable connections. Private connections are owner-managed; administrators manage
 # instance-wide ones. Team members use configured embedders without receiving connection access.
 class ConnectionsController < ApplicationController
+  include Connections::ParameterFiltering
+
   before_action :set_connection, only: [ :show, :edit, :update, :destroy ]
   before_action :require_manageable, only: [ :edit, :update, :destroy ]
 
@@ -81,7 +83,7 @@ class ConnectionsController < ApplicationController
 
   # The form never shows the saved secret, so a blank or masked one means "keep it".
   def connection_params
-    permitted = params.expect(connection: Connection::PERMITTED_PARAMS)
+    permitted = permitted_connection_params
     permitted = permitted.except(:secret) if @connection&.persisted? && Connection.keep_existing_secret?(permitted[:secret])
     permitted
   end

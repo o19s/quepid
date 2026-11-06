@@ -50,11 +50,6 @@ class Connection < ApplicationRecord
   # Shown in the form and the API instead of the secret itself.
   MASKED_SECRET = '******'
 
-  # Fields the connection form accepts; instance-wide availability is handled separately on creation.
-  PERMITTED_PARAMS = [ :name, :provider, :base_url, :auth_scheme, :auth_header, :secret, :timeout,
-                       :requests_per_minute, :api_version, :extra_headers_text,
-                       :retry_max, :retry_statuses_text, :retry_interval ].freeze
-
   # What a check found. status is :ok (the provider accepted the credentials), :reachable (it
   # answered, but the check can't tell whether the credentials work), :rejected (401 or 403) or
   # :unreachable (no answer). http_status is nil for the last.
