@@ -230,6 +230,7 @@ Rails.application.routes.draw do
     end
 
     resources :announcements, except: [ :show ]
+    resources :proxy_allowlist_entries, except: [ :show ]
     resources :websocket_tester, only: [ :index ] do
       post 'test_background_job', on: :collection
     end

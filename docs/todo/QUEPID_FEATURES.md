@@ -1110,6 +1110,7 @@ Used for:
 | REQUIRE_PROXY_FOR_ALL_SEARCH_ENDPOINTS | false | Require `proxy_requests` on every search endpoint (also forced by desktop mode); existing endpoints are only warned about |
 | QUEPID_DESKTOP_MODE | false | Desktop mode (`QUEPID_DESKTOP_USER_ID` / `_NAME` identify the single user) |
 | REQUIRE_PROXY_WITH_BASIC_AUTH_CREDENTIALS | false | Require `proxy_requests` for endpoints with basic-auth credentials and hide those credentials from API responses |
+| PROXY_ALLOWLIST_ADMIN_MANAGED | false | Let administrators add proxy allowlist entries in the admin area, on top of `PROXY_ALLOWED_NETWORKS` / `PROXY_ALLOWED_HOSTS` (never loopback or link-local; networks no broader than /16 or /48) |
 | OPENID_CONNECT_BASE_URL / _CLIENT_ID / _CLIENT_SECRET / _ISSUER / _BUTTON_TEXT | empty (button text: "Sign in with OpenID Connect") | Generic OpenID Connect login; the first four are all required |
 | OLLAMA_SERVICE_URL | `http://ollama:11434` (production), `http://ollama:31434` (other environments) | Ollama endpoint for local LLM features |
 | QUEPID_CONSIDER_ALL_REQUESTS_LOCAL | unset | When set (any value), production shows full error reports (`consider_all_requests_local`) |

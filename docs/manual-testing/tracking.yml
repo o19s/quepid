@@ -144,9 +144,9 @@ parts:
           authenticated-dashboard: "1.2/authenticated-dashboard"
           login-error: "1.2/login-error"
           login-form: "1.2/login-form"
-        last_run: 2026-10-20T19:57:32Z
+        last_run: 2026-11-05T22:43:42Z
         result: pass
-        notes: "Covered live via Playwright MCP on Current :3000: wrong-password generic error, seeded login, GET /logout 404 with session retained, hover retains session, and native POST/_method=delete logout from management and core returns 303 to sign-in. Logout screenshot inspected and Current refreshed. Not covered live: lockout/locked-account edges or diff-baseline replay."
+        notes: "Covered live on Current :3000 as quepid+admin: wrong password returns 422 with the generic Unknown email/password message; valid login lands on /; GET /logout returns 404 and the session stays active; account-menu Log out (POST _method=delete, data-turbo=false) returns to /sessions/new. Not covered: logout from core, rapid failed-login lockout."
         paths: ["app/controllers/sessions_controller.rb", "app/views/sessions/", "app/views/shared/_account_dropdown.html.erb", "app/views/layouts/_sidebar.html.erb", "app/views/layouts/_sidebar_item.html.erb", "config/routes.rb", "app/views/layouts/application.html.erb"]
       "1.3":
         title: "OAuth login"
@@ -237,9 +237,9 @@ parts:
         title: "Health check"
         screenshots:
           healthcheck: "1.11/healthcheck"
-        last_run: 2026-10-14T23:41:05Z
+        last_run: 2026-11-05T22:43:42Z
         result: pass
-        notes: "Covered live: unauthenticated Current :3000 /healthcheck returns HTTP 200 and the green Rails health page; full-viewport image inspected and registered, retaining Previous/Legacy. Not covered live: database-down probe or Base/Legacy replay in this pass."
+        notes: "Covered live on Current :3000: /healthcheck returns 200 logged out. Not covered: database-down probe."
         paths: ["config/routes.rb"]
 
   "02":
@@ -1047,10 +1047,10 @@ parts:
           proxy-invalid-scheme: "7.11/proxy-invalid-scheme"
           proxy-loopback: "7.11/proxy-loopback"
           proxy-public: "7.11/proxy-public"
-        last_run: 2026-10-15T02:40:36Z
+        last_run: 2026-11-05T22:45:39Z
         result: pass
-        notes: "Authenticated live proxy: public Solr GET returned200 with docs; 127.0.0.1, localhost,10/172.16/192.168,link-local,IPv6 fc00 and ::1 returned400/disallowed-address; file/ftp and unresolvable hostname returned400/Invalid proxy URL. Three captures inspected/registered. Same run core searches already used real proxied endpoint. Credential attachment/non-leak network inspection and public-hostname\u2192private-IP fixture pending."
-        paths: ["app/controllers/proxy_controller.rb"]
+        notes: "Covered live on Current :3000 via authenticated /proxy/fetch: public Solr 200; 127.0.0.1, localhost, 0.0.0.0, 10/172.16/192.168, 169.254.169.254, fc00::1, IPv4-mapped ::ffff:10.0.0.5 and the keycloak Docker IP 400 disallowed-address; file, ftp and an unresolvable host 400 Invalid proxy URL. With PROXY_ALLOWLIST_ADMIN_MANAGED on: keycloak 172.18.0.2 blocked, then allowed after a disposable admin added it, still allowed after a rejected edit to 127.0.0.1, blocked after editing to 172.18.0.3/32, allowed after editing back, still allowed after its creator was deleted, blocked after the entry was deleted; no restarts. Not covered live: PROXY_ALLOWED_* restarts, flag-off restart, admin host resolving to loopback (Rails tests only), credential attachment."
+        paths: ["app/controllers/proxy_controller.rb", "app/services/proxy_allowlist.rb", "app/models/proxy_allowlist_entry.rb", "config/initializers/customize_quepid.rb"]
 
       "7.12":
         title: "Qdrant preset: case creation, search and rated-document lookup"
@@ -1844,17 +1844,17 @@ parts:
         title: "Admin access gating"
         screenshots:
           denied: "14.1/denied"
-        last_run: 2026-10-15T05:17:09Z
+        last_run: 2026-11-05T21:55:09Z
         result: pass
-        notes: "Current refresh: nonadmin Run has no Admin Home link. /admin redirects home with inline You must be a Quepid Administrator alert; users/announcements/websocket_tester direct requests302home. Mounted jobs/blazer/rails_pulse/requests return404. Denied capture inspected and registered. Unrelated pre-existing live announcement preserved."
-        paths: ["app/controllers/admin/admin_controller.rb", "app/controllers/admin/websocket_tester_controller.rb", "app/views/layouts/_header.html.erb", "app/assets/stylesheets/base.css", "build_css.js"]
+        notes: "Covered live on Current :3000 as nonadmin quepid+es: no Admin Home link; /admin, users, announcements, websocket_tester, proxy_allowlist_entries and proxy_allowlist_entries/new all redirect home, and /admin/proxy_allowlist_entries shows the inline You must be a Quepid Administrator alert. Not covered: mounted engines this pass."
+        paths: ["app/controllers/admin/admin_controller.rb", "app/controllers/admin/websocket_tester_controller.rb", "app/controllers/admin/proxy_allowlist_entries_controller.rb", "app/views/layouts/_header.html.erb", "app/assets/stylesheets/base.css", "build_css.js"]
       "14.2":
         title: "Admin Home dashboard"
         screenshots:
           home: "14.2/home"
-        last_run: 2026-10-26T12:19:39Z
+        last_run: 2026-11-05T22:44:21Z
         result: pass
-        notes: "branch-ui-diff sweep for the Stylelint/CSS-variable change (CSS only): Current :3000 vs diff baseline :3003 at 7c27a90e on a fresh copy of the dev database, 1280x900 unless noted; captures in .playwright-mcp/branch-ui-diff-stylelint/, not recorded in screen history. Covered as quepid+admin: /admin home cards; pixel-identical. Not covered: following each link."
+        notes: "Covered live on Current :3000 as quepid+admin with PROXY_ALLOWLIST_ADMIN_MANAGED on: three cards (Managing Quepid: Users, Announcements; Analytics: SQL Analytics; Background Jobs: Job Manager, Websocket Tester, Rails Pulse), every card link returns 200, and the sidebar lists Proxy Allowlist between Announcements and Websocket Tester. Not covered: flag-off sidebar (Rails test only)."
         paths: ["app/controllers/admin/home_controller.rb", "app/views/admin/home/index.html.erb", "app/views/layouts/_admin_sidebar.html.erb", "build_css.js", "app/assets/stylesheets/application-overrides.css", "app/assets/stylesheets/fonts.css", "app/assets/stylesheets/navbar-brand.css", "app/views/layouts/application.html.erb", "app/views/layouts/_admin_sidebar_styles.html.erb"]
       "14.3":
         title: "User management — list & search"
@@ -1910,9 +1910,9 @@ parts:
           annotation-restricted: "14.8/annotation-restricted"
           deleted: "14.8/deleted"
           delete-confirm: "14.8/delete-confirm"
-        last_run: 2026-10-15T12:07:21Z
-        result: pass_with_fixes
-        notes: "Approved follow-up: block author deletion, preserve notes/score history. Live admin DELETE on disposable8876 returns422 Edit with annotations restriction, not foreign-key error. Self-service1.9 also422/session retained. DB verifies same user/privatecase3414/query/note020/score031 remain after both attempts; guarded cleanup then removes only fixtures and preserves unrelated IDs.63model/account/admin tests249assertions pass; Ruby lint clean. Restriction capture inspected/registered; prior successful deletion/shared-resource coverage retained. Earlier annotation-destruction discrepancy resolved under explicit user policy; no new historical deletion replay."
+        last_run: 2026-11-05T22:45:39Z
+        result: pass
+        notes: "Covered live on Current :3000 as quepid+admin: disposable admin allowlist-disposable@example.com (1044838995, created via 14.12 form, owned only a proxy allowlist entry) deleted from its Edit page; confirm modal read Are you sure you want to delete this User?; redirected to /admin/users with User account was successfully deleted., show page 404; their proxy allowlist entry survived with Added by unknown and Last changed still quepid+admin. Not covered: judgement-restricted user, case/team owner, annotation author edge cases."
         paths: ["app/controllers/admin/users_controller.rb", "app/views/admin/users/edit.html.erb", "app/models/concerns/text_search.rb", "app/services/csv_export.rb", "app/javascript/application.js", "app/javascript/controllers/confirm_dialog_controller.js", "app/views/shared/_confirm_modal.html.erb", "app/models/user.rb", "app/models/annotation.rb"]
       "14.9":
         title: "Announcements"
@@ -1972,6 +1972,12 @@ parts:
         result: pass
         notes: "Partial Ruby/gem update MCP sample on Current :3000 as realisticactivity administrator: Rails Pulse 0.5 dashboard and Requests load after the additive events migration; Requests includes the just-visited homepage with status200 and timing. Dashboard screenshot inspected and refreshed. Dashboard has no aggregated request summaries yet; summary generation, job details and retention cleanup not driven live. Fourteen integration/authorization/migration tests pass, including upgrade, fresh install, rollback/replay, dashboard, request/job recording, normalized SQL and cleanup."
         paths: ["config/initializers/rails_pulse.rb", "config/recurring.yml", "config/routes.rb", "app/views/admin/home/index.html.erb", "db/migrate/20261005192545_install_rails_pulse_tables.rb", "db/rails_pulse_schema.rb", "db/migrate/20261024233000_create_rails_pulse_events.rb", "Gemfile.lock", "config/initializers/postgresql_schema_compatibility.rb"]
+      "14.14":
+        title: "Proxy allowlist entries"
+        last_run: 2026-11-05T22:45:39Z
+        result: pass
+        notes: "Covered live on Current :3000 with the flag on: disposable admin allowlist-disposable@example.com added 172.18.0.2 (normalized to /32) with a note, shown with their email under Added and Last changed; as quepid+admin, adds of 10.0.0.0/8 (/16 message), 0.0.0.0/16 and 169.254.169.254 (loopback/link-local message), 10.0.0.0/99 (invalid CIDR), host *.internal (not a plain hostname) and a duplicate (already taken) all 422; an edit to 127.0.0.1 was 422 and left the entry unchanged; editing value and note through the form updated both and set Last changed to quepid+admin while Added stayed with the disposable admin; deleted through the confirm modal. One [proxy_allowlist] log line per create, update (old -> new) and delete. Not covered live: flag-off 404 and hidden link, populated ENV section (Rails tests). Two unrelated entries (10.20.5.0/24, fd00::/48) from another session were left untouched."
+        paths: ["app/controllers/admin/proxy_allowlist_entries_controller.rb", "app/views/admin/proxy_allowlist_entries/", "app/models/proxy_allowlist_entry.rb", "app/services/proxy_allowlist.rb", "app/views/layouts/_admin_sidebar.html.erb", "db/migrate/20261105120000_create_proxy_allowlist_entries.rb", "test/playwright/admin.spec.ts"]
 
   "15":
     file: 15-global-navigation-and-notebooks.md
@@ -2274,9 +2280,9 @@ parts:
         paths: ["test/playwright/screenshot-viewer.html", "test/playwright/generate-screenshot-manifest.mjs", "test/playwright/screenshot-viewer-server.mjs", "test/playwright/screen-history.mjs", "test/playwright/record-screenshot.mjs", "test/playwright/screen-history.test.mjs", "test/playwright/png-diff.mjs", "test/playwright/screenshot-tracker.mjs", "test/playwright/screenshot-dependencies.mjs", "test/playwright/screenshot-status.mjs", "test/playwright/screenshot-reviews.mjs", "test/playwright/capture-registry.mjs", "test/playwright/capture-recipes.mjs", "test/playwright/capture-screenshot.mjs", "test/playwright/capture-jobs.mjs", "test/playwright/capture-recipes.test.mjs", "test/playwright/capture-options.mjs", "test/playwright/capture-claude.mjs", "test/playwright/capture-agent.md", "test/playwright/capture-claude.test.mjs"]
       "17.12":
         title: "Routine visual regression suite"
-        last_run: 2026-10-24T15:26:00Z
-        result: pass
-        notes: "yarn test:visual 6 passed after updating the three affected tests' baselines (core workspace and widgets, Rails forms and empty lists, narrow core and Rails form; 14 PNGs). Each regenerated PNG was pixel-diffed against HEAD and inspected: all changes come from intended UI changes (-- instead of Unrated as in Legacy, visually hidden .score-state shifting rows, footer padding, unified header recents, outlined modal Cancel buttons, book form matching main). Nothing unexpected."
+        last_run: 2026-11-06T14:56:11Z
+        result: fail
+        notes: "Pre-existing failure, not from branch admin-managed-proxy-allowlist. Verified 2026-11-06: yarn test:visual on the :3003 baseline at merge-base 563d2f54 (fresh dev DB copy) and on this branch on Current :3000 both fail the same three captures with identical diffs: core-workspace 4282 px (case toolbar icons), rails-team-form 6185 px (left nav-rail icons) and narrow-core 4182 px. Baselines date from 8d4fc1cd (2026-10-24), so this is drift on main since then. The admin test passes on both: the branch updated admin-home and admin-user-form for the new Proxy Allowlist sidebar link (only that change, inspected). wizard and admin tests pass. Not done: re-baselining the three failing captures, which needs its own review of what changed on main."
         paths: ["package.json", "test/playwright/visual.config.ts", "test/playwright/visual_smoke.spec.ts", "test/playwright/baselines/visual_smoke.spec.ts/", "test/playwright/playwright.config.ts", "test/playwright/auth.setup.ts", "test/playwright/case_helpers.ts"]
 
   "18":

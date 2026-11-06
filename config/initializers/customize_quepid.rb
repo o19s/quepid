@@ -149,14 +149,16 @@ Rails.application.config.require_proxy_for_all_search_endpoints = bool.deseriali
 # trusted as is, so keep ranges narrow. An invalid entry is ignored with a warning, which
 # leaves that address blocked.
 #
-parse_proxy_network = lambda do |network|
-  IPAddr.new(network)
-rescue IPAddr::Error => e
-  Rails.logger.warn("PROXY_ALLOWED_NETWORKS: ignoring invalid entry #{network.inspect} (#{e.message})")
-  nil
+# Parsed after initialization because ProxyAllowlist (app/services) can't be autoloaded
+# while initializers run; nothing reads these lists before the first request.
+Rails.application.config.after_initialize do
+  Rails.application.config.proxy_allowed_networks = ENV.fetch('PROXY_ALLOWED_NETWORKS', '')
+    .split(',').map(&:strip).compact_blank.filter_map do |network|
+      parsed, error = ProxyAllowlist.parse_network(network)
+      Rails.logger.warn("PROXY_ALLOWED_NETWORKS: ignoring invalid entry #{network.inspect} (#{error})") if error
+      parsed
+    end
 end
-Rails.application.config.proxy_allowed_networks = ENV.fetch('PROXY_ALLOWED_NETWORKS', '')
-  .split(',').map(&:strip).compact_blank.filter_map(&parse_proxy_network)
 
 # == Proxy Allowed Hosts
 # Exact hostnames (comma separated, no wildcards) the proxy may reach even when they resolve
@@ -165,13 +167,24 @@ Rails.application.config.proxy_allowed_networks = ENV.fetch('PROXY_ALLOWED_NETWO
 # (including cloud metadata at 169.254.169.254) stay blocked for these names. An invalid
 # entry is ignored with a warning.
 #
-Rails.application.config.proxy_allowed_hosts = ENV.fetch('PROXY_ALLOWED_HOSTS', '')
-  .split(',').map { |host| host.strip.downcase.chomp('.') }.compact_blank.select do |host|
-    next true if host.match?(/\A[a-z0-9_-]+(\.[a-z0-9_-]+)*\z/) && !host.match?(/\A[\d.]+\z/)
+Rails.application.config.after_initialize do
+  Rails.application.config.proxy_allowed_hosts = ENV.fetch('PROXY_ALLOWED_HOSTS', '')
+    .split(',').map { |host| ProxyAllowlist.normalize_host(host) }.compact_blank.select do |host|
+      _parsed, error = ProxyAllowlist.parse_host(host)
+      next true unless error
 
-    Rails.logger.warn("PROXY_ALLOWED_HOSTS: ignoring #{host.inspect}: not a plain hostname (no wildcards, schemes, ports or paths); put IPs and ranges in PROXY_ALLOWED_NETWORKS")
-    false
-  end
+      Rails.logger.warn("PROXY_ALLOWED_HOSTS: ignoring #{host.inspect}: #{error}; put IPs and ranges in PROXY_ALLOWED_NETWORKS")
+      false
+    end
+end
+
+# == Proxy Allowlist Admin Managed
+# When enabled, Quepid administrators can add proxy allowlist entries (networks and
+# hostnames) from the admin area, on top of PROXY_ALLOWED_NETWORKS and PROXY_ALLOWED_HOSTS.
+# Admin entries can never reach loopback (including 0.0.0.0) or link-local addresses, and networks broader
+# than /16 (IPv4) or /48 (IPv6) are refused. Changes apply without a restart.
+#
+Rails.application.config.proxy_allowlist_admin_managed = bool.deserialize(ENV.fetch('PROXY_ALLOWLIST_ADMIN_MANAGED', false))
 
 # NOTE: ActiveRecord encryption keys are configured in config/application.rb so
 # they take effect before the active_record.encryption Railtie initializer runs.

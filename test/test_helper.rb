@@ -87,6 +87,14 @@ module ActiveSupport
       Rails.application.config.proxy_allowed_hosts = original
     end
 
+    def with_proxy_allowlist_admin_managed value
+      original = Rails.application.config.proxy_allowlist_admin_managed
+      Rails.application.config.proxy_allowlist_admin_managed = value
+      yield
+    ensure
+      Rails.application.config.proxy_allowlist_admin_managed = original
+    end
+
     def with_cookies_url value
       original = Rails.application.config.cookies_url
       Rails.application.config.cookies_url = value
