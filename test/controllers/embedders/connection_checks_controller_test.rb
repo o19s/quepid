@@ -18,7 +18,8 @@ module Embedders
                    body: { data: [ { index: 0, embedding: Array.new(512) { |i| i / 512.0 } } ] }.to_json)
     end
 
-    test 'embeds a sample with unsaved form values' do
+    test 'embeds a sample with unsaved form values on an owned connection' do
+      connections(:openai).update!(owner: user)
       stub = stub_openai('sk-test-openai')
 
       post connection_check_embedders_url, params: {
@@ -46,8 +47,8 @@ module Embedders
       assert_requested stub
     end
 
-    test 'checks the unchanged connection of a shared embedder after connection access is withdrawn' do
-      connections(:openai).teams.clear
+    test 'checks a shared embedder without access to its private connection' do
+      assert_not_includes user.connections_involved_with, connections(:openai)
       stub = stub_openai('sk-test-openai')
       original_attributes = embedder.attributes
 
@@ -64,10 +65,11 @@ module Embedders
     end
 
     test 'a saved embedder cannot switch its check to an inaccessible connection' do
-      stub = stub_request(:post, 'http://ollama:11434/api/embed')
+      replacement = connections(:openai).dup.tap(&:save!)
+      stub = stub_request(:post, 'https://api.openai.com/v1/embeddings')
 
       post embedder_connection_check_url(embedder), params: {
-        embedder: { connection_id: connections(:private_ollama).id, provider: 'ollama', model: 'm' },
+        embedder: { connection_id: replacement.id, model: 'm' },
       }
 
       assert_response :unprocessable_content
@@ -103,6 +105,7 @@ module Embedders
     end
 
     test 'reports a provider error' do
+      connections(:openai).update!(owner: user)
       stub_request(:post, 'https://api.openai.com/v1/embeddings')
         .to_return(status: 500, body: 'boom')
 
@@ -115,6 +118,7 @@ module Embedders
     end
 
     test 'checks an embedder on a connection with the connection\'s URL and key' do
+      connections(:voyage).update!(owner: user)
       stub = stub_request(:post, 'https://api.voyageai.com/v1/embeddings')
         .with(headers: { 'Authorization' => 'Bearer pa-test-voyage' })
         .to_return(status: 200, headers: { 'Content-Type' => 'application/json' },

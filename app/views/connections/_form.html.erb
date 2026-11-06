@@ -1,10 +1,10 @@
 <%# locals: (connection:, form:) %>
 <%# A saved connection is checked with its saved secret when the secret field is left blank --
     see Connections::ChecksController. %>
-<% service = connection.service_definition %>
+<% provider = connection.provider_definition %>
 <div class="card"
      data-controller="connection-form"
-     data-connection-form-presets-value="<%= ConnectionService.presets.to_json %>"
+     data-connection-form-presets-value="<%= ConnectionProvider.presets.to_json %>"
      data-connection-form-check-url-value="<%= connection.persisted? ? connection_check_path(connection) : check_connections_path %>">
   <div class="card-header">
     <h5 class="mb-0"><i class="bi bi-plug-fill" aria-hidden="true"></i> Connection</h5>
@@ -27,18 +27,18 @@
           <%= form.label :name, class: 'col-sm-3 col-form-label' %>
           <div class="col-sm-9">
             <%= form.text_field :name, class: 'form-control',
-                  placeholder: "#{service&.label || 'Service'} Connection",
+                  placeholder: "#{provider&.label || 'Provider'} Connection",
                   data: { connection_form_target: 'name' } %>
-            <div class="form-text">Optional. Left blank, it is called after the service, such as "OpenAI Connection".</div>
+            <div class="form-text">Optional. Left blank, it is called after the provider, such as "OpenAI Connection".</div>
           </div>
         </div>
 
         <div class="row mb-3">
-          <%= form.label :service, class: 'col-sm-3 col-form-label' %>
+          <%= form.label :provider, class: 'col-sm-3 col-form-label' %>
           <div class="col-sm-9">
-            <%= form.select :service, ConnectionService.select_options, {},
+            <%= form.select :provider, ConnectionProvider.select_options, {},
                   class: 'form-select',
-                  data: { connection_form_target: 'service', action: 'change->connection-form#changeService' } %>
+                  data: { connection_form_target: 'provider', action: 'change->connection-form#changeProvider' } %>
           </div>
         </div>
 
@@ -109,7 +109,7 @@
 
             <hr>
             <h5>Check connection</h5>
-            <p class="text-muted small">Asks the service something cheap with the settings on this form, saved or not, to see whether the URL and key work.</p>
+            <p class="text-muted small">Asks the provider something cheap with the settings on this form, saved or not, to see whether the URL and key work.</p>
             <div class="mb-3">
               <button type="button" class="btn btn-primary" data-connection-form-target="checkButton"
                       data-action="click->connection-form#check">Check connection</button>
@@ -141,7 +141,7 @@
                     placeholder: LlmConnection::RETRY_OPTIONS[:max] %>
             </div>
             <div class="col-sm-12 offset-sm-3 form-text">
-              How many times a call is repeated when the service says to try later. Blank uses the default
+              How many times a call is repeated when the provider says to try later. Blank uses the default
               (<%= LlmConnection::RETRY_OPTIONS[:max] %>); 0 never retries.
             </div>
           </div>
@@ -184,21 +184,12 @@
           </div>
 
           <div class="tab-pane fade" id="connection-access" role="tabpanel" aria-labelledby="connection-access-tab" tabindex="0">
-            <p class="text-muted small">Who can use this connection. Anyone it is shared with makes calls with its key, but never sees it and can't change the connection.</p>
-
-            <% if current_user.administrator? && (!connection.persisted? || connection.communal?) %>
+            <p class="text-muted small">Connections are private to their owner. Share configured embedders with teams so members can use them without receiving access to the connection.</p>
+            <% if current_user.administrator? %>
               <div class="form-check mb-3">
-                <%= check_box_tag 'connection[communal]', '1', connection.persisted? ? connection.communal? : false,
-                      id: 'connection_communal', class: 'form-check-input', disabled: connection.persisted? %>
-                <%= label_tag 'connection_communal', 'Communal — available to every user on this instance', class: 'form-check-label' %>
-                <div class="form-text">An administrator manages it; everyone can use it without seeing the key. Can't be changed later.</div>
-              </div>
-            <% end %>
-
-            <% unless connection.persisted? && connection.communal? %>
-              <div class="mb-3">
-                <%= render 'shared/team_picker', form: form, label: 'Teams to Share this Connection With',
-                      help_text: "Anyone on a team it's shared with can use this connection, and calls are made with its key, but they can't see or change it. Leave unchecked to keep it private to you." %>
+                <%= form.check_box :instance_wide, class: 'form-check-input', disabled: connection.persisted? %>
+                <%= form.label :instance_wide, 'Instance-wide — available to every user on this instance', class: 'form-check-label' %>
+                <div class="form-text">Everyone can select it for their own embedders. Administrators manage it; the creator remains its responsible owner. Availability is set when the connection is created.</div>
               </div>
             <% end %>
           </div>
@@ -206,11 +197,11 @@
       </div>
 
       <div class="col-md-5">
-        <div class="fw-semibold mb-2">Service notes</div>
-        <%# One panel per service, shown for the chosen one: the help is server HTML. %>
-        <% ConnectionService.each do |definition| %>
-          <%= tag.div class: 'alert alert-info small', hidden: definition.key != service&.key,
-                      data: { connection_form_target: 'help', service: definition.key } do %><%== definition.help_html %><% end %>
+        <div class="fw-semibold mb-2">Provider notes</div>
+        <%# One panel per provider, shown for the chosen one: the help is server HTML. %>
+        <% ConnectionProvider.each do |definition| %>
+          <%= tag.div class: 'alert alert-info small', hidden: definition.key != provider&.key,
+                      data: { connection_form_target: 'help', provider: definition.key } do %><%== definition.help_html %><% end %>
         <% end %>
       </div>
     </div>

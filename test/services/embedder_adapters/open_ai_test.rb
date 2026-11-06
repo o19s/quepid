@@ -8,7 +8,7 @@ module EmbedderAdapters
 
     let(:embedder) do
       Embedder.new(name: 'Test', provider: 'openai',
-                   connection: Connection.new(service: 'openai', base_url: 'https://api.openai.com', secret: 'sk-test', auth_scheme: 'bearer'),
+                   connection: Connection.new(provider: 'openai', base_url: 'https://api.openai.com', secret: 'sk-test', auth_scheme: 'bearer'),
                    model: 'text-embedding-3-small')
     end
 

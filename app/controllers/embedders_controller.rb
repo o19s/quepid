@@ -7,6 +7,7 @@ class EmbeddersController < ApplicationController
   before_action :set_embedder, only: [ :show, :edit, :update, :destroy, :clone ]
 
   def index
+    @selectable_connection_ids = current_user.connections_involved_with.pluck(:id)
     @embedders = current_user.embedders_involved_with.includes(:owner, :teams, :connection).order(:name)
   end
 
@@ -15,30 +16,31 @@ class EmbeddersController < ApplicationController
   end
 
   def new
-    provider = EmbedderProvider.find('openai')
-    @embedder = Embedder.new(
-      provider:   provider.key,
-      model:      provider.default_model,
-      connection: current_user.connections_involved_with.not_archived.where(service: provider.key).order(:name).first
-    )
+    @embedder = Embedder.new
     @embedder.team_ids = [ @team.id ] if @team
   end
 
   def edit
   end
 
-  # The copy keeps the connection, so it works without choosing one again.
+  # A copy can reuse an owned or instance-wide connection. A teammate must choose their
+  # own connection when the original uses its owner's private credentials.
   def clone
     @embedder = @embedder.dup
     @embedder.name = "Clone of #{@embedder.name}"
+    unless current_user.connections_involved_with.exists?(id: @embedder.connection_id)
+      @embedder.connection = nil
+      flash.now[:notice] = 'Choose a connection you own or an instance-wide connection for this copy.'
+    end
     @embedder.team_ids = [ @team.id ] if @team
     render 'new'
   end
 
   def create
     @embedder = current_user.owned_embedders.build(embedder_params)
+    @embedder.connection_assignment_user = current_user
 
-    if @embedder.connection_usable_by?(current_user) && @embedder.save
+    if @embedder.save
       apply_team_ids(@embedder, params.dig(:embedder, :team_ids))
       redirect_to edit_embedder_path(@embedder), notice: 'Embedder was successfully created.'
     else
@@ -47,9 +49,7 @@ class EmbeddersController < ApplicationController
   end
 
   def update
-    @embedder.assign_attributes(embedder_params)
-
-    if @embedder.connection_usable_by?(current_user) && @embedder.save
+    if @embedder.update(embedder_params)
       apply_team_ids(@embedder, params.dig(:embedder, :team_ids))
       redirect_to edit_embedder_path(@embedder), notice: 'Embedder was successfully updated.'
     else
@@ -70,7 +70,10 @@ class EmbeddersController < ApplicationController
 
   def set_embedder
     @embedder = current_user.embedders_involved_with.find_by(id: params[:id])
-    return if @embedder
+    if @embedder
+      @embedder.connection_assignment_user = current_user
+      return
+    end
 
     redirect_to embedders_path,
                 notice: "The embedder you are looking for either doesn't exist or you don't have permissions."

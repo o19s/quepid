@@ -44,6 +44,8 @@ function buildModalController(id = "5") {
   controller.vectorPanelTarget = document.createElement("div")
   controller.vectorSummaryTarget = document.createElement("span")
   controller.revectorizeButtonTarget = document.createElement("button")
+  controller.revectorizeSpinnerTarget = document.createElement("span")
+  controller.revectorizeLabelTarget = document.createElement("span")
   controller.hasTitleTarget = true
   controller.titleTarget = document.createElement("h5")
   controller.hasAlertTarget = true
@@ -203,11 +205,15 @@ describe("CaseEmbedderCoreController", () => {
       modal.applyState(WITH_VECTORS)
       expect(modal.vectorSummaryTarget.textContent).toBe("18 current · 2 pending — vectorising…")
       expect(modal.revectorizeButtonTarget.disabled).toBe(true)
+      expect(modal.revectorizeSpinnerTarget.classList.contains("d-none")).toBe(false)
+      expect(modal.revectorizeLabelTarget.textContent).toBe("Vectorising…")
 
       await vi.advanceTimersByTimeAsync(3000)
 
       expect(modal.vectorSummaryTarget.textContent).toBe("18 current · 2 pending")
       expect(modal.revectorizeButtonTarget.disabled).toBe(false)
+      expect(modal.revectorizeSpinnerTarget.classList.contains("d-none")).toBe(true)
+      expect(modal.revectorizeLabelTarget.textContent).toBe("Re-vectorize all queries")
     })
 
     it("checks once on page load whether a run is under way", async () => {
@@ -265,6 +271,43 @@ describe("CaseEmbedderCoreController", () => {
       expect(controller.pollTimer).toBeDefined()
       controller.disconnect()
       document.removeEventListener(CORE_EVENTS.QUERY_VECTORS_CHANGED, announced)
+    })
+
+    it("shows a spinner while the re-vectorize request is pending", async () => {
+      const idle = {
+        ...STATE,
+        embedder_id: 7,
+        embedder: { ...STATE.embedders[0], accessible: true },
+        vectors: { running: false, counts: { pending: 1 }, queries: {} }
+      }
+      apiFetch.mockResolvedValueOnce(jsonResponse(idle))
+      let resolveRequest
+      apiFetch.mockReturnValueOnce(
+        new Promise((resolve) => {
+          resolveRequest = resolve
+        })
+      )
+      const controller = buildModalController()
+
+      await openModal(controller)
+      const request = controller.revectorize()
+
+      expect(controller.revectorizeButtonTarget.disabled).toBe(true)
+      expect(controller.revectorizeSpinnerTarget.classList.contains("d-none")).toBe(false)
+      expect(controller.revectorizeLabelTarget.textContent).toBe("Vectorising…")
+
+      resolveRequest(
+        jsonResponse({
+          ...STATE,
+          embedder_id: 7,
+          embedder: { ...STATE.embedders[0], accessible: true },
+          vectors: { running: false, counts: { current: 0, pending: 0 }, queries: {} }
+        })
+      )
+      await request
+
+      expect(controller.revectorizeSpinnerTarget.classList.contains("d-none")).toBe(true)
+      expect(controller.revectorizeLabelTarget.textContent).toBe("Re-vectorize all queries")
     })
   })
 })

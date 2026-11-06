@@ -6,8 +6,8 @@
     </div>
     <div class="card-body">
       <dl class="row mb-0">
-        <dt class="col-sm-3">Service</dt>
-        <dd class="col-sm-9"><%= @connection.service_definition&.label || @connection.service %></dd>
+        <dt class="col-sm-3">Provider</dt>
+        <dd class="col-sm-9"><%= @connection.provider_definition&.label || @connection.provider %></dd>
         <dt class="col-sm-3">URL</dt>
         <dd class="col-sm-9"><code class="text-break"><%= @connection.base_url %></code></dd>
         <dt class="col-sm-3">Authentication</dt>
@@ -19,10 +19,10 @@
         </dd>
         <dt class="col-sm-3">Owner</dt>
         <dd class="col-sm-9">
-          <%= @connection.communal? ? 'Communal' : @connection.owner.fullname %>
+          <%= @connection.owner.fullname %>
         </dd>
-        <dt class="col-sm-3">Shared with</dt>
-        <dd class="col-sm-9"><%= @connection.teams.any? ? @connection.teams.map(&:name).to_sentence : 'No teams' %></dd>
+        <dt class="col-sm-3">Availability</dt>
+        <dd class="col-sm-9"><%= @connection.instance_wide? ? 'Instance-wide' : 'Private' %></dd>
         <dt class="col-sm-3">Used by</dt>
         <dd class="col-sm-9">
           <% if @embedders.any? %>
@@ -39,7 +39,7 @@
       <% if @connection.manageable_by?(current_user) %>
         <%= link_to 'Edit', edit_connection_path(@connection), class: 'btn btn-primary float-start' %>
       <% else %>
-        <span class="text-muted small float-start">Only the owner can change this connection.</span>
+        <span class="text-muted small float-start">Administrators manage this instance-wide connection.</span>
       <% end %>
       <%= link_to 'Back to Connections', connections_path, class: 'btn btn-outline-secondary float-end' %>
     </div>

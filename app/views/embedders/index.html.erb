@@ -43,7 +43,11 @@
                 <td><%= embedder.provider_definition&.label || embedder.provider %></td>
                 <td>
                   <% if embedder.connection %>
-                    <%= link_to embedder.connection.name, connection_path(embedder.connection) %>
+                    <% if @selectable_connection_ids.include?(embedder.connection_id) %>
+                      <%= link_to embedder.connection.name, connection_path(embedder.connection) %>
+                    <% else %>
+                      <%= embedder.connection.name %> <span class="text-muted small">(private connection)</span>
+                    <% end %>
                   <% else %>
                     <span class="text-muted">&mdash;</span>
                   <% end %>

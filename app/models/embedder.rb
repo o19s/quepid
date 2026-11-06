@@ -50,6 +50,9 @@ class Embedder < ApplicationRecord
   # (e.g. :archived, :team_ids).
   PERMITTED_PARAMS = [ :name, :provider, :model, :dimensions, :truncation, :instruction, :input_template, :connection_id ].freeze
 
+  # Request context only; the owner-access validation still applies when no assigning user is set.
+  attr_accessor :connection_assignment_user
+
   # too late now!
   # rubocop:disable-next Rails/HasAndBelongsToMany
   has_and_belongs_to_many :teams,
@@ -82,6 +85,7 @@ class Embedder < ApplicationRecord
   validates :dimensions, presence: { message: 'are required to truncate' }, unless: -> { 'none' == truncation }
   validate :native_truncation_supported
   validate :connection_fits_and_is_usable
+  validate :connection_accessible_to_assigner
   validate :connection_required_when_created, on: :create
   validate :connection_not_removed, on: :update
   validate :input_template_has_query
@@ -93,7 +97,7 @@ class Embedder < ApplicationRecord
   # The provider is the embedder's own choice, and its connection has to be for that provider (a
   # Voyage embedder can't use an Ollama connection). Left blank, it is the connection's.
   def provider
-    super.presence || connection&.service
+    super.presence || connection&.provider
   end
 
   # Its connection's URL and timeout.
@@ -157,30 +161,35 @@ class Embedder < ApplicationRecord
     Case.where(embedder_id: embedder_ids).group(:embedder_id).count
   end
 
-  # A connection spends its owner's key, so the one being set must be one `user` can use -- not
-  # merely one the embedder's owner can, since a team member may be editing it. The one already
-  # on the embedder stays allowed, so changing the name of an embedder never trips over it.
-  # Controllers call this before saving, so a rejected connection shows up alongside other
-  # validation errors instead of a bare 500 from the association assignment.
-  def connection_usable_by? user
-    return true if connection_id.nil? || connection_id == connection_id_was
-    return true if user.connections_involved_with.exists?(id: connection_id)
-
-    errors.add(:connection, "isn't one you can use")
-    false
-  end
-
   def mark_archived!
     update(archived: true)
   end
 
   private
 
+  # Validates that `connection_assignment_user` has access to the key being set, since team members
+  # may edit an embedder owned by someone else. The embedder's existing key remains valid
+  # so unrelated edits (like renaming) aren't blocked. Running this check before saving
+  # surfaces standard form validation errors instead of unhandled 500 server errors.
+  # An Embedder follows these rules:
+  # - Connection unchanged: allowed. Someone can use a shared embedder without having direct access to its underlying connection.
+  # - New or different connection: the current user must own it or it must be instance-wide.
+  # - No connection selected: this check passes; separate validations handle missing or removed connections.
+  # - Access denied: it adds a validation error, preventing the save or connection check.
+  def connection_accessible_to_assigner
+    return if connection_assignment_user.nil?
+    return if connection_id.nil? || !connection_id_changed?
+    return if connection_assignment_user.connections_involved_with.exists?(id: connection_id)
+    return if errors.added?(:connection, "isn't one you can use")
+
+    errors.add(:connection, "isn't one you can use")
+  end
+
   # An embedder created from just a connection takes that connection's provider.
   def take_provider_from_connection
     return unless connection && self[:provider].blank?
 
-    self[:provider] = connection.service
+    self[:provider] = connection.provider
     @provider_definition = nil
   end
 
@@ -208,9 +217,9 @@ class Embedder < ApplicationRecord
 
   # Why the connection can't be used, or nil. The first thing wrong is the one worth saying.
   def connection_problem
-    label = connection.service_definition&.label || connection.service
-    return "to #{label} can't make embeddings" unless connection.service_definition&.capabilities&.include?('embeddings')
-    return "is for #{label}, not #{provider_definition&.label || provider}" if connection.service != provider
+    label = connection.provider_definition&.label || connection.provider
+    return "to #{label} can't make embeddings" unless connection.provider_definition&.capabilities&.include?('embeddings')
+    return "is for #{label}, not #{provider_definition&.label || provider}" if connection.provider != provider
 
     "isn't one you can use" unless connection_usable_by_owner?
   end

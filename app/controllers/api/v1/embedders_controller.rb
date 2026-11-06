@@ -55,8 +55,9 @@ module Api
       # use whose service makes embeddings) -- it has none of its own.
       def create
         @embedder = current_user.owned_embedders.build(embedder_params.except(:team_ids))
+        @embedder.connection_assignment_user = current_user
 
-        if @embedder.connection_usable_by?(current_user) && @embedder.save
+        if @embedder.save
           apply_team_ids(@embedder, embedder_params[:team_ids]) if embedder_params.key?(:team_ids)
           respond_with @embedder
         else
@@ -68,9 +69,7 @@ module Api
       def update
         update_params = embedder_params.except(:team_ids)
 
-        @embedder.assign_attributes(update_params)
-
-        if @embedder.connection_usable_by?(current_user) && @embedder.save
+        if @embedder.update(update_params)
           apply_team_ids(@embedder, embedder_params[:team_ids]) if embedder_params.key?(:team_ids)
           respond_with @embedder
         else
@@ -88,6 +87,7 @@ module Api
 
       def set_embedder
         @embedder = current_user.embedders_involved_with.find(params.expect(:id))
+        @embedder.connection_assignment_user = current_user
       end
 
       def embedder_params

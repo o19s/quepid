@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_03_120001) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_05_150000) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -267,7 +267,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_03_120001) do
 
   create_table "connections", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.string "name", null: false
-    t.string "service", limit: 50, null: false
+    t.string "provider", limit: 50, null: false
     t.string "base_url", limit: 500
     t.string "auth_scheme", limit: 20, default: "bearer", null: false
     t.string "auth_header", limit: 100
@@ -277,9 +277,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_03_120001) do
     t.integer "requests_per_minute", default: 0, null: false
     t.json "options"
     t.boolean "archived", default: false, null: false
-    t.integer "owner_id"
+    t.integer "owner_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "instance_wide", default: false, null: false
     t.index ["owner_id", "id"], name: "index_connections_on_owner_id_and_id"
   end
 
@@ -804,13 +805,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_03_120001) do
     t.integer "team_id", null: false
     t.index ["case_id"], name: "index_teams_cases_on_case_id"
     t.index ["team_id"], name: "index_teams_cases_on_team_id"
-  end
-
-  create_table "teams_connections", id: false, charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
-    t.bigint "connection_id", null: false
-    t.bigint "team_id", null: false
-    t.index ["connection_id", "team_id"], name: "index_teams_connections_on_connection_id_and_team_id", unique: true
-    t.index ["team_id"], name: "index_teams_connections_on_team_id"
   end
 
   create_table "teams_embedders", id: false, charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|

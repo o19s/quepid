@@ -14,7 +14,7 @@ class ConnectionsControllerTest < ActionDispatch::IntegrationTest
   def connection_params overrides = {}
     {
       name:        'Voyage',
-      service:     'voyage',
+      provider:    'voyage',
       base_url:    'https://api.voyageai.com',
       auth_scheme: 'bearer',
       secret:      'pa-new',
@@ -26,17 +26,17 @@ class ConnectionsControllerTest < ActionDispatch::IntegrationTest
     get connections_url
 
     assert_response :success
-    assert_select 'td', text: connection.name
+    assert_select 'td', text: connection.name, count: 0
     assert_select 'td', text: connections(:instance_elasticsearch).name
     assert_select 'td', text: connections(:private_ollama).name, count: 0
-    assert_select 'td .badge', text: 'Communal'
+    assert_select 'td .badge', text: 'Instance-wide'
   end
 
   test 'index has a status column that asks for each connection separately' do
     get connections_url
 
     assert_select 'th', text: 'Status'
-    visible = [ connection, connections(:voyage), connections(:shared_ollama), connections(:instance_elasticsearch) ]
+    visible = [ connections(:instance_elasticsearch) ]
     cells = css_select('td[data-controller="connection-status"]')
     assert_equal visible.size, cells.size
     visible.each do |shown|
@@ -63,18 +63,18 @@ class ConnectionsControllerTest < ActionDispatch::IntegrationTest
     assert_no_match(/changeme/, response.body)
   end
 
-  test 'new renders every service and the presets' do
+  test 'new renders every provider and the presets' do
     get new_connection_url(team_id: team.id)
 
     assert_response :success
-    ConnectionService.select_options.map(&:last).each do |key|
-      assert_select 'select#connection_service option[value=?]', key
+    ConnectionProvider.select_options.map(&:last).each do |key|
+      assert_select 'select#connection_provider option[value=?]', key
     end
     form = css_select('[data-controller="connection-form"]').first
     presets = JSON.parse(form['data-connection-form-presets-value'])
     assert_equal 'https://api.openai.com', presets.dig('openai', 'base_url')
-    assert_select "input[name='connection[team_ids][]'][value='#{team.id}'][checked]"
-    assert_select 'input#connection_communal', count: 0
+    assert_select "input[name='connection[team_ids][]']", count: 0
+    assert_select 'input#connection_instance_wide', count: 0
   end
 
   test 'the form has General, Advanced and Access tabs, with the settings sorted into them' do
@@ -93,10 +93,10 @@ class ConnectionsControllerTest < ActionDispatch::IntegrationTest
     assert_select '#connection-advanced input#connection_retry_max[placeholder="3"]'
     assert_select '#connection-advanced input#connection_retry_statuses_text[placeholder="429, 529"]'
     assert_select '#connection-advanced input#connection_retry_interval'
-    assert_select "#connection-access input[name='connection[team_ids][]']"
-    # Only the name and the service stay above the tabs.
+    assert_select "#connection-access input[name='connection[team_ids][]']", count: 0
+    # Only the name and the provider stay above the tabs.
     assert_select 'input#connection_name'
-    assert_select 'select#connection_service'
+    assert_select 'select#connection_provider'
     assert_select '#connection-tabs ~ * input#connection_name', count: 0
     assert_select '#connection-advanced input#connection_base_url', count: 0
   end
@@ -109,7 +109,7 @@ class ConnectionsControllerTest < ActionDispatch::IntegrationTest
     assert_select '#connection-advanced.show.active'
   end
 
-  test 'create saves a connection owned by the user and shares it with the chosen teams' do
+  test 'create retains the owner and ignores forged team grants' do
     assert_difference -> { Connection.count }, 1 do
       post connections_url, params: { connection: connection_params(team_ids: [ team.id.to_s ]) }
     end
@@ -118,10 +118,11 @@ class ConnectionsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to edit_connection_url(created)
     assert_equal user, created.owner
     assert_equal 'pa-new', created.secret
-    assert_equal [ team ], created.teams.to_a
+    assert_not created.instance_wide?
+    assert_not Connection.reflect_on_association(:teams)
   end
 
-  test 'create without a name calls the connection after its service' do
+  test 'create without a name calls the connection after its provider' do
     post connections_url, params: { connection: connection_params(name: '') }
 
     assert_equal 'Voyage AI Connection', Connection.order(:id).last.name
@@ -142,23 +143,25 @@ class ConnectionsControllerTest < ActionDispatch::IntegrationTest
     assert_select '.alert-danger'
   end
 
-  test 'a user cannot make a communal connection' do
-    post connections_url, params: { connection: connection_params(communal: '1') }
+  test 'a user cannot make an instance-wide connection' do
+    post connections_url, params: { connection: connection_params(instance_wide: '1') }
 
     assert_equal user, Connection.order(:id).last.owner
+    assert_not Connection.order(:id).last.instance_wide?
   end
 
-  test 'an administrator can make a communal connection, which takes no teams' do
+  test 'an administrator can create an instance-wide connection and remains its owner' do
     login_user_for_integration_test users(:doug)
 
-    post connections_url, params: { connection: connection_params(communal: '1', team_ids: [ team.id.to_s ]) }
+    post connections_url, params: { connection: connection_params(instance_wide: '1', team_ids: [ team.id.to_s ]) }
 
     created = Connection.order(:id).last
-    assert_predicate created, :communal?
-    assert_empty created.teams
+    assert_predicate created, :instance_wide?
+    assert_equal users(:doug), created.owner
   end
 
-  test 'show displays a connection shared with the user, without its secret or an edit link' do
+  test 'show displays an instance-wide connection without its secret or an edit link' do
+    connection.update!(instance_wide: true)
     get connection_url(connection)
 
     assert_response :success
@@ -173,12 +176,12 @@ class ConnectionsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to connections_url
   end
 
-  test 'a team member cannot edit, update or delete a shared connection' do
+  test 'team membership does not grant access to a private connection' do
     get edit_connection_url(connection)
-    assert_redirected_to connection_url(connection)
+    assert_redirected_to connections_url
 
     patch connection_url(connection), params: { connection: { base_url: 'https://evil.example' } }
-    assert_redirected_to connection_url(connection)
+    assert_redirected_to connections_url
     assert_equal 'https://api.openai.com', connection.reload.base_url
 
     assert_no_difference -> { Connection.count } do
@@ -204,14 +207,13 @@ class ConnectionsControllerTest < ActionDispatch::IntegrationTest
     assert_equal 'sk-rotated', connection.reload.secret
   end
 
-  test 'saving does not unshare a team the user is not a member of' do
+  test 'update cannot change ownership or publish a private connection through forged parameters' do
     login_user_for_integration_test users(:doug)
-    outsider = Team.create!(name: 'Outsiders')
-    connection.teams << outsider
 
-    patch connection_url(connection), params: { connection: { name: 'Same', team_ids: [] } }
+    patch connection_url(connection), params: { connection: { name: 'Same', owner_id: user.id, instance_wide: '1', team_ids: [ team.id ] } }
 
-    assert_includes connection.reload.teams, outsider
+    assert_equal users(:doug), connection.reload.owner
+    assert_not connection.instance_wide?
   end
 
   test 'the owner deletes a connection' do
@@ -223,7 +225,7 @@ class ConnectionsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to connections_url
   end
 
-  test 'only an administrator manages a communal connection' do
+  test 'only an administrator manages an instance-wide connection' do
     communal = connections(:instance_elasticsearch)
 
     delete connection_url(communal)
@@ -241,6 +243,7 @@ class ConnectionsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'index and show say what uses a connection' do
+    login_user_for_integration_test users(:doug)
     embedders(:openai_small).update!(connection: connections(:openai))
 
     get connections_url

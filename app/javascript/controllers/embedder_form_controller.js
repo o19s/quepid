@@ -6,10 +6,8 @@ import { runCheck } from "utils/run_check"
 // provider can use, fills in its defaults when the provider changes, and runs the Check connection
 // button against Embedders::ConnectionChecksController with the form's current values.
 //
-// The URL, key and timeout come from the embedder's Connection, so they aren't on this form. A
-// connection is for one provider, so the connection list only offers the ones for the chosen
-// provider (each option carries its service, URL and label as data), and when there are none a
-// link offers to create one for that provider.
+// The URL, key and timeout come from the embedder's Connection, so they aren't on this form. The
+// The connection's provider determines the model and provider-specific settings.
 //
 // presets come from EmbedderProvider.presets, keyed by provider.
 export default class extends Controller {
@@ -53,12 +51,17 @@ export default class extends Controller {
   }
 
   changeConnection() {
+    const provider = this.connection?.dataset.provider || ""
+    const providerChanged = provider !== this.providerTarget.value
+    this.providerTarget.value = provider
+
+    if (providerChanged && provider) this.applyProviderDefaults()
+
     this.refresh()
   }
 
-  // Switching provider replaces the model with its default: a model typed for one vendor is
-  // almost never right for another.
-  changeProvider() {
+  // A different provider usually needs a different model and may not support native truncation.
+  applyProviderDefaults() {
     const preset = this.preset
     this.modelTarget.value = preset.model || ""
     if (!preset.supports_dimensions && this.truncationTarget.value === "native") {
@@ -72,9 +75,12 @@ export default class extends Controller {
 
     showMatchingHelp(this.helpTargets, "provider", this.providerTarget.value)
     this.refreshConnection()
-    this.instructionFieldsTarget.hidden = !preset.supports_instructions
-    if (this.hasNoInstructionsTarget)
-      this.noInstructionsTarget.hidden = Boolean(preset.supports_instructions)
+    this.instructionFieldsTarget.hidden =
+      !this.providerTarget.value || !preset.supports_instructions
+    if (this.hasNoInstructionsTarget) {
+      this.noInstructionsTarget.hidden =
+        !this.providerTarget.value || Boolean(preset.supports_instructions)
+    }
 
     const nativeOption = this.truncationTarget.querySelector("option[value='native']")
     if (nativeOption) nativeOption.disabled = !preset.supports_dimensions
@@ -93,36 +99,16 @@ export default class extends Controller {
         : ""
   }
 
-  // Only the connections for the chosen provider can be picked. One that no longer fits the
-  // provider (it was changed after choosing) is dropped, so the form never posts a mismatch.
-  // With none to pick, a link offers to create one for this provider.
-  filterConnections() {
-    if (!this.hasConnectionTarget) return
-
-    const provider = this.providerTarget.value
-    ;[...this.connectionTarget.options].forEach((option) => {
-      if (!option.value) return
-      const fits = option.dataset.service === provider
-      option.hidden = !fits
-      option.disabled = !fits
-    })
-    if (this.connection?.disabled) this.connectionTarget.value = ""
-  }
-
   refreshConnection() {
-    this.filterConnections()
     if (!this.hasConnectionTarget) return
 
     const connection = this.connection
-    const anyToPick = [...this.connectionTarget.options].some(
-      (option) => option.value && !option.disabled
-    )
+    const anyToPick = [...this.connectionTarget.options].some((option) => option.value)
 
     if (this.hasNoConnectionsTarget) this.noConnectionsTarget.hidden = anyToPick
     if (this.hasNewConnectionLinkTarget) {
-      const label = this.preset.label || this.providerTarget.value
-      this.newConnectionLinkTarget.textContent = `Create a ${label} connection`
-      this.newConnectionLinkTarget.href = `${this.newConnectionUrlValue}?service=${encodeURIComponent(this.providerTarget.value)}`
+      this.newConnectionLinkTarget.textContent = "Create a connection"
+      this.newConnectionLinkTarget.href = this.newConnectionUrlValue
     }
     // There is nothing to check without a connection: the check goes through it.
     this.checkButtonTarget.disabled = connection === null
@@ -132,7 +118,7 @@ export default class extends Controller {
 
     this.connectionInfoTarget.hidden = connection === null
     if (connection) {
-      this.connectionInfoTarget.textContent = `${connection.dataset.serviceLabel} at ${connection.dataset.url}. The URL, key and timeout come from this connection.`
+      this.connectionInfoTarget.textContent = `${connection.dataset.providerLabel} at ${connection.dataset.url}. The URL, key and timeout come from this connection.`
     }
   }
 
@@ -147,9 +133,10 @@ export default class extends Controller {
 
     await runCheck(this.checkUrlValue, data, {
       checkResultTarget: this.checkResultTarget,
-      checkButtonTarget:  this.checkButtonTarget,
-      onSuccess:          (result, checkResultTarget) => {
+      checkButtonTarget: this.checkButtonTarget,
+      onSuccess: (result, checkResultTarget) => {
         const preview = result.preview.map((value) => value.toFixed(5)).join(", ")
+        const ellipsis = result.dimensions > result.preview.length ? ", …" : ""
         const sent = element("code", { className: "text-break", text: result.input })
         sent.style.whiteSpace = "pre-wrap"
         checkResultTarget.replaceChildren(
@@ -159,7 +146,7 @@ export default class extends Controller {
               ` in ${result.elapsed_ms} ms`
             ]),
             element("div", {}, ["Sent: ", sent]),
-            element("div", {}, ["Vector: ", element("code", { text: `[${preview}, …]` })])
+            element("div", {}, ["Vector: ", element("code", { text: `[${preview}${ellipsis}]` })])
           ])
         )
       }

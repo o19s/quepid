@@ -2,17 +2,17 @@ import { Controller } from "@hotwired/stimulus"
 import { element, showMatchingHelp } from "utils/dom"
 import { runCheck } from "utils/run_check"
 
-// Connection form (app/views/connections/_form.html.erb): fills in a service's defaults when the
-// service changes, shows only the fields the chosen authentication needs, and runs the Check
+// Connection form (app/views/connections/_form.html.erb): fills in a provider's defaults when the
+// provider changes, shows only the fields the chosen authentication needs, and runs the Check
 // connection button against Connections::ChecksController with the form's current values.
 //
-// presets come from ConnectionService.presets, keyed by service.
+// presets come from ConnectionProvider.presets, keyed by provider.
 export default class extends Controller {
   static values = { presets: Object, checkUrl: String }
 
   static targets = [
     "name",
-    "service",
+    "provider",
     "baseUrl",
     "apiVersionRow",
     "apiVersion",
@@ -32,12 +32,12 @@ export default class extends Controller {
   }
 
   get preset() {
-    return this.presetsValue[this.serviceTarget.value] || {}
+    return this.presetsValue[this.providerTarget.value] || {}
   }
 
-  // Switching service replaces the URL and how the key is sent with its defaults: values typed
+  // Switching provider replaces the URL and how the key is sent with its defaults: values typed
   // for one vendor are almost never right for another.
-  changeService() {
+  changeProvider() {
     const preset = this.preset
     this.baseUrlTarget.value = preset.base_url || ""
     this.authSchemeTarget.value = preset.auth_scheme || "bearer"
@@ -51,9 +51,9 @@ export default class extends Controller {
     const scheme = this.authSchemeTarget.value
 
     // The name a blank one becomes, shown as the placeholder so it is no surprise on save.
-    if (this.hasNameTarget) this.nameTarget.placeholder = `${preset.label || "Service"} Connection`
+    if (this.hasNameTarget) this.nameTarget.placeholder = `${preset.label || "Provider"} Connection`
 
-    showMatchingHelp(this.helpTargets, "service", this.serviceTarget.value)
+    showMatchingHelp(this.helpTargets, "provider", this.providerTarget.value)
     this.apiVersionRowTarget.hidden = !preset.uses_api_version
     this.authHeaderRowTarget.hidden = scheme !== "header"
     this.secretRowTarget.hidden = scheme === "none"
@@ -73,12 +73,15 @@ export default class extends Controller {
 
     await runCheck(this.checkUrlValue, data, {
       checkResultTarget: this.checkResultTarget,
-      checkButtonTarget:  this.checkButtonTarget,
-      onSuccess:          (result, checkResultTarget) => {
+      checkButtonTarget: this.checkButtonTarget,
+      onSuccess: (result, checkResultTarget) => {
         const tone = { ok: "success", reachable: "warning" }[result.status] || "danger"
         const timing = result.elapsed_ms === null ? "" : ` (${result.elapsed_ms} ms)`
         checkResultTarget.replaceChildren(
-          element("div", { className: `alert alert-${tone} small mb-0`, text: `${result.message}${timing}` })
+          element("div", {
+            className: `alert alert-${tone} small mb-0`,
+            text: `${result.message}${timing}`
+          })
         )
       }
     })

@@ -6,7 +6,7 @@ module EmbedderAdapters
   class CohereTest < ActiveSupport::TestCase
     URL = 'https://api.cohere.com/v2/embed'
 
-    let(:connection) { Connection.new(name: 'Cohere', service: 'cohere', base_url: 'https://api.cohere.com', secret: 'co-test', owner: users(:doug)) }
+    let(:connection) { Connection.new(name: 'Cohere', provider: 'cohere', base_url: 'https://api.cohere.com', secret: 'co-test', owner: users(:doug)) }
     let(:embedder) do
       Embedder.new(name: 'Test', provider: 'cohere', connection: connection, owner: users(:doug), model: 'embed-v4.0')
     end

@@ -1,18 +1,13 @@
 # frozen_string_literal: true
 
-# Manage the connections to external services (ADR 0005). Anyone who can use a connection can see
-# it; only its owner (or, for a communal one, an administrator) can change or delete it,
-# because using a connection discloses its secret to the external service, and changing its URL
-# could send that secret somewhere else.
+# Manage reusable connections. Private connections are owner-managed; administrators manage
+# instance-wide ones. Team members use configured embedders without receiving connection access.
 class ConnectionsController < ApplicationController
-  include TeamAssignable
-
-  before_action :set_team, only: [ :new ]
   before_action :set_connection, only: [ :show, :edit, :update, :destroy ]
   before_action :require_manageable, only: [ :edit, :update, :destroy ]
 
   def index
-    @connections = current_user.connections_involved_with.includes(:owner, :teams).order(:name)
+    @connections = current_user.connections_involved_with.includes(:owner).order(:name)
     @embedder_counts = Embedder.where(connection_id: @connections.map(&:id)).group(:connection_id).count
   end
 
@@ -21,15 +16,14 @@ class ConnectionsController < ApplicationController
   end
 
   def new
-    # The embedder form links here with the service it wants a connection for.
-    service = ConnectionService.find(params.permit(:service)[:service]) || ConnectionService.find('openai')
+    # The embedder form links here with the provider it wants a connection for.
+    provider = ConnectionProvider.find(params.permit(:provider)[:provider]) || ConnectionProvider.find('openai')
     @connection = Connection.new(
-      service:     service.key,
-      base_url:    service.default_base_url,
-      auth_scheme: service.auth_scheme,
-      auth_header: service.auth_header
+      provider:    provider.key,
+      base_url:    provider.default_base_url,
+      auth_scheme: provider.auth_scheme,
+      auth_header: provider.auth_header
     )
-    @connection.team_ids = [ @team.id ] if @team
   end
 
   def edit
@@ -37,10 +31,10 @@ class ConnectionsController < ApplicationController
 
   def create
     @connection = Connection.new(connection_params)
-    @connection.owner = communal_requested? ? nil : current_user
+    @connection.owner = current_user
+    @connection.instance_wide = current_user.administrator? && true == deserialize_bool_param(params.dig(:connection, :instance_wide))
 
     if @connection.save
-      apply_team_ids(@connection, params.dig(:connection, :team_ids))
       redirect_to edit_connection_path(@connection), notice: 'Connection was successfully created.'
     else
       render :new, status: :unprocessable_content
@@ -51,7 +45,6 @@ class ConnectionsController < ApplicationController
     @connection.assign_attributes(connection_params)
 
     if @connection.save
-      apply_team_ids(@connection, params.dig(:connection, :team_ids))
       redirect_to edit_connection_path(@connection), notice: 'Connection was successfully updated.'
     else
       render :edit, status: :unprocessable_content
@@ -72,10 +65,6 @@ class ConnectionsController < ApplicationController
 
   private
 
-  def set_team
-    @team = current_user.teams.find_by(id: params[:team_id])
-  end
-
   def set_connection
     @connection = current_user.connections_involved_with.find_by(id: params[:id])
     return if @connection
@@ -87,19 +76,7 @@ class ConnectionsController < ApplicationController
   def require_manageable
     return if @connection.manageable_by?(current_user)
 
-    redirect_to connection_path(@connection), alert: 'Only the owner of a connection can change or delete it.'
-  end
-
-  # Only an administrator can make a connection that everyone on the instance can use.
-  def communal_requested?
-    current_user.administrator? && ActiveModel::Type::Boolean.new.cast(params.dig(:connection, :communal))
-  end
-
-  # A communal connection belongs to everyone, so it isn't scoped to any team.
-  def apply_team_ids connection, team_ids
-    return connection.teams.clear if connection.communal?
-
-    super
+    redirect_to connection_path(@connection), alert: 'Only the owner, or an administrator for an instance-wide connection, can change or delete it.'
   end
 
   # The form never shows the saved secret, so a blank or masked one means "keep it".

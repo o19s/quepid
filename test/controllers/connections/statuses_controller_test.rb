@@ -9,7 +9,7 @@ module Connections
     let(:models_url) { 'https://api.openai.com/v1/models' }
 
     setup do
-      login_user_for_integration_test member
+      login_user_for_integration_test users(:doug)
     end
 
     test 'reports a connection that answers, using its own URL and saved key' do
@@ -22,7 +22,9 @@ module Connections
       assert_requested stub
     end
 
-    test 'someone a connection is shared with can ask, though they cannot manage it' do
+    test 'anyone can ask about an instance-wide connection, though they cannot manage it' do
+      connection.update!(instance_wide: true)
+      login_user_for_integration_test member
       assert_not connection.manageable_by?(member)
       stub_request(:get, models_url).to_return(status: 200, body: '{}')
 
@@ -84,7 +86,8 @@ module Connections
       assert_not_requested :get, /ollama/
     end
 
-    test 'a communal connection can be asked by anyone' do
+    test 'an instance-wide connection can be asked by anyone' do
+      login_user_for_integration_test member
       stub_request(:get, 'http://elasticsearch:9200').to_return(status: 200, body: '{}')
 
       get connection_status_url(connections(:instance_elasticsearch)), as: :json

@@ -51,7 +51,7 @@ test("account deletion preserves an owner whose connection is used by an embedde
   await expect(page).not.toHaveURL(/\/sessions\/new/)
   accountCreated = true
 
-  await page.goto("connections/new?service=ollama")
+  await page.goto("connections/new?provider=ollama")
   await page.locator("#connection_name").fill("Deletion guard connection")
   await page.locator("#connection_base_url").fill("http://ollama:11434")
   await page.getByRole("button", { name: "Save", exact: true }).click()

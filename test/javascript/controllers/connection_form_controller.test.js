@@ -17,12 +17,12 @@ function select(values, selected) {
   return element
 }
 
-function buildController(service = "openai") {
+function buildController(provider = "openai") {
   const controller = Object.create(ConnectionFormController.prototype)
   controller.presetsValue = PRESETS
   controller.hasNameTarget = true
   controller.nameTarget = document.createElement("input")
-  controller.serviceTarget = select(Object.keys(PRESETS), service)
+  controller.providerTarget = select(Object.keys(PRESETS), provider)
   controller.baseUrlTarget = document.createElement("input")
   controller.apiVersionRowTarget = document.createElement("div")
   controller.apiVersionTarget = document.createElement("input")
@@ -37,22 +37,22 @@ function buildController(service = "openai") {
 }
 
 describe("ConnectionFormController", () => {
-  it("shows the name a blank one will get, after the chosen service", () => {
+  it("shows the name a blank one will get, after the chosen provider", () => {
     const controller = buildController("openai")
 
     controller.refresh()
     expect(controller.nameTarget.placeholder).toBe("OpenAI Connection")
 
-    controller.serviceTarget.value = "voyage"
-    controller.changeService()
+    controller.providerTarget.value = "voyage"
+    controller.changeProvider()
     expect(controller.nameTarget.placeholder).toBe("Voyage AI Connection")
   })
 
-  it("fills the service's URL when it changes", () => {
+  it("fills the provider's URL when it changes", () => {
     const controller = buildController("openai")
-    controller.serviceTarget.value = "voyage"
+    controller.providerTarget.value = "voyage"
 
-    controller.changeService()
+    controller.changeProvider()
 
     expect(controller.baseUrlTarget.value).toBe("https://api.voyageai.com")
   })

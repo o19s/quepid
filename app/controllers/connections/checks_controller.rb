@@ -33,6 +33,7 @@ module Connections
       connection.assign_attributes(attributes)
       # Testing before naming it is fine; the name doesn't affect the request.
       connection.name = 'Untitled' if connection.name.blank?
+      connection.owner ||= current_user
       connection
     end
 

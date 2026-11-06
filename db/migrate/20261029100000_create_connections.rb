@@ -1,12 +1,12 @@
 # frozen_string_literal: true
 
-# A Connection is how to reach one external service and authenticate to it (ADR 0005). It knows
-# nothing about what the service is used for: judges and embedders will point at one later.
+# A Connection is how to reach one external provider and authenticate to it (ADR 0005). It knows
+# nothing about what the provider is used for: judges and embedders will point at one later.
 class CreateConnections < ActiveRecord::Migration[8.1]
   def change
     create_table :connections do |t|
       t.string  :name, null: false
-      t.string  :service, null: false, limit: 50
+      t.string  :provider, null: false, limit: 50
       t.string  :base_url, limit: 500
       t.string  :auth_scheme, null: false, default: 'bearer', limit: 20
       t.string  :auth_header, limit: 100

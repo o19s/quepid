@@ -9,6 +9,8 @@ class EmbeddersControllerTest < ActionDispatch::IntegrationTest
 
   setup do
     login_user_for_integration_test user
+    connections(:voyage).update!(owner: user)
+    connections(:shared_ollama).update!(owner: user)
   end
 
   def embedder_form_params overrides = {}
@@ -30,6 +32,16 @@ class EmbeddersControllerTest < ActionDispatch::IntegrationTest
     assert_select 'td', text: embedders(:private_ollama).name, count: 0
   end
 
+  test 'update checks the editor access even when the owner can use the replacement' do
+    replacement = connections(:openai).dup.tap(&:save!)
+
+    patch embedder_url(embedder), params: { embedder: { connection_id: replacement.id } }
+
+    assert_response :unprocessable_content
+    assert_select '.alert-danger', text: /isn't one you can use/
+    assert_equal connections(:openai).id, embedder.reload.connection_id
+  end
+
   test 'index is marked beta and explains what an embedder is' do
     get embedders_url
 
@@ -38,13 +50,13 @@ class EmbeddersControllerTest < ActionDispatch::IntegrationTest
     assert_select '.alert-info', text: /turns query text into a vector embedding/
   end
 
-  test 'new renders every provider and the presets' do
+  test 'new asks for a connection instead of a provider' do
     get new_embedder_url(team_id: team.id)
 
     assert_response :success
-    EmbedderProvider.select_options.map(&:last).each do |key|
-      assert_select 'select#embedder_provider option[value=?]', key
-    end
+    assert_select 'select#embedder_provider', count: 0
+    assert_select 'input[type=hidden][name="embedder[provider]"]'
+    assert_equal '', css_select('select#embedder_connection_id option').first['value']
     form = css_select('[data-controller="embedder-form"]').first
     assert_equal EmbedderProvider.presets.deep_stringify_keys, JSON.parse(form['data-embedder-form-presets-value'])
     assert_select "input[type=checkbox][value='#{team.id}'][checked]"
@@ -100,7 +112,8 @@ class EmbeddersControllerTest < ActionDispatch::IntegrationTest
     assert_no_match 'sk-test-openai', response.body
   end
 
-  test 'a clone of an embedder on a connection keeps the connection' do
+  test 'a clone keeps an instance-wide connection' do
+    connections(:openai).update!(instance_wide: true)
     embedder.update!(connection: connections(:openai))
 
     get clone_embedder_url(embedder)
@@ -111,6 +124,18 @@ class EmbeddersControllerTest < ActionDispatch::IntegrationTest
                                                                  connection_id: connections(:openai).id) }
 
     assert_equal connections(:openai), Embedder.last.connection
+  end
+
+  test 'a teammate cloning an embedder must choose their own connection' do
+    get clone_embedder_url(embedder)
+
+    assert_response :success
+    assert_select 'select#embedder_connection_id option[value=?]', embedder.connection_id.to_s, count: 0
+    assert_match(/Choose a connection you own or an instance-wide connection for this copy/, response.body)
+    assert_no_difference 'Embedder.count' do
+      post embedders_url, params: { embedder: { name: 'Copy', model: embedder.model, connection_id: embedder.connection_id } }
+    end
+    assert_response :unprocessable_content
   end
 
   test 'cannot see an embedder that is not shared with the user' do
@@ -135,54 +160,51 @@ class EmbeddersControllerTest < ActionDispatch::IntegrationTest
       embedder_form_params({ name: 'On Voyage' }.merge(overrides))
     end
 
-    test 'the connection field comes right below the provider' do
+    test 'the connection picker offers owned connections across embedding services' do
+      connections(:shared_ollama).update!(owner: user)
       get new_embedder_url
 
-      labels = css_select('form label').map { |label| label['for'] }
-      assert_equal 'embedder_provider', labels[labels.index('embedder_connection_id') - 1]
+      assert_select 'select#embedder_connection_id option[value=?]', connections(:voyage).id.to_s, text: /Voyage AI/
+      assert_select 'select#embedder_connection_id option[value=?]', connections(:shared_ollama).id.to_s, text: /Ollama/
     end
 
-    test 'a new embedder, which starts on OpenAI, lists only the OpenAI connections' do
+    test 'a new embedder lists all connections the user can use' do
       get new_embedder_url
 
-      assert_select 'select#embedder_connection_id option[value=?]', connections(:openai).id.to_s, text: 'OpenAI'
-      [ :voyage, :shared_ollama, :anthropic, :private_ollama, :instance_elasticsearch ].each do |other|
-        assert_select 'select#embedder_connection_id option[value=?]:not([disabled])', connections(other).id.to_s, count: 0
-      end
-      option = css_select("select#embedder_connection_id option[value='#{connections(:openai).id}']").first
-      assert_equal 'openai', option['data-service']
-      assert_equal 'https://api.openai.com', option['data-url']
+      assert_select 'select#embedder_connection_id option[value=?]:not([disabled])', connections(:voyage).id.to_s
+      assert_select 'select#embedder_connection_id option[value=?]:not([disabled])', connections(:shared_ollama).id.to_s
+      assert_select 'select#embedder_connection_id option[value=?]', connections(:instance_elasticsearch).id.to_s, count: 0
     end
 
-    test 'the other providers\' connections are still in the list, disabled, so changing the provider can enable them' do
+    test 'the provider stays hidden and connection options carry their provider' do
       get new_embedder_url
 
-      option = css_select("select#embedder_connection_id option[value='#{connections(:shared_ollama).id}']").first
-      assert option.key?('disabled')
-      assert_equal 'ollama', option['data-service']
+      assert_select 'input#embedder_provider[name="embedder[provider]"]'
+      assert_select 'select#embedder_connection_id option[value=?][data-provider="ollama"]', connections(:shared_ollama).id.to_s
     end
 
-    test 'an Ollama embedder lists only the Ollama connections' do
+    test 'an Ollama embedder lists every embedding connection the user can use' do
       ollama = Embedder.create!(name: 'Ollama', provider: 'ollama', connection: connections(:shared_ollama),
                                 model: 'qwen3-embedding:0.6b', owner: user)
 
       get edit_embedder_url(ollama)
 
-      assert_select 'select#embedder_connection_id option[value=?]', connections(:shared_ollama).id.to_s, text: 'Shared Ollama'
-      [ :openai, :voyage, :anthropic, :private_ollama ].each do |other|
-        assert_select 'select#embedder_connection_id option[value=?]:not([disabled])', connections(other).id.to_s, count: 0
+      assert_select 'select#embedder_connection_id option[value=?]', connections(:shared_ollama).id.to_s, text: 'Shared Ollama (Ollama)'
+      assert_select 'select#embedder_connection_id option[value=?]:not([disabled])', connections(:voyage).id.to_s
+      [ :openai, :anthropic, :private_ollama ].each do |other|
+        assert_select 'select#embedder_connection_id option[value=?]', connections(other).id.to_s, count: 0
       end
     end
 
-    test 'a Voyage embedder lists only the Voyage connections' do
+    test 'a Voyage embedder lists every embedding connection the user can use' do
       voyage_embedder = Embedder.create!(name: 'Voyage', provider: 'voyage', connection: voyage,
                                          model: 'voyage-3.5', owner: user)
 
       get edit_embedder_url(voyage_embedder)
 
       assert_select 'select#embedder_connection_id option[value=?]', voyage.id.to_s
-      assert_select 'select#embedder_connection_id option[value=?]:not([disabled])', connections(:shared_ollama).id.to_s, count: 0
-      assert_select 'select#embedder_connection_id option[value=?]:not([disabled])', connections(:openai).id.to_s, count: 0
+      assert_select 'select#embedder_connection_id option[value=?]:not([disabled])', connections(:shared_ollama).id.to_s
+      assert_select 'select#embedder_connection_id option[value=?]', connections(:openai).id.to_s, count: 0
     end
 
     test 'create refuses a connection for another provider' do
@@ -271,9 +293,9 @@ class EmbeddersControllerTest < ActionDispatch::IntegrationTest
       assert_select '#embedder-instructions textarea#embedder_instruction'
       assert_select '#embedder-instructions textarea#embedder_input_template'
       assert_select "#embedder-access input[name='embedder[team_ids][]']"
-      # The name, provider and connection stay above the tabs; the check stays below them.
+      # The name and connection stay above the tabs; the connection-derived provider stays hidden.
       assert_select 'input#embedder_name'
-      assert_select 'select#embedder_provider'
+      assert_select 'input#embedder_provider[type=hidden]'
       assert_select 'select#embedder_connection_id'
       assert_select '#embedder-tabs ~ * input#embedder_name', count: 0
       assert_select '.tab-content input#embedder_name', count: 0
@@ -289,7 +311,7 @@ class EmbeddersControllerTest < ActionDispatch::IntegrationTest
 
     test 'a team member keeps an embedder on a connection they can no longer use when they only rename it' do
       embedder.update!(connection: openai_connection)
-      openai_connection.teams.clear
+      assert_not_includes user.connections_involved_with, openai_connection
 
       patch embedder_url(embedder), params: { embedder: { name: 'Renamed', connection_id: openai_connection.id } }
 
@@ -297,12 +319,13 @@ class EmbeddersControllerTest < ActionDispatch::IntegrationTest
       assert_equal openai_connection, embedder.connection
     end
 
-    test 'index shows which connection an embedder uses' do
+    test 'index names a private connection without linking to an inaccessible page' do
       embedder.update!(connection: openai_connection)
 
       get embedders_url
 
-      assert_select 'td a[href=?]', connection_path(openai_connection), text: 'OpenAI'
+      assert_select 'td', text: /OpenAI.*private connection/
+      assert_select 'td a[href=?]', connection_path(openai_connection), count: 0
     end
   end
 end

@@ -9,6 +9,8 @@
     <h5 class="mb-0"><%= render 'embedders/icon' %> Embedder<%= render 'embedders/beta' %></h5>
   </div>
   <div class="card-body">
+    <%= form.hidden_field :provider, data: { embedder_form_target: 'provider' } %>
+
     <% if embedder.errors.any? %>
       <div class="alert alert-danger">
         <p class="mb-1"><%= pluralize(embedder.errors.count, 'error') %> prohibited this embedder from being saved:</p>
@@ -36,30 +38,21 @@
         </div>
 
         <div class="row mb-3">
-          <%= form.label :provider, class: 'col-sm-3 col-form-label' %>
-          <div class="col-sm-9">
-            <%= form.select :provider, EmbedderProvider.select_options, {},
-                  class: 'form-select',
-                  data: { embedder_form_target: 'provider', action: 'change->embedder-form#changeProvider' } %>
-          </div>
-        </div>
-
-        <div class="row mb-3">
           <%= form.label :connection_id, 'Connection', class: 'col-sm-3 col-form-label' %>
           <div class="col-sm-9">
             <%= form.select :connection_id, embedder_connection_options(embedder), {},
                   class: 'form-select',
                   data: { embedder_form_target: 'connection', action: 'change->embedder-form#changeConnection' } %>
             <div class="form-text">
-              The connection holds the provider's URL, key and timeout, so they're entered once and shared.
-              Only connections for the provider chosen above are listed.
+              Choose an embedding connection first; its provider determines the model and provider-specific settings.
+              The connection holds the URL, key and timeout. A shared embedder keeps using its existing connection;
+              creating a copy requires a connection you can select.
               <%= link_to 'Manage connections', connections_path, target: '_blank', rel: 'noopener' %>.
             </div>
             <div class="alert alert-warning small mt-2 mb-0" <%= 'hidden' if embedder_connection_offered?(embedder) %>
                  data-embedder-form-target="noConnections">
-              There is no connection for this provider yet.
-              <%= link_to "Create a #{embedder.provider_definition&.label || embedder.provider} connection",
-                          new_connection_path(service: embedder.provider), target: '_blank', rel: 'noopener',
+              There are no embedding connections you can use yet. Create one first.
+              <%= link_to 'Create a connection', new_connection_path, target: '_blank', rel: 'noopener',
                           data: { embedder_form_target: 'newConnectionLink' } %>
             </div>
             <div class="alert alert-light border small mt-2 mb-0" hidden data-embedder-form-target="connectionInfo"></div>
@@ -195,7 +188,7 @@
     <div class="form-text mb-3" data-embedder-form-target="checkHint" <%= 'hidden' if embedder.connection_id %>>
       <i class="bi bi-info-circle" aria-hidden="true"></i>
       There is nothing to check until the embedder has a connection. Choose one above, or
-      <%= link_to 'add a connection', new_connection_path(service: embedder.provider), target: '_blank', rel: 'noopener' %>.
+      <%= link_to 'add a connection', new_connection_path(provider: embedder.provider), target: '_blank', rel: 'noopener' %>.
     </div>
     <div data-embedder-form-target="checkResult" aria-live="polite"></div>
   </div>

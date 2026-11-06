@@ -1,22 +1,22 @@
 # frozen_string_literal: true
 
-# One service a Connection can be pointed at (OpenAI, Voyage, Ollama, Elasticsearch, ...), and the
+# One provider a Connection can be pointed at (OpenAI, Voyage, Ollama, Elasticsearch, ...), and the
 # registry of all of them (ADR 0005).
 #
-# Like LlmProvider and EmbedderProvider, not an ActiveRecord model: the set of services is code.
-# A connection stores only the service `key`. What the service is for lives in `capabilities`, so
+# Like LlmProvider and EmbedderProvider, not an ActiveRecord model: the set of providers is code.
+# A connection stores only the provider `key`. What the provider is for lives in `capabilities`, so
 # the pickers that will use a connection (embedders, AI judges) can offer only the ones that fit.
 #
 # The label, URL, help text and how the key is sent are read from LlmProvider and EmbedderProvider
-# for the services they already describe, so there is one place to change them; only the services
+# for the providers they already describe, so there is one place to change them; only providers
 # they know nothing about (the search engines) are spelled out here.
-class ConnectionService
+class ConnectionProvider
   include ActiveModel::Model
   include ActiveModel::Attributes
 
   CAPABILITIES = %w[chat typed_judge embeddings search].freeze
 
-  # How LlmProvider/EmbedderProvider say the key is sent, in ConnectionService terms.
+  # How LlmProvider/EmbedderProvider say the key is sent, in ConnectionProvider terms.
   AUTH_FROM_STYLE = {
     bearer:    { auth_scheme: 'bearer' },
     none:      { auth_scheme: 'none' },
@@ -24,7 +24,7 @@ class ConnectionService
     x_api_key: { auth_scheme: 'header', auth_header: 'x-api-key' },
   }.freeze
 
-  # Services the two provider registries don't describe.
+  # Providers the two provider registries don't describe.
   SEARCH_DEFINITIONS = [
     {
       key:              'elasticsearch',
@@ -57,7 +57,7 @@ class ConnectionService
   ].freeze
 
   # Endpoints that answer a GET with 2xx only when the credentials work, so a check can say more
-  # than "something is listening". Services not listed are only checked for being reachable.
+  # than "something is listening". Providers not listed are only checked for being reachable.
   CHECK_PATHS = {
     'openai'            => 'v1/models',
     'openai_compatible' => 'v1/models',
@@ -69,10 +69,10 @@ class ConnectionService
     'opensearch'        => '',
   }.freeze
 
-  # The services whose calls carry an api-version (Azure's OpenAI-style endpoints).
-  API_VERSION_SERVICES = %w[azure_openai azure_ai_foundry azure_ai_foundry_serverless].freeze
+  # The providers whose calls carry an api-version (Azure's OpenAI-style endpoints).
+  API_VERSION_PROVIDERS = %w[azure_openai azure_ai_foundry azure_ai_foundry_serverless].freeze
 
-  # Headers a service insists on even for the check.
+  # Headers a provider insists on even for the check.
   CHECK_HEADERS = {
     'anthropic' => { 'anthropic-version' => '2023-06-01' },
   }.freeze
@@ -83,11 +83,11 @@ class ConnectionService
   attribute :auth_scheme,      :string, default: 'bearer'
   # Only for auth_scheme "header": the name of the header carrying the key.
   attribute :auth_header,      :string
-  # Whether the service rejects every request without a key.
+  # Whether the provider rejects every request without a key.
   attribute :requires_secret,  :boolean, default: false
   attribute :capabilities,     default: -> { [] }
   attribute :help_html,        :string
-  # The API version a service starts with (blank is a valid choice for some Azure services).
+  # The API version a provider starts with (blank is a valid choice for some Azure endpoints).
   attribute :default_api_version, :string, default: ''
 
   class << self
@@ -95,14 +95,14 @@ class ConnectionService
       @all ||= (llm_and_embedder_definitions + SEARCH_DEFINITIONS.map { |definition| new(definition) })
     end
 
-    # Not just indirection: RuboCop's Rails/FindEach cop mistakes `ConnectionService.all.each`
+    # Not just indirection: RuboCop's Rails/FindEach cop mistakes `ConnectionProvider.all.each`
     # for an ActiveRecord relation and flags it, so callers use this instead.
     def each(&)
       all.each(&)
     end
 
     def find key
-      all.find { |service| service.key == key.to_s }
+      all.find { |provider| provider.key == key.to_s }
     end
 
     def keys
@@ -111,17 +111,17 @@ class ConnectionService
 
     # [[label, key], ...] for options_for_select
     def select_options
-      all.map { |service| [ service.label, service.key ] }
+      all.map { |provider| [ provider.label, provider.key ] }
     end
 
-    # The settings the connection form fills in when a service is picked, keyed by service.
+    # The settings the connection form fills in when a provider is picked, keyed by provider.
     def presets
       all.index_by(&:key).transform_values(&:to_preset)
     end
 
-    # The services whose connections can serve this capability, for a picker.
+    # The providers whose connections can serve this capability, for a picker.
     def with_capability capability
-      all.select { |service| service.capabilities.include?(capability.to_s) }
+      all.select { |provider| provider.capabilities.include?(capability.to_s) }
     end
 
     private
@@ -152,7 +152,7 @@ class ConnectionService
       )
     end
 
-    # A service that either registry says takes no key takes none.
+    # A provider that either registry says takes no key takes none.
     def auth_style_of llm, embedder, primary
       return :none if [ llm, embedder ].compact.any? { |provider| :none == provider.auth_style.to_sym }
 
@@ -172,7 +172,7 @@ class ConnectionService
   end
 
   def uses_api_version?
-    API_VERSION_SERVICES.include?(key)
+    API_VERSION_PROVIDERS.include?(key)
   end
 
   def check_path
@@ -183,7 +183,7 @@ class ConnectionService
     CHECK_HEADERS.fetch(key, {})
   end
 
-  # What the connection form's script needs when this service is picked.
+  # What the connection form's script needs when this provider is picked.
   def to_preset
     {
       label:            label,

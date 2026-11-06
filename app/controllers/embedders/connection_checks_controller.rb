@@ -9,7 +9,7 @@ module Embedders
 
     def create
       embedder = build_embedder
-      unless embedder.connection_usable_by?(current_user) && embedder.valid?
+      unless embedder.valid?
         render json: { error: embedder.errors.full_messages.to_sentence }, status: :unprocessable_content
         return
       end
@@ -30,6 +30,7 @@ module Embedders
       embedder = saved || Embedder.new
       # The one checking is who would use the connection.
       embedder.owner ||= current_user
+      embedder.connection_assignment_user = current_user
       embedder.assign_attributes(attributes)
       # Testing before naming it is fine; the name doesn't affect the request.
       embedder.name = 'Untitled' if embedder.name.blank?

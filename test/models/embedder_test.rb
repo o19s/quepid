@@ -158,6 +158,7 @@ class EmbedderTest < ActiveSupport::TestCase
       owner = User.create!(email: 'embedder-owner@example.com', password: 'password', name: 'Owner', agreed: true)
       owner.teams << teams(:shared)
       connection = connections(:openai)
+      connection.update!(instance_wide: true)
       embedder = build_embedder(owner: owner, connection: connection)
       embedder.save!
 
@@ -244,7 +245,38 @@ class EmbedderTest < ActiveSupport::TestCase
       assert_includes embedder.errors[:connection].join, "isn't one you can use"
     end
 
-    test 'a team member can own an embedder on a connection shared with their team' do
+    test 'validation and save reject a connection the assigning user cannot use' do
+      embedder = on_connection
+      embedder.connection_assignment_user = users(:joey)
+
+      assert_not embedder.valid?
+      assert_includes embedder.errors[:connection], "isn't one you can use"
+      assert_no_difference 'Embedder.count' do
+        assert_not embedder.save
+      end
+    end
+
+    test 'update permits an unchanged connection but rejects an inaccessible replacement' do
+      embedder = embedders(:openai_small)
+      replacement = connections(:openai).dup.tap(&:save!)
+      embedder.connection_assignment_user = users(:joey)
+
+      assert embedder.update(name: 'Renamed')
+      assert_not embedder.update(connection: replacement)
+      assert_includes embedder.errors[:connection], "isn't one you can use"
+      assert_equal connections(:openai).id, embedder.reload.connection_id
+    end
+
+    test 'validation accepts an instance-wide connection for the assigning user' do
+      voyage.update!(instance_wide: true)
+      embedder = on_connection
+      embedder.connection_assignment_user = users(:random)
+
+      assert_predicate embedder, :valid?
+    end
+
+    test 'a team member can own an embedder on an instance-wide connection' do
+      voyage.update!(instance_wide: true)
       assert_predicate on_connection(owner: users(:random)), :valid?
     end
 
@@ -272,14 +304,14 @@ class EmbedderTest < ActiveSupport::TestCase
     test 'switching a connection to a service that cannot embed is refused while embedders use it' do
       on_connection.save!
 
-      assert_not voyage.update(service: 'anthropic', auth_scheme: 'header', auth_header: 'x-api-key')
-      assert_includes voyage.errors[:service].join, "can't make embeddings"
+      assert_not voyage.update(provider: 'anthropic', auth_scheme: 'header', auth_header: 'x-api-key')
+      assert_includes voyage.errors[:provider].join, "can't make embeddings"
     end
 
     test 'switching a connection to another embedding service moves its embedders with it' do
       embedder = on_connection.tap(&:save!)
 
-      voyage.update!(service: 'cohere', base_url: 'https://api.cohere.com')
+      voyage.update!(provider: 'cohere', base_url: 'https://api.cohere.com')
 
       assert_equal 'cohere', embedder.reload.provider
     end

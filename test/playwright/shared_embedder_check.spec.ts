@@ -90,7 +90,7 @@ test("a teammate checks unsaved settings through the embedder's private saved co
     headers: { ...headers, Accept: "text/html" },
     form: {
       "connection[name]": name,
-      "connection[service]": "openai_compatible",
+      "connection[provider]": "openai_compatible",
       "connection[base_url]": providerUrl,
       "connection[auth_scheme]": "bearer",
       "connection[secret]": "fixture-private-key"

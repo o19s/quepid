@@ -84,8 +84,8 @@ comparison.
 
 ## 2. Decision
 
-Introduce **`Connection`**: a record that says how to reach one service and how to authenticate to
-it. It knows nothing about LLMs. What a service can be used for lives in a registry, and the
+Introduce **`Connection`**: a record that says how to reach one provider and how to authenticate to
+it. It knows nothing about LLMs. What a provider can be used for lives in a registry, and the
 settings that belong to one task (a model, a prompt, a vector size) stay on the thing that does
 the task.
 
@@ -96,7 +96,7 @@ the task.
 | Column                | Notes                                                                                                               |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------- |
 | `name`                | shown in pickers                                                                                                    |
-| `service`             | registry key (§2.3): `openai`, `anthropic`, `azure_openai`, `voyage`, `cohere`, `ollama`, `jev`, `elasticsearch`, … |
+| `provider`            | registry key (§2.3): `openai`, `anthropic`, `azure_openai`, `voyage`, `cohere`, `ollama`, `jev`, `elasticsearch`, … |
 | `base_url`            |                                                                                                                     |
 | `auth_scheme`         | §2.2                                                                                                                |
 | `auth_header`         | only for `auth_scheme: header`                                                                                      |
@@ -105,10 +105,10 @@ the task.
 | `timeout`             | seconds                                                                                                             |
 | `requests_per_minute` | 0 means no limit; shared by everything that uses the connection (§2.6)                                              |
 | `options`             | JSON, for what only some services need (Azure `api_version`)                                                        |
-| `owner_id`            | null for a communal connection (§2.5)                                                                                |
+| `owner_id`            | responsible user owner, always required (§2.5)                                                                                |
 | `archived`            | as embedders and search endpoints                                                                                   |
 
-Plus `teams_connections`, as `teams_embedders` and `teams_search_endpoints` work today.
+`instance_wide` is an explicit boolean, default false. Connections have no team join table; configured consumers retain their team sharing.
 
 ### 2.2 How the secret is sent: `auth_scheme`
 
@@ -130,9 +130,9 @@ header), so picking `anthropic` fills in `header` / `x-api-key`.
 The old `LlmProvider` values map directly: `:bearer` → `bearer`; `:api_key` → `header` with
 `api-key`; `:x_api_key` → `header` with `x-api-key`; `EmbedderProvider`'s `:none` → `none`.
 
-### 2.3 The registry: services and what they can do
+### 2.3 The registry: providers and what they can do
 
-`ConnectionService` replaces `LlmProvider` and `EmbedderProvider`. Like them it is code, not data
+`ConnectionProvider` replaces `LlmProvider` and `EmbedderProvider`. Like them it is code, not data
 (the set of services is code; a record stores only the `key`). An entry has what a connection
 needs, and a `capabilities` hash holding what each use needs:
 
@@ -156,7 +156,7 @@ needs, and a `capabilities` hash holding what each use needs:
   guidance (the embedder's dimension notes) stays on the capability.
 - The pickers filter on capability: the embedder form offers connections whose service has
   `embeddings`; the AI judge form offers `chat` and `typed_judge`.
-- `LlmProvider` and `EmbedderProvider` become thin readers over `ConnectionService` for one
+- `LlmProvider` and `EmbedderProvider` become thin readers over `ConnectionProvider` for one
   release so callers can move over, then go.
 
 ### 2.4 What stays with the thing that uses a connection
@@ -170,19 +170,25 @@ needs, and a `capabilities` hash holding what each use needs:
 
 A connection can have several users: one OpenAI connection can back an AI judge and two embedders.
 
-### 2.5 Ownership, sharing and communal connections
+### 2.5 Ownership and instance-wide connections
 
-- Same rule as embedders: a user sees the connections they own and those shared with their teams.
-  Using a connection spends its owner's secret, so sharing a connection with a team lets members
-  make calls on that key. That is today's rule for embedders; it now also covers judging, and the
-  sharing UI says so.
-- A connection with no owner is **communal**, visible to everyone -- the same term, and the same
-  no-owner shape, Scorer already uses for its communal scorers.
-  An administrator creates it. The Ollama container the deployment already runs becomes one,
-  replacing the special handling that fills the Ollama URL in at runtime. Its secret is never
-  shown to anyone but administrators.
-- Use is checked where the call is made, as the diversity endpoint already does: the user must be
-  able to see the connection, not merely the case or judge that points to it.
+- Every connection has a responsible user owner. Private connections can be selected for new
+  configurations only by that owner; only the owner can change or delete them.
+- An administrator can create an explicitly **instance-wide** connection. Everyone can select
+  it and administrators manage it, while its creator remains the responsible owner. Availability
+  is chosen at creation. Missing ownership never grants public access.
+- Connections are not shared with teams. Owners share configured embedders (and, once migrated,
+  AI judges). Teammates can run, test and edit the consumer using its existing connection without
+  gaining permission to attach a private connection to another configuration. A new consumer or
+  clone needs a connection its new owner can select. Replacing a connection requires both the
+  editor and consumer owner to be able to select it.
+- Existing cases retain their assigned embedder after it is unshared. Team sharing controls
+  discovery and selection; it does not revoke a configured consumer's ability to run. Delegated
+  creation using another person's private credentials is deferred.
+- Previously ownerless connections are migrated to explicit instance-wide availability, with
+  the first human administrator assigned as owner. If one is needed and unavailable, migration
+  stops. Owned connections remain private and existing consumer links are preserved. Removing
+  the connection team grants is irreversible; restoring those grants requires a backup.
 
 ### 2.6 One HTTP client, one rate limit
 
@@ -238,7 +244,7 @@ through three stages, and a consumer is only cleaned up once the stage before it
    been moved), a data migration turns each remaining consumer's own settings into a connection,
    and a later migration drops the columns and the fallback code.
    - **Data migration.** One connection per consumer that still has a URL or key, owned by the
-     same user and shared with the same teams. Equal ones are not merged in the migration: secrets
+     same user; team sharing remains on the consumer. Equal ones are not merged in the migration: secrets
      are encrypted non-deterministically, so they can't be compared by column. Where several
      consumers of one owner have the same service, URL and key, the migration compares them in
      memory and reuses one connection. A consumer with no owner is skipped, since nobody could
@@ -258,7 +264,7 @@ truth until the new ones have been seen to work.
   embedder's existing check becomes a check of the connection plus the model.
 - **The embedder fingerprint depends on the connection.** `Embedder::VECTOR_SETTINGS` includes
   `provider` and `service_url`, so a vector says where it came from. If those move to the
-  connection, editing a connection's URL or service changes the fingerprint of every embedder that
+  connection, editing a connection's URL or provider changes the fingerprint of every embedder that
   uses it and marks their vectors stale. This is correct (a different server may give different
   vectors for the same model name), but it is a larger blast radius than editing one embedder. The
   connection form warns with the number of embedders affected, and the fingerprint reads the
@@ -296,8 +302,8 @@ Settled by what was built:
 
 - **Timeout:** only the connection's. A consumer has no override; the embedder form has no timeout
   field.
-- **Who may create a communal connection:** administrators only, and it can't be changed
-  afterwards. They also manage it.
+- **Who may create an instance-wide connection:** administrators only. Availability cannot be
+  changed through the form afterwards; administrators manage it, with a responsible owner retained.
 - **Names:** the model and the UI both say "Connection".
 
 Still open:
@@ -305,11 +311,7 @@ Still open:
 - How the per-connection rate limit is shared across web and job processes (the database, the
   cache, or only a soft per-process limit to start). The field is stored and shown; nothing enforces
   it, and the form says so.
-- Sharing: an embedder can be shared with teams its connection isn't shared with, so their members
-  spend the connection owner's key (see §9). Either restrict an embedder's teams to those that can
-  use its connection, or accept it as embedders' own keys already behave.
-- Whether a team member may use a connection only through a consumer, as now, or also see where it
-  points (today they see the URL, never the key).
+- Delegated authoring with private connections is deferred; consumers remain the team-sharing boundary.
 - Services with more than one secret (a cloud provider with a key id and a secret). Out of scope;
   `extra_headers` and `options` are not a place for secrets.
 - Search endpoints (§2.7): the `search` capability and when a secret may reach a browser.
@@ -338,8 +340,8 @@ Still open:
 
 ## 7. Phasing
 
-1. `Connection` and `ConnectionService`; the old provider classes read through. Done.
-2. A Connections page; communal connections; the Check connection button. Done.
+1. `Connection` and `ConnectionProvider`; the old provider classes read through. Done.
+2. A Connections page; instance-wide connections; the Check connection button. Done.
 3. Embedders move onto connections: a picker on the form, new ones require a connection, old ones
    keep working and are warned about (the deprecation period, §3). Done.
 4. AI judges move onto connections, the same way. Not started.
@@ -357,28 +359,27 @@ Still open:
   calls too.
 - Model: `secret` encrypted and masked; `basic` requires `user:password`; a service with no
   capability for a consumer is rejected by the picker and by validation.
-- Access: a user can use only connections they own or that are shared with their teams, plus
-  communal ones; the diversity endpoint still refuses a connection the user cannot see.
-- Migration (judges): backfill gives one connection per judge with the same owner and teams;
+- Access: new consumers can select owned or instance-wide connections. Shared consumers keep
+  using their saved private connection. Direct connection team grants are not supported.
+- Migration (judges): backfill gives one connection per judge with the same owner, leaving teams on the judge;
   dual read prefers the connection; a consumer with both reads the connection.
 - Fingerprint: editing a connection's URL changes the embedder fingerprint; editing its secret,
   name or timeout does not.
 
 ## 9. Built so far
 
-- `connections` and `teams_connections` tables, `Connection` (secret encrypted and masked, the five
-  `auth_scheme`s, extra headers, API version, a `check`), `ConnectionService` (read through
+- `connections` table, `Connection` (secret encrypted and masked, the five
+  `auth_scheme`s, extra headers, API version, a `check`), `ConnectionProvider` (read through
   `LlmProvider` and `EmbedderProvider`, plus Elasticsearch, OpenSearch and Solr), `User#owned_connections`,
-  `User#connections_involved_with`, `Team#connections`.
-- A **Connections** page in the sidebar: list, create, edit, delete, a read-only view for a
-  connection shared with you, team sharing, communal connections for administrators, and a
-  **Check connection** button that works on the unsaved form.
-- Only the owner changes a connection (an administrator for a communal one). A team member can
-  use and see it, but not read the secret, change its URL, or check it with the saved secret: all
-  three would let them send the owner's key somewhere else. This is stricter than embedders, which
-  any team member can edit.
+  `User#connections_involved_with`.
+- A **Connections** page in the sidebar: list, create, edit, delete, a read-only view for an
+  instance-wide connection, and a **Check connection** button that works on the unsaved form.
+  Connection team sharing is removed; the Access tab describes sharing configured consumers.
+- Only the owner changes a private connection; administrators manage instance-wide connections.
+  Non-managers never receive the secret or change the destination. A shared embedder may still be
+  edited by its team members, using the existing connection.
 - Deleting a user deletes their unused connections. Deletion is blocked while any embedder uses
-  one of their connections. Unlinking connections from their owner would make them communal.
+  one of their connections. Connections require an owner regardless of availability.
 
 - **Embedders use a connection.** `embedders.connection_id` is optional in the database. The embedder
   form no longer has URL, key or timeout fields: they come from the connection chosen in a
@@ -400,10 +401,10 @@ Still open:
 - Picking a connection is checked against the user doing it, not only the embedder's owner, because
   a team member may be editing someone else's embedder.
 
-Known gap: an embedder can be shared with teams the connection is not shared with. Someone who may
-use a connection can put it behind an embedder shared with a third team, whose members then spend
-the connection owner's key. Embedders already work this way for their own keys, so this ADR leaves it
-alone; the fix is to allow an embedder to be shared only with teams that can also use its connection.
+Sharing decision: teams share configured embedders, not connections. An embedder's team members
+can spend its connection's credentials by using that embedder, but cannot create a separate
+configuration with the private connection. Instance-wide connections are the explicit exception.
+The clone form clears an inaccessible private connection and asks the new owner to choose one.
 
 Not built: renaming `LlmConnection` to `HttpClient` and building it from a `Connection`; moving
 AI judges onto connections, and the matching migration of their own settings to connections and

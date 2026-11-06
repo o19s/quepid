@@ -1,22 +1,18 @@
 # frozen_string_literal: true
 
 module EmbeddersHelper
-  # The embedder form's connection dropdown: a prompt, then every active connection the user can use that can make embeddings, plus the one the
-  # embedder already has so saving doesn't silently unlink it. Only those for the embedder's
-  # provider can be picked -- an Ollama embedder offers only Ollama connections -- so the others
-  # are rendered disabled and hidden. They are still there because the provider can be changed on
-  # the form, and the script then enables the ones for the new provider.
+  # The embedder form's connection dropdown: a prompt, then every active embedding connection the
+  # user can use, plus the one already assigned so a teammate can save an unchanged shared embedder.
   def embedder_connection_options embedder
-    services = ConnectionService.with_capability(:embeddings).map(&:key)
-    connections = current_user.connections_involved_with.not_archived.where(service: services).order(:name).to_a
-    connections |= [ embedder.connection ] if embedder.connection
+    providers = ConnectionProvider.with_capability(:embeddings).map(&:key)
+    connections = current_user.connections_involved_with.not_archived.where(provider: providers).order(:name).to_a
+    connections |= [ embedder.connection ] if embedder.persisted? && embedder.connection
 
     options = connections.map do |connection|
-      fits = embedder.provider.blank? || embedder.provider == connection.service
-      [ connection.name, connection.id,
-        { disabled: !fits, hidden: !fits,
-          data: { service: connection.service, url: connection.base_url,
-                  service_label: connection.service_definition&.label || connection.service } } ]
+      provider_label = connection.provider_definition&.label || connection.provider
+      [ "#{connection.name} (#{provider_label})", connection.id,
+        { data: { provider: connection.provider, url: connection.base_url,
+                  provider_label: provider_label } } ]
     end
 
     options_for_select([ [ 'Choose a connection', '' ] ] + options, embedder.connection_id)
@@ -24,6 +20,8 @@ module EmbeddersHelper
 
   # Is there a connection the embedder's provider can use, so that the form has something to pick?
   def embedder_connection_offered? embedder
-    current_user.connections_involved_with.not_archived.exists?(service: embedder.provider)
+    providers = ConnectionProvider.with_capability(:embeddings).map(&:key)
+    connections = current_user.connections_involved_with.not_archived.where(provider: providers)
+    embedder.provider.present? ? connections.exists?(provider: embedder.provider) : connections.exists?
   end
 end

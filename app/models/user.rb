@@ -127,8 +127,7 @@ class User < ApplicationRecord
            inverse_of:  :owner,
            dependent:   :nullify
 
-  # Destroyed, not nullified: a connection with no owner is communal, so unlinking would
-  # hand a deleted user's secret to everyone.
+  # Unused connections are destroyed with their owner; used ones block account deletion.
   has_many :owned_connections,
            class_name:  'Connection',
            foreign_key: :owner_id,
@@ -322,8 +321,8 @@ class User < ApplicationRecord
     Embedder.for_user(self)
   end
 
-  # All the connections the user can use: their own, those shared with one of their teams, and the
-  # communal ones. Changing one is narrower; see Connection#manageable_by?.
+  # Connections the user can attach to new configurations: their own and instance-wide ones.
+  # Changing one is narrower; see Connection#manageable_by?.
   def connections_involved_with
     Connection.usable_by(self)
   end

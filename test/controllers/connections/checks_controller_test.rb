@@ -10,7 +10,7 @@ module Connections
     let(:models_url) { 'https://api.openai.com/v1/models' }
 
     def form_params overrides = {}
-      { name: 'x', service: 'openai', base_url: 'https://api.openai.com', auth_scheme: 'bearer', secret: 'sk-typed', timeout: '30' }.merge(overrides)
+      { name: 'x', provider: 'openai', base_url: 'https://api.openai.com', auth_scheme: 'bearer', secret: 'sk-typed', timeout: '30' }.merge(overrides)
     end
 
     test 'checks the unsaved form with the secret typed into it' do
@@ -33,7 +33,7 @@ module Connections
       assert_equal 'rejected', response.parsed_body['status']
     end
 
-    test 'reports an invalid form without calling the service' do
+    test 'reports an invalid form without calling the provider' do
       login_user_for_integration_test member
 
       post check_connections_url, params: { connection: form_params(base_url: 'nope') }, as: :json

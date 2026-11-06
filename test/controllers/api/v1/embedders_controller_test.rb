@@ -12,6 +12,8 @@ module Api
       before do
         @controller = Api::V1::EmbeddersController.new
         login_user user
+        connections(:voyage).update!(owner: user)
+        connections(:shared_ollama).update!(owner: user)
       end
 
       test 'index lists visible embedders and masks keys' do
@@ -23,6 +25,16 @@ module Api
         assert_not_includes names, embedders(:private_ollama).name
         assert_not_includes response.body, 'sk-test-openai'
         assert_equal Embedder::MASKED_API_KEY, response.parsed_body['embedders'].first['api_key']
+      end
+
+      test 'update checks the editor access even when the owner can use the replacement' do
+        replacement = connections(:openai).dup.tap(&:save!)
+
+        patch :update, params: { id: embedder.id, embedder: { connection_id: replacement.id } }, format: :json
+
+        assert_response :bad_request
+        assert_includes response.parsed_body['connection'], "isn't one you can use"
+        assert_equal connections(:openai).id, embedder.reload.connection_id
       end
 
       test 'index filters by team' do

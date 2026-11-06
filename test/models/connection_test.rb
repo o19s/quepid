@@ -12,15 +12,16 @@ require 'test_helper'
 #  auth_scheme         :string(20)       default("bearer"), not null
 #  base_url            :string(500)
 #  extra_headers       :json
+#  instance_wide       :boolean          default(FALSE), not null
 #  name                :string(255)      not null
 #  options             :json
+#  provider            :string(50)       not null
 #  requests_per_minute :integer          default(0), not null
 #  secret              :string(4000)
-#  service             :string(50)       not null
 #  timeout             :integer          default(30), not null
 #  created_at          :datetime         not null
 #  updated_at          :datetime         not null
-#  owner_id            :integer
+#  owner_id            :integer          not null
 #
 # Indexes
 #
@@ -33,34 +34,45 @@ class ConnectionTest < ActiveSupport::TestCase
   let(:joey) { users(:joey) }
 
   def build **overrides
-    Connection.new({ name: 'Mine', service: 'openai', base_url: 'https://api.openai.com',
+    Connection.new({ name: 'Mine', provider: 'openai', base_url: 'https://api.openai.com',
                      auth_scheme: 'bearer', secret: 'sk-new', owner: doug }.merge(overrides))
   end
 
   describe 'who can use and change a connection' do
-    test 'usable by its owner, a member of a team it is shared with, and everyone if communal' do
+    test 'membership in the owners team does not grant connection access' do
+      assert_includes doug.teams, teams(:shared)
+      assert_includes random.teams, teams(:shared)
+      assert_not_includes random.connections_involved_with, connection
+    end
+
+    test 'an ownerless connection is invalid' do
+      assert_not build(owner: nil).valid?
+    end
+
+    test 'selectable by its owner and everyone if instance-wide' do
       assert_includes doug.connections_involved_with, connection
-      assert_includes random.connections_involved_with, connection
+      assert_not_includes random.connections_involved_with, connection
       assert_includes random.connections_involved_with, connections(:instance_elasticsearch)
       assert_not_includes random.connections_involved_with, connections(:private_ollama)
       assert_not_includes doug.connections_involved_with, connections(:private_ollama)
     end
 
-    test 'only the owner changes it; a team member can use it but not manage it' do
+    test 'only the owner changes a private connection' do
       assert connection.manageable_by?(doug)
       assert_not connection.manageable_by?(random)
       assert_not connection.manageable_by?(nil)
     end
 
-    test 'a communal connection is managed by administrators only' do
-      communal = connections(:instance_elasticsearch)
+    test 'an instance-wide connection retains its owner and is managed by administrators only' do
+      instance = connections(:instance_elasticsearch)
 
-      assert_predicate communal, :communal?
-      assert communal.manageable_by?(doug)
-      assert_not communal.manageable_by?(random)
+      assert_predicate instance, :instance_wide?
+      assert_equal doug, instance.owner
+      assert instance.manageable_by?(doug)
+      assert_not instance.manageable_by?(random)
     end
 
-    test 'deleting the owner deletes the connection instead of making it communal' do
+    test 'deleting the owner deletes the connection without publishing it' do
       private_ollama = connections(:private_ollama)
       embedders(:private_ollama).destroy!
       joey.destroy
@@ -70,26 +82,31 @@ class ConnectionTest < ActiveSupport::TestCase
   end
 
   describe 'validations' do
+    test 'an instance-wide connection requires a human administrator as its owner' do
+      assert_not build(owner: random, instance_wide: true).valid?
+      assert_predicate build(instance_wide: true), :valid?
+    end
+
     test 'a valid connection saves' do
       assert build.save
     end
 
-    test 'a connection left unnamed is called after its service' do
+    test 'a connection left unnamed is called after its provider' do
       assert_equal 'OpenAI Connection', build(name: '').tap(&:valid?).name
-      assert_equal 'Voyage AI Connection', build(name: nil, service: 'voyage', base_url: 'https://api.voyageai.com').tap(&:valid?).name
+      assert_equal 'Voyage AI Connection', build(name: nil, provider: 'voyage', base_url: 'https://api.voyageai.com').tap(&:valid?).name
       assert_equal 'Mine', build.tap(&:valid?).name
     end
 
-    test 'the default name follows the service when it changes before saving' do
+    test 'the default name follows the provider when it changes before saving' do
       connection = build(name: '')
-      connection.service = 'anthropic'
+      connection.provider = 'anthropic'
       connection.valid?
 
       assert_equal 'Anthropic Connection', connection.name
     end
 
-    test 'requires a known service' do
-      assert_not build(service: 'nope').valid?
+    test 'requires a known provider' do
+      assert_not build(provider: 'nope').valid?
     end
 
     test 'accepts complete http(s) URLs including local hosts and provider paths' do
@@ -130,15 +147,15 @@ class ConnectionTest < ActiveSupport::TestCase
       assert_equal 'https://api.openai.com', build(base_url: ' https://api.openai.com/ ').tap(&:valid?).base_url
     end
 
-    test 'a service that always needs a key rejects a connection without one' do
+    test 'a provider that always needs a key rejects a connection without one' do
       connection = build(secret: nil)
 
       assert_not connection.valid?
       assert_includes connection.errors[:secret].join, 'OpenAI'
     end
 
-    test 'a keyless service saves without a secret' do
-      assert_predicate build(service: 'ollama', base_url: 'http://ollama:11434', auth_scheme: 'none', secret: nil), :valid?
+    test 'a keyless provider saves without a secret' do
+      assert_predicate build(provider: 'ollama', base_url: 'http://ollama:11434', auth_scheme: 'none', secret: nil), :valid?
     end
 
     test 'the header scheme needs a valid header name, other schemes drop it' do
@@ -149,12 +166,12 @@ class ConnectionTest < ActiveSupport::TestCase
     end
 
     test 'a scheme of none drops any secret' do
-      assert_nil build(service: 'ollama', auth_scheme: 'none', secret: 'left-over').tap(&:valid?).secret
+      assert_nil build(provider: 'ollama', auth_scheme: 'none', secret: 'left-over').tap(&:valid?).secret
     end
 
     test 'basic needs user:password' do
-      assert_not build(service: 'elasticsearch', auth_scheme: 'basic', secret: 'nocolon').valid?
-      assert_predicate build(service: 'elasticsearch', auth_scheme: 'basic', secret: 'elastic:changeme'), :valid?
+      assert_not build(provider: 'elasticsearch', auth_scheme: 'basic', secret: 'nocolon').valid?
+      assert_predicate build(provider: 'elasticsearch', auth_scheme: 'basic', secret: 'elastic:changeme'), :valid?
     end
 
     test 'timeout and rate limit must be in range' do
@@ -193,7 +210,7 @@ class ConnectionTest < ActiveSupport::TestCase
     end
 
     test 'basic encodes user:password' do
-      headers = build(service: 'elasticsearch', auth_scheme: 'basic', secret: 'elastic:changeme').request_headers
+      headers = build(provider: 'elasticsearch', auth_scheme: 'basic', secret: 'elastic:changeme').request_headers
 
       assert_equal({ 'Authorization' => "Basic #{Base64.strict_encode64('elastic:changeme')}" }, headers)
     end
@@ -209,7 +226,7 @@ class ConnectionTest < ActiveSupport::TestCase
     end
 
     test 'none sends no credentials but keeps the extra headers' do
-      headers = build(service: 'ollama', auth_scheme: 'none', secret: nil, extra_headers: { 'X-Team' => 'search' }).request_headers
+      headers = build(provider: 'ollama', auth_scheme: 'none', secret: nil, extra_headers: { 'X-Team' => 'search' }).request_headers
 
       assert_equal({ 'X-Team' => 'search' }, headers)
     end
@@ -233,7 +250,7 @@ class ConnectionTest < ActiveSupport::TestCase
 
   describe 'api version' do
     test 'is kept in options and cleared when blank' do
-      connection = build(service: 'azure_openai', api_version: '2024-06-01')
+      connection = build(provider: 'azure_openai', api_version: '2024-06-01')
       assert_equal '2024-06-01', connection.options['api_version']
 
       connection.api_version = ''
@@ -289,7 +306,7 @@ class ConnectionTest < ActiveSupport::TestCase
   describe '#check' do
     let(:url) { 'https://api.openai.com/v1/models' }
 
-    test 'ok when the service accepts the credentials' do
+    test 'ok when the provider accepts the credentials' do
       stub_request(:get, url).with(headers: { 'Authorization' => 'Bearer sk-new' }).to_return(status: 200, body: '{}')
 
       result = build.check
@@ -304,10 +321,10 @@ class ConnectionTest < ActiveSupport::TestCase
       assert_equal :rejected, build.check.status
     end
 
-    test 'reachable when the service answers but the check cannot confirm the credentials' do
+    test 'reachable when the provider answers but the check cannot confirm the credentials' do
       stub_request(:get, 'https://api.voyageai.com').to_return(status: 404, body: '')
 
-      result = build(service: 'voyage', base_url: 'https://api.voyageai.com').check
+      result = build(provider: 'voyage', base_url: 'https://api.voyageai.com').check
 
       assert_equal :reachable, result.status
       assert_match(/can't confirm/, result.message)
@@ -322,12 +339,12 @@ class ConnectionTest < ActiveSupport::TestCase
       assert_nil result.http_status
     end
 
-    test 'sends the headers a service insists on' do
+    test 'sends the headers a provider insists on' do
       stub = stub_request(:get, 'https://api.anthropic.com/v1/models')
         .with(headers: { 'x-api-key' => 'abc', 'anthropic-version' => '2023-06-01' })
         .to_return(status: 200, body: '{}')
 
-      build(service: 'anthropic', base_url: 'https://api.anthropic.com', auth_scheme: 'header',
+      build(provider: 'anthropic', base_url: 'https://api.anthropic.com', auth_scheme: 'header',
             auth_header: 'x-api-key', secret: 'abc').check
 
       assert_requested stub
