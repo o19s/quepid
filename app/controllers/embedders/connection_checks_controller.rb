@@ -2,11 +2,11 @@
 
 module Embedders
   # Backs the embedder form's Check connection button: embeds a sample text with the *current* form
-  # values, saved or not, and reports what came back. Never writes to the database.
-  #
-  # Without an embedder_id the check runs on the unsaved form. With one, a blank key means
-  # "use the saved one", since the form never shows it.
+  # values, saved or not, and reports what came back. Never writes to the database. The key itself
+  # is never on this form -- it comes from whichever connection is chosen.
   class ConnectionChecksController < ApplicationController
+    include ParameterFiltering
+
     SAMPLE_TEXT = 'star wars'
 
     def create
@@ -26,9 +26,13 @@ module Embedders
     def build_embedder
       saved = current_user.embedders_involved_with.find(params.expect(:embedder_id)) if params.key?(:embedder_id)
       attributes = embedder_params
-      attributes = attributes.except(:api_key) if saved && Embedder.keep_existing_key?(attributes[:api_key])
 
-      embedder = saved ? saved.dup : Embedder.new
+      # Keep the saved identity and original connection for the unchanged-connection access
+      # checks. Assigning form values and validating only changes this in-memory instance.
+      embedder = saved || Embedder.new
+      # The one checking is who would use the connection.
+      embedder.owner ||= current_user
+      embedder.connection_assignment_user = current_user
       embedder.assign_attributes(attributes)
       # Testing before naming it is fine; the name doesn't affect the request.
       embedder.name = 'Untitled' if embedder.name.blank?
@@ -36,7 +40,7 @@ module Embedders
     end
 
     def embedder_params
-      params.expect(embedder: Embedder::PERMITTED_PARAMS)
+      permitted_embedder_params
     end
   end
 end

@@ -1,0 +1,7 @@
+<div class="container centered-form">
+  <div class="row mb-3">
+    <%= form_with model: @connection, url: connections_path do |form| %>
+      <%= render 'form', connection: @connection, form: form %>
+    <% end %>
+  </div>
+</div>

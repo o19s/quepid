@@ -21,8 +21,7 @@ class EmbedderProvider
   OLLAMA_HELP_HTML = <<~HTML.squish
     <strong>Ollama</strong> &mdash; Local embedding models via the Ollama container.<br>
     <b>URL:</b> <code>%<url>s</code><br>
-    <b>Model:</b> e.g. <code>qwen3-embedding:0.6b</code>, <code>nomic-embed-text</code>,
-    <code>mxbai-embed-large</code><br>
+    <b>Model:</b> e.g. <code>all-minilm:22m</code>, <code>qwen3-embedding:0.6b</code>, <code>nomic-embed-text</code><br>
     <b>Key:</b> Leave blank -- Ollama doesn't check one<br>
     <b>Dimensions:</b> sent as <code>dimensions</code> to <code>/api/embed</code>; needs a recent Ollama
     and a model that supports it. Otherwise use client-side truncation for Matryoshka models.
@@ -120,7 +119,7 @@ class EmbedderProvider
       key:                   'ollama',
       label:                 'Ollama',
       adapter:               'EmbedderAdapters::Ollama',
-      default_model:         'qwen3-embedding:0.6b',
+      default_model:         'all-minilm:22m',
       auth_style:            :none,
       supports_dimensions:   true,
       supports_instructions: true,

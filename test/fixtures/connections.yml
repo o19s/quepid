@@ -1,0 +1,80 @@
+# == Schema Information
+#
+# Table name: connections
+#
+#  id                  :bigint           not null, primary key
+#  archived            :boolean          default(FALSE), not null
+#  auth_header         :string(100)
+#  auth_scheme         :string(20)       default("bearer"), not null
+#  base_url            :string(500)
+#  extra_headers       :json
+#  instance_wide       :boolean          default(FALSE), not null
+#  name                :string(255)      not null
+#  options             :json
+#  provider            :string(50)       not null
+#  requests_per_minute :integer          default(0), not null
+#  secret              :string(4000)
+#  timeout             :integer          default(30), not null
+#  created_at          :datetime         not null
+#  updated_at          :datetime         not null
+#  owner_id            :integer          not null
+#
+# Indexes
+#
+#  index_connections_on_owner_id_and_id  (owner_id,id)
+#
+
+# Private to doug, even though its configured embedder is shared.
+openai:
+  name:        OpenAI
+  provider:     openai
+  base_url:    https://api.openai.com
+  auth_scheme: bearer
+  secret:      sk-test-openai
+  owner:       doug
+
+# Owned by joey, shared with nobody: invisible to doug and random.
+private_ollama:
+  name:        Private Ollama
+  provider:     ollama
+  base_url:    http://ollama:11434
+  auth_scheme: none
+  owner:       joey
+
+# Explicitly instance-wide, with doug retained as the responsible administrator.
+instance_elasticsearch:
+  owner:       doug
+  instance_wide: true
+  name:        Instance Elasticsearch
+  provider:     elasticsearch
+  base_url:    http://elasticsearch:9200
+  auth_scheme: basic
+  secret:      elastic:changeme
+
+# A Voyage connection (embeddings only), private to doug.
+voyage:
+  name:        Voyage
+  provider:     voyage
+  base_url:    https://api.voyageai.com
+  auth_scheme: bearer
+  secret:      pa-test-voyage
+  timeout:     12
+  owner:       doug
+
+# Anthropic cannot make embeddings.
+anthropic:
+  name:        Anthropic
+  provider:     anthropic
+  base_url:    https://api.anthropic.com
+  auth_scheme: header
+  auth_header: x-api-key
+  secret:      sk-ant-test
+  owner:       doug
+
+# An Ollama connection, private to doug.
+shared_ollama:
+  name:        Shared Ollama
+  provider:     ollama
+  base_url:    http://ollama:11434
+  auth_scheme: none
+  owner:       doug

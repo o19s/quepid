@@ -127,6 +127,13 @@ class User < ApplicationRecord
            inverse_of:  :owner,
            dependent:   :nullify
 
+  # Unused connections are destroyed with their owner; used ones block account deletion.
+  has_many :owned_connections,
+           class_name:  'Connection',
+           foreign_key: :owner_id,
+           inverse_of:  :owner,
+           dependent:   :destroy
+
   # too late now!
   # rubocop:disable-next Rails/HasAndBelongsToMany
   has_and_belongs_to_many :teams,
@@ -205,6 +212,14 @@ class User < ApplicationRecord
   before_create :set_defaults
   before_destroy :check_scorer_ownership_before_removing!, prepend: true
   before_destroy :check_judgements_before_removing!, prepend: true
+  before_destroy :check_connections_before_removing!, prepend: true
+
+  def check_connections_before_removing!
+    return unless Embedder.exists?(connection_id: owned_connections.select(:id))
+
+    errors.add(:base, "Please point embedders using this user's connections at another connection, or delete those embedders, before deleting this user.")
+    throw(:abort)
+  end
 
   def check_judgements_before_removing!
     if judgements.any?
@@ -304,6 +319,12 @@ class User < ApplicationRecord
   # All the embedders the user owns or that are shared with one of their teams.
   def embedders_involved_with
     Embedder.for_user(self)
+  end
+
+  # Connections the user can attach to new configurations: their own and instance-wide ones.
+  # Changing one is narrower; see Connection#manageable_by?.
+  def connections_involved_with
+    Connection.usable_by(self)
   end
 
   def locked?
