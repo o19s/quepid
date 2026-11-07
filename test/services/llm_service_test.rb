@@ -117,6 +117,19 @@ class LlmServiceTest < ActiveSupport::TestCase
       end
     end
 
+    test 'a 200 response whose body is not JSON marks the judgement unrateable instead of raising' do
+      judgement = Judgement.new(query_doc_pair: query_doc_pair, user: judge)
+
+      stub_request(:post, 'https://api.openai.com/v1/chat/completions')
+        .with(headers: { 'Authorization' => "Bearer #{OPENAI_VALID_KEY}" })
+        .to_return(status: 200, body: '<html><body>Bad gateway page</body></html>', headers: { 'Content-Type' => 'text/html' })
+
+      service.perform_safe_judgement judgement
+
+      assert judgement.unrateable
+      assert_match(/\ABOOM: LLM API returned a response that is not JSON/, judgement.explanation)
+    end
+
     test 'a numeric-looking string judgment value is still accepted' do
       judgement = Judgement.new(query_doc_pair: query_doc_pair, user: judge)
 
