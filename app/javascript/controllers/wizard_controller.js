@@ -296,15 +296,17 @@ export default class extends Controller {
       this.applySettings(event.target.value)
       // The CSV is imported once per wizard (as in the Angular wizard), so coming back to
       // Static reuses that snapshot rather than requiring, and creating, another one.
-      if (event.target.value === "static" && this.staticSearchUrl)
+      if (event.target.value === "static" && this.staticSearchUrl) {
         this.settings.searchUrl = this.staticSearchUrl
+      }
     }
     if (
       ["searchUrl", "proxyRequests", "apiMethod", "basicAuthCredential"].includes(
         event.target.dataset.wizardField
       )
-    )
+    ) {
       this.clearValidation()
+    }
     this.render()
   }
 
@@ -367,8 +369,9 @@ export default class extends Controller {
     this.settings.customHeaders = headerValue
     const headerResult = parseCustomHeaders(headerValue)
     if (!headerResult.valid) return this.fail("Custom Headers must be a valid JSON object")
-    if (invalidProxyApiMethod(this.settings.proxyRequests, this.settings.apiMethod))
+    if (invalidProxyApiMethod(this.settings.proxyRequests, this.settings.apiMethod)) {
       return this.fail("You must change from JSONP to another API method when proxying.")
+    }
 
     const settings = { ...this.settings }
     settings.searchEngine = normalizeSearchEngine(settings.searchEngine)
@@ -386,8 +389,9 @@ export default class extends Controller {
         return this.render()
       }
     }
-    if (settings.proxyRequests)
+    if (settings.proxyRequests) {
       settings.proxyUrl = this.capability.settings.proxyUrlFor(settings.searchEndpointId)
+    }
 
     try {
       const validator = this.capability.search.createValidator(settings)
@@ -484,10 +488,12 @@ export default class extends Controller {
 
   validateFields() {
     this.fieldError = null
-    if (!this.settings.idField?.trim())
+    if (!this.settings.idField?.trim()) {
       this.fieldError = "This field is required. Please select an ID field."
-    if (!this.settings.titleField?.trim())
+    }
+    if (!this.settings.titleField?.trim()) {
       this.fieldError = "This field is required. Please select a title field."
+    }
     if (this.fieldError) return this.render()
     // Search API fields come from the mapper code, so only other engines can have a typo here.
     const customField = [this.settings.titleField, this.settings.idField].some(
@@ -499,8 +505,9 @@ export default class extends Controller {
       !window.confirm(
         "You are using a custom field for the title or ID (could be a typo), are you sure you want to continue?"
       )
-    )
+    ) {
       return
+    }
     this.settings.fieldSpec = buildFieldSpec(
       this.settings.idField,
       this.settings.titleField,
@@ -549,8 +556,14 @@ export default class extends Controller {
 
   async importStatic(event) {
     event?.preventDefault()
-    if (this.staticImporting || this.staticImported || this.staticAlert || !this.staticRows.length)
+    if (
+      this.staticImporting ||
+      this.staticImported ||
+      this.staticAlert ||
+      !this.staticRows.length
+    ) {
       return
+    }
     this.settings.searchEngine = "static"
     this.settings.searchEnginePreset = "static"
     this.staticImporting = true
@@ -602,8 +615,9 @@ export default class extends Controller {
             this.settings.titleField || ""
           )
         }
-        if (this.settings.searchEngine === "solr")
+        if (this.settings.searchEngine === "solr") {
           this.settings.queryParams = settings.defaultSolrQueryParams()
+        }
       }
       this.settings.selectedTry ||= settings.applicable()
       const queries = this.activeQueries()
@@ -795,23 +809,28 @@ export default class extends Controller {
     this.wikiLinkTargets.forEach((link) => {
       if (wikiUrl) link.href = wikiUrl
     })
-    if (this.hasCurlAuthTarget)
+    if (this.hasCurlAuthTarget) {
       this.curlAuthTarget.textContent = settings.basicAuthCredential
         ? `-u ${settings.basicAuthCredential} `
         : ""
-    if (this.hasSolrConfigUrlTarget)
+    }
+    if (this.hasSolrConfigUrlTarget) {
       this.solrConfigUrlTarget.textContent = `${searchUrl.substring(0, searchUrl.lastIndexOf("/"))}/config`
+    }
     if (this.hasUrlFormatTarget) this.urlFormatTarget.textContent = settings.urlFormat || ""
-    if (this.hasMapperMessageTarget)
+    if (this.hasMapperMessageTarget) {
       this.mapperMessageTarget.textContent = this.mapperErrorMessage || ""
-    if (this.hasSelectedEndpointUrlTarget)
+    }
+    if (this.hasSelectedEndpointUrlTarget) {
       this.selectedEndpointUrlTargets.forEach((target) => {
         target.textContent = searchUrl
       })
-    if (this.hasSelectedEndpointMethodTarget)
+    }
+    if (this.hasSelectedEndpointMethodTarget) {
       this.selectedEndpointMethodTargets.forEach((target) => {
         target.textContent = settings.apiMethod || ""
       })
+    }
   }
 
   renderFieldChoices() {
@@ -942,8 +961,9 @@ export default class extends Controller {
     if (this.hasSearchUrlTarget) this.searchUrlTarget.value = this.settings?.searchUrl || ""
     if (this.hasApiMethodTarget) this.apiMethodTarget.value = this.settings?.apiMethod || ""
     if (this.hasTestQueryTarget) this.testQueryTarget.value = this.settings?.testQuery || ""
-    if (this.hasBasicAuthTarget)
+    if (this.hasBasicAuthTarget) {
       this.basicAuthTarget.value = this.settings?.basicAuthCredential || ""
+    }
     if (this.hasCustomHeadersTarget) {
       const customHeaders = this.settings?.customHeaders
       this.customHeadersTarget.value =
@@ -963,20 +983,24 @@ export default class extends Controller {
       this.headerTypeTarget.value = headerType
       if (this.hasCustomHeadersTarget) this.customHeadersTarget.readOnly = headerType === "None"
     }
-    if (this.hasProxyRequestsTarget)
+    if (this.hasProxyRequestsTarget) {
       this.proxyRequestsTarget.checked = this.settings?.proxyRequests === true
-    if (this.endpointTomSelect)
+    }
+    if (this.endpointTomSelect) {
       this.endpointTomSelect.setValue(String(this.settings?.searchEndpointId ?? ""), true)
-    else if (this.hasEndpointSelectTarget)
+    } else if (this.hasEndpointSelectTarget) {
       this.endpointSelectTarget.value = String(this.settings?.searchEndpointId ?? "")
+    }
     const preset = this.settings?.searchEnginePreset || this.settings?.searchEngine || "solr"
     this.engineOptionTargets.forEach((option) => {
       option.checked = option.value === preset
     })
-    if (this.hasTitleFieldTarget && !this.fieldSelects)
+    if (this.hasTitleFieldTarget && !this.fieldSelects) {
       this.titleFieldTarget.value = this.settings?.titleField || ""
-    if (this.hasIdFieldTarget && !this.fieldSelects)
+    }
+    if (this.hasIdFieldTarget && !this.fieldSelects) {
       this.idFieldTarget.value = this.settings?.idField || ""
+    }
     // Leave the field list alone while it is being typed in, so a trailing separator survives.
     if (
       this.hasAdditionalFieldsTarget &&
@@ -987,10 +1011,11 @@ export default class extends Controller {
         .map((field) => field.text ?? field)
         .join(", ")
     }
-    if (this.hasQueryPatternTarget)
+    if (this.hasQueryPatternTarget) {
       this.queryPatternTargets.forEach((target) => {
         target.value = this.settings?.queryParams || ""
       })
+    }
     if (this.hasQueryTextTarget) this.queryTextTarget.value = this.settings?.text || ""
     if (this.hasQueryListTarget) {
       this.queryListTarget.replaceChildren(
@@ -1019,8 +1044,9 @@ export default class extends Controller {
       this.staticAlertTarget.textContent = this.staticAlert || ""
       this.staticAlertTarget.hidden = !this.staticAlert
     }
-    if (this.hasStaticContentTarget)
+    if (this.hasStaticContentTarget) {
       this.staticContentTarget.textContent = this.staticFileContent || ""
+    }
     if (this.hasStaticImportButtonTarget) {
       this.staticImportButtonTarget.disabled = Boolean(
         this.staticImporting || this.staticImported || this.staticAlert || !this.staticRows.length

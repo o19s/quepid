@@ -11,8 +11,9 @@ import path from "node:path"
 export function loadViewTemplate(partialPath) {
   const source = readFileSync(path.join(process.cwd(), partialPath), "utf8")
   const html = source.replace(/<%#[\s\S]*?%>/g, "")
-  if (html.includes("<%"))
+  if (html.includes("<%")) {
     throw new Error(`${partialPath} must not contain ERB tags other than comments`)
+  }
   return html
 }
 

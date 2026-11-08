@@ -110,8 +110,9 @@ export function installModalEscapeFallback(doc = document) {
     opening.delete(event.target)
     // Bootstrap ignores hide() until shown. Replay through its keyboard
     // handler so keyboard:false and hide prevention still belong to Bootstrap.
-    if (pending)
+    if (pending) {
       event.target.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }))
+    }
   })
   doc.addEventListener("hidden.bs.modal", (event) => opening.delete(event.target))
   doc.addEventListener(

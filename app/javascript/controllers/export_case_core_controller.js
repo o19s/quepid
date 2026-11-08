@@ -213,19 +213,24 @@ export default class extends CoreModalControllerBase {
 
   _refreshLinks() {
     if (this.hasCaseLinkTarget) this.caseLinkTarget.href = this._url(this.caseUrlTemplateValue)
-    if (this.hasQueriesLinkTarget)
+    if (this.hasQueriesLinkTarget) {
       this.queriesLinkTarget.href = this._url(this.queriesUrlTemplateValue)
-    if (this.hasAnnotationsLinkTarget)
+    }
+    if (this.hasAnnotationsLinkTarget) {
       this.annotationsLinkTarget.href = this._url(this.annotationsUrlTemplateValue)
-    if (this.hasScoresLinkTarget)
+    }
+    if (this.hasScoresLinkTarget) {
       this.scoresLinkTarget.href = this._url(this.scoresUrlTemplateValue)
-    if (this.hasRatingsLinkTarget)
+    }
+    if (this.hasRatingsLinkTarget) {
       this.ratingsLinkTarget.href = this._url(this.ratingsExportUrlTemplateValue).replaceAll(
         FORMAT_PLACEHOLDER,
         "json"
       )
-    if (this.hasQuepidPeekLinkTarget)
+    }
+    if (this.hasQuepidPeekLinkTarget) {
       this.quepidPeekLinkTarget.href = this._url(this.quepidExportUrlTemplateValue)
+    }
     if (this.hasApiSnapshotWrapperTarget) this.apiSnapshotWrapperTarget.classList.add("d-none")
   }
 

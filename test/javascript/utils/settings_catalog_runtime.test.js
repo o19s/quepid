@@ -183,10 +183,12 @@ describe("settings catalog defaults", () => {
     const defaults = createSettingsCatalog().defaultSettings()
     expect(defaults.searchapi.mapperCode).toContain("docsMapper")
     expect(defaults.searchapi.mapperCode).toContain("numberOfResultsMapper")
-    for (const engine of ["vectara", "algolia"])
+    for (const engine of ["vectara", "algolia"]) {
       expect(() => JSON.parse(defaults[engine].customHeaders)).not.toThrow()
-    for (const engine of ["es", "os", "vectara", "algolia"])
+    }
+    for (const engine of ["es", "os", "vectara", "algolia"]) {
       expect(() => JSON.parse(defaults[engine].queryParams)).not.toThrow()
+    }
     expect(defaults.solr.queryParams).toBe("q=#$query##\n&tie=1.0")
   })
 
@@ -257,8 +259,9 @@ describe("settings catalog defaults", () => {
 
   it("limits escapeQuery support to solr, es and os", () => {
     const catalog = createSettingsCatalog()
-    for (const engine of ["solr", "es", "os"])
+    for (const engine of ["solr", "es", "os"]) {
       expect(catalog.supportsEscapeQuery(engine)).toBe(true)
+    }
     for (const engine of ["vectara", "algolia", "static", "searchapi", ""]) {
       expect(catalog.supportsEscapeQuery(engine)).toBe(false)
     }

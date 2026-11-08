@@ -69,8 +69,9 @@ for (const side of sides) {
         .getByText(/Welcome To Quepid/i)
         .isVisible()
         .catch(() => false)
-    )
+    ) {
       await cont()
+    }
     await (
       legacy
         ? wizard.locator('input[ng-model="pendingWizardSettings.caseName"]')

@@ -107,8 +107,9 @@ export default class extends Controller {
       scoreInfo.score === -1 ||
       !queries ||
       Object.keys(queries).length === 0
-    )
+    ) {
       return
+    }
 
     if (!this.hasScoreUrlValue || !this.scoreUrlValue) return
 

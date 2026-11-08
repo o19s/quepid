@@ -70,9 +70,9 @@ export default class extends Controller {
       if (detached) this.element.remove()
     }
     // Bootstrap's queued animation callbacks still need the instance intact.
-    if (this.transitionEnd)
+    if (this.transitionEnd) {
       this.element.addEventListener(this.transitionEnd, dispose, { once: true })
-    else dispose()
+    } else dispose()
     this.modal = null
   }
 }

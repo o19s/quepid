@@ -57,8 +57,9 @@ export default class extends CoreModalControllerBase {
 
   openFor() {
     this.reset()
-    if (this.hasTitleTarget)
+    if (this.hasTitleTarget) {
       this.titleTarget.textContent = `Import into Case: ${caseNameFromHeader()}`
+    }
   }
 
   reset() {
@@ -240,17 +241,21 @@ export default class extends CoreModalControllerBase {
     const activeError = this.errors[this.selectedType] || failure
     this.setError(this.hasAlertTarget ? this.alertTarget : null, activeError)
     this.toggleVisible("warning", this.selectedType)
-    if (this.hasWarningTextTarget && this.selectedType)
+    if (this.hasWarningTextTarget && this.selectedType) {
       this.warningTextTarget.textContent = this.warningMessage()
-    if (this.hasImportButtonTarget)
+    }
+    if (this.hasImportButtonTarget) {
       this.importButtonTarget.disabled = !this.canImport() || this.busy
+    }
   }
 
   warningMessage() {
-    if (this.selectedType === "snapshots")
+    if (this.selectedType === "snapshots") {
       return "This operation WILL replace any snapshots you have created that have the same Snapshot Name in the csv."
-    if (this.selectedType === "information_needs")
+    }
+    if (this.selectedType === "information_needs") {
       return "This operation WILL override your existing information needs. Proceed with caution!"
+    }
     return "This operation WILL override your existing ratings. Proceed with caution!"
   }
 

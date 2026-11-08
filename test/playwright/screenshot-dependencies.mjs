@@ -77,16 +77,19 @@ export function screenshotPaths(id, paths, tracker) {
   const part = scenario.split(".")[0].padStart(2, "0")
   const surface = mapping?.screens?.[id] || mapping?.scenarios?.[scenario] || mapping?.parts?.[part]
   if (!surface || surface === "conservative") return [...new Set(paths)] // Unknown surfaces retain conservative dependencies.
-  if (!Object.hasOwn(surfacePaths, surface))
+  if (!Object.hasOwn(surfacePaths, surface)) {
     throw new Error(`Unknown screenshot surface: ${surface}`)
+  }
   return [
     ...new Set(
       paths.flatMap((source) => {
         if (surface !== "viewer" && captureInfrastructure.has(source)) return []
-        if (source.replace(/\/$/, "") === styles.slice(0, -1))
+        if (source.replace(/\/$/, "") === styles.slice(0, -1)) {
           return surfacePaths[surface].filter((file) => file.startsWith(styles))
-        if (source.replace(/\/$/, "") === layouts.slice(0, -1))
+        }
+        if (source.replace(/\/$/, "") === layouts.slice(0, -1)) {
           return surfacePaths[surface].filter((file) => file.startsWith(layouts))
+        }
         return [source] // Explicit dependencies are never discarded.
       })
     )
@@ -121,17 +124,18 @@ export function screenshotSourceFiles(root, paths, commit) {
   let files
   if (commit) {
     const key = `${root}\0${commit}`
-    if (!historical.has(key))
+    if (!historical.has(key)) {
       historical.set(key, {
         names: git(root, "ls-tree", "-r", "--name-only", "-z", commit).split("\0").filter(Boolean),
         hashes: new Map()
       })
+    }
     const tree = historical.get(key)
     files = Object.fromEntries(
       tree.names
         .filter((file) => matches(file, paths))
         .map((file) => {
-          if (!tree.hashes.has(file))
+          if (!tree.hashes.has(file)) {
             tree.hashes.set(
               file,
               digest(
@@ -140,6 +144,7 @@ export function screenshotSourceFiles(root, paths, commit) {
                 })
               )
             )
+          }
           return [file, tree.hashes.get(file)]
         })
     )

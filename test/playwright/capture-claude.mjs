@@ -45,13 +45,16 @@ const schema = {
 }
 
 export function validateClaudeCapture(result, image, origin) {
-  if (result?.status !== "captured")
+  if (result?.status !== "captured") {
     throw new Error(`Claude capture blocked: ${result?.reason || "No verified capture returned"}`)
+  }
   const capture = result.capture
-  if (!capture || new URL(capture.target).origin !== origin)
+  if (!capture || new URL(capture.target).origin !== origin) {
     throw new Error("Claude capture returned a different app origin")
-  if (capture.pageUrl && new URL(capture.pageUrl).origin !== origin)
+  }
+  if (capture.pageUrl && new URL(capture.pageUrl).origin !== origin) {
     throw new Error("Claude capture ended on a different app origin")
+  }
   const { width, height } = capture.viewport || {}
   if (
     !Number.isInteger(width) ||
@@ -68,8 +71,9 @@ export function validateClaudeCapture(result, image, origin) {
     throw new Error("Claude capture contract is incomplete")
   }
   const png = decodePng(fs.readFileSync(image))
-  if (png.width !== width || (capture.fullPage ? png.height < height : png.height !== height))
+  if (png.width !== width || (capture.fullPage ? png.height < height : png.height !== height)) {
     throw new Error("Claude screenshot dimensions do not match its capture contract")
+  }
   return { ...capture, recipe: "claude-mcp", recipeVersion: 1 }
 }
 
@@ -167,8 +171,9 @@ export async function askClaude(
         }
         if (event.type === "result") result = event
         for (const block of event.message?.content || []) {
-          if (block.type === "tool_use")
+          if (block.type === "tool_use") {
             progress(`Claude: ${block.name.replace(/^mcp__playwright__/, "")}…`)
+          }
         }
       }
     })
@@ -187,13 +192,13 @@ export async function askClaude(
       clearTimeout(timeout)
       stop()
       if (failure) reject(failure)
-      else if (code !== 0 || result?.is_error || !result?.structured_output)
+      else if (code !== 0 || result?.is_error || !result?.structured_output) {
         reject(
           new Error(
             "Claude capture failed; check local Claude sign-in and Playwright MCP availability"
           )
         )
-      else resolve(result.structured_output)
+      } else resolve(result.structured_output)
     })
   })
 }
@@ -203,8 +208,9 @@ export async function runClaudeCapture(root, request, progress) {
   if (
     sourceFingerprint(root, options.paths) !== request.source ||
     readHistory(root).branch !== request.branch
-  )
+  ) {
     throw new Error("Source or branch changed before Claude capture")
+  }
   // Resolve the same actual server as scripted capture without starting one.
   const { captureContainer } = await import("./capture-jobs.mjs")
   const container = await captureContainer(root)
@@ -253,13 +259,15 @@ export async function runClaudeCapture(root, request, progress) {
     const result = await askClaude(root, directory, prompt, progress)
     const capture = validateClaudeCapture(result, image, origin)
     const latest = captureOptions(root, request.id)
-    if (sourceFingerprint(root, latest.paths) !== request.source)
+    if (sourceFingerprint(root, latest.paths) !== request.source) {
       throw new Error("Source dependencies changed during Claude capture; retry")
+    }
     if (
       fs.readFileSync(path.join(root, ".playwright-mcp", ".capture-jobs", "active"), "utf8") !==
       request.jobId
-    )
+    ) {
       throw new Error("Capture job no longer active")
+    }
     progress("Saving Current capture…")
     recordScreen(root, {
       ...latest,

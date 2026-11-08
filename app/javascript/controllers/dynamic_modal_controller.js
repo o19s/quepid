@@ -53,7 +53,8 @@ export default class extends Controller {
       this.returnFocus?.isConnected &&
       !this.returnFocus.disabled &&
       (!outer || outer.contains(this.returnFocus))
-    )
+    ) {
       this.returnFocus.focus()
+    }
   }
 }

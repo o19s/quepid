@@ -53,8 +53,9 @@ export default class extends Controller {
     const showExplain = this.explainViewValue === "full" && doc.matchExplain
     if (!showExplain) slot("matchExplainColumn").remove()
 
-    if (doc.error === undefined)
+    if (doc.error === undefined) {
       slot("ratings").appendChild(this.ratingControl(doc, query.ratingScale || {}))
+    }
 
     this.renderImage(slot("thumbColumn"), slot("thumb"), doc.thumb, doc.thumb_options, doc.hasThumb)
     this.renderImage(slot("imageColumn"), slot("image"), doc.image, doc.image_options, doc.hasImage)
@@ -89,11 +90,12 @@ export default class extends Controller {
     rank.textContent = `Rank: #${this.element.getAttribute("rank") || ""}`
     fields.appendChild(rank)
 
-    if (showExplain)
+    if (showExplain) {
       slot("matchExplain").setAttribute(
         "data-match-explain-data-value",
         JSON.stringify(doc.matchExplain)
       )
+    }
 
     const footer = document.createElement("div")
     if (query.depthOfRating === Number(this.element.getAttribute("rank"))) {

@@ -11,11 +11,13 @@ export const claudeCapturePaths = [
 
 export function captureOptions(root, id, tracker = readScreenshotTracker(root)) {
   const recipe = captureRecipes[id]
-  if (recipe)
+  if (recipe) {
     return scenarioCaptureOptions(root, recipe.scenario, recipe.state, recipe.paths, tracker)
+  }
   const screen = readHistory(root).screens[id]
-  if (!screen?.versions.length)
+  if (!screen?.versions.length) {
     throw new Error("Unknown recorded screen; automatic capture not configured")
+  }
   const paths = new Set([...(screen.paths || []), ...claudeCapturePaths])
   for (const part of Object.values(tracker.parts || {})) {
     for (const scenario of Object.values(part.scenarios || {})) {
@@ -37,7 +39,7 @@ export function captureScenarioContext(root, id, tracker = readScreenshotTracker
   for (const part of Object.values(tracker.parts || {})) {
     for (const [scenarioId, scenario] of Object.entries(part.scenarios || {})) {
       for (const [state, screenId] of Object.entries(scenario.screenshots || {})) {
-        if (screenId === id)
+        if (screenId === id) {
           contexts.push({
             scenarioId,
             state,
@@ -45,6 +47,7 @@ export function captureScenarioContext(root, id, tracker = readScreenshotTracker
             notes: scenario.notes,
             file: `docs/manual-testing/${part.file}`
           })
+        }
       }
     }
   }

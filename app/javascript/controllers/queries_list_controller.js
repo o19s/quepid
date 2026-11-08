@@ -239,11 +239,12 @@ export default class extends Controller {
   }
 
   updateSortableState() {
-    if (this.sortable)
+    if (this.sortable) {
       this.sortable.option(
         "disabled",
         !this.queryListSortableValue || this.activeSortName() !== "default"
       )
+    }
   }
 
   activeSortName() {
@@ -320,12 +321,15 @@ export default class extends Controller {
 
     this.currentShowOnlyRated = state.showOnlyRated
     this.currentShowOnlyRatedUnsupported = state.showOnlyRatedUnsupported
-    if (this.hasBootstrapFeedbackTarget)
+    if (this.hasBootstrapFeedbackTarget) {
       this.bootstrapFeedbackTarget.classList.toggle("d-none", !state.isBootstrapping)
-    if (this.hasSearchFeedbackTarget)
+    }
+    if (this.hasSearchFeedbackTarget) {
       this.searchFeedbackTarget.classList.toggle("d-none", !state.searching)
-    if (this.hasBatchPositionTarget)
+    }
+    if (this.hasBatchPositionTarget) {
       this.batchPositionTarget.textContent = String(state.batchPosition)
+    }
     if (this.hasBatchSizeTarget) this.batchSizeTarget.textContent = String(state.batchSize)
   }
 
@@ -515,8 +519,9 @@ export default class extends Controller {
   // `query-explain` outlet API: renders the template through the live searcher; rejects on failure.
   async renderQueryTemplate(queryId) {
     const searcher = this.queryCapabilities?.getQuery?.(queryId)?.searcher
-    if (typeof searcher?.isTemplateCall !== "function")
+    if (typeof searcher?.isTemplateCall !== "function") {
       throw new Error(`No live searcher for query ${queryId}`)
+    }
 
     const isTemplatedQuery = searcher.isTemplateCall(searcher.args)
     // Only templated queries can be rendered; asking the engine to render anything else is a 400.

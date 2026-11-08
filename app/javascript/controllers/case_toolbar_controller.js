@@ -27,8 +27,9 @@ export default class extends Controller {
   static values = { headerUrl: String }
 
   connect() {
-    if (window.quepidCoreBootstrap?.ready || window.quepidCoreBootstrap?.actionsAvailable)
+    if (window.quepidCoreBootstrap?.ready || window.quepidCoreBootstrap?.actionsAvailable) {
       this.showActions()
+    }
   }
 
   // Also the `core-bootstrap` outlet API, called once the case runtime is ready.

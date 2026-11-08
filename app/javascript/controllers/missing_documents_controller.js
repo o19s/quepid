@@ -138,11 +138,13 @@ export default class extends withStatusMessages(Controller) {
   }
 
   setControlsDisabled(disabled) {
-    if (this.hasSearchButtonTarget)
+    if (this.hasSearchButtonTarget) {
       this.searchButtonTarget.disabled = disabled || !this.adapter.usesQueryParamsEditor
-    if (this.hasResetButtonTarget)
+    }
+    if (this.hasResetButtonTarget) {
       this.resetButtonTarget.disabled =
         disabled || !this.adapter.usesQueryParamsEditor || this.adapter.defaultList
+    }
     if (this.hasNextTarget) this.nextTarget.disabled = disabled
   }
 

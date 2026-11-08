@@ -97,8 +97,9 @@ export function formatWizardSaveError(response) {
     }
   }
 
-  if (detail)
+  if (detail) {
     return `Could not save your case settings: ${detail}. Please click Finish to try again.`
+  }
   return "Could not save your case settings. Please click Finish to try again."
 }
 

@@ -22,6 +22,7 @@ import {
 const recommendedRules = {
   ...js.configs.recommended.rules,
   ...eslintConfigPrettier.rules,
+  curly: ['error', 'multi-line'],
 };
 
 export default [

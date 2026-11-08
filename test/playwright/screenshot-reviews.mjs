@@ -21,8 +21,9 @@ export function screenshotReviews(
   const statuses = new Map()
   // An ID shared by scenarios must be fresh for every linked dependency set.
   for (const row of linked) {
-    if (!statuses.has(row.id) || row.current.status !== "current")
+    if (!statuses.has(row.id) || row.current.status !== "current") {
       statuses.set(row.id, row.current.status)
+    }
   }
   return {
     branch: history.branch,
@@ -96,16 +97,17 @@ export function setScreenshotApproval(
         "The displayed capture changed; regenerate the manifest and reload before reviewing"
       )
     }
-    if (approved && !["current", "stale"].includes(current.captureStatus))
+    if (approved && !["current", "stale"].includes(current.captureStatus)) {
       throw new Error("The capture image is unavailable; restore it before approving")
-    if (approved)
+    }
+    if (approved) {
       history.screens[id].approval = {
         source,
         image,
         capturedAt,
         approvedAt: new Date().toISOString()
       }
-    else delete history.screens[id].approval
+    } else delete history.screens[id].approval
     const temporary = path.join(location.directory, "index.json.tmp")
     fs.writeFileSync(temporary, `${JSON.stringify(history, null, 2)}\n`)
     fs.renameSync(temporary, path.join(location.directory, "index.json"))

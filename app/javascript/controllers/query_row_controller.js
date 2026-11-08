@@ -131,10 +131,12 @@ export default class extends Controller {
     if (this.hasResultLabelTarget) {
       this.resultLabelTarget.textContent = this.numFoundValue === 1 ? "Result" : "Results"
     }
-    if (this.hasQuerqyTarget)
+    if (this.hasQuerqyTarget) {
       this.querqyTarget.classList.toggle("d-none", !this.querqyTriggeredValue)
-    if (this.hasHeaderTarget)
+    }
+    if (this.hasHeaderTarget) {
       this.headerTarget.classList.toggle("diff-query-display", this.diffValue)
+    }
     if (this.hasToggleTarget) {
       this.toggleTarget.classList.toggle("bi-caret-up-fill", this.toggledValue)
       this.toggleTarget.classList.toggle("bi-caret-down-fill", !this.toggledValue)

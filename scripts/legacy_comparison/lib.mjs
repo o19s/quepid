@@ -152,8 +152,9 @@ export async function existingSearchEndpointIds(page) {
       headers: await apiHeaders(page)
     })
     if (!response.ok()) throw new Error(`GET /api/search_endpoints: ${response.status()}`)
-    for (const endpoint of (await response.json()).search_endpoints || [])
+    for (const endpoint of (await response.json()).search_endpoints || []) {
       ids.add(endpoint.search_endpoint_id ?? endpoint.id)
+    }
   }
   return ids
 }

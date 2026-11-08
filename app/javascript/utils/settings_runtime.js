@@ -4,8 +4,9 @@ import { extractCuratorVars } from "utils/curator_vars"
 
 function createTry(data, { caseNo, createFieldSpec }) {
   const source = { ...data }
-  if (source.query_params === null)
+  if (source.query_params === null) {
     source.query_params = source.search_engine === "solr" ? "" : "{}"
+  }
 
   const currentTry = {
     args: source.args,

@@ -146,8 +146,9 @@ export default class extends Controller {
     }
     this.settingsRetry = null
     const keptTab = this.hasPaneOutlet ? this.paneOutlet.handoff?.tab : null
-    if (keptTab && this.panelTargets.some((panel) => panel.dataset.tunePanel === keptTab))
+    if (keptTab && this.panelTargets.some((panel) => panel.dataset.tunePanel === keptTab)) {
       this.tab = keptTab
+    }
     this.searchEndpoints = []
     this.mountEditor()
     this.refresh()
@@ -249,8 +250,9 @@ export default class extends Controller {
     const entries = curatorVariableEntries(vars)
     // As in the Angular drawer, a try without knobs explains what the tab is for. A knob removed from the
     // query stays on the try (unused), so it still counts.
-    if (this.hasKnobsIntroTarget)
+    if (this.hasKnobsIntroTarget) {
       this.knobsIntroTarget.hidden = vars.length > 0 || this.settings?.searchEngine === "static"
+    }
     this.curatorVarsTarget.replaceChildren(
       ...entries.map(({ item, index }) => {
         const row = this.curatorVarTemplateTarget.content.firstElementChild.cloneNode(true)
@@ -271,16 +273,20 @@ export default class extends Controller {
     if (!this.settings) return
     if (this.hasFieldSpecTarget) this.refreshDisplayedFields()
     if (this.hasNumberOfRowsTarget) this.numberOfRowsTarget.value = this.settings.numberOfRows || ""
-    if (this.hasEscapeQueryTarget)
+    if (this.hasEscapeQueryTarget) {
       this.escapeQueryTarget.checked = Boolean(this.settings.escapeQuery)
-    if (this.hasEscapeSettingTarget)
+    }
+    if (this.hasEscapeSettingTarget) {
       this.escapeSettingTarget.hidden = !this.capability.settings.supportsEscapeQuery(
         this.settings.searchEngine
       )
-    if (this.hasNightlyTarget)
+    }
+    if (this.hasNightlyTarget) {
       this.nightlyTarget.checked = Boolean(this.capability.case.selected()?.nightly)
-    if (this.endpointTomSelect)
+    }
+    if (this.endpointTomSelect) {
       this.endpointTomSelect.setValue(String(this.settings.searchEndpointId ?? ""), true)
+    }
     this.refreshEndpointDetails()
   }
 
@@ -373,16 +379,18 @@ export default class extends Controller {
       const headers = parseCustomHeaders(settings.customHeaders)
       if (!headers.valid) throw new Error("Invalid custom headers")
       settings.customHeaders = headers.headers
-      if (settings.proxyRequests)
+      if (settings.proxyRequests) {
         settings.proxyUrl = this.capability.settings.proxyUrlFor(settings.searchEndpointId)
+      }
       if (settings.searchEngine === "searchapi") {
         settings.args = searchApiValidationArgs(
           (settings.queryParams || "").replace(/#\$query##/g, "test"),
           settings.bareQueryParam
         )
         const mapper = this.capability.search.evaluateMapper(settings.mapperCode)
-        if (!mapper.numberOfResultsMapper || !mapper.docsMapper)
+        if (!mapper.numberOfResultsMapper || !mapper.docsMapper) {
           throw new Error("Missing mapper functions")
+        }
         Object.assign(settings, {
           numberOfResultsMapper: mapper.numberOfResultsMapper,
           docsMapper: mapper.docsMapper
@@ -394,8 +402,9 @@ export default class extends Controller {
         !this.displayedFieldsSelect ||
         this.displayedFieldsEndpointKey() !== key ||
         this.displayedFieldsLookupKey !== key
-      )
+      ) {
         return
+      }
       this.discoveredFields = validator.fields || []
       this.discoveredFieldsKey = key
       this.addDiscoveredFieldOptions(this.displayedFieldsSelect.control_input.value)
@@ -406,8 +415,9 @@ export default class extends Controller {
         !this.displayedFieldsSelect ||
         this.displayedFieldsEndpointKey() !== key ||
         this.displayedFieldsLookupKey !== key
-      )
+      ) {
         return
+      }
       this.displayedFieldsLookupKey = null
       this.fieldDiscoveryStatus(
         "Could not load field suggestions. Your selected fields are unchanged."
@@ -426,8 +436,9 @@ export default class extends Controller {
 
   populateEndpoints() {
     if (!this.hasEndpointSelectTarget) return
-    if (this.hasEndpointEmptyTarget)
+    if (this.hasEndpointEmptyTarget) {
       this.endpointEmptyTarget.hidden = this.searchEndpoints.length > 0
+    }
     this.endpointTomSelect ||= createSearchEndpointSelect(
       this.endpointSelectTarget,
       "Select a search endpoint…"
@@ -441,18 +452,21 @@ export default class extends Controller {
 
   refreshEndpointDetails() {
     const selected = this.settings || {}
-    if (this.hasEndpointNameTarget)
+    if (this.hasEndpointNameTarget) {
       this.endpointNameTarget.textContent = selected.endpointName || ""
-    if (this.hasEndpointUrlTarget)
+    }
+    if (this.hasEndpointUrlTarget) {
       this.endpointUrlTarget.textContent = this.settings?.searchUrl || ""
+    }
     if (this.hasEndpointIconTarget) {
       this.endpointIconTarget.hidden = !selected.searchEngine
       this.endpointIconTarget.src = selected.searchEngine
         ? `images/${selected.mapperBasedSearchEngineId || selected.searchEngine}-icon.png`
         : ""
     }
-    if (this.hasEndpointArchivedTarget)
+    if (this.hasEndpointArchivedTarget) {
       this.endpointArchivedTarget.hidden = !selected.endpointArchived
+    }
     if (this.hasEndpointMoreLinkTarget) {
       this.endpointMoreLinkTarget.hidden = !selected.searchEndpointId
       setLinkHref(
@@ -581,16 +595,18 @@ export default class extends Controller {
     this.settings.fieldSpec = this.displayedFieldsValue()
     this.settings.numberOfRows = this.numberOfRowsTarget.value
     this.settings.escapeQuery = this.escapeQueryTarget.checked
-    if (!validateNumberOfRows(this.settings.numberOfRows))
+    if (!validateNumberOfRows(this.settings.numberOfRows)) {
       return this.showError("Number of Results to Show must be between 1 and 100.")
+    }
     const queryParams = this.settings.queryParams || ""
     const needsJson =
       this.capability.endpoints.usesJsonQueryParams(this.settings.searchEngine) ||
       (this.settings.searchEngine === "searchapi" && queryParams.trim().startsWith("{"))
     if (needsJson) {
       const formatted = formatJson(queryParams)
-      if (!formatted)
+      if (!formatted) {
         return this.showError("Please provide a valid formatted JSON object for the query DSL.")
+      }
       this.settings.queryParams = formatted
     }
     this.saving = true
@@ -734,8 +750,9 @@ export default class extends Controller {
       !window.confirm(
         `Are you sure you want to delete ${this.activeTry.name}? This cannot be undone.`
       )
-    )
+    ) {
       return
+    }
     this.capability.settings
       .deleteTry(this.activeTry.tryNo)
       .then(() => {

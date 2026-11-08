@@ -92,8 +92,9 @@ export function createCaseRuntime({ now = () => new Date() } = {}) {
       const mutation = Symbol()
       mutations.set(String(caseNo), mutation)
       const data = await putJson(url, payload)
-      if (generation !== requestGeneration || mutations.get(String(caseNo)) !== mutation)
+      if (generation !== requestGeneration || mutations.get(String(caseNo)) !== mutation) {
         return data
+      }
       revision += 1
       const detail = {
         caseId: Number(caseNo),

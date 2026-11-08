@@ -16,8 +16,9 @@ function isRaw(value) {
 
 function parseRaw(key, value) {
   const prefix = key ? `<span class="prop">${escapeHtml(key)}</span>: ` : ""
-  if (typeof value === "string")
+  if (typeof value === "string") {
     return `${prefix}<span class="string">"${escapeHtml(value)}"</span>`
+  }
   if (typeof value === "number") return `${prefix}<span class="num">${value}</span>`
   if (typeof value === "boolean") return `${prefix}<span class="bool">${value}</span>`
   return `${prefix}<span class="null">${value}</span>`
@@ -44,10 +45,12 @@ function parseChildren(key, value, collapser, ellipsis, contents, open, close) {
 
 function parseValue(key, value, collapser, ellipsis, contents) {
   if (isRaw(value)) return parseRaw(key, value)
-  if (Array.isArray(value))
+  if (Array.isArray(value)) {
     return parseChildren(key, value, collapser, ellipsis, contents, "[", "]")
-  if (typeof value === "object")
+  }
+  if (typeof value === "object") {
     return parseChildren(key, value, collapser, ellipsis, contents, "{", "}")
+  }
   return ""
 }
 
