@@ -1,6 +1,8 @@
+import { readFileSync } from "node:fs"
+import { evaluateMapperFunctions } from "utils/query_service"
 import fc from "fast-check"
 import { expect, it } from "vitest"
-import { fieldSpecTokens } from "utils/tune_relevance"
+import { fieldSpecTokens, withoutEngineManagedLimit } from "utils/tune_relevance"
 
 it("preserves whole JSON definitions and their order across separator round trips", () => {
   const field = fc.oneof(
@@ -15,5 +17,19 @@ it("preserves whole JSON definitions and their order across separator round trip
         expect(fieldSpecTokens(fields.join(separator))).toEqual(fields)
       }
     )
+  )
+})
+
+it("Qdrant hides only the top-level limit and preserves all other JSON fields", () => {
+  const code = readFileSync("db/mapper_based_search_engines/qdrant.js", "utf8")
+  fc.assert(
+    fc.property(fc.dictionary(fc.string(), fc.jsonValue()), fc.integer(), (fields, limit) => {
+      const query = { ...fields, limit }
+      const expected = { ...fields }
+      delete expected.limit
+      const result = withoutEngineManagedLimit(JSON.stringify(query), code, evaluateMapperFunctions)
+      expect(JSON.parse(result)).toEqual(expected)
+      expect(withoutEngineManagedLimit(result, code, evaluateMapperFunctions)).toBe(result)
+    })
   )
 })

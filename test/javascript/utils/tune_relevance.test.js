@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs"
+import { evaluateMapperFunctions } from "utils/query_service"
 import { describe, expect, it } from "vitest"
 import {
   curatorVariableEntries,
@@ -8,7 +10,7 @@ import {
   queryParamsWarning,
   urlBucket,
   validateNumberOfRows,
-  withoutQdrantLimit
+  withoutEngineManagedLimit
 } from "utils/tune_relevance"
 
 describe("tune relevance utilities", () => {
@@ -36,17 +38,37 @@ describe("tune relevance utilities", () => {
     expect(formatJson("q=law")).toBeNull()
   })
 
-  it("strips limit out of a Qdrant query so it isn't shown as editable", () => {
-    expect(withoutQdrantLimit('{"query": "#$query##", "limit": 10}')).toBe(
-      '{\n  "query": "#$query##"\n}'
-    )
+  it("uses Qdrant's mapper to hide the managed limit", () => {
+    const code = readFileSync("db/mapper_based_search_engines/qdrant.js", "utf8")
+    expect(
+      withoutEngineManagedLimit(
+        '{"query": "#$query##", "limit": 10}',
+        code,
+        evaluateMapperFunctions
+      )
+    ).toBe('{\n  "query": "#$query##"\n}')
   })
 
-  it("leaves query params with no limit key, or that aren't a JSON object, unchanged", () => {
-    expect(withoutQdrantLimit('{"query": "#$query##"}')).toBe('{"query": "#$query##"}')
-    expect(withoutQdrantLimit("q=law")).toBe("q=law")
-    expect(withoutQdrantLimit("")).toBe("")
+  it("removes a zero limit from an otherwise empty object", () => {
+    const code = readFileSync("db/mapper_based_search_engines/qdrant.js", "utf8")
+    expect(withoutEngineManagedLimit('{"limit":0}', code, evaluateMapperFunctions)).toBe("{}")
   })
+
+  it.each(["", "this.docsMapper = function (data) { return data }", "invalid mapper code!"])(
+    "leaves query text unchanged without a usable display mapper: %s",
+    (code) => {
+      const value = '{"query": "#$query##", "limit": 10}'
+      expect(withoutEngineManagedLimit(value, code, evaluateMapperFunctions)).toBe(value)
+    }
+  )
+
+  it.each(['{"query":', "q=test&limit=10", "null", "[1,2]", '{ "query": 1 }'])(
+    "preserves Qdrant query text that has no removable object limit: %s",
+    (value) => {
+      const code = readFileSync("db/mapper_based_search_engines/qdrant.js", "utf8")
+      expect(withoutEngineManagedLimit(value, code, evaluateMapperFunctions)).toBe(value)
+    }
+  )
 
   it("validates the result count bounds", () => {
     expect(validateNumberOfRows(1)).toBe(true)

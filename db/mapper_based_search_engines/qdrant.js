@@ -114,3 +114,19 @@ ratedDocsQueryParamsMapper = function (ratedIds, idField) {
     limit:        Math.max(ratedIds.length, 1)
   });
 };
+
+// Query Sandbox display only: the "number of results" setting provides the limit at execution time
+// so filter out "limit" here.
+// Preserve incomplete/non-object input and queries without a limit verbatim.
+queryParamsDisplayMapper = function (value) {
+  try {
+    const parsed = JSON.parse(value);
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed) || !('limit' in parsed)) {
+      return value;
+    }
+    delete parsed.limit;
+    return JSON.stringify(parsed, null, 2);
+  } catch {
+    return value;
+  }
+};

@@ -230,6 +230,21 @@ describe("query service helpers", () => {
     expect(second).toBe(first)
   })
 
+  it("does not leak display hooks between mapper engines", () => {
+    const cache = {}
+    const globalObject = {}
+    const qdrant = evaluateMapperFunctions(
+      "this.queryParamsDisplayMapper = function (value) { return value }",
+      cache,
+      globalObject
+    )
+    expect(qdrant.queryParamsDisplayMapper).toBeTypeOf("function")
+    expect(
+      evaluateMapperFunctions("", cache, globalObject).queryParamsDisplayMapper
+    ).toBeUndefined()
+    expect(globalObject.queryParamsDisplayMapper).toBeUndefined()
+  })
+
   it("builds the synthetic match-feature explain tree", () => {
     expect(
       matchFeaturesExplain({ fields: { score: 4 }, matchfeatures: { title: 3, body: 1 } })

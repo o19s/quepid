@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs"
+import { evaluateMapperFunctions } from "utils/query_service"
 import { buildControllerFixture } from "../support/controller_fixture"
 import coreFlash from "utils/core_flash"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
@@ -88,7 +90,7 @@ function makeCapability(settingsOverrides = {}) {
       updateNightly: vi.fn(),
       runEvaluation: vi.fn(() => Promise.resolve())
     },
-    search: { isTemplateCall: vi.fn(() => false) }
+    search: { isTemplateCall: vi.fn(() => false), evaluateMapper: evaluateMapperFunctions }
   }
   return { capability, settings }
 }
@@ -274,6 +276,8 @@ describe("TuneRelevanceController", () => {
 
     it("strips Qdrant's limit from the displayed query but leaves the saved value alone until edited", () => {
       const { controller, settings } = mount()
+      settings.searchEngine = "searchapi"
+      settings.mapperCode = readFileSync("db/mapper_based_search_engines/qdrant.js", "utf8")
       settings.mapperBasedSearchEngineId = "qdrant"
       settings.selectedTry.mapperBasedSearchEngineId = "qdrant"
       settings.selectedTry.queryParams = '{"query": "#$query##", "limit": 10}'

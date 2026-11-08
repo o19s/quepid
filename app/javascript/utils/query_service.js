@@ -69,7 +69,8 @@ export function buildSearcherRequest({
     // A mapper that needs to shape the outgoing request itself (e.g. Qdrant's "limit", which
     // can't be driven through pagination_hits_param - see db/mapper_based_search_engines/qdrant.js)
     // defines requestArgsMapper; most mappers (e.g. Vespa) don't need one.
-    if (mapperFunctions.requestArgsMapper) mapperFunctions.requestArgsMapper(args, settings.numberOfRows)
+    if (mapperFunctions.requestArgsMapper)
+      mapperFunctions.requestArgsMapper(args, settings.numberOfRows)
   }
 
   let solrQueryParamsIsJson = false
@@ -218,7 +219,8 @@ const MAPPER_FUNCTION_NAMES = [
   "docsMapper",
   "nextPageArgsMapper",
   "ratedDocsQueryParamsMapper",
-  "requestArgsMapper"
+  "requestArgsMapper",
+  "queryParamsDisplayMapper"
 ]
 
 /**

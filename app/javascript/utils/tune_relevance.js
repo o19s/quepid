@@ -39,17 +39,13 @@ export function formatJson(value) {
   }
 }
 
-// Qdrant's "limit" is driven by "Number of Results to Show" (see query_service.js), not by
-// hand-editing the query - so the Query Sandbox shouldn't show it as if it were part of the
-// query at all. Falls back to the original text for anything that isn't a JSON object (plain
-// text query_params, a parse error mid-edit, no "limit" key present).
-export function withoutQdrantLimit(value) {
+// Display hooks never change the stored query. Invalid custom mapper code must not
+// prevent the sandbox from opening so the user can still edit the query.
+export function withoutEngineManagedLimit(value, mapperCode, evaluateMapper) {
+  if (!mapperCode) return value
   try {
-    const parsed = JSON.parse(value)
-    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed) || !("limit" in parsed))
-      return value
-    delete parsed.limit
-    return prettyPrintJson(JSON.stringify(parsed))
+    const { queryParamsDisplayMapper } = evaluateMapper(mapperCode)
+    return queryParamsDisplayMapper ? queryParamsDisplayMapper(value) : value
   } catch {
     return value
   }
