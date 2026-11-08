@@ -6,9 +6,9 @@ module EmbedderAdapters
   class CohereTest < ActiveSupport::TestCase
     URL = 'https://api.cohere.com/v2/embed'
 
+    let(:connection) { Connection.new(name: 'Cohere', provider: 'cohere', base_url: 'https://api.cohere.com', secret: 'co-test', owner: users(:doug)) }
     let(:embedder) do
-      Embedder.new(name: 'Test', provider: 'cohere', service_url: 'https://api.cohere.com',
-                   model: 'embed-v4.0', api_key: 'co-test', timeout: 30)
+      Embedder.new(name: 'Test', provider: 'cohere', connection: connection, owner: users(:doug), model: 'embed-v4.0')
     end
 
     test 'sends texts as search queries with a bearer key and reads embeddings.float' do
@@ -44,8 +44,7 @@ module EmbedderAdapters
       assert_equal 'Cohere API error: 400 - invalid output_dimension 768 for model embed-v4.0', error.message
     end
 
-    test 'needs a key, and only offers sizes some Cohere model accepts' do
-      assert_not Embedder.new(name: 'x', provider: 'cohere', service_url: 'https://api.cohere.com', model: 'embed-v4.0').valid?
+    test 'only offers sizes some Cohere model accepts' do
       assert_not embedder.tap { |e| e.assign_attributes(truncation: 'native', dimensions: 300) }.valid?
       assert_predicate embedder.tap { |e| e.assign_attributes(truncation: 'native', dimensions: 768) }, :valid?
     end

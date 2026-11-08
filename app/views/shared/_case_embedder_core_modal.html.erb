@@ -27,7 +27,10 @@
       <span class="small" data-case-embedder-core-target="vectorSummary"></span>
       <button type="button" class="btn btn-sm btn-outline-primary ms-auto"
               data-case-embedder-core-target="revectorizeButton"
-              data-action="click->case-embedder-core#revectorize">Re-vectorize all queries</button>
+              data-action="click->case-embedder-core#revectorize">
+        <span class="spinner-border spinner-border-sm d-none me-1" role="status" aria-hidden="true"
+              data-case-embedder-core-target="revectorizeSpinner"></span><span data-case-embedder-core-target="revectorizeLabel">Re-vectorize all queries</span>
+      </button>
     </div>
   </div>
 

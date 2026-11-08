@@ -1,29 +1,36 @@
 import { Controller } from "@hotwired/stimulus"
-import { apiFetch } from "api/fetch"
+import { element, showMatchingHelp } from "utils/dom"
+import { runCheck } from "utils/run_check"
 
 // Embedder form (app/views/embedders/_form.html.erb): shows only the fields the chosen
 // provider can use, fills in its defaults when the provider changes, and runs the Check connection
 // button against Embedders::ConnectionChecksController with the form's current values.
 //
+// The URL, key and timeout come from the embedder's Connection, so they aren't on this form. The
+// The connection's provider determines the model and provider-specific settings.
+//
 // presets come from EmbedderProvider.presets, keyed by provider.
 export default class extends Controller {
-  static values = { presets: Object, checkUrl: String }
+  static values = { presets: Object, checkUrl: String, newConnectionUrl: String }
 
   static targets = [
+    "connection",
+    "connectionInfo",
+    "noConnections",
+    "newConnectionLink",
     "provider",
-    "serviceUrl",
     "model",
-    "apiKeyRow",
-    "apiKeyHint",
     "truncation",
     "truncationHint",
     "dimensionsRow",
     "dimensions",
     "dimensionsHint",
     "instructionFields",
+    "noInstructions",
     "help",
     "checkText",
     "checkButton",
+    "checkHint",
     "checkResult"
   ]
 
@@ -35,11 +42,27 @@ export default class extends Controller {
     return this.presetsValue[this.providerTarget.value] || {}
   }
 
-  // Switching provider replaces URL and model with its defaults: values typed for one
-  // vendor are almost never right for another.
-  changeProvider() {
+  // The chosen connection's option, or null while none is chosen.
+  get connection() {
+    if (!this.hasConnectionTarget) return null
+    const value = this.connectionTarget.value
+    if (!value) return null
+    return [...this.connectionTarget.options].find((option) => option.value === value) || null
+  }
+
+  changeConnection() {
+    const provider = this.connection?.dataset.provider || ""
+    const providerChanged = provider !== this.providerTarget.value
+    this.providerTarget.value = provider
+
+    if (providerChanged && provider) this.applyProviderDefaults()
+
+    this.refresh()
+  }
+
+  // A different provider usually needs a different model and may not support native truncation.
+  applyProviderDefaults() {
     const preset = this.preset
-    this.serviceUrlTarget.value = preset.service_url || ""
     this.modelTarget.value = preset.model || ""
     if (!preset.supports_dimensions && this.truncationTarget.value === "native") {
       this.truncationTarget.value = "none"
@@ -50,16 +73,14 @@ export default class extends Controller {
   refresh() {
     const preset = this.preset
 
-    this.helpTargets.forEach((help) => {
-      help.hidden = help.dataset.provider !== this.providerTarget.value
-    })
-    this.apiKeyRowTarget.hidden = preset.uses_key === false
-    if (this.hasApiKeyHintTarget) {
-      this.apiKeyHintTarget.textContent = preset.requires_key
-        ? `Required for ${preset.label}.`
-        : "Optional."
+    showMatchingHelp(this.helpTargets, "provider", this.providerTarget.value)
+    this.refreshConnection()
+    this.instructionFieldsTarget.hidden =
+      !this.providerTarget.value || !preset.supports_instructions
+    if (this.hasNoInstructionsTarget) {
+      this.noInstructionsTarget.hidden =
+        !this.providerTarget.value || Boolean(preset.supports_instructions)
     }
-    this.instructionFieldsTarget.hidden = !preset.supports_instructions
 
     const nativeOption = this.truncationTarget.querySelector("option[value='native']")
     if (nativeOption) nativeOption.disabled = !preset.supports_dimensions
@@ -78,6 +99,29 @@ export default class extends Controller {
         : ""
   }
 
+  refreshConnection() {
+    if (!this.hasConnectionTarget) return
+
+    const connection = this.connection
+    const anyToPick = [...this.connectionTarget.options].some((option) => option.value)
+
+    if (this.hasNoConnectionsTarget) this.noConnectionsTarget.hidden = anyToPick
+    if (this.hasNewConnectionLinkTarget) {
+      this.newConnectionLinkTarget.textContent = "Create a connection"
+      this.newConnectionLinkTarget.href = this.newConnectionUrlValue
+    }
+    // There is nothing to check without a connection: the check goes through it.
+    this.checkButtonTarget.disabled = connection === null
+    if (this.hasCheckHintTarget) this.checkHintTarget.hidden = connection !== null
+
+    if (!this.hasConnectionInfoTarget) return
+
+    this.connectionInfoTarget.hidden = connection === null
+    if (connection) {
+      this.connectionInfoTarget.textContent = `${connection.dataset.providerLabel} at ${connection.dataset.url}. The URL, key and timeout come from this connection.`
+    }
+  }
+
   async check(event) {
     event.preventDefault()
 
@@ -87,59 +131,25 @@ export default class extends Controller {
     data.delete("_method")
     data.set("text", this.checkTextTarget.value)
 
-    this.setButtonLoading(this.checkButtonTarget, true)
-    this.checkResultTarget.replaceChildren()
-
-    try {
-      const response = await apiFetch(this.checkUrlValue, {
-        method: "POST",
-        headers: { Accept: "application/json" },
-        body: data
-      })
-      const result = await response.json()
-      if (!response.ok) throw new Error(result.error || `Request failed (${response.status})`)
-
-      const preview = result.preview.map((value) => value.toFixed(5)).join(", ")
-      const sent = element("code", { className: "text-break", text: result.input })
-      sent.style.whiteSpace = "pre-wrap"
-      this.checkResultTarget.replaceChildren(
-        element("div", { className: "alert alert-success small mb-0" }, [
-          element("div", {}, [
-            element("strong", { text: `${result.dimensions} dimensions` }),
-            ` in ${result.elapsed_ms} ms`
-          ]),
-          element("div", {}, ["Sent: ", sent]),
-          element("div", {}, ["Vector: ", element("code", { text: `[${preview}, …]` })])
-        ])
-      )
-    } catch (error) {
-      this.checkResultTarget.replaceChildren(
-        element("div", { className: "alert alert-danger small mb-0", text: error.message })
-      )
-    } finally {
-      this.setButtonLoading(this.checkButtonTarget, false)
-    }
+    await runCheck(this.checkUrlValue, data, {
+      checkResultTarget: this.checkResultTarget,
+      checkButtonTarget: this.checkButtonTarget,
+      onSuccess: (result, checkResultTarget) => {
+        const preview = result.preview.map((value) => value.toFixed(5)).join(", ")
+        const ellipsis = result.dimensions > result.preview.length ? ", …" : ""
+        const sent = element("code", { className: "text-break", text: result.input })
+        sent.style.whiteSpace = "pre-wrap"
+        checkResultTarget.replaceChildren(
+          element("div", { className: "alert alert-success small mb-0" }, [
+            element("div", {}, [
+              element("strong", { text: `${result.dimensions} dimensions` }),
+              ` in ${result.elapsed_ms} ms`
+            ]),
+            element("div", {}, ["Sent: ", sent]),
+            element("div", {}, ["Vector: ", element("code", { text: `[${preview}${ellipsis}]` })])
+          ])
+        )
+      }
+    })
   }
-
-  setButtonLoading(button, loading) {
-    if (loading) {
-      button.disabled = true
-      this.buttonContent = [...button.childNodes]
-      const spinner = element("span", { className: "spinner-border spinner-border-sm" })
-      spinner.setAttribute("role", "status")
-      spinner.setAttribute("aria-hidden", "true")
-      button.replaceChildren(spinner, " Loading...")
-    } else {
-      button.disabled = false
-      if (this.buttonContent) button.replaceChildren(...this.buttonContent)
-    }
-  }
-}
-
-function element(tag, { className, text } = {}, children = []) {
-  const node = document.createElement(tag)
-  if (className) node.className = className
-  if (text !== undefined) node.textContent = text
-  node.append(...children)
-  return node
 }

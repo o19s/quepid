@@ -151,11 +151,16 @@ class SampleData < Thor
     # model (sentence-transformers/all-minilm-l6-v2, 384 dims) the Qdrant demo collection's
     # 'dense' vector was built with, so the QDRANT CASE below gets real nearest-neighbour
     # results instead of a vector no document was indexed against.
+    ollama_connection = ::Connection.find_or_create_by provider: 'ollama', base_url: 'http://ollama:31434' do |connection|
+      connection.name        = 'Ollama'
+      connection.auth_scheme = 'none'
+      connection.owner       = realistic_activity_user
+    end
     minilm_embedder = ::Embedder.find_or_create_by name: 'MiniLM Embedder (Ollama)' do |embedder|
-      embedder.provider    = 'ollama'
-      embedder.service_url = 'http://ollama:31434'
-      embedder.model       = 'all-minilm'
-      embedder.owner       = realistic_activity_user
+      embedder.provider   = 'ollama'
+      embedder.connection = ollama_connection
+      embedder.model      = 'all-minilm'
+      embedder.owner      = realistic_activity_user
     end
     print_step "Seeded embedder: name: #{minilm_embedder.name}, provider: #{minilm_embedder.provider}"
 

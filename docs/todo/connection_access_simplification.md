@@ -1,0 +1,13 @@
+# Owner-managed connections
+
+Approved scope: reusable connections are managed by their owner. Direct team sharing of connections is removed; teams continue to share configured embedders. Instance-wide availability is an explicit flag, with an administrator retained as the responsible owner. AI Judge integration follows in a separate batch.
+
+- [x] Replace ownerless communal access with `instance_wide`, require an owner, and remove `teams_connections` and its associations. Migrate previously ownerless connections to the first human administrator; refuse migration if one is required but unavailable. Existing owned connections remain private, without altering their consumer links.
+- [x] Update connection creation, forms, lists, detail pages and checks. Only administrators create instance-wide connections; administrators manage them. Private connections remain owner-managed. Remove connection team inputs and ignore forged grants.
+- [x] Preserve using, testing and editing a shared embedder with its existing private connection. New configurations and clones require an owned or instance-wide connection; explain the choice when cloning a teammate's private configuration. Preserve existing case access.
+- [x] Update focused model/controller/browser coverage, seed handling, the ADR, data mapping and manual scenarios. Keep the current unrelated work intact.
+- [ ] Run migration and verify stored ownership/availability without exposing credentials; run affected Rails tests and linters. Drive owner/teammate/instance-wide success and denial paths with Playwright MCP, inspect screenshots, record sampled coverage and clean up disposable data. Run the representative visual suite.
+
+Verification completed: the migration and focused 253-test Rails suite passed; RuboCop passed for the changed Ruby files; targeted shared-embedder and account-deletion Playwright tests passed; owner and teammate flows were driven with Playwright MCP, screenshots were inspected, and disposable records were removed. The visual suite remains blocked by the missing `E2E Static Fixture (10s of Queries)` case required by its configured case ID. Its Rails team form screenshot also differs by 7,082 pixels from the checked-in baseline after disposable data was removed; the current screenshot shows a blank gray user avatar where the baseline shows the user's branded avatar. Do not update unrelated baselines to clear this environment mismatch. Smallest prerequisite: restore the configured static case and matching seeded avatar for the visual suite, then rerun it.
+
+No staging, commits, subagents or handoff files. No change to AI Judge credentials in this batch.
