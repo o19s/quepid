@@ -130,6 +130,23 @@ class AccountsControllerTest < ActionController::TestCase
         assert_redirected_to sessions_path
       end
 
+      test 'a connection in use blocks deletion and preserves private cases' do
+        connection = connections(:private_ollama)
+        connection.update!(owner: user)
+        embedder = embedders(:private_ollama)
+
+        assert_no_difference([ 'User.count', 'Case.count', 'Query.count', 'Connection.count', 'Embedder.count' ]) do
+          delete :destroy
+        end
+
+        assert_response :unprocessable_content
+        assert_template 'profiles/show'
+        assert_select '#error_explanation_danger_zone', text: /embedders.*connections/
+        assert_equal user.id, cases(:matt_case).reload.owner_id
+        assert_equal user.id, connection.reload.owner_id
+        assert_equal connection.id, embedder.reload.connection_id
+      end
+
       test 'annotation restriction preserves a private case and its score before cleanup' do
         private_case = cases(:matt_case)
         annotation = Annotation.create!(user: user, message: 'Keep this history')

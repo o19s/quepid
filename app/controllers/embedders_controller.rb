@@ -1,11 +1,15 @@
 # frozen_string_literal: true
 
 class EmbeddersController < ApplicationController
+  include Embedders::ParameterFiltering
+  include TeamAssignable
+
   before_action :set_team, only: [ :new, :clone ]
   before_action :set_embedder, only: [ :show, :edit, :update, :destroy, :clone ]
 
   def index
-    @embedders = current_user.embedders_involved_with.includes(:owner, :teams).order(:name)
+    @selectable_connection_ids = current_user.connections_involved_with.pluck(:id)
+    @embedders = current_user.embedders_involved_with.includes(:owner, :teams, :connection).order(:name)
   end
 
   def show
@@ -13,32 +17,29 @@ class EmbeddersController < ApplicationController
   end
 
   def new
-    provider = EmbedderProvider.find('openai')
-    @embedder = Embedder.new(
-      provider:    provider.key,
-      service_url: provider.default_service_url,
-      model:       provider.default_model
-    )
+    @embedder = Embedder.new
     @embedder.team_ids = [ @team.id ] if @team
   end
 
   def edit
   end
 
-  # The form never shows a key, so the clone posts back clone_of and #create copies the
-  # source's key when none was typed -- a clone works without re-entering it.
+  # A copy can reuse an owned or instance-wide connection. A teammate must choose their
+  # own connection when the original uses its owner's private credentials.
   def clone
-    @clone_of = @embedder
     @embedder = @embedder.dup
     @embedder.name = "Clone of #{@embedder.name}"
+    unless current_user.connections_involved_with.exists?(id: @embedder.connection_id)
+      @embedder.connection = nil
+      flash.now[:notice] = 'Choose a connection you own or an instance-wide connection for this copy.'
+    end
     @embedder.team_ids = [ @team.id ] if @team
     render 'new'
   end
 
   def create
     @embedder = current_user.owned_embedders.build(embedder_params)
-    @clone_of = current_user.embedders_involved_with.find_by(id: params[:clone_of]) if params[:clone_of].present?
-    @embedder.api_key = @clone_of.api_key if @clone_of && @embedder.api_key.blank?
+    @embedder.connection_assignment_user = current_user
 
     if @embedder.save
       apply_team_ids(@embedder, params.dig(:embedder, :team_ids))
@@ -49,9 +50,7 @@ class EmbeddersController < ApplicationController
   end
 
   def update
-    @embedder.assign_attributes(embedder_params)
-
-    if @embedder.save
+    if @embedder.update(embedder_params)
       apply_team_ids(@embedder, params.dig(:embedder, :team_ids))
       redirect_to edit_embedder_path(@embedder), notice: 'Embedder was successfully updated.'
     else
@@ -72,31 +71,16 @@ class EmbeddersController < ApplicationController
 
   def set_embedder
     @embedder = current_user.embedders_involved_with.find_by(id: params[:id])
-    return if @embedder
+    if @embedder
+      @embedder.connection_assignment_user = current_user
+      return
+    end
 
     redirect_to embedders_path,
                 notice: "The embedder you are looking for either doesn't exist or you don't have permissions."
   end
 
-  # Only touch teams the current user can see, so saving can't unshare the embedder from a
-  # team the submitting user isn't a member of. Same rule as AiJudgesController#apply_team_ids.
-  def apply_team_ids embedder, team_ids
-    user_teams = current_user.teams.to_a
-    selected_ids = Array(team_ids).compact_blank.map(&:to_i)
-
-    kept_teams = embedder.teams.reject { |t| user_teams.any? { |ut| ut.id == t.id } }
-    selected_teams = user_teams.select { |t| selected_ids.include?(t.id) }
-    embedder.teams.replace(kept_teams | selected_teams)
-  end
-
-  # The form never shows the saved key, so a blank or masked key means "keep it".
   def embedder_params
-    permitted = params.expect(embedder: Embedder::PERMITTED_PARAMS)
-    permitted = permitted.except(:api_key) if keep_api_key?(permitted[:api_key])
-    permitted
-  end
-
-  def keep_api_key? submitted
-    @embedder&.persisted? && Embedder.keep_existing_key?(submitted)
+    permitted_embedder_params
   end
 end
