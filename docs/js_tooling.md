@@ -78,6 +78,8 @@ Spec rule sets: Vitest specs use `@vitest/eslint-plugin` recommended plus `no-fo
 
 `.editorconfig` still applies (e.g. final newline).
 
+ESLint requires braces around multiline control-flow bodies (`curly: ["error", "multi-line"]`). Compact guards such as `if (!value) return` remain valid. When Prettier wraps a previously single-line conditional, run ESLint's automatic fixes again to add braces.
+
 `eslint-config-prettier` disables ESLint rules that conflict with Prettier; run both (`lint:js` + `format:js:check`) — formatting is not enforced through ESLint plugins.
 
 ### Commands

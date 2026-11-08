@@ -362,8 +362,9 @@ for (const side of sides) {
   writeFileSync(join(out, `notes-workbench-${side}.json`), JSON.stringify(notes, null, 2))
   await page.goto("/cases")
   for (const id of scratch) await deleteCase(page, id)
-  for (const id of endpoints.filter(Boolean))
+  for (const id of endpoints.filter(Boolean)) {
     await deleteSearchEndpoint(page, id, existingEndpoints)
+  }
   await page.context().close()
 }
 await browser.close()

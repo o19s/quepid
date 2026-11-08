@@ -59,10 +59,12 @@ export function buildSearcherRequest({
 
   if (searchEngine === "searchapi") {
     if (mapperFunctions.docsMapper) searcherOptions.docsMapper = mapperFunctions.docsMapper
-    if (mapperFunctions.numberOfResultsMapper)
+    if (mapperFunctions.numberOfResultsMapper) {
       searcherOptions.numberOfResultsMapper = mapperFunctions.numberOfResultsMapper
-    if (mapperFunctions.nextPageArgsMapper)
+    }
+    if (mapperFunctions.nextPageArgsMapper) {
       searcherOptions.nextPageArgsMapper = mapperFunctions.nextPageArgsMapper
+    }
     searcherOptions.paginationHitsParam = selectedTry.mapperBasedSearchEnginePaginationHitsParam
     searcherOptions.paginationOffsetParam = selectedTry.mapperBasedSearchEnginePaginationOffsetParam
   }

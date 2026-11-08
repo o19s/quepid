@@ -60,8 +60,9 @@ export function documentUrlFor(doc, { settings = {}, proxyUrlFor } = {}) {
   if (
     settings.searchEngine === "searchapi" &&
     settings.mapperBasedSearchEngineSupportsDirectDocumentLookup !== true
-  )
+  ) {
     return null
+  }
 
   let linkUrl
   try {

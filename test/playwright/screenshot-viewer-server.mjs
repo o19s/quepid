@@ -56,16 +56,18 @@ function safePath(urlPath) {
       "node_modules/pixelmatch/index.js"
     ].includes(relative) &&
     !(relative.startsWith(".playwright-mcp/") && /\.(png|webp)$/.test(relative))
-  )
+  ) {
     return null
+  }
   if (!fs.existsSync(absolute)) return null
   const real = fs.realpathSync(absolute)
   if (!real.startsWith(repoRoot + path.sep)) return null
   if (
     relative.startsWith(".playwright-mcp/") &&
     !real.startsWith(path.join(repoRoot, ".playwright-mcp") + path.sep)
-  )
+  ) {
     return null
+  }
   return absolute
 }
 
@@ -109,8 +111,9 @@ const server = http.createServer(async (req, res) => {
         body += chunk
         if (Buffer.byteLength(body) > 16384) throw new Error("Request too large")
       }
-      if (req.url !== "/api/reviews" && req.url !== "/api/captures")
+      if (req.url !== "/api/reviews" && req.url !== "/api/captures") {
         throw new Error("Invalid action URL")
+      }
       const data =
         req.url === "/api/captures"
           ? captures.start(JSON.parse(body))

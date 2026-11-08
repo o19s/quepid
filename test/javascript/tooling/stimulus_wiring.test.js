@@ -36,10 +36,12 @@ function declarations(ControllerClass) {
     klass = Object.getPrototypeOf(klass)
   ) {
     if (Object.hasOwn(klass, "targets")) klass.targets.forEach((name) => targets.add(name))
-    if (Object.hasOwn(klass, "values"))
+    if (Object.hasOwn(klass, "values")) {
       Object.keys(klass.values).forEach((name) => values.add(name))
-    if (Object.hasOwn(klass, "outlets"))
+    }
+    if (Object.hasOwn(klass, "outlets")) {
       klass.outlets.forEach((name) => outlets.add(camelize(name)))
+    }
     Object.getOwnPropertyNames(klass.prototype ?? {}).forEach((name) => methods.add(name))
   }
   return { targets, values, outlets, methods }

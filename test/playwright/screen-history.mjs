@@ -212,8 +212,9 @@ export function recordScreen(
   if (!id || !title || !area) throw new Error("Screen ID, title and application area are required")
   const captureTime = (value) => {
     const date = value === undefined ? new Date() : new Date(value)
-    if (!Number.isFinite(date.getTime()) || date > new Date())
+    if (!Number.isFinite(date.getTime()) || date > new Date()) {
       throw new Error("Capture time must be a valid past timestamp")
+    }
     return date.toISOString()
   }
   const currentTime = captureTime(capturedAt)
@@ -223,18 +224,21 @@ export function recordScreen(
   const lock = path.join(location.directory, "record.lock")
   const descriptor = fs.openSync(lock, "wx")
   try {
-    if (expectedBranch !== undefined && location.branch !== expectedBranch)
+    if (expectedBranch !== undefined && location.branch !== expectedBranch) {
       throw new Error("Branch changed during capture; retry on the selected branch")
+    }
     const fingerprint = sourceFingerprint(root, paths)
-    if (source !== fingerprint)
+    if (source !== fingerprint) {
       throw new Error(
         "Source changed since the capture was prepared; recapture against current code"
       )
+    }
     const sourceFiles = screenshotSourceFiles(root, paths)
-    if (snapshotFingerprint(paths, sourceFiles) !== fingerprint)
+    if (snapshotFingerprint(paths, sourceFiles) !== fingerprint) {
       throw new Error(
         "Source changed while recording its file fingerprints; recapture against current code"
       )
+    }
     const history = readHistory(root)
     const existing = history.screens[id]
     if (
@@ -248,8 +252,9 @@ export function recordScreen(
       const current = existing.versions.at(-1)
       const target = path.join(root, ".playwright-mcp", current.image)
       if (storedImageStatus(root, current).status !== "available") {
-        if (!image)
+        if (!image) {
           throw new Error("Stored current screenshot is missing; restore the original image")
+        }
         const bytes = fs.readFileSync(image)
         decodePng(bytes)
         if (!current.image.endsWith(`-${digest(bytes).slice(0, 16)}.png`)) {
@@ -261,12 +266,15 @@ export function recordScreen(
       }
       if (!legacyImage && !legacyAbsent) return { updated: false, id, source: fingerprint }
     }
-    if (legacyImage && legacyAbsent)
+    if (legacyImage && legacyAbsent) {
       throw new Error("Supply a legacy image or mark it absent, not both")
-    if ((legacyImage || legacyAbsent) && !legacyRef)
+    }
+    if ((legacyImage || legacyAbsent) && !legacyRef) {
       throw new Error("A legacy source ref is required")
-    if ((legacyImage || legacyAbsent) && existing?.legacy)
+    }
+    if ((legacyImage || legacyAbsent) && existing?.legacy) {
       throw new Error("Legacy is already recorded for this screen")
+    }
     const screen = existing || { id, title, area, paths, versions: [] }
     const copyImage = (input, label) => {
       const bytes = fs.readFileSync(input)
@@ -290,7 +298,7 @@ export function recordScreen(
     const imageSize = unchanged
       ? null
       : (({ width, height }) => ({ width, height }))(decodePng(fs.readFileSync(image)))
-    if (!unchanged)
+    if (!unchanged) {
       screen.versions.push({
         image: copyImage(image, screen.versions.length + 1),
         imageSize,
@@ -301,6 +309,7 @@ export function recordScreen(
         dirty: Boolean(git(root, "status", "--porcelain", "--", ...paths)),
         capturedAt: currentTime
       })
+    }
     // A new image that looks the same as the approved one (under the viewer's comparison)
     // keeps its approval: the reviewer already accepted those pixels. Anything visibly
     // different needs a new review.

@@ -210,12 +210,14 @@ export function createScorer(data = {}, { schedule, refreshRatedDocs = () => und
     const avgRating100 = (count) => avg100(docs, count)
     const editDistanceFromBest = (count) => distanceFromBest(docs, bestDocs, count)
     const eachDoc = (callback, count = DEFAULT_NUM_DOCS) => {
-      for (let index = 0; index < count; index += 1)
+      for (let index = 0; index < count; index += 1) {
         if (docExistsAt(index)) callback(docAt(index), index)
+      }
     }
     const eachRatedDoc = (callback, count = DEFAULT_NUM_DOCS) => {
-      for (let index = 0; index < count; index += 1)
+      for (let index = 0; index < count; index += 1) {
         if (ratedDocExistsAt(index)) callback(ratedDocAt(index), index)
+      }
     }
     const refreshQueryRatedDocs = (count) => refreshRatedDocs(query.queryId, count)
     const eachDocWithRatingEqualTo = (rating, callback) =>

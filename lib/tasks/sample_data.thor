@@ -370,7 +370,7 @@ class SampleData < Thor
       field_spec:   "id:#{qdrant_engine.id_field}, title:#{qdrant_engine.title_field}, #{qdrant_engine.additional_fields.join(', ')}",
       # The 'dense' named vector in the demo collection, not qdrant_engine.query_params'
       # BM25 default -- this is what actually exercises the embedder's vector end to end.
-      query_params: '{"query": {"nearest": "#$qOption.query_vec##"}, "using": "dense", "with_payload": true, "limit": 10}',
+      query_params: '{"query": {"nearest": "#$qOption.query_vec##"}, "using": "dense", "with_payload": true}',
     }
     qdrant_try.search_endpoint = qdrant_endpoint
     qdrant_try.update qdrant_params

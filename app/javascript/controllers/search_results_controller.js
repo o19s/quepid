@@ -113,11 +113,13 @@ export default class extends Controller {
     if (this.hasDepthNoteTarget) {
       const showDepth = resultsVisible && !showOnlyRated && Boolean(snapshot?.depthOfRating)
       this.depthNoteTarget.classList.toggle("d-none", !showDepth)
-      if (showDepth && this.hasDepthValueTarget)
+      if (showDepth && this.hasDepthValueTarget) {
         this.depthValueTarget.textContent = String(snapshot.depthOfRating)
+      }
     }
-    if (this.hasRatedNoteTarget)
+    if (this.hasRatedNoteTarget) {
       this.ratedNoteTarget.classList.toggle("d-none", !resultsVisible || !showOnlyRated)
+    }
   }
 
   renderBrowseTool(snapshot) {

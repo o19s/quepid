@@ -23,10 +23,11 @@ export function scenarioCaptureOptions(
     const scenario = part.scenarios?.[scenarioId]
     if (!scenario) continue
     const id = scenario.screenshots?.[state]
-    if (typeof id !== "string" || !id)
+    if (typeof id !== "string" || !id) {
       throw new Error(
         `Add screenshots.${state} to scenario ${scenarioId} in tracking.yml before recording`
       )
+    }
     const existing = readHistory(root).screens[id]
     return {
       id,
@@ -67,15 +68,17 @@ export function linkedScreenshotStatus(
           !scenario.screenshots?.[state] ||
           !scenario.screenshots?.[primary] ||
           alternates[primary]
-        )
+        ) {
           throw new Error(
             `Alternate ${scenarioId}/${state} must vary a default state of the scenario`
           )
+        }
       }
       for (const [state, id] of Object.entries(scenario.screenshots || {})) {
         if (screenId !== undefined && id !== screenId) continue
-        if (typeof id !== "string" || !id)
+        if (typeof id !== "string" || !id) {
           throw new Error(`Invalid screenshot ID for ${scenarioId}/${state}`)
+        }
         const screen = history.screens[id]
         const now = screen?.versions.at(-1)
         const paths = screenshotPaths(

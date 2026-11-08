@@ -121,8 +121,9 @@ export function parseResponseObject(response, inspectUrl, searchEngine) {
   }
 
   let error = `An unexpected error was returned: ${formatCode(response.status)}`
-  if (Object.prototype.hasOwnProperty.call(response, "statusText"))
+  if (Object.prototype.hasOwnProperty.call(response, "statusText")) {
     error += ` - ${response.statusText}`
+  }
   if (Object.prototype.hasOwnProperty.call(response, "reason")) error += ` - ${response.reason}`
 
   if (response.data) {

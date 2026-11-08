@@ -150,8 +150,9 @@ export default class extends Controller {
     const showNotice = this.bookValue ? missingScale : needsScale
 
     if (this.hasRunPromptButtonTarget) this.runPromptButtonTarget.disabled = missingScale
-    if (this.hasNeedsScaleNoticeTarget)
+    if (this.hasNeedsScaleNoticeTarget) {
       this.needsScaleNoticeTarget.style.display = showNotice ? "" : "none"
+    }
   }
 
   syncImages() {
@@ -162,10 +163,12 @@ export default class extends Controller {
     field.checked = supported && field.dataset.wanted !== "false"
     field.disabled = !supported || this.jsonTabTarget.classList.contains("active")
     field.dataset.unsupported = String(!supported)
-    if (this.hasImagesHiddenTarget)
+    if (this.hasImagesHiddenTarget) {
       this.imagesHiddenTarget.value = supported ? "false" : field.dataset.wanted
-    if (this.hasImagesNoticeProviderTarget)
+    }
+    if (this.hasImagesNoticeProviderTarget) {
       this.imagesNoticeProviderTarget.textContent = this.currentPreset()?.label || ""
+    }
     if (this.hasImagesNoticeTarget) this.imagesNoticeTarget.style.display = supported ? "none" : ""
   }
 
@@ -211,10 +214,12 @@ export default class extends Controller {
   showCriteria(preset) {
     const asCriteria = Boolean(preset?.scale_as_criteria)
 
-    if (this.hasCriteriaTableTarget)
+    if (this.hasCriteriaTableTarget) {
       this.criteriaTableTarget.style.display = asCriteria ? "" : "none"
-    if (this.hasCriteriaProseTarget)
+    }
+    if (this.hasCriteriaProseTarget) {
       this.criteriaProseTarget.style.display = asCriteria ? "none" : ""
+    }
   }
 
   isStockPrompt(text) {

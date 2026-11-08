@@ -93,8 +93,9 @@ export default class extends withStatusMessages(Controller) {
     this.testQueryHintTargets.forEach((hint) => {
       const active = hint.dataset.httpMethod === method
       hint.hidden = !active
-      if (active && this.hasTestQueryTarget)
+      if (active && this.hasTestQueryTarget) {
         this.testQueryTarget.placeholder = hint.dataset.placeholder
+      }
     })
   }
 
@@ -177,8 +178,9 @@ export default class extends withStatusMessages(Controller) {
     try {
       return await postJson(url, body)
     } catch (error) {
-      if (error instanceof HttpError && error.data && typeof error.data === "object")
+      if (error instanceof HttpError && error.data && typeof error.data === "object") {
         return error.data
+      }
       throw error
     }
   }

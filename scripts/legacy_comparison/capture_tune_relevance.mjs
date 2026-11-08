@@ -84,8 +84,9 @@ for (const side of sides) {
         .locator("xpath=following-sibling::*[1]")
         .isVisible()
         .catch(() => false))
-    )
+    ) {
       await header.click()
+    }
     await page.waitForTimeout(300)
   }
   let cloneId = null
@@ -122,8 +123,9 @@ for (const side of sides) {
 
     // T2 and T3: Settings help badges and section order.
     await tab("engineSettings")
-    for (const name of ["Evaluate Nightly", "Escape Queries", "Search Endpoints"])
+    for (const name of ["Evaluate Nightly", "Escape Queries", "Search Endpoints"]) {
       await expand(name)
+    }
     const help = page.locator(legacy ? ".pane_east .label-info:visible" : ".setting-help:visible")
     await outline(help)
     await help.first().hover()
@@ -235,8 +237,9 @@ for (const side of sides) {
       .first()
       .click()
     await page.waitForTimeout(2000)
-    if (await details.isVisible())
+    if (await details.isVisible()) {
       await outline(details.getByText("Renamed try", { exact: false }).first())
+    }
     await outline(
       page.locator("#flash-messages .alert:visible, .flash:visible").filter({ hasText: /renamed/i })
     )
@@ -293,8 +296,9 @@ for (const side of sides) {
   writeFileSync(join(out, `notes-${side}.json`), JSON.stringify(notes, null, 2))
   await page.goto("/cases")
   if (cloneId) await deleteCase(page, cloneId)
-  for (const id of endpoints.filter(Boolean))
+  for (const id of endpoints.filter(Boolean)) {
     await deleteSearchEndpoint(page, id, existingEndpoints)
+  }
   await page.context().close()
 }
 await browser.close()

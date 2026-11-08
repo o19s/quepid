@@ -109,10 +109,11 @@ export class QueryCollectionStore extends EventTarget {
       this._displayOrderIds.add(key)
     }
     this._status = "ready"
-    if (publish)
+    if (publish) {
       this.dispatchEvent(
         new CustomEvent("change", { detail: this.changeDetail({ queryId: Number(queryId) }) })
       )
+    }
   }
 
   // Set of display-order ids, rebuilt only when _displayOrder is reassigned, so upsert() is O(1)

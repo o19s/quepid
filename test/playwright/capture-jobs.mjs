@@ -32,10 +32,11 @@ export async function captureContainer(root) {
         (publisher) => publisher.TargetPort === 3000 && publisher.PublishedPort === port
       )
   )
-  if (matches.length !== 1)
+  if (matches.length !== 1) {
     throw new Error(
       `Expected one running app server on port ${port}; configure SCREENSHOT_CAPTURE_CONTAINER for the actual server`
     )
+  }
   return matches[0].Name
 }
 
@@ -124,8 +125,9 @@ export class CaptureJobs {
   }
 
   release(jobId) {
-    if (fs.existsSync(this.lock) && fs.readFileSync(this.lock, "utf8") === jobId)
+    if (fs.existsSync(this.lock) && fs.readFileSync(this.lock, "utf8") === jobId) {
       fs.unlinkSync(this.lock)
+    }
   }
 
   active() {
@@ -166,10 +168,11 @@ export class CaptureJobs {
       fs.linkSync(preparedLock, this.lock)
     } catch (error) {
       fs.rmSync(path.join(this.directory, `${job.jobId}.json`), { force: true })
-      if (error.code === "EEXIST")
+      if (error.code === "EEXIST") {
         throw new Error("Another screenshot capture is running; retry when it finishes", {
           cause: error
         })
+      }
       throw error
     } finally {
       fs.rmSync(preparedLock, { force: true })
@@ -188,8 +191,9 @@ export class CaptureJobs {
         job.state = "succeeded"
         job.message = "Current screenshot captured. Review the new image."
         const duplicates = duplicateCaptures(this.root, id)
-        if (duplicates.length)
+        if (duplicates.length) {
           job.message += ` Warning: it is identical to ${duplicates.map((other) => other.title).join(", ")} — confirm it shows the requested page.`
+        }
       } catch (error) {
         job.state = "failed"
         job.message = error.message

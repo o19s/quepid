@@ -255,17 +255,19 @@ function markSimilarCaptures(current) {
       if (other === item || other.width !== item.width || other.height !== item.height) continue
       if (item.entry.duplicates?.some((duplicate) => duplicate.id === other.entry.id)) continue
       const percent = thumbnailDifference(item.thumb, other.thumb)
-      if (percent <= SIMILAR_PERCENT)
+      if (percent <= SIMILAR_PERCENT) {
         similar.push({
           id: other.entry.id,
           title: other.entry.title,
           percentDifferent: Number(percent.toFixed(2))
         })
+      }
     }
-    if (similar.length)
+    if (similar.length) {
       item.entry.similar = similar
         .sort((a, b) => a.percentDifferent - b.percentDifferent)
         .slice(0, 5)
+    }
   }
 }
 

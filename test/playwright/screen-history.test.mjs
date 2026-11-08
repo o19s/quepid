@@ -353,8 +353,9 @@ test("alternates name the default state they vary and must point at a default", 
     { "login-error": "missing-state" },
     { "unknown-state": "login-form" },
     { "login-error": "login-form", "login-locked": "login-error" }
-  ])
+  ]) {
     assert.throws(() => linkedScreenshotStatus(root, withAlternates(bad)), /must vary a default/)
+  }
 })
 
 test("scenario mapping uses the linked ID, preserves extra dependencies and rejects unlinked states", (t) => {
@@ -1161,13 +1162,14 @@ test("review controls render safely before selection and disable recapture for u
   )
   const elements = new Map()
   const element = (id) => {
-    if (!elements.has(id))
+    if (!elements.has(id)) {
       elements.set(id, {
         classList: { toggle() {} },
         append(text) {
           this.textContent += text
         }
       })
+    }
     return elements.get(id)
   }
   const render = runInNewContext(`${source}; renderReview`, {
@@ -1211,14 +1213,16 @@ test("branch changes during replay cannot publish a Current image on another bra
 
 test("surface scoping ignores unloaded CSS/layouts while retaining shared and explicit dependencies", (t) => {
   const { root, record } = setup(t)
-  for (const directory of ["app/assets/stylesheets", "app/views/layouts"])
+  for (const directory of ["app/assets/stylesheets", "app/views/layouts"]) {
     fs.mkdirSync(path.join(root, directory), { recursive: true })
+  }
   for (const file of [
     "app/assets/stylesheets/base.css",
     "app/assets/stylesheets/core-additions.css",
     "app/views/layouts/admin.html.erb"
-  ])
+  ]) {
     fs.writeFileSync(path.join(root, file), "original")
+  }
   const paths = ["app/", "app/assets/stylesheets/", "app/views/layouts/"]
   // Keep the page dependency specific, rather than swallowing CSS through app/.
   paths[0] = "app/view.html"

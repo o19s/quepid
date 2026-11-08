@@ -212,8 +212,9 @@ export default class extends withStatusMessages(Controller) {
         { signal: this.abortController.signal }
       )
       this.ratingTarget.textContent = String(data.rating ?? "")
-      if (this.hasUnrateableTarget)
+      if (this.hasUnrateableTarget) {
         this.unrateableTarget.style.display = data.unrateable ? "" : "none"
+      }
       this.explanationTarget.textContent = data.explanation || ""
       this.ratingInfoTarget.style.display = "block"
     } catch (error) {

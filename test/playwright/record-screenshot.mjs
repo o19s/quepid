@@ -35,15 +35,17 @@ while (args.length) {
 if (options.scenario) {
   if (!options.state) throw new Error("--state is required with --scenario")
   const capture = scenarioCaptureOptions(root, options.scenario, options.state, options.paths)
-  if (options.id && options.id !== capture.id)
+  if (options.id && options.id !== capture.id) {
     throw new Error("--id must match the screenshot ID linked in tracking.yml")
+  }
   options.id = capture.id
   options.title ||= capture.title
   options.area ||= capture.area
   options.paths = capture.paths
 }
-if (!options.id || !options.title || !options.area)
+if (!options.id || !options.title || !options.area) {
   throw new Error("Use --scenario ID --state NAME, or supply --id, --title, --area and --path")
+}
 const source = sourceFingerprint(root, options.paths)
 if (options.check) {
   const screen = readHistory(root).screens[options.id]
@@ -57,8 +59,9 @@ if (options.check) {
     })
   )
 } else {
-  if (!options.source)
+  if (!options.source) {
     throw new Error("Use --check before capture, then pass its --source fingerprint when recording")
+  }
   const { pageUrl, pageText, ...record } = options
   if (pageUrl || pageText) {
     record.capture = {
