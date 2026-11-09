@@ -169,7 +169,10 @@ The **Proxy requests through Quepid** option (and the case wizard's Proxy mode) 
 - **Edge cases:**
   - [ ] A public hostname that DNS-resolves to a private address is blocked (the check is on resolved addresses, not the literal URL).
   - [ ] Confirm a saved endpoint's Basic Auth credential is attached by the proxy server-side and is never present in the response or browser network tab (Part 7.3).
-  - [ ] In a local dev setup where the search engine itself runs on localhost/Docker network (e.g. Solr on `localhost:8983`), note that Proxy mode will refuse it and CORS mode must be used — confirm the error message makes that diagnosable.
+  - [ ] In a local dev setup where the search engine itself runs on localhost/Docker network (e.g. Solr on `localhost:8983`), note that Proxy mode will refuse it unless allow-listed (below) and CORS mode must otherwise be used — confirm the error message makes that diagnosable.
+  - [ ] Restart with `PROXY_ALLOWED_NETWORKS` set to one internal range (e.g. the engine's `/32` or Docker subnet): an address inside it proxies successfully, a neighbouring address outside it is still rejected.
+  - [ ] Restart with `PROXY_ALLOWED_HOSTS` set to the engine's hostname (e.g. a Docker service name): that name proxies successfully, an unlisted name resolving to the same address is rejected, and a listed name still cannot reach a link-local `169.254.x.x` address.
+  - [ ] An invalid entry (`PROXY_ALLOWED_NETWORKS=10.0.0.0/99`, `PROXY_ALLOWED_HOSTS=*.internal`) is skipped with a warning in the Rails log naming the variable and entry; Quepid boots, valid entries alongside it still work, and the skipped target stays blocked.
 
 Team assignment security checks (7.2, 7.3 and mapper wizard save): submit a team
 ID outside your memberships and confirm 404 without changing sharing. On wizard

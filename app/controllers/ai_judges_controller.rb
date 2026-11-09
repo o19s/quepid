@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 class AiJudgesController < ApplicationController
+  include TeamAssignable
+
   before_action :set_team, only: [ :new, :clone, :create, :update, :destroy ]
   before_action :set_ai_judge, only: [ :show, :edit, :update, :destroy ]
   before_action :set_book, only: [ :show, :new, :edit, :create, :update ]
@@ -103,23 +105,6 @@ class AiJudgesController < ApplicationController
   def set_scorer
     @scorer_id = params[:scorer_id]
     @scorer = current_user.scorers_involved_with.where(id: @scorer_id).first if @scorer_id.present?
-  end
-
-  # Checkboxes suck: only touch teams the current user can actually see, so
-  # this can't accidentally unshare the judge from a team the submitting
-  # user isn't a member of (BooksController#update's team_ids handling
-  # doesn't scope to current_user.teams the same way - don't copy that
-  # pattern). Loads current_user.teams once and derives both the
-  # membership check and the selected teams from it, rather than querying
-  # it twice. Used by both create (where ai_judge.teams starts empty, so
-  # there's nothing to keep) and update (where it is).
-  def apply_team_ids ai_judge, team_ids
-    user_teams = current_user.teams.to_a
-    selected_ids = Array(team_ids).compact_blank.map(&:to_i)
-
-    kept_teams = ai_judge.teams.reject { |t| user_teams.any? { |ut| ut.id == t.id } }
-    selected_teams = user_teams.select { |t| selected_ids.include?(t.id) }
-    ai_judge.teams.replace(kept_teams | selected_teams)
   end
 
   # The team_ids checkboxes render inside the `user` form object

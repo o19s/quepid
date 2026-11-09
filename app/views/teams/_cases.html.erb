@@ -59,7 +59,8 @@
 
               <%= archive_toggle_button kase, name: kase.case_name,
                                         urls: { archive: archive_case_team_path(team, case_id: kase.id),
-                                                unarchive: unarchive_case_team_path(team, case_id: kase.id) } %>
+                                                unarchive: unarchive_case_team_path(team, case_id: kase.id) },
+                                        info: 'You\'re about to put this case into deep freeze. You\'ll be able to get to it through the "Archived" checkbox in the Relevancy Cases listing page.' %>
             </div>
           </td>
         </tr>

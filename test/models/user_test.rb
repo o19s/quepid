@@ -322,6 +322,34 @@ class UserTest < ActiveSupport::TestCase
     let(:team_member_1) { users(:team_member_1) }
     let(:shared_team_case) { cases(:shared_team_case) }
 
+    it 'keeps an owner and their records when an embedder uses their connection' do
+      owner = users(:joey)
+      connection = connections(:private_ollama)
+      embedder = embedders(:private_ollama)
+
+      assert_no_difference([ 'User.count', 'Connection.count', 'Embedder.count' ]) do
+        assert_not owner.destroy
+      end
+
+      assert_match(/embedders.*connections/, owner.errors.full_messages_for(:base).join)
+      assert_equal owner.id, connection.reload.owner_id
+      assert_equal owner.id, embedder.reload.owner_id
+      assert_equal connection.id, embedder.connection_id
+    end
+
+    it 'blocks deletion even when someone else owns the embedder using the connection' do
+      owner = users(:joey)
+      connection = connections(:private_ollama)
+      embedder = embedders(:private_ollama)
+      embedder.update!(owner: users(:doug))
+
+      assert_not owner.destroy
+
+      assert_match(/embedders.*connections/, owner.errors.full_messages_for(:base).join)
+      assert_equal connection.id, embedder.reload.connection_id
+      assert_equal users(:doug).id, embedder.owner_id
+    end
+
     it 'ensures a user who is a member of a team that is deleted keeps the team' do
       user.destroy
       assert_not team.destroyed?

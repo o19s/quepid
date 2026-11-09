@@ -18,13 +18,14 @@ module Embedders
                    body: { data: [ { index: 0, embedding: Array.new(512) { |i| i / 512.0 } } ] }.to_json)
     end
 
-    test 'embeds a sample with unsaved form values' do
-      stub = stub_openai('sk-typed')
+    test 'embeds a sample with unsaved form values on an owned connection' do
+      connections(:openai).update!(owner: user)
+      stub = stub_openai('sk-test-openai')
 
       post connection_check_embedders_url, params: {
         text:     'star wars',
-        embedder: { provider: 'openai', service_url: 'https://api.openai.com', model: 'text-embedding-3-small',
-                    api_key: 'sk-typed', truncation: 'native', dimensions: '512', timeout: '30' },
+        embedder: { connection_id: connections(:openai).id, model: 'text-embedding-3-small',
+                    truncation: 'native', dimensions: '512' },
       }
 
       assert_response :success
@@ -35,52 +36,110 @@ module Embedders
       assert_equal 'star wars', body['input']
     end
 
-    test 'a saved embedder with a blank key is tested with its saved key' do
+    test 'a saved embedder is tested with its connection\'s key' do
       stub = stub_openai('sk-test-openai')
 
       post embedder_connection_check_url(embedder), params: {
-        embedder: { provider: 'openai', service_url: embedder.service_url, model: embedder.model, api_key: '',
-                    truncation: 'native', dimensions: '512', timeout: '30' },
+        embedder: { model: embedder.model, truncation: 'native', dimensions: '512' },
       }
 
       assert_response :success
       assert_requested stub
     end
 
+    test 'checks a shared embedder without access to its private connection' do
+      assert_not_includes user.connections_involved_with, connections(:openai)
+      stub = stub_openai('sk-test-openai')
+      original_attributes = embedder.attributes
+
+      post embedder_connection_check_url(embedder), params: {
+        text:     'unsaved sample',
+        embedder: { connection_id: embedder.connection_id, name: 'Unsaved name', model: 'unsaved-model',
+                    truncation: 'native', dimensions: '512' },
+      }
+
+      assert_response :success
+      assert_requested stub
+      assert_equal 'unsaved sample', response.parsed_body['input']
+      assert_equal original_attributes, embedder.reload.attributes
+    end
+
+    test 'a saved embedder cannot switch its check to an inaccessible connection' do
+      replacement = connections(:openai).dup.tap(&:save!)
+      stub = stub_request(:post, 'https://api.openai.com/v1/embeddings')
+
+      post embedder_connection_check_url(embedder), params: {
+        embedder: { connection_id: replacement.id, model: 'm' },
+      }
+
+      assert_response :unprocessable_content
+      assert_match(/isn't one you can use/, response.parsed_body['error'])
+      assert_not_requested stub
+      assert_equal connections(:openai).id, embedder.reload.connection_id
+    end
+
     test 'an embedder the user cannot see is not found' do
       post embedder_connection_check_url(embedders(:private_ollama)), params: {
-        embedder: { provider: 'ollama', service_url: 'http://ollama:11434', model: 'all-minilm' },
+        embedder: { provider: 'ollama', model: 'all-minilm' },
       }
 
       assert_response :not_found
     end
 
-    test 'a new OpenAI embedder without a key is refused before calling out' do
+    test 'a new embedder without a connection is refused before calling out' do
       post connection_check_embedders_url, params: {
-        embedder: { provider: 'openai', service_url: 'https://api.openai.com', model: 'm', timeout: '30' },
+        embedder: { provider: 'openai', model: 'm' },
       }
 
       assert_response :unprocessable_content
-      assert_match(/Api key is required for OpenAI/, response.parsed_body['error'])
+      assert_match(/Connection is required/, response.parsed_body['error'])
     end
 
     test 'reports invalid settings without calling out' do
-      post connection_check_embedders_url, params: { embedder: { provider: 'openai', service_url: '', model: '' } }
+      post connection_check_embedders_url, params: {
+        embedder: { connection_id: connections(:openai).id, model: '', truncation: 'none' },
+      }
 
       assert_response :unprocessable_content
-      assert_match(/Service url/, response.parsed_body['error'])
+      assert_match(/Model/, response.parsed_body['error'])
     end
 
     test 'reports a provider error' do
+      connections(:openai).update!(owner: user)
       stub_request(:post, 'https://api.openai.com/v1/embeddings')
         .to_return(status: 500, body: 'boom')
 
       post connection_check_embedders_url, params: {
-        embedder: { provider: 'openai', service_url: 'https://api.openai.com', model: 'm', api_key: 'sk-x', timeout: '30' },
+        embedder: { connection_id: connections(:openai).id, model: 'm' },
       }
 
       assert_response :bad_gateway
       assert_match(/500/, response.parsed_body['error'])
+    end
+
+    test 'checks an embedder on a connection with the connection\'s URL and key' do
+      connections(:voyage).update!(owner: user)
+      stub = stub_request(:post, 'https://api.voyageai.com/v1/embeddings')
+        .with(headers: { 'Authorization' => 'Bearer pa-test-voyage' })
+        .to_return(status: 200, headers: { 'Content-Type' => 'application/json' },
+                   body: { data: [ { index: 0, embedding: Array.new(1024) { |i| i / 1024.0 } } ] }.to_json)
+
+      post connection_check_embedders_url, params: {
+        embedder: { connection_id: connections(:voyage).id, model: 'voyage-3.5', truncation: 'none' },
+      }
+
+      assert_response :success
+      assert_requested stub
+      assert_equal 1024, response.parsed_body['dimensions']
+    end
+
+    test 'will not check with a connection the user cannot use' do
+      post connection_check_embedders_url, params: {
+        embedder: { connection_id: connections(:private_ollama).id, model: 'm', truncation: 'none' },
+      }
+
+      assert_response :unprocessable_content
+      assert_match(/isn't one you can use/, response.parsed_body['error'])
     end
   end
 end

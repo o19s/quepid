@@ -118,18 +118,20 @@ module Admin
       end
     end
 
-    test 'should show user as JSON' do
-      get :show, params: { id: user }, format: :json
+    describe 'show and new' do
+      test 'should show user as JSON' do
+        get :show, params: { id: user }, format: :json
 
-      assert_response :success
-      assert_equal user.email, response.parsed_body['email']
-    end
+        assert_response :success
+        assert_equal user.email, response.parsed_body['email']
+      end
 
-    test 'should get new' do
-      get :new
+      test 'should get new' do
+        get :new
 
-      assert_response :success
-      assert_predicate assigns(:user), :new_record?
+        assert_response :success
+        assert_predicate assigns(:user), :new_record?
+      end
     end
 
     describe 'creating a user' do
@@ -224,6 +226,21 @@ module Admin
     describe 'deleting a user' do
       let(:target) { users(:random_1) }
 
+      test 'a connection in use blocks deletion and displays the restriction' do
+        connection = connections(:private_ollama)
+        owner = users(:joey)
+
+        assert_no_difference([ 'User.count', 'Connection.count', 'Embedder.count' ]) do
+          delete :destroy, params: { id: owner.id }
+        end
+
+        assert_response :unprocessable_content
+        assert_template :edit
+        assert_select '#error_explanation_attributes', text: /embedders.*connections/
+        assert_equal owner.id, connection.reload.owner_id
+        assert_equal connection.id, embedders(:private_ollama).reload.connection_id
+      end
+
       test 'removes the user and returns to the list' do
         assert_difference 'User.count', -1 do
           delete :destroy, params: { id: target.id }
@@ -256,24 +273,26 @@ module Admin
       end
     end
 
-    test 'returns not found for a missing user' do
-      get :show, params: { id: 0 }
+    describe 'anonymous user handling' do
+      test 'returns not found for a missing user' do
+        get :show, params: { id: 0 }
 
-      assert_response :not_found
-    end
+        assert_response :not_found
+      end
 
-    test 'assigning judgements to the anonymous user detaches them from their author' do
-      author = users(:random)
-      judgement_ids = author.judgements.pluck(:id)
-      assert_not_empty judgement_ids
+      test 'assigning judgements to the anonymous user detaches them from their author' do
+        author = users(:random)
+        judgement_ids = author.judgements.pluck(:id)
+        assert_not_empty judgement_ids
 
-      post :assign_judgements_to_anonymous_user, params: { id: author.id }
+        post :assign_judgements_to_anonymous_user, params: { id: author.id }
 
-      assert_redirected_to admin_user_path(author)
-      assert_response :see_other
-      assert_equal 'All judgements assigned to anonymous user.', flash[:notice]
-      assert_equal 0, author.judgements.reload.count
-      assert_equal [ nil ], Judgement.where(id: judgement_ids).pluck(:user_id).uniq
+        assert_redirected_to admin_user_path(author)
+        assert_response :see_other
+        assert_equal 'All judgements assigned to anonymous user.', flash[:notice]
+        assert_equal 0, author.judgements.reload.count
+        assert_equal [ nil ], Judgement.where(id: judgement_ids).pluck(:user_id).uniq
+      end
     end
   end
 end

@@ -121,68 +121,70 @@ class RatingsImporterTest < ActiveSupport::TestCase
     end
   end
 
-  test 'handles when a doc id does not exist in our index, it is still inserted' do
-    ratings = [
-      { query_text: 'Swedish Food',   doc_id: ' 720784-021190', rating: nil },
-      { query_text: 'Swedish Food',   doc_id: 'NON_EXISTANT_DOC_ID', rating: '6' }
-    ]
+  describe 'inserting and preserving ratings' do
+    test 'handles when a doc id does not exist in our index, it is still inserted' do
+      ratings = [
+        { query_text: 'Swedish Food',   doc_id: ' 720784-021190', rating: nil },
+        { query_text: 'Swedish Food',   doc_id: 'NON_EXISTANT_DOC_ID', rating: '6' }
+      ]
 
-    ratings_importer = RatingsImporter.new owned_case, ratings, options
-    ratings_importer.import
-    rating = Rating.find_by(doc_id: '720784-021190')
-    assert_nil(rating)
+      ratings_importer = RatingsImporter.new owned_case, ratings, options
+      ratings_importer.import
+      rating = Rating.find_by(doc_id: '720784-021190')
+      assert_nil(rating)
 
-    rating = Rating.find_by(doc_id: 'NON_EXISTANT_DOC_ID')
-    assert_not_nil(rating)
-    assert_equal 'Swedish Food', rating.query.query_text
-  end
-
-  test 'preserves existing ratings without force and inserts new ratings' do
-    acase = cases(:import_ratings_case)
-    query = queries(:import_ratings_query)
-    existing = ratings(:import_rating_1)
-    rows = [
-      { query_text: query.query_text, doc_id: existing.doc_id, rating: 1 },
-      { query_text: query.query_text, doc_id: 'new-doc', rating: 0 }
-    ]
-
-    assert_difference 'query.ratings.count', 1 do
-      RatingsImporter.new(acase, rows, format: :hash).import
+      rating = Rating.find_by(doc_id: 'NON_EXISTANT_DOC_ID')
+      assert_not_nil(rating)
+      assert_equal 'Swedish Food', rating.query.query_text
     end
 
-    assert_equal 5, existing.reload.rating
-    assert_equal 0, query.ratings.find_by!(doc_id: 'new-doc').rating
-    assert_equal 5, ratings(:import_rating_2).reload.rating
-  end
+    test 'preserves existing ratings without force and inserts new ratings' do
+      acase = cases(:import_ratings_case)
+      query = queries(:import_ratings_query)
+      existing = ratings(:import_rating_1)
+      rows = [
+        { query_text: query.query_text, doc_id: existing.doc_id, rating: 1 },
+        { query_text: query.query_text, doc_id: 'new-doc', rating: 0 }
+      ]
 
-  test 'rating insertion failure retains clearing query creation and prior rating updates' do
-    acase = cases(:import_ratings_case)
-    query = queries(:import_ratings_query)
-    existing = ratings(:import_rating_1)
-    rows = [
-      { query_text: query.query_text, doc_id: existing.doc_id, rating: 1 },
-      { query_text: 'new query', doc_id: 'new-doc', rating: 2 }
-    ]
-    failure = ->(*) { raise 'rating insertion failed' }
+      assert_difference 'query.ratings.count', 1 do
+        RatingsImporter.new(acase, rows, format: :hash).import
+      end
 
-    original_insert = Rating.method(:insert_all)
-    Rating.define_singleton_method(:insert_all, failure)
-    assert_raises(RuntimeError) do
-      RatingsImporter.new(acase, rows, format: :hash, force: true).import
+      assert_equal 5, existing.reload.rating
+      assert_equal 0, query.ratings.find_by!(doc_id: 'new-doc').rating
+      assert_equal 5, ratings(:import_rating_2).reload.rating
     end
 
-    assert_equal 1, existing.reload.rating
-    assert acase.queries.exists?(query_text: 'new query')
-    assert_not Rating.exists?(doc_id: 'new-doc')
+    test 'rating insertion failure retains clearing query creation and prior rating updates' do
+      acase = cases(:import_ratings_case)
+      query = queries(:import_ratings_query)
+      existing = ratings(:import_rating_1)
+      rows = [
+        { query_text: query.query_text, doc_id: existing.doc_id, rating: 1 },
+        { query_text: 'new query', doc_id: 'new-doc', rating: 2 }
+      ]
+      failure = ->(*) { raise 'rating insertion failed' }
 
-    assert_raises(RuntimeError) do
-      RatingsImporter.new(acase, rows, format: :hash, clear_existing: true).import
+      original_insert = Rating.method(:insert_all)
+      Rating.define_singleton_method(:insert_all, failure)
+      assert_raises(RuntimeError) do
+        RatingsImporter.new(acase, rows, format: :hash, force: true).import
+      end
+
+      assert_equal 1, existing.reload.rating
+      assert acase.queries.exists?(query_text: 'new query')
+      assert_not Rating.exists?(doc_id: 'new-doc')
+
+      assert_raises(RuntimeError) do
+        RatingsImporter.new(acase, rows, format: :hash, clear_existing: true).import
+      end
+
+      assert_empty query.ratings.reload
+      assert acase.queries.exists?(query.id)
+      assert acase.queries.exists?(query_text: 'new query')
+    ensure
+      Rating.define_singleton_method(:insert_all, original_insert) if original_insert
     end
-
-    assert_empty query.ratings.reload
-    assert acase.queries.exists?(query.id)
-    assert acase.queries.exists?(query_text: 'new query')
-  ensure
-    Rating.define_singleton_method(:insert_all, original_insert) if original_insert
   end
 end

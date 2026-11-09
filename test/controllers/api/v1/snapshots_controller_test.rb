@@ -373,6 +373,17 @@ module Api
             assert_response :ok
           end
 
+          test 'is unauthorized to list snapshots of a private case' do
+            get :index, params: { case_id: cases(:snapshot_case).id }
+            assert_response :unauthorized
+            assert_equal 'Unauthorized!', response.parsed_body['reason']
+          end
+
+          test 'is unauthorized to list snapshots of a case that does not exist' do
+            get :index, params: { case_id: Case.maximum(:id) + 1 }
+            assert_response :unauthorized
+          end
+
           test 'cannot create a snapshot' do
             assert_no_difference 'Snapshot.count' do
               post :create, params: { case_id: public_case.id, snapshot: { name: 'Injected' } }

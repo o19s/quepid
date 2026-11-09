@@ -82,13 +82,11 @@ module EmbedderAdapters
     end
 
     def connection
-      LlmConnection.build(url: embedder.service_url)
+      LlmConnection.build(url: embedder.service_url, retry_options: embedder.retry_options)
     end
 
     def headers
-      return {} if embedder.api_key.blank? || :none == embedder.provider_definition.auth_style
-
-      { 'Authorization' => "Bearer #{embedder.api_key}" }
+      embedder.request_headers
     end
 
     # `error` itself isn't always a nested object -- Ollama's is a plain string

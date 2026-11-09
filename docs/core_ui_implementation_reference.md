@@ -202,6 +202,18 @@ Status rendering goes through the controller-owned `showStatusMessage` behavior 
 
 ## 6. Per-surface contracts
 
+### Share case
+
+The case workspace and the Rails pages ship different share-case UIs on purpose.
+Keep them separate unless a product decision unifies them.
+
+| | Case workspace toolbar | Cases index, teams |
+| --- | --- | --- |
+| Controller | `share_case_core_controller.js` | `share_case_controller.js` |
+| Markup | `shared/_share_case_core_modal.html.erb` | `shared/_share_entity_modal.html.erb`, forms from `share_modals/show.html.erb` |
+| Interaction | `list-group`, conditional sections, one footer action | `<select>`, always-visible "Already shared with", two disabled footer buttons |
+| Transport | API, stays on the page | form POST, redirect |
+
 ### Refresh-ratings orchestration
 
 `frog_report_controller.js#refresh` (line 143) and

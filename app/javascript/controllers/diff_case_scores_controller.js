@@ -53,7 +53,7 @@ export default class extends Controller {
       label.textContent = searcher.name || "Snapshot"
 
       rating.append(value, label)
-      renderScoreState(rating, score, searcher.score?.maxScore || 1)
+      renderScoreState(rating, score)
       badge.append(rating)
       this.element.append(badge)
     })

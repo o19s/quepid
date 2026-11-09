@@ -61,14 +61,16 @@ module Analytics
         end
       end
 
-      test 'sends an anonymous visitor to the login page and leaves the case unchanged' do
-        @controller = Analytics::Cases::VisibilitiesController.new # a fresh instance has no login
-        kase.update!(public: false)
+      describe 'an anonymous visitor' do
+        test 'sends an anonymous visitor to the login page and leaves the case unchanged' do
+          @controller = Analytics::Cases::VisibilitiesController.new # a fresh instance has no login
+          kase.update!(public: false)
 
-        patch :update, params: { case_id: kase.id }
+          patch :update, params: { case_id: kase.id }
 
-        assert_redirected_to new_session_path
-        assert_not kase.reload.public?
+          assert_redirected_to new_session_path
+          assert_not kase.reload.public?
+        end
       end
     end
   end

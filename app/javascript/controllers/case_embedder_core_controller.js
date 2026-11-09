@@ -38,7 +38,9 @@ export default class extends CoreModalControllerBase {
     "submitButton",
     "vectorPanel",
     "vectorSummary",
-    "revectorizeButton"
+    "revectorizeButton",
+    "revectorizeSpinner",
+    "revectorizeLabel"
   ]
 
   static values = {
@@ -66,6 +68,9 @@ export default class extends CoreModalControllerBase {
     }
   }
 
+  // Also keeps the modal's own summary/button in step with each poll while it's open -- not
+  // just the rest of the page -- so a run that finishes while the modal is still open shows it,
+  // instead of staying on "vectorising…" until the modal is closed and reopened.
   applyState(state) {
     if (state?.vectors) {
       document.dispatchEvent(
@@ -74,6 +79,9 @@ export default class extends CoreModalControllerBase {
         })
       )
     }
+
+    this.state = state
+    this.renderVectors()
 
     clearTimeout(this.pollTimer)
     if (state?.vectors?.running) this.pollTimer = setTimeout(() => this.poll(), POLL_MS)
@@ -153,12 +161,16 @@ export default class extends CoreModalControllerBase {
       .map(([status, label]) => `${vectors.counts[status]} ${label}`)
     const summary = counts.length > 0 ? counts.join(" · ") : "No queries yet"
     this.vectorSummaryTarget.textContent = vectors.running ? `${summary} — vectorising…` : summary
-    this.revectorizeButtonTarget.disabled = Boolean(vectors.running)
+    const running = Boolean(vectors.running || this.revectorizeRequestPending)
+    this.revectorizeButtonTarget.disabled = running
+    this.revectorizeSpinnerTarget.classList.toggle("d-none", !running)
+    this.revectorizeLabelTarget.textContent = running ? "Vectorising…" : "Re-vectorize all queries"
   }
 
   async revectorize() {
     this.clearAlert()
-    this.revectorizeButtonTarget.disabled = true
+    this.revectorizeRequestPending = true
+    this.renderVectors()
 
     try {
       const url = this.vectorizeUrlTemplateValue.replaceAll("__CASE_ID__", this.caseId)
@@ -169,12 +181,12 @@ export default class extends CoreModalControllerBase {
       const data = await response.json().catch(() => ({}))
       if (!response.ok) throw new Error(data.error || `Unable to re-vectorize (${response.status})`)
 
-      this.state = data
-      this.renderVectors()
+      this.revectorizeRequestPending = false
       this.applyState(data)
     } catch (error) {
+      this.revectorizeRequestPending = false
       this.showAlert(error.message, "danger")
-      this.revectorizeButtonTarget.disabled = false
+      this.renderVectors()
     }
   }
 
@@ -205,7 +217,6 @@ export default class extends CoreModalControllerBase {
       const data = await response.json().catch(() => ({}))
       if (!response.ok) throw new Error(data.error || `Unable to save (${response.status})`)
 
-      this.state = data
       this.applyState(data)
       document.dispatchEvent(
         new CustomEvent(CORE_EVENTS.CASE_HEADER_STALE, {

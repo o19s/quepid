@@ -181,25 +181,28 @@ describe("scoring", () => {
   })
 })
 
-// The displayed scale/status is independent of color and does not change scoring.
+// The displayed status is independent of color and does not change scoring.
 describe("scoreStateText", () => {
   it("describes pending and empty score states", async () => {
     const { scoreStateText } = await import("utils/scoring")
-    expect(scoreStateText("?", 1)).toBe("Not scored")
-    expect(scoreStateText(null, 1)).toBe("Not scored")
-    expect(scoreStateText("--", 1)).toBe("Unrated")
-    expect(scoreStateText("zsr", 1)).toBe("No results")
-    expect(scoreStateText(NaN, 1)).toBe("Unavailable")
+    expect(scoreStateText("?")).toBe("Not scored")
+    expect(scoreStateText(null)).toBe("Not scored")
+    expect(scoreStateText("--")).toBe("Unrated")
+    expect(scoreStateText("zsr")).toBe("No results")
+    expect(scoreStateText(NaN)).toBe("Unavailable")
   })
 
-  it("exposes the scorer's maximum for numeric scores", async () => {
+  it("adds no state text for numeric scores, whose maximum is unknown", async () => {
     const { scoreStateText, renderScoreState } = await import("utils/scoring")
-    expect(scoreStateText(0, 1)).toBe("of 1.00")
+    expect(scoreStateText(0)).toBe("")
+    expect(scoreStateText(11.96)).toBe("")
     const badge = document.createElement("div")
-    renderScoreState(badge, 75, 100)
-    expect(badge.textContent).toBe("of 100.00")
-    renderScoreState(badge, "--", 100)
+    renderScoreState(badge, 11.96)
+    expect(badge.querySelector(".score-state")).toBeNull()
+    renderScoreState(badge, "--")
     expect(badge.querySelectorAll(".score-state")).toHaveLength(1)
     expect(badge.textContent).toBe("Unrated")
+    renderScoreState(badge, 75)
+    expect(badge.querySelector(".score-state")).toBeNull()
   })
 })

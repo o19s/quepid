@@ -5,6 +5,8 @@
 # This file checks for various customization options passed in as environment
 # variables.
 
+require 'ipaddr'
+
 bool = ActiveRecord::Type::Boolean.new
 
 # == Quepid Version
@@ -138,6 +140,38 @@ Rails.application.config.require_proxy_with_basic_auth_credentials = bool.deseri
 
 # Require proxying independently of desktop mode; existing endpoints are only warned about.
 Rails.application.config.require_proxy_for_all_search_endpoints = bool.deserialize(ENV.fetch('REQUIRE_PROXY_FOR_ALL_SEARCH_ENDPOINTS', false))
+
+# == Proxy Allowed Networks
+# The proxy refuses loopback, link-local and private addresses to prevent SSRF. List the
+# internal networks your search engines live on, as comma separated CIDR ranges or single
+# IPs (e.g. "10.0.5.0/24,192.168.1.50"), to let the proxy reach them. Matching is on the
+# resolved IP, not the hostname. Anything not listed stays blocked; a listed range is
+# trusted as is, so keep ranges narrow. An invalid entry is ignored with a warning, which
+# leaves that address blocked.
+#
+parse_proxy_network = lambda do |network|
+  IPAddr.new(network)
+rescue IPAddr::Error => e
+  Rails.logger.warn("PROXY_ALLOWED_NETWORKS: ignoring invalid entry #{network.inspect} (#{e.message})")
+  nil
+end
+Rails.application.config.proxy_allowed_networks = ENV.fetch('PROXY_ALLOWED_NETWORKS', '')
+  .split(',').map(&:strip).compact_blank.filter_map(&parse_proxy_network)
+
+# == Proxy Allowed Hosts
+# Exact hostnames (comma separated, no wildcards) the proxy may reach even when they resolve
+# to loopback or private addresses, e.g. an internal load balancer or a VPC search domain
+# whose IPs change. Prefer this to listing a whole VPC range. Link-local addresses
+# (including cloud metadata at 169.254.169.254) stay blocked for these names. An invalid
+# entry is ignored with a warning.
+#
+Rails.application.config.proxy_allowed_hosts = ENV.fetch('PROXY_ALLOWED_HOSTS', '')
+  .split(',').map { |host| host.strip.downcase.chomp('.') }.compact_blank.select do |host|
+    next true if host.match?(/\A[a-z0-9_-]+(\.[a-z0-9_-]+)*\z/) && !host.match?(/\A[\d.]+\z/)
+
+    Rails.logger.warn("PROXY_ALLOWED_HOSTS: ignoring #{host.inspect}: not a plain hostname (no wildcards, schemes, ports or paths); put IPs and ranges in PROXY_ALLOWED_NETWORKS")
+    false
+  end
 
 # NOTE: ActiveRecord encryption keys are configured in config/application.rb so
 # they take effect before the active_record.encryption Railtie initializer runs.

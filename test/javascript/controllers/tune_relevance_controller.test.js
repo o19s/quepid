@@ -381,6 +381,8 @@ describe("TuneRelevanceController", () => {
       expect(controller.displayedFieldsSelect.options.title_bidirect).toBeDefined()
       controller.addDiscoveredFieldOptions("thumb:pos")
       expect(controller.displayedFieldsSelect.options["thumb:poster_path"]).toBeDefined()
+      controller.addDiscoveredFieldOptions("translate:tit")
+      expect(controller.displayedFieldsSelect.options["translate:title"]).toBeDefined()
       expect(controller.displayedFieldsSelect.items).toEqual(["id:id", "title:title"])
       await controller.discoverDisplayedFields()
       expect(validator.validateUrl).toHaveBeenCalledTimes(1)
