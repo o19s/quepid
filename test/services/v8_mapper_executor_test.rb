@@ -108,6 +108,42 @@ class V8MapperExecutorTest < ActiveSupport::TestCase
     end
   end
 
+  describe 'apply_request_args_mapper' do
+    test 'returns args unchanged when the mapper defines no requestArgsMapper' do
+      code_mapper = <<~JS
+        numberOfResultsMapper = function(data) { return 0; };
+        docsMapper = function(data) { return []; };
+      JS
+
+      args = v8_executor.apply_request_args_mapper(code_mapper, { 'query' => 'test' }, 10)
+
+      assert_equal({ 'query' => 'test' }, args)
+    end
+
+    # requestArgsMapper is optional, unlike docsMapper/numberOfResultsMapper, so a mapper that
+    # doesn't define one can't rely on every call overwriting a prior global - this same
+    # v8_executor (and its single MiniRacer::Context) is reused across every try FetchService
+    # evaluates in a batch run.
+    test 'applies a defined requestArgsMapper, and does not leak it into one that defines none' do
+      with_mapper = <<~JS
+        requestArgsMapper = function(args, numberOfRows) {
+          args.limit = numberOfRows;
+          return args;
+        };
+      JS
+      without_mapper = <<~JS
+        numberOfResultsMapper = function(data) { return 0; };
+        docsMapper = function(data) { return []; };
+      JS
+
+      args = v8_executor.apply_request_args_mapper(with_mapper, { 'query' => 'test' }, 37)
+      assert_equal 37, args['limit']
+
+      args = v8_executor.apply_request_args_mapper(without_mapper, { 'query' => 'test' }, 37)
+      assert_not args.key?('limit')
+    end
+  end
+
   describe 'console log capture' do
     test 'all console levels preserve objects circular values and multiple arguments' do
       code_mapper = <<~JS

@@ -160,6 +160,39 @@ describe("query service helpers", () => {
     })
   })
 
+  it("lets a mapper's requestArgsMapper shape the outgoing args, e.g. Qdrant's limit", () => {
+    const requestArgsMapper = vi.fn((args, numberOfRows) => {
+      args.limit = numberOfRows
+      return args
+    })
+    const result = buildSearcherRequest({
+      settings: {
+        searchEngine: "searchapi",
+        numberOfRows: 37,
+        selectedTry: { args: { query: "test", limit: 10 } }
+      },
+      queryText: "test",
+      mapperFunctions: { requestArgsMapper }
+    })
+
+    expect(requestArgsMapper).toHaveBeenCalledTimes(1)
+    expect(requestArgsMapper.mock.calls[0][1]).toBe(37)
+    expect(result.args.limit).toBe(37)
+  })
+
+  it("leaves args alone when the mapper defines no requestArgsMapper", () => {
+    const result = buildSearcherRequest({
+      settings: {
+        searchEngine: "searchapi",
+        numberOfRows: 37,
+        selectedTry: { args: { yql: "select * from movies" } }
+      },
+      queryText: "test"
+    })
+
+    expect(result.args.limit).toBeUndefined()
+  })
+
   it("normalizes static settings to the Solr request shape", () => {
     const result = buildSearcherRequest({
       settings: {
@@ -195,6 +228,21 @@ describe("query service helpers", () => {
     expect(first.docsMapper).toBeTypeOf("function")
     expect(first.numberOfResultsMapper).toBeUndefined()
     expect(second).toBe(first)
+  })
+
+  it("does not leak query/settings hooks between mapper engines", () => {
+    const cache = {}
+    const globalObject = {}
+    const qdrant = evaluateMapperFunctions(
+      "this.queryParamsSettingsMapper = function (value) { return value }",
+      cache,
+      globalObject
+    )
+    expect(qdrant.queryParamsSettingsMapper).toBeTypeOf("function")
+    expect(
+      evaluateMapperFunctions("", cache, globalObject).queryParamsSettingsMapper
+    ).toBeUndefined()
+    expect(globalObject.queryParamsSettingsMapper).toBeUndefined()
   })
 
   it("builds the synthetic match-feature explain tree", () => {

@@ -20,6 +20,7 @@ export function createCoreWorkspaceRuntime({
   eventTarget = document,
   framework = createNativeFramework()
 }) {
+  const mapperFunctionsCache = {}
   const mapperSearchRuntime = createMapperSearchRuntime()
   const searchEndpointRuntime = createSearchEndpointRuntime()
   const settingsCatalog = createSettingsCatalog()
@@ -85,7 +86,8 @@ export function createCoreWorkspaceRuntime({
         searchEndpointRuntime,
         mapperSearchRuntime,
         splainerSearch,
-        docCache
+        docCache,
+        mapperFunctionsCache
       ),
       docCache
     },
@@ -95,7 +97,8 @@ export function createCoreWorkspaceRuntime({
         settingsCatalog,
         navigationRuntime,
         searchEndpointRuntime,
-        splainerSearch
+        splainerSearch,
+        mapperFunctionsCache
       ),
       docCache
     }
@@ -151,7 +154,8 @@ function createWizardCapabilities(
   searchEndpointRuntime,
   mapperSearchRuntime,
   splainerSearch,
-  docCache
+  docCache,
+  mapperFunctionsCache
 ) {
   return {
     settings: {
@@ -181,7 +185,8 @@ function createWizardCapabilities(
     },
     search: {
       createValidator: (value) => splainerSearch.searchSvc.createValidator(value),
-      evaluateMapper: (mapperCode) => evaluateMapperFunctions(mapperCode || "")
+      evaluateMapper: (mapperCode) =>
+        evaluateMapperFunctions(mapperCode || "", mapperFunctionsCache)
     },
     user: {
       current: () => userRuntime.current(),
@@ -206,7 +211,8 @@ function createTuneRelevanceCapabilities(
   settingsCatalog,
   navigationRuntime,
   searchEndpointRuntime,
-  splainerSearch
+  splainerSearch,
+  mapperFunctionsCache
 ) {
   const esUrlSvc = splainerSearch.esUrlSvc
 
@@ -230,7 +236,7 @@ function createTuneRelevanceCapabilities(
     },
     search: {
       createValidator: (value) => splainerSearch.searchSvc.createValidator(value),
-      evaluateMapper: (code) => evaluateMapperFunctions(code || ""),
+      evaluateMapper: (code) => evaluateMapperFunctions(code || "", mapperFunctionsCache),
       isTemplateCall: (value) => esUrlSvc?.isTemplateCall(value)
     },
     case: {
