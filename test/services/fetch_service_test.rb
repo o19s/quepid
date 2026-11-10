@@ -182,13 +182,16 @@ class FetchServiceTest < ActiveSupport::TestCase
       atry.search_endpoint.mapper_code = MapperBasedSearchEngine.find('qdrant').mapper_code
     end
 
-    it 'sends limit from number_of_rows, not the literal baked into query_params' do
+    it 'preserves an explicit limit already baked into query_params over number_of_rows' do
       fetch_service = FetchService.new options
       atry.number_of_rows = 37
       atry.query_params = '{"query": {"nearest": {"text": "#$query##"}}, "limit": 10}'
 
+      # requestArgsMapper leaves an existing "limit" alone - this is what lets
+      # ratedDocsQueryParamsMapper's own explicit limit (sized to the rated-doc count, not
+      # the page size) survive the same request-building pipeline. See qdrant.js.
       stub_request(:post, 'http://test.com/solr/tmdb/select')
-        .with(body: hash_including('limit' => 37))
+        .with(body: hash_including('limit' => 10))
         .to_return(status: 200, body: '{}')
 
       response = fetch_service.make_request(atry, first_query)
