@@ -25,9 +25,12 @@
         <dd class="col-sm-9"><%= @connection.instance_wide? ? 'Instance-wide' : 'Private' %></dd>
         <dt class="col-sm-3">Used by</dt>
         <dd class="col-sm-9">
-          <% if @embedders.any? %>
+          <% if @embedders.any? || @ai_judges.any? %>
             <% @embedders.each do |embedder| %>
               <div><%= link_to embedder.name, edit_embedder_path(embedder) %> <span class="text-muted small">embedder</span></div>
+            <% end %>
+            <% @ai_judges.each do |ai_judge| %>
+              <div><%= link_to ai_judge.name, edit_ai_judge_path(ai_judge) %> <span class="text-muted small">AI judge</span></div>
             <% end %>
           <% else %>
             <span class="text-muted">Nothing you can see yet.</span>

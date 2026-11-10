@@ -39,9 +39,11 @@
 #  escalates_to_id             :integer
 #  invited_by_id               :integer
 #  owner_id                    :integer
+#  connection_id               :bigint
 #
 # Indexes
 #
+#  index_users_on_connection_id         (connection_id)
 #  index_users_on_default_scorer_id     (default_scorer_id)
 #  index_users_on_escalates_to_id       (escalates_to_id)
 #  index_users_on_invitation_token      (invitation_token) UNIQUE
@@ -62,6 +64,11 @@ class AiJudge < User
   encrypts :llm_key, deterministic: false
 
   belongs_to :owner, class_name: 'User', optional: true
+
+  # Where to reach the provider and the key to use (ADR 0005). Judges made before connections have
+  # none and keep running on their own llm_key and URL until someone moves them onto one; new
+  # judges get one (AiJudgesController requires it, so code that builds judges directly needn't).
+  belongs_to :connection, optional: true, inverse_of: :ai_judges
 
   # The judge this one wakes when it is unsure of an answer. A judge that
   # another judge points at is on call: it sleeps until escalated to
@@ -85,6 +92,9 @@ class AiJudge < User
   validates :llm_key, length: { maximum: 255 }, allow_blank: true
   validates :system_prompt, length: { maximum: 4000 }, allow_nil: true, presence: true
   validate :escalation_chain_does_not_loop, if: :escalates_to_id_changed?
+  include ConnectionConsumer
+
+  before_validation :leave_own_settings_for_connection
 
   def on_call?
     escalated_from.any?
@@ -104,6 +114,46 @@ class AiJudge < User
     links.to_h { |id, target_id| [ id, names[target_id] ] }
   end
 
+  # The provider the judge speaks. Judges saved before providers were a concept are OpenAI-shaped.
+  def llm_provider_key
+    LlmProvider.find(judge_options[:llm_provider])&.key || 'openai'
+  end
+
+  # Made before connections and not moved onto one yet: it calls out with its own key and URL.
+  def own_settings?
+    connection_id.nil? && (llm_key.present? || judge_options[:llm_service_url].present?)
+  end
+
+  # Moves a judge from before connections onto a new private connection of its owner's, holding
+  # the URL, key and timeout it had: the key was the owner's, so the connection is too. A judge with
+  # no owner (seeded, shared with a team) becomes the migrating user's, since a connection must
+  # belong to someone. Returns the connection; raises if either doesn't save.
+  def migrate_to_connection! migrating_user = owner
+    self.owner ||= migrating_user
+    provider = ConnectionProvider.find(llm_provider_key)
+    created = owner.owned_connections.new(
+      name:        name,
+      provider:    provider.key,
+      base_url:    judge_options[:llm_service_url].presence || provider.default_base_url,
+      auth_scheme: provider.auth_scheme,
+      auth_header: provider.auth_header,
+      secret:      llm_key
+    )
+    # An out-of-range timeout from before connections falls back to the connection's default.
+    created.timeout = judge_options[:llm_timeout].to_i if judge_options[:llm_timeout].to_i.between?(1, 600)
+    created.api_version = judge_options[:llm_api_version].presence || provider.default_api_version if provider.uses_api_version?
+    transaction do
+      created.save!
+      update!(connection: created)
+    end
+    created
+  end
+
+  # Runs this judge's calls: through its connection, or on its own settings if it predates them.
+  def llm_service
+    LlmService.new(llm_key, judge_options, connection)
+  end
+
   def judge_options
     opts = options&.dig('judge_options') || {}
     opts.deep_symbolize_keys
@@ -114,6 +164,26 @@ class AiJudge < User
   end
 
   private
+
+  # Why the connection doesn't fit this judge, or nil. The first thing wrong is the one worth saying.
+  def connection_problem
+    definition = connection.provider_definition
+    label = definition&.label || connection.provider
+    return "to #{label} can't run an AI judge" unless definition&.capabilities&.intersect?(%w[chat typed_judge])
+
+    "isn't one you can use" unless connection_usable_by_owner?
+  end
+
+  # On a connection, the judge's own key, URL and timeout are no longer used, so they aren't kept,
+  # and the provider is the connection's.
+  def leave_own_settings_for_connection
+    return unless connection
+
+    self.llm_key = nil
+    self.judge_options = judge_options.merge(llm_provider: connection.provider) if LlmProvider.find(connection.provider)
+    own = judge_options.slice(:llm_service_url, :llm_timeout)
+    self.judge_options = judge_options.except(*own.keys) if own.any?
+  end
 
   # A loop would leave every judge in it on call, so nobody in it would ever
   # judge. Walks the chain from the new target; it is short, so one query per

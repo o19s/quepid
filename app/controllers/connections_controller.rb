@@ -11,10 +11,12 @@ class ConnectionsController < ApplicationController
   def index
     @connections = current_user.connections_involved_with.includes(:owner).order(:name)
     @embedder_counts = Embedder.where(connection_id: @connections.map(&:id)).group(:connection_id).count
+    @ai_judge_counts = AiJudge.where(connection_id: @connections.map(&:id)).group(:connection_id).count
   end
 
   def show
     @embedders = current_user.embedders_involved_with.where(connection_id: @connection.id).order(:name)
+    @ai_judges = AiJudge.for_user(current_user).where(connection_id: @connection.id).order(:name)
   end
 
   def new
@@ -55,9 +57,10 @@ class ConnectionsController < ApplicationController
 
   # Refused while anything uses it: deleting would leave those embedders without a URL or key.
   def destroy
-    in_use = @connection.embedders.count
-    if in_use.positive?
-      redirect_to connections_path, alert: "#{@connection.name} is used by #{helpers.pluralize(in_use, 'embedder')}. Point them at another connection first."
+    in_use = { 'embedder' => @connection.embedders.count, 'AI judge' => @connection.ai_judges.count }.select { |_, count| count.positive? }
+    if in_use.any?
+      users = in_use.map { |kind, count| helpers.pluralize(count, kind) }.to_sentence
+      redirect_to connections_path, alert: "#{@connection.name} is used by #{users}. Point them at another connection first."
       return
     end
 

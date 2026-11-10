@@ -70,9 +70,9 @@
                   <% end %>
                 </td>
                 <td>
-                  <% count = @embedder_counts.fetch(connection.id, 0) %>
-                  <% if count.positive? %>
-                    <%= pluralize(count, 'embedder') %>
+                  <% used_by = { 'embedder' => @embedder_counts.fetch(connection.id, 0), 'AI judge' => @ai_judge_counts.fetch(connection.id, 0) }.select { |_, count| count.positive? } %>
+                  <% if used_by.any? %>
+                    <%= used_by.map { |kind, count| pluralize(count, kind) }.join(', ') %>
                   <% else %>
                     <span class="text-muted">&mdash;</span>
                   <% end %>

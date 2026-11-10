@@ -264,4 +264,17 @@ class ConnectionsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to connections_url
     assert_match(/used by 1 embedder/, flash[:alert])
   end
+
+  test 'a connection an AI judge uses cannot be deleted, and lists the judge' do
+    login_user_for_integration_test users(:doug)
+    judge = AiJudge.create!(name: 'Doug judge', system_prompt: 'Judge it.', owner: users(:doug), connection: connections(:openai))
+
+    get connection_url(connections(:openai))
+    assert_select 'a[href=?]', edit_ai_judge_path(judge), text: 'Doug judge'
+
+    assert_no_difference -> { Connection.count } do
+      delete connection_url(connections(:openai))
+    end
+    assert_match(/used by .*1 AI judge/, flash[:alert])
+  end
 end

@@ -16,11 +16,20 @@ class LlmService
     }
   end.freeze
 
-  def initialize llm_key, opts = {}
-    @llm_key = llm_key
+  # @param connection [Connection, nil] where to send the calls and how to authenticate (ADR 0005).
+  #   Without one, the judge's own llm_key and llm_service_url/llm_timeout options are used, as
+  #   judges made before connections still do.
+  def initialize llm_key, opts = {}, connection = nil
+    @connection = connection
     @options = DEFAULT_OPTIONS.merge(opts.deep_symbolize_keys)
+    if connection
+      @options.merge!(llm_service_url: connection.base_url, llm_timeout: connection.timeout)
+      @options[:llm_api_version] = connection.api_version if @options[:llm_api_version].blank? && connection.api_version.present?
+      llm_key = nil # the connection sends the key, however its provider wants it
+    end
+    @llm_key = llm_key
     @adapter = LlmJudgeAdapters.for(@llm_key, @options)
-    @conn = LlmConnection.build(url: @options[:llm_service_url])
+    @conn = LlmConnection.build(url: @options[:llm_service_url], retry_options: connection&.retry_options || {})
   end
 
   def perform_safe_judgement judgement, scale: JudgeScale::NONE, book: nil
@@ -58,8 +67,11 @@ class LlmService
 
   # @return [Hash] the parsed response body
   def post envelope
+    raise "#{@connection.name} has no key yet: add it under Connections" if @connection&.missing_secret?
+
     response = @conn.post(envelope[:path]) do |req|
       req.headers.merge!(envelope[:headers])
+      req.headers.merge!(@connection.request_headers) if @connection
       req.options.timeout = @options[:llm_timeout].to_i
       req.body = envelope[:body]
     end

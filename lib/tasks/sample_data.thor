@@ -200,11 +200,12 @@ class SampleData < Thor
     }
     user_params = user_specifics # user_defaults.merge(user_specifics)
     osc_ai_judge = seed_judge user_params
+    # The judges run on connections of the user who owns them; the OSC team shares the judges.
+    osc_ai_judge.owner ||= realistic_activity_user
+    osc_ai_judge.connection = ollama_connection
     osc_ai_judge.judge_options = {
       llm_provider:    'ollama',
-      llm_service_url: 'http://ollama:31434',
       llm_model:       'qwen3:0.6b',
-      llm_timeout:     60,
       llm_api_version: '',
     }
     osc_ai_judge.save!
@@ -216,16 +217,16 @@ class SampleData < Thor
 
     user_specifics = {
       name:          'Azure OpenAI Judge',
-      llm_key:       'your-azure-openai-key',
       system_prompt: LlmProvider::CHAT_SYSTEM_PROMPT,
     }
     user_params = user_specifics
     azure_openai_judge = seed_judge user_params
+    azure_openai_judge.owner ||= realistic_activity_user
+    azure_openai_judge.connection = seed_llm_connection realistic_activity_user, 'Azure OpenAI', 'azure_openai',
+                                                        'https://YOUR-RESOURCE.openai.azure.com', '2024-12-01-preview'
     azure_openai_judge.judge_options = {
       llm_provider:    'azure_openai',
-      llm_service_url: 'https://YOUR-RESOURCE.openai.azure.com',
       llm_model:       'gpt-4.1',
-      llm_timeout:     30,
       llm_api_version: '2024-12-01-preview',
     }
     azure_openai_judge.save!
@@ -237,16 +238,17 @@ class SampleData < Thor
 
     user_specifics = {
       name:          'Azure Anthropic Judge',
-      llm_key:       'your-azure-ai-services-key',
       system_prompt: LlmProvider::CHAT_SYSTEM_PROMPT,
     }
     user_params = user_specifics
     azure_anthropic_judge = seed_judge user_params
+    azure_anthropic_judge.owner ||= realistic_activity_user
+    azure_anthropic_judge.connection = seed_llm_connection realistic_activity_user, 'Azure Anthropic',
+                                                           'azure_ai_foundry_anthropic',
+                                                           'https://YOUR-RESOURCE.services.ai.azure.com/anthropic'
     azure_anthropic_judge.judge_options = {
       llm_provider:    'azure_ai_foundry_anthropic',
-      llm_service_url: 'https://YOUR-RESOURCE.services.ai.azure.com/anthropic',
       llm_model:       'claude-haiku-5-5',
-      llm_timeout:     30,
       llm_api_version: '',
     }
     azure_anthropic_judge.save!
@@ -811,6 +813,20 @@ class SampleData < Thor
   # rubocop:enable Metrics/PerceivedComplexity
 
   private
+
+  # A placeholder connection with no key yet: it is listed as "no key yet" until one is added
+  # under Connections, so it skips the check that a key is present.
+  def seed_llm_connection owner, name, provider_key, base_url, api_version = nil
+    provider = ::ConnectionProvider.find(provider_key)
+    ::Connection.find_or_initialize_by(owner: owner, name: name).tap do |connection|
+      next if connection.persisted?
+
+      connection.assign_attributes provider: provider.key, base_url: base_url,
+                                   auth_scheme: provider.auth_scheme, auth_header: provider.auth_header,
+                                   api_version: api_version
+      connection.save!(validate: false)
+    end
+  end
 
   def seed_judge hash
     ::AiJudge.find_by(name: hash[:name]) || ::AiJudge.create(hash)

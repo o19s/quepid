@@ -1,6 +1,6 @@
 # ADR 0005 — Connections: one record for reaching and authenticating to an external service
 
-- **Status:** Proposed (the model, registry, management UI and embedders are built on `feature/connections`; AI judges are not moved yet)
+- **Status:** Proposed (the model, registry, management UI and embedders are built on `feature/connections`; AI judges are in their deprecation period, §3)
 - **Date:** 2026-10-29
 - **Affects (when built):** `app/models/llm_provider.rb`, `app/models/embedder_provider.rb`,
   `app/models/embedder.rb`, `app/models/ai_judge.rb`, `app/models/search_endpoint.rb` (later),
@@ -344,7 +344,7 @@ Still open:
 2. A Connections page; instance-wide connections; the Check connection button. Done.
 3. Embedders move onto connections: a picker on the form, new ones require a connection, old ones
    keep working and are warned about (the deprecation period, §3). Done.
-4. AI judges move onto connections, the same way. Not started.
+4. AI judges move onto connections, the same way. In the deprecation period (§9); data migration and clean-up not started.
 5. `HttpClient` replaces `LlmConnection`, built from a connection; rate limits enforced. Not started.
 6. The data migration, then, separately, dropping the old columns (§3). Old columns dropped for
    embedders; no existing embedders required a data migration (§9). Not started for judges.
@@ -406,7 +406,32 @@ can spend its connection's credentials by using that embedder, but cannot create
 configuration with the private connection. Instance-wide connections are the explicit exception.
 The clone form clears an inaccessible private connection and asks the new owner to choose one.
 
-Not built: renaming `LlmConnection` to `HttpClient` and building it from a `Connection`; moving
-AI judges onto connections, and the matching migration of their own settings to connections and
-dropping those columns; the rate limit (the field is stored, nothing enforces it); search
-endpoints.
+- **AI judges use a connection, in their deprecation period (§3, stage 2).** `users.connection_id`
+  is optional. The judge form has a Connection dropdown (own and instance-wide connections whose
+  provider has `chat` or `typed_judge`) instead of the key field, and no URL or timeout fields;
+  the judge's provider comes from its connection (set on save; the form shows it read-only,
+  marked deprecated only on a judge still on its own URL and key).
+  `LlmService` takes the URL, timeout, retry settings and auth headers from the connection, and the
+  API version falls back to the connection's when the judge sets none. New judges need a connection
+  (enforced in `AiJudgesController#create`, so code and tests that build judges directly needn't);
+  one that has a connection can change it but not drop it. A judge from before connections keeps
+  running on its own `llm_key` and `llm_service_url`/`llm_timeout`, and its form says so; choosing
+  a connection clears them. A clone never takes the original's key or connection: its form opens
+  with none and asks the cloner to choose one of theirs.
+- The connection checks shared by embedders and judges (who may assign a connection, not dropping
+  one) are the `ConnectionConsumer` concern, and the capability-filtered picker is
+  `ConnectionsHelper#connection_options_for`, as §6 asked.
+- **Per-user LLM connections.** The first time someone who owns no LLM connection opens the AI
+  judge form, they get one private connection per LLM provider with its default URL and auth, and
+  no key (`User#provision_llm_connections`; saved without validation for that reason). The picker
+  marks them "no key yet", and a judging call through one is unrateable with "… has no key yet".
+  They are private rather than instance-wide on purpose: on a hosted, multi-tenant Quepid an
+  instance-wide connection would be offered to, and spend the key of, every user.
+- A connection used by AI judges can't be deleted, nor its owner's account, and its provider can't
+  change (a judge's prompt and model are written for its provider). The connection pages count and
+  list the judges that use it.
+
+Not built: renaming `LlmConnection` to `HttpClient` and building it from a `Connection`; the data
+migration of judges' own settings to connections and dropping `users.llm_key` and the
+`judge_options` URL/timeout (§3, stage 3); the rate limit (the field is stored, nothing enforces
+it); search endpoints.

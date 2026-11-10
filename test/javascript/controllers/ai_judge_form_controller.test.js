@@ -374,3 +374,30 @@ it("restores effective connection defaults for omitted keys without restoring a 
     jev_min_confidence: ""
   })
 })
+
+it("takes the provider from a chosen connection", () => {
+  const provider = document.createElement("select")
+  provider.innerHTML =
+    '<option value="openai">OpenAI</option><option value="ollama">Ollama</option>'
+  const row = document.createElement("div")
+  row.className = "row d-none"
+  row.append(provider)
+  const connection = document.createElement("select")
+  connection.innerHTML =
+    '<option value="">Choose a connection</option><option value="3" data-provider="ollama">Local (Ollama)</option>'
+  const model = document.createElement("input")
+  const controller = buildControllerFixture(AiJudgeFormController, {
+    values: {
+      presets: { ollama: { llm_model: "qwen" }, openai: { llm_model: "gpt-4o" } },
+      stockPrompts: []
+    },
+    overrides: { offerDefaultSystemPrompt() {}, updateProviderPanels() {} },
+    targets: { provider, connection, model }
+  })
+
+  connection.value = "3"
+  controller.connectionChanged()
+  expect(provider.value).toBe("ollama")
+  expect(model.value).toBe("qwen")
+  expect(row.classList.contains("d-none")).toBe(false)
+})

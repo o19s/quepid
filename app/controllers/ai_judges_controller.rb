@@ -4,9 +4,10 @@ class AiJudgesController < ApplicationController
   include TeamAssignable
 
   before_action :set_team, only: [ :new, :clone, :create, :update, :destroy ]
-  before_action :set_ai_judge, only: [ :show, :edit, :update, :destroy ]
+  before_action :set_ai_judge, only: [ :show, :edit, :update, :destroy, :migrate_connection ]
   before_action :set_book, only: [ :show, :new, :edit, :create, :update ]
   before_action :set_scorer, only: [ :show, :new, :edit, :create, :update ]
+  before_action :provision_llm_connections, only: [ :show, :new, :clone, :edit ]
 
   helper_method :escalation_targets
 
@@ -25,22 +26,22 @@ class AiJudgesController < ApplicationController
     @ai_judge.system_prompt = provider.default_system_prompt
     @ai_judge.judge_options = {
       llm_provider:    provider.key,
-      llm_service_url: provider.default_service_url,
       llm_model:       provider.default_model,
-      llm_timeout:     30,
       llm_api_version: provider.default_api_version,
     }
   end
 
   def clone
     source = AiJudge.for_user(current_user).where(id: @team.members.select(:id)).find(params.expect(:id))
+    # The copy is the cloner's own judge, so it calls out through a connection they pick, never
+    # the original's key or connection.
     @ai_judge = current_user.owned_ai_judges.build(
       name:          "Clone of #{source.name}",
-      llm_key:       source.llm_key,
       system_prompt: source.system_prompt,
-      judge_options: source.judge_options.deep_dup
+      judge_options: source.judge_options.except(:llm_service_url, :llm_timeout)
     )
     @ai_judge.team_ids = [ @team.id ]
+    @ai_judge.errors.add(:connection, 'is required: choose one of your connections for this copy')
     render :new
   end
 
@@ -48,7 +49,9 @@ class AiJudgesController < ApplicationController
 
   def create
     @ai_judge = current_user.owned_ai_judges.build
+    @ai_judge.connection_assignment_user = current_user
     @ai_judge.assign_attributes(ai_judge_params)
+    @ai_judge.errors.add(:connection, 'is required: it holds the URL and key (create one under Connections)') unless @ai_judge.connection
 
     if @ai_judge.errors.empty? && escalation_target_visible? && @ai_judge.save
       apply_team_ids(@ai_judge, submitted_team_ids)
@@ -59,13 +62,26 @@ class AiJudgesController < ApplicationController
   end
 
   def update
+    @ai_judge.connection_assignment_user = current_user
     @ai_judge.assign_attributes(ai_judge_params)
+    # A judge from before connections keeps running on its own settings, but changes to it wait until it is on one.
+    @ai_judge.errors.add(:connection, 'is required: choose one, or migrate this judge to a new connection first') unless @ai_judge.connection
     if @ai_judge.errors.empty? && escalation_target_visible? && @ai_judge.save
       apply_team_ids(@ai_judge, submitted_team_ids)
       redirect_to(@team ? team_path(@team) : ai_judge_path(@ai_judge), notice: 'AI Judge was successfully updated.', status: :see_other)
     else
       render 'edit', status: :unprocessable_content
     end
+  end
+
+  # Anyone who can open the judge: the connection goes to its owner, or to them if it has none.
+  def migrate_connection
+    return redirect_to edit_ai_judge_path(@ai_judge), alert: 'This judge is already on a connection.', status: :see_other unless @ai_judge.own_settings?
+
+    connection = @ai_judge.migrate_to_connection!(current_user)
+    redirect_to edit_ai_judge_path(@ai_judge), notice: "Migrated to the new connection #{connection.name}.", status: :see_other
+  rescue ActiveRecord::RecordInvalid => e
+    redirect_to edit_ai_judge_path(@ai_judge), alert: "Could not migrate to a connection: #{e.record.errors.full_messages.to_sentence}", status: :see_other
   end
 
   def destroy
@@ -82,6 +98,10 @@ class AiJudgesController < ApplicationController
 
   def set_team
     @team = current_user.teams.find(params.expect(:team_id)) if params[:team_id].present?
+  end
+
+  def provision_llm_connections
+    current_user.provision_llm_connections
   end
 
   def set_ai_judge
@@ -137,7 +157,7 @@ class AiJudgesController < ApplicationController
   end
 
   def ai_judge_params
-    params_to_return = params.expect(user: [ :name, :llm_key, :system_prompt, :options, :escalates_to_id,
+    params_to_return = params.expect(user: [ :name, :connection_id, :system_prompt, :options, :escalates_to_id,
                                              { judge_options: {} } ])
     if params_to_return[:options]
       @submitted_options = params_to_return[:options]

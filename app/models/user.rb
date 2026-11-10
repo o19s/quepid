@@ -37,9 +37,11 @@
 #  escalates_to_id             :integer
 #  invited_by_id               :integer
 #  owner_id                    :integer
+#  connection_id               :bigint
 #
 # Indexes
 #
+#  index_users_on_connection_id         (connection_id)
 #  index_users_on_default_scorer_id     (default_scorer_id)
 #  index_users_on_escalates_to_id       (escalates_to_id)
 #  index_users_on_invitation_token      (invitation_token) UNIQUE
@@ -215,9 +217,10 @@ class User < ApplicationRecord
   before_destroy :check_connections_before_removing!, prepend: true
 
   def check_connections_before_removing!
-    return unless Embedder.exists?(connection_id: owned_connections.select(:id))
+    in_use = owned_connections.select(:id)
+    return unless Embedder.exists?(connection_id: in_use) || AiJudge.exists?(connection_id: in_use)
 
-    errors.add(:base, "Please point embedders using this user's connections at another connection, or delete those embedders, before deleting this user.")
+    errors.add(:base, "Please point embedders and AI judges using this user's connections at another connection, or delete them, before deleting this user.")
     throw(:abort)
   end
 
@@ -325,6 +328,22 @@ class User < ApplicationRecord
   # Changing one is narrower; see Connection#manageable_by?.
   def connections_involved_with
     Connection.usable_by(self)
+  end
+
+  # The first time a user who owns no LLM connection sets up an AI judge, they get one private
+  # connection per LLM provider, with its default URL and auth, so the judge form has something to
+  # pick. Keyed providers start without a key, so these skip validation; the connection form asks
+  # for the key when the user edits one, and a judge using it says what's missing.
+  def provision_llm_connections
+    providers = ConnectionProvider.all.select { |provider| provider.capabilities.intersect?(%w[chat typed_judge]) }
+    return if owned_connections.exists?(provider: providers.map(&:key))
+
+    providers.each do |provider|
+      connection = owned_connections.new(name: provider.label, provider: provider.key, base_url: provider.default_base_url,
+                                         auth_scheme: provider.auth_scheme, auth_header: provider.auth_header)
+      connection.api_version = provider.default_api_version if provider.uses_api_version?
+      connection.save!(validate: false)
+    end
   end
 
   def locked?

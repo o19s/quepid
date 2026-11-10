@@ -555,4 +555,41 @@ class UserTest < ActiveSupport::TestCase
       assert_predicate again.errors, :present?
     end
   end
+
+  describe 'LLM connections made for a user' do
+    let(:user) { users(:doug) }
+    let(:llm_providers) { ConnectionProvider.all.select { |provider| provider.capabilities.intersect?(%w[chat typed_judge]) } }
+
+    test 'one private connection per LLM provider, keyless, the first time they own none' do
+      user.owned_connections.where(provider: llm_providers.map(&:key)).destroy_all
+
+      assert_difference -> { user.owned_connections.count }, llm_providers.size do
+        user.provision_llm_connections
+      end
+      openai = user.owned_connections.find_by(provider: 'openai')
+      assert_not_predicate openai, :instance_wide?
+      assert_equal 'https://api.openai.com', openai.base_url
+      assert_nil openai.secret
+      assert_equal 'header', user.owned_connections.find_by(provider: 'anthropic').auth_scheme
+
+      assert_no_difference -> { Connection.count } do
+        user.provision_llm_connections
+      end
+    end
+
+    test 'none are made for someone who already owns an LLM connection' do
+      assert user.owned_connections.exists?(provider: 'openai')
+      assert_no_difference -> { Connection.count } do
+        user.provision_llm_connections
+      end
+    end
+
+    test 'cannot be deleted while an AI judge uses one of their connections' do
+      AiJudge.create!(name: 'On their key', system_prompt: 'Judge it.', owner: user, connection: connections(:openai))
+      Embedder.where(connection_id: user.owned_connections.select(:id)).delete_all
+
+      assert_not user.destroy
+      assert_includes user.errors[:base].first, 'AI judges'
+    end
+  end
 end
