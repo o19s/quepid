@@ -39,9 +39,24 @@ export function formatJson(value) {
   }
 }
 
-export function validateNumberOfRows(value) {
+// Mapper-owned query/settings synchronization. Invalid custom mapper code must
+// not prevent the sandbox from opening or overwrite the user's query text.
+export function mapQueryParamsSettings(value, mapperCode, evaluateMapper, numberOfRows) {
+  const defaults = { queryParams: value, maxNumberOfRows: 100 }
+  if (!mapperCode) return defaults
+  try {
+    const { queryParamsSettingsMapper } = evaluateMapper(mapperCode)
+    return queryParamsSettingsMapper
+      ? { ...defaults, ...queryParamsSettingsMapper(value, numberOfRows) }
+      : defaults
+  } catch {
+    return defaults
+  }
+}
+
+export function validateNumberOfRows(value, maximum = 100) {
   const number = Number(value)
-  return Number.isInteger(number) && number >= 1 && number <= 100
+  return Number.isSafeInteger(number) && number >= 1 && (maximum === null || number <= maximum)
 }
 
 export function urlBucket(url, urls) {

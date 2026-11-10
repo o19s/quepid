@@ -51,6 +51,17 @@ docsMapper = function (data) {
   return docs;
 };
 
+// Preserve an explicit limit, including one-off rated-document lookups. Only queries
+// without a limit fall back to the try's result-count setting. Keep the fallback numeric:
+// Qdrant rejects string limits sent through pagination_hits_param.
+requestArgsMapper = function (args, numberOfRows) {
+  const limit = Number(numberOfRows);
+  if (!Object.hasOwn(args, 'limit') && Number.isFinite(limit)) {
+    args.limit = limit;
+  }
+  return args;
+};
+
 // ratedDocsQueryParamsMapper - Builds a one-off query_params string that looks up exactly the
 // given rated doc IDs, for the "Already Rated Documents" section of the
 // Find-and-Rate-Missing-Documents modal. query_service.js's rated-document lookup has no generic
@@ -100,4 +111,32 @@ ratedDocsQueryParamsMapper = function (ratedIds, idField) {
     with_payload: true,
     limit:        Math.max(ratedIds.length, 1)
   });
+};
+
+// With no count argument, read the query's limit without rewriting any query text.
+// An explicit count means the user edited Number of Results: update only an
+// existing top-level limit. Incomplete JSON is preserved while the user is typing.
+queryParamsSettingsMapper = function (value, numberOfRows) {
+  const settings = { queryParams: value, maxNumberOfRows: null };
+  try {
+    const parsed = JSON.parse(value);
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return settings;
+    if (numberOfRows === undefined) {
+      if (Number.isSafeInteger(parsed.limit) && parsed.limit > 0) {
+        settings.numberOfRows = parsed.limit;
+      }
+    } else if (Object.hasOwn(parsed, 'limit')) {
+      const limit = Number(numberOfRows);
+      if (Number.isSafeInteger(limit) && limit > 0) {
+        if (parsed.limit !== limit) {
+          parsed.limit = limit;
+          settings.queryParams = JSON.stringify(parsed, null, 2);
+        }
+        settings.numberOfRows = limit;
+      }
+    }
+  } catch {
+    // No parseable object yet; keep the editor's text intact.
+  }
+  return settings;
 };

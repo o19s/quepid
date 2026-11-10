@@ -89,6 +89,22 @@ class QdrantMapperTest < ActiveSupport::TestCase
     end
   end
 
+  describe 'requestArgsMapper' do
+    it 'preserves an explicit query limit when number_of_rows differs' do
+      args = v8_executor.apply_request_args_mapper(
+        mapper_code, { 'query' => 'test', 'limit' => 10 }, 37
+      )
+
+      assert_equal 10, args['limit']
+    end
+
+    it 'adds limit even when the args had none at all' do
+      args = v8_executor.apply_request_args_mapper(mapper_code, { 'query' => 'test' }, 5)
+
+      assert_equal 5, args['limit']
+    end
+  end
+
   describe 'ratedDocsQueryParamsMapper' do
     it 'filters on the point id with has_id when the case uses the default id field' do
       params = rated_docs_query_params(%w[603 604], 'id')

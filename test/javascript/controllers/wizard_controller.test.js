@@ -1511,7 +1511,8 @@ it("validates Vespa parameter lists and bare YQL using named scalar arguments", 
       "yql=select * from movies&ranking.profile=bm25",
       { yql: "select * from movies", "ranking.profile": "bm25" }
     ],
-    ["select * from movies", { yql: "select * from movies" }]
+    ["select * from movies", { yql: "select * from movies" }],
+    ['{"yql":"select * from sources * where true"}', { yql: "select * from sources * where true" }]
   ]) {
     const controller = mount({
       step: STEPS.endpoint,
