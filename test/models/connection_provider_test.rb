@@ -55,4 +55,13 @@ class ConnectionProviderTest < ActiveSupport::TestCase
     assert_equal 'bearer', preset[:auth_scheme]
     assert_equal %w[chat embeddings], preset[:capabilities]
   end
+
+  test 'groups the picker into AI, ML and LLM services and search engines' do
+    groups = ConnectionProvider.grouped_select_options
+
+    assert_equal [ 'AI, ML and LLM services', 'Search engines' ], groups.keys
+    assert_includes groups['Search engines'].map(&:last), 'solr'
+    assert_includes groups['AI, ML and LLM services'].map(&:last), 'openai'
+    assert_equal ConnectionProvider.select_options.sort, groups.values.flatten(1).sort
+  end
 end
