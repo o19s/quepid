@@ -821,9 +821,7 @@ class SampleData < Thor
     ::Connection.find_or_initialize_by(owner: owner, name: name).tap do |connection|
       next if connection.persisted?
 
-      connection.assign_attributes provider: provider.key, base_url: base_url,
-                                   auth_scheme: provider.auth_scheme, auth_header: provider.auth_header,
-                                   api_version: api_version
+      connection.assign_attributes provider.connection_attributes(base_url: base_url, api_version: api_version)
       connection.save!(validate: false)
     end
   end

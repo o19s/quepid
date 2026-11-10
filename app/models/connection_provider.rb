@@ -196,4 +196,14 @@ class ConnectionProvider
       capabilities:     capabilities,
     }
   end
+
+  # The attributes a new Connection needs to speak this provider: callers merge in whatever else
+  # is theirs to set (an owner, a name, a secret). base_url/api_version default to this provider's
+  # own defaults; pass an override (e.g. a value carried over from what's being replaced) to use
+  # that instead. api_version is omitted for a provider that doesn't use one.
+  def connection_attributes base_url: default_base_url, api_version: default_api_version
+    attrs = { provider: key, base_url: base_url, auth_scheme: auth_scheme, auth_header: auth_header }
+    attrs[:api_version] = api_version if uses_api_version?
+    attrs
+  end
 end

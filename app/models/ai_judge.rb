@@ -132,16 +132,13 @@ class AiJudge < User
     self.owner ||= migrating_user
     provider = ConnectionProvider.find(llm_provider_key)
     created = owner.owned_connections.new(
-      name:        name,
-      provider:    provider.key,
-      base_url:    judge_options[:llm_service_url].presence || provider.default_base_url,
-      auth_scheme: provider.auth_scheme,
-      auth_header: provider.auth_header,
-      secret:      llm_key
+      provider.connection_attributes(
+        base_url:    judge_options[:llm_service_url].presence || provider.default_base_url,
+        api_version: judge_options[:llm_api_version].presence || provider.default_api_version
+      ).merge(name: name, secret: llm_key)
     )
     # An out-of-range timeout from before connections falls back to the connection's default.
     created.timeout = judge_options[:llm_timeout].to_i if judge_options[:llm_timeout].to_i.between?(1, 600)
-    created.api_version = judge_options[:llm_api_version].presence || provider.default_api_version if provider.uses_api_version?
     transaction do
       created.save!
       update!(connection: created)
@@ -163,6 +160,15 @@ class AiJudge < User
     self.options = (options || {}).merge('judge_options' => value.to_h.deep_stringify_keys)
   end
 
+  # The judge_options a judge would end up with once connected: the provider becomes the
+  # connection's. Shared by leave_own_settings_for_connection (actually saving) and the wizard's
+  # draft_judge (previewing a connection switch before anyone saves).
+  def self.judge_options_with_connection_provider judge_options, connection
+    return judge_options unless connection && LlmProvider.find(connection.provider)
+
+    judge_options.merge(llm_provider: connection.provider)
+  end
+
   private
 
   # Why the connection doesn't fit this judge, or nil. The first thing wrong is the one worth saying.
@@ -180,7 +186,7 @@ class AiJudge < User
     return unless connection
 
     self.llm_key = nil
-    self.judge_options = judge_options.merge(llm_provider: connection.provider) if LlmProvider.find(connection.provider)
+    self.judge_options = self.class.judge_options_with_connection_provider(judge_options, connection)
     own = judge_options.slice(:llm_service_url, :llm_timeout)
     self.judge_options = judge_options.except(*own.keys) if own.any?
   end

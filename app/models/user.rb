@@ -339,9 +339,7 @@ class User < ApplicationRecord
     return if owned_connections.exists?(provider: providers.map(&:key))
 
     providers.each do |provider|
-      connection = owned_connections.new(name: provider.label, provider: provider.key, base_url: provider.default_base_url,
-                                         auth_scheme: provider.auth_scheme, auth_header: provider.auth_header)
-      connection.api_version = provider.default_api_version if provider.uses_api_version?
+      connection = owned_connections.new(provider.connection_attributes.merge(name: provider.label))
       connection.save!(validate: false)
     end
   end

@@ -109,8 +109,7 @@ module AiJudges
     def draft_judge saved, connection
       ai_judge = AiJudge.new(system_prompt: params[:system_prompt], connection: connection,
                              llm_key: connection ? nil : saved&.llm_key)
-      ai_judge.judge_options = judge_options_params.to_h
-      ai_judge.judge_options = ai_judge.judge_options.merge(llm_provider: connection.provider) if connection && LlmProvider.find(connection.provider)
+      ai_judge.judge_options = AiJudge.judge_options_with_connection_provider(judge_options_params.to_h, connection)
       ai_judge
     end
 
