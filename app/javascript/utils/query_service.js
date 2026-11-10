@@ -220,7 +220,7 @@ const MAPPER_FUNCTION_NAMES = [
   "nextPageArgsMapper",
   "ratedDocsQueryParamsMapper",
   "requestArgsMapper",
-  "queryParamsDisplayMapper"
+  "queryParamsSettingsMapper"
 ]
 
 /**

@@ -51,16 +51,14 @@ docsMapper = function (data) {
   return docs;
 };
 
-// requestArgsMapper - Qdrant's limit can't be driven through pagination_hits_param (see
-// mapper_based_search_engine.rb's Qdrant comment: splainer-search would send it as a string,
-// and Qdrant's Rust API rejects "limit": "10") - so it isn't part of the editable query_params
-// at all (tune_relevance_controller.js strips it from the Query Sandbox). It's injected here
-// instead, as a real integer, from "Number of Results to Show" - called for every outgoing
-// request, client-side (query_service.js's buildSearcherRequest) and server-side (FetchService,
-// via V8MapperExecutor#apply_request_args_mapper).
+// Preserve an explicit limit, including one-off rated-document lookups. Only queries
+// without a limit fall back to the try's result-count setting. Keep the fallback numeric:
+// Qdrant rejects string limits sent through pagination_hits_param.
 requestArgsMapper = function (args, numberOfRows) {
   const limit = Number(numberOfRows);
-  if (Number.isFinite(limit)) args.limit = limit;
+  if (!Object.hasOwn(args, 'limit') && Number.isFinite(limit)) {
+    args.limit = limit;
+  }
   return args;
 };
 
@@ -115,18 +113,30 @@ ratedDocsQueryParamsMapper = function (ratedIds, idField) {
   });
 };
 
-// Query Sandbox display only: the "number of results" setting provides the limit at execution time
-// so filter out "limit" here.
-// Preserve incomplete/non-object input and queries without a limit verbatim.
-queryParamsDisplayMapper = function (value) {
+// With no count argument, read the query's limit without rewriting any query text.
+// An explicit count means the user edited Number of Results: update only an
+// existing top-level limit. Incomplete JSON is preserved while the user is typing.
+queryParamsSettingsMapper = function (value, numberOfRows) {
+  const settings = { queryParams: value, maxNumberOfRows: null };
   try {
     const parsed = JSON.parse(value);
-    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed) || !('limit' in parsed)) {
-      return value;
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return settings;
+    if (numberOfRows === undefined) {
+      if (Number.isSafeInteger(parsed.limit) && parsed.limit > 0) {
+        settings.numberOfRows = parsed.limit;
+      }
+    } else if (Object.hasOwn(parsed, 'limit')) {
+      const limit = Number(numberOfRows);
+      if (Number.isSafeInteger(limit) && limit > 0) {
+        if (parsed.limit !== limit) {
+          parsed.limit = limit;
+          settings.queryParams = JSON.stringify(parsed, null, 2);
+        }
+        settings.numberOfRows = limit;
+      }
     }
-    delete parsed.limit;
-    return JSON.stringify(parsed, null, 2);
   } catch {
-    return value;
+    // No parseable object yet; keep the editor's text intact.
   }
+  return settings;
 };

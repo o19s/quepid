@@ -274,22 +274,108 @@ describe("TuneRelevanceController", () => {
       }
     )
 
-    it("strips Qdrant's limit from the displayed query but leaves the saved value alone until edited", () => {
-      const { controller, settings } = mount()
+    function mountQdrant(queryParams = '{ "query": "#$query##", "limit": 250 }') {
+      const fixture = mount()
+      const { controller, settings } = fixture
       settings.searchEngine = "searchapi"
       settings.mapperCode = readFileSync("db/mapper_based_search_engines/qdrant.js", "utf8")
-      settings.mapperBasedSearchEngineId = "qdrant"
-      settings.selectedTry.mapperBasedSearchEngineId = "qdrant"
-      settings.selectedTry.queryParams = '{"query": "#$query##", "limit": 10}'
+      settings.selectedTry.queryParams = queryParams
       const textarea = document.createElement("textarea")
       controller.element.append(textarea)
       controller.hasQueryEditorTarget = true
       controller.queryEditorTarget = textarea
       controller.mountEditor()
+      return fixture
+    }
+
+    it("keeps Qdrant's limit visible and uses it as the result count without rewriting the query", () => {
+      const { controller, settings } = mountQdrant()
+      try {
+        const original = settings.queryParams
+        controller.refreshQueryEditor()
+        expect(controller.editor.getValue()).toBe(original)
+        expect(settings.queryParams).toBe(original)
+        expect(settings.numberOfRows).toBe(250)
+        expect(controller.numberOfRowsTarget.value).toBe("250")
+        expect(controller.numberOfRowsTarget.max).toBe("")
+      } finally {
+        controller.editor.view.destroy()
+      }
+    })
+
+    it("updates the result count when the Qdrant query is edited, preserving incomplete input", () => {
+      const { controller, settings } = mountQdrant()
+      try {
+        controller.editor.setValue('{"limit":300,"prefetch":{"limit":40}}')
+        expect(settings.numberOfRows).toBe(300)
+        expect(controller.numberOfRowsTarget.value).toBe("300")
+        controller.editor.setValue('{"limit":')
+        expect(settings.queryParams).toBe('{"limit":')
+        expect(settings.numberOfRows).toBe(300)
+      } finally {
+        controller.editor.view.destroy()
+      }
+    })
+
+    it.each(['{"query":1,"limit":250,"prefetch":{"limit":40}}'])(
+      "updates only the existing Qdrant top-level limit when the result count changes: %s",
+      (queryParams) => {
+        const { controller, settings } = mountQdrant(queryParams)
+        try {
+          controller.numberOfRowsTarget.value = "500"
+          controller.updateNumberOfRows()
+          expect(JSON.parse(settings.queryParams)).toEqual({
+            query: 1,
+            limit: 500,
+            prefetch: { limit: 40 }
+          })
+          expect(controller.editor.getValue()).toBe(settings.queryParams)
+          expect(Number(settings.numberOfRows)).toBe(500)
+        } finally {
+          controller.editor.view.destroy()
+        }
+      }
+    )
+
+    it("changes the result count without adding a missing Qdrant limit, including after saving", async () => {
+      const query = '{ "query": 1, "prefetch": { "limit": 40 } }'
+      const { controller, settings, capability } = mountQdrant(query)
       try {
         controller.refreshQueryEditor()
-        expect(controller.editor.getValue()).toBe('{\n  "query": "#$query##"\n}')
-        expect(settings.selectedTry.queryParams).toBe('{"query": "#$query##", "limit": 10}')
+        controller.numberOfRowsTarget.value = "500"
+        controller.updateNumberOfRows()
+        expect(settings.queryParams).toBe(query)
+        expect(controller.editor.getValue()).toBe(query)
+        expect(Number(settings.numberOfRows)).toBe(500)
+        await controller.save()
+        expect(capability.settings.save).toHaveBeenCalled()
+        expect(JSON.parse(settings.queryParams)).toEqual({ query: 1, prefetch: { limit: 40 } })
+        expect(Number(settings.numberOfRows)).toBe(500)
+      } finally {
+        controller.editor.view.destroy()
+      }
+    })
+
+    it("does not add a Qdrant limit when saving without changing the result count", async () => {
+      const { controller, settings, capability } = mountQdrant('{"query":1}')
+      try {
+        controller.refreshQueryEditor()
+        await controller.save()
+        expect(capability.settings.save).toHaveBeenCalled()
+        expect(JSON.parse(settings.queryParams)).toEqual({ query: 1 })
+      } finally {
+        controller.editor.view.destroy()
+      }
+    })
+
+    it("saves Qdrant limits above 100 in both the query and result count", async () => {
+      const { controller, settings, capability } = mountQdrant()
+      try {
+        controller.refreshQueryEditor()
+        await controller.save()
+        expect(capability.settings.save).toHaveBeenCalled()
+        expect(Number(settings.numberOfRows)).toBe(250)
+        expect(JSON.parse(settings.queryParams).limit).toBe(250)
       } finally {
         controller.editor.view.destroy()
       }

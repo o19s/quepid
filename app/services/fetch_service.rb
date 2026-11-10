@@ -440,10 +440,16 @@ class FetchService
   # (query_service.js's buildSearcherRequest), keeping the request-shaping rule in one place.
   #
   # Most mappers (e.g. Vespa) never define requestArgsMapper at all - this batch path runs
-  # once per query, so the plain substring check skips the V8 eval entirely for them, rather
-  # than paying for it on every query only to find out requestArgsMapper is undefined.
+  # once per query, so this skips the V8 eval entirely for them, rather than paying for it on
+  # every query only to find out requestArgsMapper is undefined. A preset-linked endpoint
+  # says so declaratively (MapperBasedSearchEngine#supports_request_args_mapper, the same
+  # pattern as supports_pagination/supports_rated_docs_lookup); a custom endpoint not based
+  # on a preset has no such declaration to consult, so its mapper_code is sniffed instead.
   def mapper_based_endpoint? endpoint
-    'searchapi' == endpoint&.search_engine && endpoint.mapper_code.to_s.include?('requestArgsMapper')
+    return false unless 'searchapi' == endpoint&.search_engine
+    return true if endpoint.mapper_based_search_engine&.supports_request_args_mapper
+
+    endpoint.mapper_based_search_engine_id.blank? && endpoint.mapper_code.to_s.include?('requestArgsMapper')
   end
 
   def normalize_http_verb verb

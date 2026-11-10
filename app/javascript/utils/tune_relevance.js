@@ -39,21 +39,24 @@ export function formatJson(value) {
   }
 }
 
-// Display hooks never change the stored query. Invalid custom mapper code must not
-// prevent the sandbox from opening so the user can still edit the query.
-export function withoutEngineManagedLimit(value, mapperCode, evaluateMapper) {
-  if (!mapperCode) return value
+// Mapper-owned query/settings synchronization. Invalid custom mapper code must
+// not prevent the sandbox from opening or overwrite the user's query text.
+export function mapQueryParamsSettings(value, mapperCode, evaluateMapper, numberOfRows) {
+  const defaults = { queryParams: value, maxNumberOfRows: 100 }
+  if (!mapperCode) return defaults
   try {
-    const { queryParamsDisplayMapper } = evaluateMapper(mapperCode)
-    return queryParamsDisplayMapper ? queryParamsDisplayMapper(value) : value
+    const { queryParamsSettingsMapper } = evaluateMapper(mapperCode)
+    return queryParamsSettingsMapper
+      ? { ...defaults, ...queryParamsSettingsMapper(value, numberOfRows) }
+      : defaults
   } catch {
-    return value
+    return defaults
   }
 }
 
-export function validateNumberOfRows(value) {
+export function validateNumberOfRows(value, maximum = 100) {
   const number = Number(value)
-  return Number.isInteger(number) && number >= 1 && number <= 100
+  return Number.isSafeInteger(number) && number >= 1 && (maximum === null || number <= maximum)
 }
 
 export function urlBucket(url, urls) {

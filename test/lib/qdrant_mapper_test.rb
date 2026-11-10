@@ -90,12 +90,12 @@ class QdrantMapperTest < ActiveSupport::TestCase
   end
 
   describe 'requestArgsMapper' do
-    it 'sets limit from number_of_rows as an integer, overriding whatever query_params carried' do
+    it 'preserves an explicit query limit when number_of_rows differs' do
       args = v8_executor.apply_request_args_mapper(
         mapper_code, { 'query' => 'test', 'limit' => 10 }, 37
       )
 
-      assert_equal 37, args['limit']
+      assert_equal 10, args['limit']
     end
 
     it 'adds limit even when the args had none at all' do

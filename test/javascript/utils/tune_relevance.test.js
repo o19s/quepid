@@ -10,7 +10,7 @@ import {
   queryParamsWarning,
   urlBucket,
   validateNumberOfRows,
-  withoutEngineManagedLimit
+  mapQueryParamsSettings
 } from "utils/tune_relevance"
 
 describe("tune relevance utilities", () => {
@@ -38,37 +38,75 @@ describe("tune relevance utilities", () => {
     expect(formatJson("q=law")).toBeNull()
   })
 
-  it("uses Qdrant's mapper to hide the managed limit", () => {
+  it("reads Qdrant's limit without rewriting the query", () => {
     const code = readFileSync("db/mapper_based_search_engines/qdrant.js", "utf8")
-    expect(
-      withoutEngineManagedLimit(
-        '{"query": "#$query##", "limit": 10}',
-        code,
-        evaluateMapperFunctions
-      )
-    ).toBe('{\n  "query": "#$query##"\n}')
+    const value = '{ "query": "#$query##", "limit": 250 }'
+    expect(mapQueryParamsSettings(value, code, evaluateMapperFunctions)).toEqual({
+      queryParams: value,
+      numberOfRows: 250,
+      maxNumberOfRows: null
+    })
   })
 
-  it("removes a zero limit from an otherwise empty object", () => {
+  it("preserves JSON's serialized negative-zero counterexample without adding a limit", () => {
     const code = readFileSync("db/mapper_based_search_engines/qdrant.js", "utf8")
-    expect(withoutEngineManagedLimit('{"limit":0}', code, evaluateMapperFunctions)).toBe("{}")
+    const value = JSON.stringify({ "": -0 })
+    const result = mapQueryParamsSettings(value, code, evaluateMapperFunctions, 1)
+    expect(result.queryParams).toBe(value)
+    expect(JSON.parse(result.queryParams)).toEqual({ "": 0 })
+  })
+
+  it("does not add a count to an empty Qdrant query object", () => {
+    const code = readFileSync("db/mapper_based_search_engines/qdrant.js", "utf8")
+    expect(
+      JSON.parse(mapQueryParamsSettings("{}", code, evaluateMapperFunctions, 1).queryParams)
+    ).toEqual({})
   })
 
   it.each(["", "this.docsMapper = function (data) { return data }", "invalid mapper code!"])(
-    "leaves query text unchanged without a usable display mapper: %s",
+    "preserves query text and default limits without a usable settings mapper: %s",
     (code) => {
       const value = '{"query": "#$query##", "limit": 10}'
-      expect(withoutEngineManagedLimit(value, code, evaluateMapperFunctions)).toBe(value)
+      expect(mapQueryParamsSettings(value, code, evaluateMapperFunctions, 40)).toEqual({
+        queryParams: value,
+        maxNumberOfRows: 100
+      })
     }
   )
 
-  it.each(['{"query":', "q=test&limit=10", "null", "[1,2]", '{ "query": 1 }'])(
-    "preserves Qdrant query text that has no removable object limit: %s",
+  it.each(['{"query":', "q=test&limit=10", "null", "[1,2]"])(
+    "preserves non-object or incomplete Qdrant query text when reading and writing a count: %s",
     (value) => {
       const code = readFileSync("db/mapper_based_search_engines/qdrant.js", "utf8")
-      expect(withoutEngineManagedLimit(value, code, evaluateMapperFunctions)).toBe(value)
+      expect(mapQueryParamsSettings(value, code, evaluateMapperFunctions)).toEqual({
+        queryParams: value,
+        maxNumberOfRows: null
+      })
+      expect(mapQueryParamsSettings(value, code, evaluateMapperFunctions, 250).queryParams).toBe(
+        value
+      )
     }
   )
+
+  it.each([0, -1, 1.5, "20", null])(
+    "does not treat an invalid query limit as a result count: %s",
+    (limit) => {
+      const code = readFileSync("db/mapper_based_search_engines/qdrant.js", "utf8")
+      const value = JSON.stringify({ limit })
+      expect(mapQueryParamsSettings(value, code, evaluateMapperFunctions)).toEqual({
+        queryParams: value,
+        maxNumberOfRows: null
+      })
+    }
+  )
+
+  it("allows positive Qdrant counts above 100 while retaining other engines' maximum", () => {
+    expect(validateNumberOfRows(250)).toBe(false)
+    expect(validateNumberOfRows(250, null)).toBe(true)
+    expect(validateNumberOfRows(0, null)).toBe(false)
+    expect(validateNumberOfRows(1.5, null)).toBe(false)
+    expect(validateNumberOfRows(Number.MAX_SAFE_INTEGER + 1, null)).toBe(false)
+  })
 
   it("validates the result count bounds", () => {
     expect(validateNumberOfRows(1)).toBe(true)

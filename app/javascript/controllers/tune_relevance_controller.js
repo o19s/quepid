@@ -16,7 +16,7 @@ import {
   queryParamsWarning,
   urlBucket,
   validateNumberOfRows,
-  withoutEngineManagedLimit
+  mapQueryParamsSettings
 } from "utils/tune_relevance"
 import coreFlash from "utils/core_flash"
 import { normalizeSearchEngine, searchEngineLabel } from "utils/search_engines"
@@ -194,6 +194,7 @@ export default class extends Controller {
       onChange: (value) => {
         if (this.formattingQueryEditor) return
         this.settings.queryParams = value
+        this.syncNumberOfRowsFromQuery()
         this.refreshQueryWarning(value)
         this.refreshCuratorVars()
         this.refreshTemplateWarning()
@@ -203,20 +204,24 @@ export default class extends Controller {
 
   refreshQueryEditor() {
     if (!this.settings) return
+    this.syncNumberOfRowsFromQuery()
+    this.formatQueryEditor()
+  }
+
+  // Split from refreshQueryEditor() so updateNumberOfRows() can re-render the editor
+  // without re-running syncNumberOfRowsFromQuery() - it already derived the same
+  // numberOfRows/max from the mapper a moment ago and applied them directly.
+  formatQueryEditor() {
+    if (!this.settings) return
     const isStatic = this.settings.searchEngine === "static"
     if (this.hasStaticEngineMessageTarget) this.staticEngineMessageTarget.hidden = !isStatic
     if (this.hasStaticKnobsMessageTarget) this.staticKnobsMessageTarget.hidden = !isStatic
     const editorShell = this.hasEditorShellTarget ? this.editorShellTarget : null
     if (editorShell) editorShell.hidden = isStatic
     const value = this.settings.queryParams || ""
-    const displayValue = withoutEngineManagedLimit(
-      value,
-      this.settings.searchEngine === "searchapi" ? this.settings.mapperCode : null,
-      this.capability.search.evaluateMapper
-    )
-    const editorValue = /^[^=&\s]+=/.test(displayValue.trimStart())
-      ? displayValue.replace(/(?<![\r\n])&/g, "\n&")
-      : displayValue
+    const editorValue = /^[^=&\s]+=/.test(value.trimStart())
+      ? value.replace(/(?<![\r\n])&/g, "\n&")
+      : value
     if (this.editor && this.editor.getValue() !== editorValue) {
       this.formattingQueryEditor = true
       try {
@@ -228,6 +233,38 @@ export default class extends Controller {
     this.refreshQueryWarning(value)
     if (this.hasQueryEditorTarget) this.queryEditorTarget.dataset.mode = queryParamsMode(value)
     this.editor?.setMode?.(queryParamsMode(value))
+  }
+
+  queryParamsSettings(numberOfRows) {
+    return mapQueryParamsSettings(
+      this.settings.queryParams || "",
+      this.settings.searchEngine === "searchapi" ? this.settings.mapperCode : null,
+      this.capability.search.evaluateMapper,
+      numberOfRows
+    )
+  }
+
+  syncNumberOfRowsFromQuery() {
+    const mapped = this.queryParamsSettings()
+    if (mapped.numberOfRows !== undefined) {
+      this.settings.numberOfRows = mapped.numberOfRows
+      if (this.hasNumberOfRowsTarget) this.numberOfRowsTarget.value = mapped.numberOfRows
+    }
+    if (this.hasNumberOfRowsTarget) this.numberOfRowsTarget.max = mapped.maxNumberOfRows ?? ""
+  }
+
+  updateNumberOfRows() {
+    const value = this.numberOfRowsTarget.value
+    this.settings.numberOfRows = value
+    const mapped = this.queryParamsSettings(value)
+    if (!validateNumberOfRows(value, mapped.maxNumberOfRows)) return
+    this.settings.queryParams = mapped.queryParams
+    if (mapped.numberOfRows !== undefined) {
+      this.settings.numberOfRows = mapped.numberOfRows
+      if (this.hasNumberOfRowsTarget) this.numberOfRowsTarget.value = mapped.numberOfRows
+    }
+    if (this.hasNumberOfRowsTarget) this.numberOfRowsTarget.max = mapped.maxNumberOfRows ?? ""
+    this.formatQueryEditor()
   }
 
   refreshQueryWarning(value) {
@@ -587,8 +624,14 @@ export default class extends Controller {
     this.settings.fieldSpec = this.displayedFieldsValue()
     this.settings.numberOfRows = this.numberOfRowsTarget.value
     this.settings.escapeQuery = this.escapeQueryTarget.checked
-    if (!validateNumberOfRows(this.settings.numberOfRows))
-      return this.showError("Number of Results to Show must be between 1 and 100.")
+    const maximum = this.queryParamsSettings().maxNumberOfRows
+    if (!validateNumberOfRows(this.settings.numberOfRows, maximum)) {
+      return this.showError(
+        maximum === null
+          ? "Number of Results to Show must be a positive integer."
+          : "Number of Results to Show must be between 1 and 100."
+      )
+    }
     const queryParams = this.settings.queryParams || ""
     const needsJson =
       this.capability.endpoints.usesJsonQueryParams(this.settings.searchEngine) ||

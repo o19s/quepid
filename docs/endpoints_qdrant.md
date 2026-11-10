@@ -247,7 +247,7 @@ the model and the `using` name:
  "using": "dense", "with_payload": true}
 ```
 
-(`limit` isn't shown here — see below.)
+(`limit` is optional here — see below.)
 
 Two cases pointed at the same endpoint with these two query params, side by side, is the
 straightforward way to measure lexical against semantic retrieval on your own judgements.
@@ -259,11 +259,12 @@ straightforward way to measure lexical against semantic retrieval on your own ju
   screen. That is why the preset sets `supports_pagination: false` and why "Peek at the next
   page of results" does not appear — both call sites gate on `numFound > docs.length`, which
   a self-reported count can never satisfy.
-- **Page size comes from "Number of Results to Show", not the query params.** `limit` must be
-  a real JSON number - Qdrant's API rejects a string like `"10"` with a deserialization error
-  - so rather than let it be hand-edited (and risk that), Quepid strips it out of the Query
-  Sandbox entirely and injects it from the try's "Number of Results to Show" setting whenever
-  it actually queries Qdrant.
+- **Page size stays in sync with "Number of Results to Show".** A top-level numeric `limit`
+  in the Query Sandbox sets the result count without changing the query. Editing "Number
+  of Results to Show" updates that `limit` only when already present. Qdrant supports positive
+  integer counts above 100 in both places. Without an explicit `limit`, requests use the
+  try's result-count setting. `limit` must be a real JSON number — Qdrant's API rejects a
+  string like `"10"` with a deserialization error. Incomplete JSON stays intact while editing.
 - **The id field drives rated-document lookup.** With the case's id field left at `id`, the
   mapper filters already-rated documents with `has_id`; point it at a payload key instead and
   it matches string and canonical safe integer values with separate `match`/`any`
