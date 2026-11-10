@@ -10,6 +10,11 @@ class ConnectionsController < ApplicationController
 
   def index
     @connections = current_user.connections_involved_with.includes(:owner).order(:name)
+    @kind = params.permit(:kind)[:kind].presence_in(%w[ai search])
+    if @kind
+      search_keys = ConnectionProvider.with_capability(:search).map(&:key)
+      @connections = 'search' == @kind ? @connections.where(provider: search_keys) : @connections.where.not(provider: search_keys)
+    end
     @embedder_counts = Embedder.where(connection_id: @connections.map(&:id)).group(:connection_id).count
   end
 

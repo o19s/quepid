@@ -22,6 +22,25 @@ class ConnectionsControllerTest < ActionDispatch::IntegrationTest
     }.merge(overrides)
   end
 
+  test 'index filters to AI & ML or search backends' do
+    own_ollama = Connection.create!(owner: user, name: 'My Ollama', provider: 'ollama',
+                                    base_url: 'http://localhost:11434', auth_scheme: 'none')
+    get connections_url(kind: 'search')
+
+    assert_response :success
+    assert_select 'td', text: connections(:instance_elasticsearch).name
+    assert_select 'td a', text: own_ollama.name, count: 0
+    assert_select 'a.nav-link.active', text: 'Search backends'
+    assert_select '.alert', text: /Coming soon/
+
+    get connections_url(kind: 'ai')
+
+    assert_select 'td', text: connections(:instance_elasticsearch).name, count: 0
+    assert_select 'td a', text: own_ollama.name
+    assert_select 'a.nav-link.active', text: 'AI & ML backends'
+    assert_select '.alert', text: /Coming soon/, count: 0
+  end
+
   test 'index lists the connections the user can use, and marks who owns them' do
     get connections_url
 

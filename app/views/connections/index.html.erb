@@ -14,6 +14,20 @@
 
 <div class="card">
   <div class="card-body">
+    <ul class="nav nav-pills mb-3">
+      <% { nil => 'All', 'ai' => 'AI & ML backends', 'search' => 'Search backends' }.each do |kind, title| %>
+        <li class="nav-item">
+          <%= link_to title, connections_path(kind: kind), class: ['nav-link', { active: @kind == kind }],
+                                                           aria: { current: (@kind == kind ? 'page' : nil) } %>
+        </li>
+      <% end %>
+    </ul>
+    <% if 'search' == @kind %>
+      <div class="alert alert-secondary small" role="status">
+        <i class="bi bi-hourglass-split" aria-hidden="true"></i>
+        Coming soon: search endpoints will use these connections for their URL and key, so you manage them in one place: change a URL or rotate a key once and every endpoint using it picks it up.
+      </div>
+    <% end %>
     <% if @connections.any? %>
       <div class="table-responsive">
         <table class="table table-sm table-hover">
@@ -99,6 +113,8 @@
           </tbody>
         </table>
       </div>
+    <% elsif @kind %>
+      <p class="text-muted mb-0">No connections of this kind. <%= link_to 'Show all', connections_path %>.</p>
     <% else %>
       <p class="text-muted mb-0">
         You don't have any connections yet. <%= link_to 'Create one', new_connection_path %> to keep the URL and key
