@@ -626,11 +626,12 @@ export default class extends Controller {
     this.settings.escapeQuery = this.escapeQueryTarget.checked
     const maximum = this.queryParamsSettings().maxNumberOfRows
     if (!validateNumberOfRows(this.settings.numberOfRows, maximum)) {
-      return this.showError(
+      this.showError(
         maximum === null
           ? "Number of Results to Show must be a positive integer."
           : "Number of Results to Show must be between 1 and 100."
       )
+      return
     }
     const queryParams = this.settings.queryParams || ""
     const needsJson =
@@ -638,8 +639,10 @@ export default class extends Controller {
       (this.settings.searchEngine === "searchapi" && queryParams.trim().startsWith("{"))
     if (needsJson) {
       const formatted = formatJson(queryParams)
-      if (!formatted)
-        return this.showError("Please provide a valid formatted JSON object for the query DSL.")
+      if (!formatted) {
+        this.showError("Please provide a valid formatted JSON object for the query DSL.")
+        return
+      }
       this.settings.queryParams = formatted
     }
     this.saving = true
