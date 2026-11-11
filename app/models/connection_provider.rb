@@ -111,13 +111,13 @@ class ConnectionProvider
 
     # [[label, key], ...] for options_for_select
     def select_options
-      all.map { |provider| [ provider.label, provider.key ] }
+      grouped_select_options.values.flatten(1)
     end
 
     # The same options split into AI, ML and LLM services and search engines, for an <optgroup> picker.
     def grouped_select_options
-      search, llm = all.partition { |provider| provider.capabilities.include?('search') }
-      { 'AI, ML and LLM services' => llm, 'Search engines' => search }.transform_values do |providers|
+      search = with_capability(:search)
+      { 'AI, ML and LLM services' => all - search, 'Search engines' => search }.transform_values do |providers|
         providers.map { |provider| [ provider.label, provider.key ] }
       end
     end

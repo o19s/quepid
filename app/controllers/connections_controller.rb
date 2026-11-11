@@ -10,7 +10,7 @@ class ConnectionsController < ApplicationController
 
   def index
     @connections = current_user.connections_involved_with.includes(:owner).order(:name)
-    @kind = params.permit(:kind)[:kind].presence_in(%w[ai search])
+    @kind = params.permit(:kind)[:kind].presence_in(ConnectionsHelper::KINDS.keys)
     if @kind
       search_keys = ConnectionProvider.with_capability(:search).map(&:key)
       @connections = 'search' == @kind ? @connections.where(provider: search_keys) : @connections.where.not(provider: search_keys)

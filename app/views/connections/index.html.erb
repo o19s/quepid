@@ -16,7 +16,7 @@
 <div class="card">
   <div class="card-body">
     <ul class="nav nav-pills mb-3">
-      <% { nil => 'All', 'ai' => 'AI & ML backends', 'search' => 'Search backends' }.each do |kind, title| %>
+      <% ({ nil => 'All' }.merge(ConnectionsHelper::KINDS)).each do |kind, title| %>
         <li class="nav-item">
           <%= link_to title, connections_path(kind: kind), class: ['nav-link', { active: @kind == kind }],
                                                            aria: { current: (@kind == kind ? 'page' : nil) } %>
