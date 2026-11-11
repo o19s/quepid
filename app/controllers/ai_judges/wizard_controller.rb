@@ -123,11 +123,11 @@ module AiJudges
 
     # Same capability check AiJudge#connection_problem makes at save time (a connection whose
     # provider can't chat or judge), so a preview never gets further than the save path would -
-    # draft_judge's unsaved AiJudge is never validated, so this can't rely on that callback.
+    # draft_judge's unsaved AiJudge is never validated, so this calls the class method
+    # connection_problem itself relies on instead of re-deriving the rule.
     def connection_capability_problem connection
-      definition = connection.provider_definition
-      label = definition&.label || connection.provider
-      "That connection goes to #{label}, which can't run an AI judge." unless definition&.capabilities&.intersect?(%w[chat typed_judge])
+      reason = AiJudge.unsupported_for_judging_reason(connection)
+      "That connection #{reason}." if reason
     end
 
     def query_doc_pair_params

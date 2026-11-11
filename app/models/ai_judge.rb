@@ -147,13 +147,21 @@ class AiJudge < User
     judge_options.merge(llm_provider: connection.provider)
   end
 
+  # Why connection can't run an AI judge, or nil - the capability half of connection_problem,
+  # pulled out so the wizard's draft_judge preview can check it too without saving (its unsaved
+  # AiJudge never runs before_validation/connection_problem).
+  def self.unsupported_for_judging_reason connection
+    definition = connection.provider_definition
+    label = definition&.label || connection.provider
+    "to #{label} can't run an AI judge" unless definition&.capabilities&.intersect?(%w[chat typed_judge])
+  end
+
   private
 
   # Why the connection doesn't fit this judge, or nil. The first thing wrong is the one worth saying.
   def connection_problem
-    definition = connection.provider_definition
-    label = definition&.label || connection.provider
-    return "to #{label} can't run an AI judge" unless definition&.capabilities&.intersect?(%w[chat typed_judge])
+    capability_problem = self.class.unsupported_for_judging_reason(connection)
+    return capability_problem if capability_problem
 
     "isn't one you can use" unless connection_usable_by_owner?
   end

@@ -64,8 +64,13 @@ class MigrateAiJudgesToConnections < ActiveRecord::Migration[8.1]
 
     team_ids = TeamMemberRecord.where(member_id: judge.id).select(:team_id)
     member_ids = TeamMemberRecord.where(team_id: team_ids).select(:member_id)
-    humans = UserRecord.where(type: [ nil, '', 'User' ])
-    humans.where(id: member_ids).minimum(:id) || humans.where(administrator: true).minimum(:id)
+    UserRecord.where(type: [ nil, '', 'User' ], id: member_ids).minimum(:id) || fallback_admin_id
+  end
+
+  # The same row every time (no judge-specific condition), so one query covers every judge
+  # that falls through to it rather than repeating it in the per-judge loop.
+  def fallback_admin_id
+    @fallback_admin_id ||= UserRecord.where(type: [ nil, '', 'User' ], administrator: true).minimum(:id)
   end
 
   def connection_attributes judge, owner_id

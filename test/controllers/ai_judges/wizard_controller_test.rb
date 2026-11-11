@@ -283,7 +283,7 @@ module AiJudges
         post ai_judge_test_prompt_url(ai_judge_id: 'new'), params: params.merge(connection_id: random_voyage.id)
 
         assert_response :unprocessable_content
-        assert_equal "That connection goes to Voyage AI, which can't run an AI judge.", response.parsed_body['error']
+        assert_equal "That connection to Voyage AI can't run an AI judge.", response.parsed_body['error']
       end
 
       test 'a teammate tests a shared judge on its owner connection' do
