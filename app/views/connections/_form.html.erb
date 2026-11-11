@@ -36,7 +36,7 @@
         <div class="row mb-3">
           <%= form.label :provider, class: 'col-sm-3 col-form-label' %>
           <div class="col-sm-9">
-            <%= form.select :provider, ConnectionProvider.select_options, {},
+            <%= form.select :provider, ConnectionProvider.grouped_select_options, {},
                   class: 'form-select',
                   data: { connection_form_target: 'provider', action: 'change->connection-form#changeProvider' } %>
           </div>
