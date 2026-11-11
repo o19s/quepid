@@ -6,10 +6,10 @@ class LlmProviderTest < ActiveSupport::TestCase
   # Pins each provider's label and form defaults so a change to any of them is
   # deliberate rather than an accidental side effect elsewhere in the registry.
   EXPECTED = {
-    'openai'                      => [ 'OpenAI', 'https://api.openai.com', '', 'gpt-4o' ],
-    'azure_openai'                => [ 'Azure OpenAI', 'https://RESOURCE.openai.azure.com', '', 'gpt-4.1' ],
+    'openai'                      => [ 'OpenAI', 'https://api.openai.com', '', 'gpt-6-luna' ],
+    'azure_openai'                => [ 'Azure OpenAI', 'https://RESOURCE.openai.azure.com', '', 'gpt-6-luna' ],
     'azure_ai_foundry'            => [ 'Azure AI Foundry', 'https://RESOURCE.services.ai.azure.com',
-                                       '2025-01-01-preview', 'gpt-4o' ],
+                                       '2025-01-01-preview', 'gpt-6-luna' ],
     'azure_ai_foundry_serverless' => [ 'Azure AI Foundry (Serverless)',
                                        'https://MODEL-NAME.REGION.models.ai.azure.com', '', '' ],
     'azure_ai_foundry_anthropic'  => [ 'Azure AI Foundry (Anthropic)',
@@ -95,14 +95,14 @@ class LlmProviderTest < ActiveSupport::TestCase
     parsed = JSON.parse(json)
 
     assert_equal LlmProvider.all.map(&:key).sort, parsed.keys.sort
-    assert_equal 'gpt-4o', parsed.dig('openai', 'llm_model')
+    assert_equal 'gpt-6-luna', parsed.dig('openai', 'llm_model')
     assert_includes parsed.dig('openai', 'help'), '<strong>OpenAI</strong>'
   end
 
   test 'a caller changing a provider it looked up cannot change the registry' do
     LlmProvider.find('openai').default_model = 'changed'
 
-    assert_equal 'gpt-4o', LlmProvider.find('openai').default_model
+    assert_equal 'gpt-6-luna', LlmProvider.find('openai').default_model
   end
 
   test 'each provider names the dialect it speaks and how its key is sent' do

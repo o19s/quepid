@@ -142,7 +142,7 @@ end
 ```ruby
 # In test files
 test 'html based search page with agentic workflow' do
-  chat = RubyLLM.chat(model: 'gpt-4o-mini')
+  chat = RubyLLM.chat(model: 'gpt-6-luna')
   chat.with_tools(DownloadPage, JavascriptExtractor, MapperTool)
 
   # ... download HTML and generate JavaScript functions ...

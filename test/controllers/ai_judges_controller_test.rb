@@ -84,7 +84,7 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select '#judge_options_llm_provider option[selected][value="openai"]'
     assert_select '#judge_options_llm_service_url[value="https://api.openai.com"]'
-    assert_select '#judge_options_llm_model[value="gpt-4o"]'
+    assert_select '#judge_options_llm_model[value="gpt-6-luna"]'
     assert_select '#judge_options_llm_timeout[value="30"]'
     assert_select '#judge_options_llm_api_version[value=""]'
     assert_select 'textarea[name="user[system_prompt]"]', text: LlmProvider::CHAT_SYSTEM_PROMPT
