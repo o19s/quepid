@@ -427,12 +427,6 @@ The clone form clears an inaccessible private connection and asks the new owner 
 - The connection checks shared by embedders and judges (who may assign a connection, not dropping
   one) are the `ConnectionConsumer` concern, and the capability-filtered picker is
   `ConnectionsHelper#connection_options_for`, as §6 asked.
-- **Per-user LLM connections.** The first time someone who owns no LLM connection opens the AI
-  judge form, they get one private connection per LLM provider with its default URL and auth, and
-  no key (`User#provision_llm_connections`; saved without validation for that reason). The picker
-  marks them "no key yet", and a judging call through one is unrateable with "… has no key yet".
-  They are private rather than instance-wide on purpose: on a hosted, multi-tenant Quepid an
-  instance-wide connection would be offered to, and spend the key of, every user.
 - A connection used by AI judges can't be deleted, nor its owner's account, and its provider can't
   change (a judge's prompt and model are written for its provider). The connection pages count and
   list the judges that use it.

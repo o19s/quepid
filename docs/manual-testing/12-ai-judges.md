@@ -12,7 +12,7 @@ AI Judges let an LLM stand in for a human judge. `AiJudge` is a `User` subclass 
   1. Open **AI Judges → Create AI Judge**, or **Create AI Judge** on a Team page (that team starts selected).
   2. Enter a Name; confirm **Test & Refine** appears. Leave teams unchecked for a private judge, or select teams to share it.
   3. Choose connections to different providers (the provider follows the connection). Confirm registry presets and help, provider-specific options and read-only fields. Switching between chat models and Jev replaces untouched stock prompts while retaining custom instructions.
-  4. Choose a **Connection**; choosing one sets the provider. The **Llm Provider** field appears read-only once a connection is chosen, and stays hidden (with a "Choose a connection first" placeholder) until then. Only your own and instance-wide connections whose provider can judge are offered. If you owned no LLM connection, opening the form made one private connection per LLM provider, marked "no key yet" until you add its key under **Connections**.
+  4. Choose a **Connection**; choosing one sets the provider. The **Llm Provider** field appears read-only once a connection is chosen, and stays hidden (with a "Choose a connection first" placeholder) until then. Only your own and instance-wide connections whose provider can judge are offered; create one under **Connections** first if you have none yet.
   5. Switch between Structured Fields and JSON; confirm only the active representation submits.
      Remove `jev_min_confidence` in JSON and switch tabs both ways; confirm the old floor is cleared.
      Omit OpenAI's model in JSON and repeat; confirm the effective default returns. There are no URL or timeout fields: they come from the connection.
@@ -26,7 +26,6 @@ AI Judges let an LLM stand in for a human judge. `AiJudge` is a `User` subclass 
   - [ ] Saving changes to a judge that still has its own URL and key is refused until it has a connection; it keeps judging meanwhile, but testing it from the wizard now also requires choosing a connection first (there's no more own-settings exception).
   - [ ] Saving without a connection is refused with the reason and creates no judge. A provider edited in the JSON tab is replaced by the connection's on save.
   - [ ] Choosing a connection on a judge saved before connections moves it onto that connection (its own key is cleared) and saves the rest of the form's changes along with it.
-  - [ ] Testing or running a judge on a connection that has no key yet marks the pair unrateable with "… has no key yet: add it under Connections".
 
 ### 12.2 Edit / delete an AI Judge
 

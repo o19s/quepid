@@ -187,7 +187,6 @@ class AiJudgeConnectionMigrationTest < ActiveSupport::TestCase
     assert_equal 900, judge.connection.timeout
     assert_equal 'ollama', judge.connection.provider
     assert_equal 'none', judge.connection.auth_scheme
-    assert_not_predicate judge.connection, :missing_secret?
   end
 
   test 'a missing or unknown provider retains OpenAI compatible authentication' do

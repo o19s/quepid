@@ -67,8 +67,6 @@ class LlmService
 
   # @return [Hash] the parsed response body
   def post envelope
-    raise "#{@connection.name} has no key yet: add it under Connections" if @connection&.missing_secret?
-
     response = @conn.post(envelope[:path]) do |req|
       req.headers.merge!(envelope[:headers])
       req.headers.merge!(@connection.request_headers) if @connection

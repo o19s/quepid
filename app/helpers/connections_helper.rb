@@ -10,7 +10,7 @@ module ConnectionsHelper
 
     options = connections.map do |connection|
       provider_label = connection.provider_definition&.label || connection.provider
-      [ "#{connection.name} (#{provider_label})#{' — no key yet' if connection.missing_secret?}", connection.id,
+      [ "#{connection.name} (#{provider_label})", connection.id,
         { data: { provider: connection.provider, url: connection.base_url, provider_label: provider_label } } ]
     end
 

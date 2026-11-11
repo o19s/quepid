@@ -367,12 +367,5 @@ class ConnectionTest < ActiveSupport::TestCase
       assert_not connection.valid?
       assert_includes connection.errors[:provider], "can't change while AI judges use this connection"
     end
-
-    test 'knows when a provider that needs a key has none yet' do
-      assert_not_predicate connection, :missing_secret?
-      connection.secret = nil
-      assert_predicate connection, :missing_secret?
-      assert_not_predicate connections(:shared_ollama), :missing_secret?
-    end
   end
 end

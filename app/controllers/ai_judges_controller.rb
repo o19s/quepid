@@ -7,7 +7,6 @@ class AiJudgesController < ApplicationController
   before_action :set_ai_judge, only: [ :show, :edit, :update, :destroy ]
   before_action :set_book, only: [ :show, :new, :edit, :create, :update ]
   before_action :set_scorer, only: [ :show, :new, :edit, :create, :update ]
-  before_action :provision_llm_connections, only: [ :show, :new, :clone, :edit ]
 
   helper_method :escalation_targets
 
@@ -88,10 +87,6 @@ class AiJudgesController < ApplicationController
 
   def set_team
     @team = current_user.teams.find(params.expect(:team_id)) if params[:team_id].present?
-  end
-
-  def provision_llm_connections
-    current_user.provision_llm_connections
   end
 
   def set_ai_judge

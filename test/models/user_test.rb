@@ -558,44 +558,8 @@ class UserTest < ActiveSupport::TestCase
     end
   end
 
-  describe 'LLM connections made for a user' do
+  describe 'connections owned by a user' do
     let(:user) { users(:doug) }
-    let(:llm_providers) { ConnectionProvider.all.select { |provider| provider.capabilities.intersect?(%w[chat typed_judge]) } }
-
-    test 'one private connection per LLM provider, keyless, the first time they own none' do
-      user.owned_connections.where(provider: llm_providers.map(&:key)).destroy_all
-
-      assert_difference -> { user.owned_connections.count }, llm_providers.size do
-        user.provision_llm_connections
-      end
-      openai = user.owned_connections.find_by(provider: 'openai')
-      assert_not_predicate openai, :instance_wide?
-      assert_equal 'https://api.openai.com', openai.base_url
-      assert_nil openai.secret
-      assert_equal 'header', user.owned_connections.find_by(provider: 'anthropic').auth_scheme
-
-      assert_no_difference -> { Connection.count } do
-        user.provision_llm_connections
-      end
-    end
-
-    test 'only the still-missing providers are backfilled for someone who already owns some LLM connections' do
-      already_owned = user.owned_connections.where(provider: llm_providers.map(&:key)).pluck(:provider)
-      missing = llm_providers.map(&:key) - already_owned
-      assert_not_empty already_owned
-      assert_not_empty missing
-
-      assert_difference -> { user.owned_connections.count }, missing.size do
-        user.provision_llm_connections
-      end
-
-      assert_equal already_owned.size, user.owned_connections.where(provider: already_owned).count
-      missing.each { |key| assert user.owned_connections.exists?(provider: key) }
-
-      assert_no_difference -> { Connection.count } do
-        user.provision_llm_connections
-      end
-    end
 
     test 'cannot be deleted while an AI judge uses one of their connections' do
       AiJudge.create!(name: 'On their key', system_prompt: 'Judge it.', owner: user, connection: connections(:openai))

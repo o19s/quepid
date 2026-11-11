@@ -484,17 +484,5 @@ class LlmServiceTest < ActiveSupport::TestCase
       assert_requested stub
       assert_equal 2, judgement.rating
     end
-
-    test 'a connection without its key yet makes the judgement unrateable, saying what to do' do
-      connection = connections(:openai)
-      connection.secret = nil
-      judgement = Judgement.new(query_doc_pair: query_doc_pair, user: judge)
-
-      LlmService.new(nil, {}, connection).perform_safe_judgement(judgement)
-
-      assert_predicate judgement, :unrateable
-      assert_includes judgement.explanation, 'OpenAI has no key yet'
-      assert_not_requested :post, 'https://api.openai.com/v1/chat/completions'
-    end
   end
 end

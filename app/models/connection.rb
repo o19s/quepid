@@ -108,11 +108,6 @@ class Connection < ApplicationRecord
     instance_wide? ? user.administrator? : owner_id == user.id
   end
 
-  # A provider that needs a key, and none saved yet (User#provision_llm_connections makes these).
-  def missing_secret?
-    secret.blank? && 'none' != auth_scheme && provider_definition&.requires_secret?
-  end
-
   def masked_secret
     return '' if secret.blank?
     return "#{secret.split(':', 2).first}:#{MASKED_SECRET}" if 'basic' == auth_scheme && secret.include?(':')

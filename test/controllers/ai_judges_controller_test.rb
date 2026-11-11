@@ -582,14 +582,12 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
       assert_includes response.body, 'Connection isn&#39;t one you can use'
     end
 
-    test 'the form offers your connections that can judge, and says which have no key yet' do
+    test 'the form offers your connections that can judge, not ones you cannot see' do
       random_openai
-      random_jev.update_column(:secret, nil)
       get new_ai_judge_url
 
       assert_select 'select[name="user[connection_id]"]' do
         assert_select 'option[value=?][data-provider="openai"]', random_openai.id.to_s
-        assert_select 'option[value=?]', random_jev.id.to_s, text: /no key yet/
         assert_select 'option[value=?]', connections(:openai).id.to_s, count: 0
       end
     end
@@ -631,17 +629,6 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
       assert_select '#judge_options_llm_provider option:first-child[value=""]', text: 'Choose a connection first'
       assert_select '#judge_options_llm_provider option[selected]', count: 0
       assert_select '.row.d-none #judge_options_llm_provider'
-    end
-
-    test 'opening the form gives a user without LLM connections one per provider' do
-      login_user_for_integration_test users(:joey)
-      users(:joey).owned_connections.delete_all
-
-      get new_ai_judge_url
-
-      assert_response :success
-      assert users(:joey).owned_connections.exists?(provider: 'openai')
-      assert_select 'select[name="user[connection_id]"] option', text: /OpenAI.*no key yet/
     end
   end
 end

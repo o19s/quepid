@@ -211,49 +211,6 @@ class SampleData < Thor
     osc_ai_judge.save!
     print_user_info user_params
 
-    ######################################
-    # Azure OpenAI AI Judge
-    ######################################
-
-    user_specifics = {
-      name:          'Azure OpenAI Judge',
-      system_prompt: LlmProvider::CHAT_SYSTEM_PROMPT,
-    }
-    user_params = user_specifics
-    azure_openai_judge = seed_judge user_params
-    azure_openai_judge.owner ||= realistic_activity_user
-    azure_openai_judge.connection = seed_llm_connection realistic_activity_user, 'Azure OpenAI', 'azure_openai',
-                                                        'https://YOUR-RESOURCE.openai.azure.com', '2024-12-01-preview'
-    azure_openai_judge.judge_options = {
-      llm_provider:    'azure_openai',
-      llm_model:       'gpt-4.1',
-      llm_api_version: '2024-12-01-preview',
-    }
-    azure_openai_judge.save!
-    print_step "Seeded AI judge: name: #{user_specifics[:name]}"
-
-    ######################################
-    # Azure AI Foundry Anthropic Judge
-    ######################################
-
-    user_specifics = {
-      name:          'Azure Anthropic Judge',
-      system_prompt: LlmProvider::CHAT_SYSTEM_PROMPT,
-    }
-    user_params = user_specifics
-    azure_anthropic_judge = seed_judge user_params
-    azure_anthropic_judge.owner ||= realistic_activity_user
-    azure_anthropic_judge.connection = seed_llm_connection realistic_activity_user, 'Azure Anthropic',
-                                                           'azure_ai_foundry_anthropic',
-                                                           'https://YOUR-RESOURCE.services.ai.azure.com/anthropic'
-    azure_anthropic_judge.judge_options = {
-      llm_provider:    'azure_ai_foundry_anthropic',
-      llm_model:       'claude-haiku-5-5',
-      llm_api_version: '',
-    }
-    azure_anthropic_judge.save!
-    print_step "Seeded AI judge: name: #{user_specifics[:name]}"
-
     print_step 'End of seeding users................'
 
     # Cases
@@ -487,8 +444,6 @@ class SampleData < Thor
     osc.members << osc_member_user unless osc.members.include?(osc_member_user)
     osc.members << realistic_activity_user unless osc.members.include?(realistic_activity_user)
     osc.members << osc_ai_judge unless osc.members.include?(osc_ai_judge)
-    osc.members << azure_openai_judge unless osc.members.include?(azure_openai_judge)
-    osc.members << azure_anthropic_judge unless osc.members.include?(azure_anthropic_judge)
     osc.cases << tens_of_queries_case unless osc.cases.include?(tens_of_queries_case)
     osc.search_endpoints << statedecoded_solr_endpoint unless osc.search_endpoints.include?(statedecoded_solr_endpoint)
     print_step 'End of seeding teams................'
@@ -504,8 +459,6 @@ class SampleData < Thor
 
     book.teams << osc unless book.teams.include?(osc)
     book.ai_judges << osc_ai_judge unless book.ai_judges.include?(osc_ai_judge)
-    book.ai_judges << azure_openai_judge unless book.ai_judges.include?(azure_openai_judge)
-    book.ai_judges << azure_anthropic_judge unless book.ai_judges.include?(azure_anthropic_judge)
     book.save
 
     # this code copied from populate_controller.rb and should be in a service...
@@ -813,18 +766,6 @@ class SampleData < Thor
   # rubocop:enable Metrics/PerceivedComplexity
 
   private
-
-  # A placeholder connection with no key yet: it is listed as "no key yet" until one is added
-  # under Connections, so it skips the check that a key is present.
-  def seed_llm_connection owner, name, provider_key, base_url, api_version = nil
-    provider = ::ConnectionProvider.find(provider_key)
-    ::Connection.find_or_initialize_by(owner: owner, name: name).tap do |connection|
-      next if connection.persisted?
-
-      connection.assign_attributes provider.connection_attributes(base_url: base_url, api_version: api_version)
-      connection.save!(validate: false)
-    end
-  end
 
   def seed_judge hash
     ::AiJudge.find_by(name: hash[:name]) || ::AiJudge.create(hash)
