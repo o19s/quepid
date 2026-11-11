@@ -22,10 +22,10 @@ AI Judges let an LLM stand in for a human judge. `AiJudge` is a `User` subclass 
 - **Edge cases:**
   - [ ] Blank name/prompt or malformed configuration JSON returns validation errors, retains entered values and team selections, and creates no judge.
   - [ ] Keyless judges still appear as AI judges rather than human accounts.
-  - [ ] A judge still on its own URL and key (from before the `MigrateAiJudgesToConnections` data migration backfilled one for it) no longer offers a manual **Migrate to connection** action - the yellow notice just says to choose a connection to save changes, and the route/button are gone.
+  - [ ] A judge still on its own URL and key no longer offers a manual **Migrate to connection** action - the route/button are gone; the form just says to choose a connection to save changes. The `MigrateAiJudgesToConnections` data migration ships with this change, so this state shouldn't exist in a real deployment - reach it by creating a judge with an `llm_key`/`judge_options.llm_service_url` and no `connection_id` directly (e.g. via `rails runner`).
   - [ ] Saving changes to a judge that still has its own URL and key is refused until it has a connection; it keeps judging meanwhile.
   - [ ] Saving without a connection is refused with the reason and creates no judge. A provider edited in the JSON tab is replaced by the connection's on save.
-  - [ ] A judge saved before connections shows a notice that it still uses its own URL and key; saving other changes keeps them, and choosing a connection moves it (its own key is cleared).
+  - [ ] A judge saved before connections keeps its own URL/key editable (hidden fields) and marks the **Llm Provider** field deprecated; saving other changes keeps them, and choosing a connection moves it (its own key is cleared).
   - [ ] Testing or running a judge on a connection that has no key yet marks the pair unrateable with "… has no key yet: add it under Connections".
 
 ### 12.2 Edit / delete an AI Judge

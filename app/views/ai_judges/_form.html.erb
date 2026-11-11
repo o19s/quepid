@@ -52,17 +52,10 @@
         <%= form.select :connection_id, connection_options_for(%i[chat typed_judge], ai_judge), {},
               class: 'form-select', data: { ai_judge_form_target: 'connection', action: 'change->ai-judge-form#connectionChanged' } %>
         <div class="form-text">
-          Where the judge sends its requests, and the key it uses: the connection holds them, and choosing
-          one sets the provider. A shared judge runs on its owner's connection; teammates never see the key.
+          A connection stores the request endpoint and API key used to configure a provider. 
+          Shared judges run on the owner’s connection, allowing teammates to use them without seeing the key.
           <%= link_to 'Manage connections', connections_path, target: '_blank', rel: 'noopener' %>.
         </div>
-        <% if ai_judge.own_settings? %>
-          <div class="alert alert-warning small mt-2 mb-0" id="own-settings-notice">
-            This judge still uses its own URL and key, a configuration that is going away. It keeps running as it
-            is, but choose a connection to save changes. Existing configured judges are moved to connections by
-            the database migration.
-          </div>
-        <% end %>
       </div>
     </div>
 

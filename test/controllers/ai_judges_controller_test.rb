@@ -596,7 +596,6 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
 
     test 'a judge with its own settings is told to move, and cannot be saved until it is on a connection' do
       get edit_ai_judge_url(legacy_judge)
-      assert_select '#own-settings-notice'
       assert_select '.row:not(.d-none) #judge_options_llm_provider'
       assert_select '#llm_provider_help', text: /deprecated/
       assert_select 'input[type=hidden][name="user[judge_options][llm_service_url]"][value="https://api.openai.com"]'
@@ -611,9 +610,7 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
     test 'legacy judges no longer offer manual migration to a connection' do
       get edit_ai_judge_url(legacy_judge)
 
-      assert_select '#own-settings-notice'
       assert_select 'a', text: 'Migrate to connection', count: 0
-      assert_includes response.body, 'choose a connection to save changes'
     end
 
     test 'the manual connection migration route is removed' do
