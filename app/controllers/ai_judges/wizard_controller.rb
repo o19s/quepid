@@ -115,9 +115,19 @@ module AiJudges
 
     def test_setup_problem saved, connection
       return "That connection isn't one you can use." if params[:connection_id].present? && connection.nil?
-      return nil if connection || saved&.own_settings?
+      return connection_capability_problem(connection) if connection
+      return nil if saved&.own_settings?
 
       'Choose a connection to test the judge with.'
+    end
+
+    # Same capability check AiJudge#connection_problem makes at save time (a connection whose
+    # provider can't chat or judge), so a preview never gets further than the save path would -
+    # draft_judge's unsaved AiJudge is never validated, so this can't rely on that callback.
+    def connection_capability_problem connection
+      definition = connection.provider_definition
+      label = definition&.label || connection.provider
+      "That connection goes to #{label}, which can't run an AI judge." unless definition&.capabilities&.intersect?(%w[chat typed_judge])
     end
 
     def query_doc_pair_params

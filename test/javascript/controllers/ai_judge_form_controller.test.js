@@ -401,3 +401,30 @@ it("takes the provider from a chosen connection", () => {
   expect(model.value).toBe("qwen")
   expect(row.classList.contains("d-none")).toBe(false)
 })
+
+it("hides the provider row again when the connection is cleared", () => {
+  // A fresh <select> per assertion: happy-dom's selectedOptions goes stale after the first
+  // read on a given element, so re-reading it post-clear on the same node this test built
+  // for "chosen" wouldn't reflect the real browser's live-updating selectedOptions.
+  const provider = document.createElement("select")
+  provider.innerHTML =
+    '<option value="openai">OpenAI</option><option value="ollama">Ollama</option>'
+  const row = document.createElement("div")
+  row.className = "row" // Already visible, as if a connection was chosen earlier.
+  row.append(provider)
+  const connection = document.createElement("select")
+  connection.innerHTML =
+    '<option value="" selected>Choose a connection</option><option value="3" data-provider="ollama">Local (Ollama)</option>'
+  const model = document.createElement("input")
+  const controller = buildControllerFixture(AiJudgeFormController, {
+    values: {
+      presets: { ollama: { llm_model: "qwen" }, openai: { llm_model: "gpt-4o" } },
+      stockPrompts: []
+    },
+    overrides: { offerDefaultSystemPrompt() {}, updateProviderPanels() {} },
+    targets: { provider, connection, model }
+  })
+
+  controller.connectionChanged()
+  expect(row.classList.contains("d-none")).toBe(true)
+})

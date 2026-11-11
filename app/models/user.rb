@@ -333,12 +333,13 @@ class User < ApplicationRecord
   # The first time a user who owns no LLM connection sets up an AI judge, they get one private
   # connection per LLM provider, with its default URL and auth, so the judge form has something to
   # pick. Keyed providers start without a key, so these skip validation; the connection form asks
-  # for the key when the user edits one, and a judge using it says what's missing.
+  # for the key when the user edits one, and a judge using it says what's missing. Checked per
+  # provider, not just "do they own any LLM connection at all": a user who created one manually
+  # (e.g. for an embedder) before ever opening the judge form should still get the rest backfilled.
   def provision_llm_connections
     providers = ConnectionProvider.all.select { |provider| provider.capabilities.intersect?(%w[chat typed_judge]) }
-    return if owned_connections.exists?(provider: providers.map(&:key))
-
-    providers.each do |provider|
+    existing = owned_connections.where(provider: providers.map(&:key)).pluck(:provider)
+    providers.reject { |provider| existing.include?(provider.key) }.each do |provider|
       connection = owned_connections.new(provider.connection_attributes.merge(name: provider.label))
       connection.save!(validate: false)
     end

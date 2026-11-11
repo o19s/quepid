@@ -14,6 +14,10 @@ module AiJudges
       Connection.create!(name: 'Random Jev', provider: 'typesafe_jev', base_url: 'https://api.typesafe.ai',
                          auth_scheme: 'bearer', secret: 'abc123', owner: users(:random))
     end
+    let(:random_voyage) do
+      Connection.create!(name: 'Random Voyage', provider: 'voyage', base_url: 'https://api.voyageai.com',
+                         auth_scheme: 'bearer', secret: 'pa-test-voyage', owner: users(:random))
+    end
 
     setup do
       login_user_for_integration_test user
@@ -273,6 +277,13 @@ module AiJudges
 
         assert_response :unprocessable_content
         assert_equal "That connection isn't one you can use.", response.parsed_body['error']
+      end
+
+      test 'refuses a connection whose provider cannot run an AI judge' do
+        post ai_judge_test_prompt_url(ai_judge_id: 'new'), params: params.merge(connection_id: random_voyage.id)
+
+        assert_response :unprocessable_content
+        assert_equal "That connection goes to Voyage AI, which can't run an AI judge.", response.parsed_body['error']
       end
 
       test 'a teammate tests a shared judge on its owner connection' do

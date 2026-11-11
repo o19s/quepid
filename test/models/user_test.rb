@@ -579,8 +579,19 @@ class UserTest < ActiveSupport::TestCase
       end
     end
 
-    test 'none are made for someone who already owns an LLM connection' do
-      assert user.owned_connections.exists?(provider: 'openai')
+    test 'only the still-missing providers are backfilled for someone who already owns some LLM connections' do
+      already_owned = user.owned_connections.where(provider: llm_providers.map(&:key)).pluck(:provider)
+      missing = llm_providers.map(&:key) - already_owned
+      assert_not_empty already_owned
+      assert_not_empty missing
+
+      assert_difference -> { user.owned_connections.count }, missing.size do
+        user.provision_llm_connections
+      end
+
+      assert_equal already_owned.size, user.owned_connections.where(provider: already_owned).count
+      missing.each { |key| assert user.owned_connections.exists?(provider: key) }
+
       assert_no_difference -> { Connection.count } do
         user.provision_llm_connections
       end

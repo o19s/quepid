@@ -164,9 +164,9 @@ class AiJudge < User
     return unless connection
 
     self.llm_key = nil
-    self.judge_options = self.class.judge_options_with_connection_provider(judge_options, connection)
-    own = judge_options.slice(:llm_service_url, :llm_timeout)
-    self.judge_options = judge_options.except(*own.keys) if own.any?
+    self.judge_options = self.class
+      .judge_options_with_connection_provider(judge_options, connection)
+      .except(:llm_service_url, :llm_timeout)
   end
 
   # A loop would leave every judge in it on call, so nobody in it would ever
