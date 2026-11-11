@@ -18,23 +18,25 @@
     </span>
   <% end %>
   <% if is_ai_judge %>
+    <% icon_btn_style = 'font-size:0.7rem; width:1.6rem; height:1.6rem; padding:0; ' \
+                        'display:inline-flex; align-items:center; justify-content:center;' %>
     <span class="d-inline-flex align-items-center gap-1 ms-1">
       <% if row[:actively_judging] %>
-        <button class="btn btn-primary btn-sm py-0 px-1"
+        <button class="btn btn-primary btn-sm"
                 data-bs-toggle="modal"
                 data-bs-target="#judging-modal-<%= row[:judge].id %>"
-                style="font-size:0.7rem; line-height:1.4;"
+                style="<%= icon_btn_style %>"
                 title="Click to see what's being judged">
           <span class="spinner-grow" style="width:1em; height:1em;" role="status" aria-hidden="true"></span>
         </button>
         <%= render 'books/cancel_judging_button', book: book, judge: row[:judge],
-              css_class: 'btn btn-outline-danger btn-sm py-0 px-1',
-              style: 'font-size:0.7rem; line-height:1.4;',
+              css_class: 'btn btn-outline-danger btn-sm',
+              style: icon_btn_style,
               icon: 'bi-x-circle', title: 'Cancel judging' %>
       <% elsif !row[:on_call] %>
         <button type="button"
-                class="btn btn-outline-success btn-sm py-0 px-1"
-                style="font-size:0.7rem; line-height:1.4;"
+                class="btn btn-outline-success btn-sm"
+                style="<%= icon_btn_style %>"
                 title="Judge documents"
                 data-bs-toggle="modal"
                 data-bs-target="#unleash_modal_<%= row[:judge].id %>">
@@ -43,8 +45,8 @@
       <% end %>
       <% if can_refine %>
         <%= link_to edit_ai_judge_path(row[:judge], book_id: book.id),
-              class: 'btn btn-outline-secondary btn-sm py-0 px-1',
-              style: 'font-size:0.7rem; line-height:1.4;',
+              class: 'btn btn-outline-secondary btn-sm',
+              style: icon_btn_style,
               title: 'Refine Prompt' do %>
           <i class="bi bi-sliders"></i>
         <% end %>
