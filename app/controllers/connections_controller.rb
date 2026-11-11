@@ -36,7 +36,7 @@ class ConnectionsController < ApplicationController
   def create
     @connection = Connection.new(connection_params)
     @connection.owner = current_user
-    @connection.instance_wide = current_user.administrator? && true == deserialize_bool_param(params.dig(:connection, :instance_wide))
+    @connection.instance_wide = administrator_sets_instance_wide?
 
     if @connection.save
       redirect_to edit_connection_path(@connection), notice: 'Connection was successfully created.'
@@ -47,6 +47,7 @@ class ConnectionsController < ApplicationController
 
   def update
     @connection.assign_attributes(connection_params)
+    @connection.instance_wide = administrator_sets_instance_wide?
 
     if @connection.save
       redirect_to edit_connection_path(@connection), notice: 'Connection was successfully updated.'
@@ -82,6 +83,13 @@ class ConnectionsController < ApplicationController
     return if @connection.manageable_by?(current_user)
 
     redirect_to connection_path(@connection), alert: 'Only the owner, or an administrator for an instance-wide connection, can change or delete it.'
+  end
+
+  # Only an administrator may make a connection instance-wide, on create or update; the form hides
+  # the checkbox from everyone else, so a non-admin submission never carries it and this just
+  # defensively keeps the connection private rather than trusting a forged param.
+  def administrator_sets_instance_wide?
+    current_user.administrator? && true == deserialize_bool_param(params.dig(:connection, :instance_wide))
   end
 
   # The form never shows the saved secret, so a blank or masked one means "keep it".

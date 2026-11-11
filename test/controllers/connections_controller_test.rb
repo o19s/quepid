@@ -207,13 +207,38 @@ class ConnectionsControllerTest < ActionDispatch::IntegrationTest
     assert_equal 'sk-rotated', connection.reload.secret
   end
 
-  test 'update cannot change ownership or publish a private connection through forged parameters' do
+  test 'update cannot change ownership through forged parameters' do
     login_user_for_integration_test users(:doug)
 
-    patch connection_url(connection), params: { connection: { name: 'Same', owner_id: user.id, instance_wide: '1', team_ids: [ team.id ] } }
+    patch connection_url(connection), params: { connection: { name: 'Same', owner_id: user.id, team_ids: [ team.id ] } }
 
     assert_equal users(:doug), connection.reload.owner
-    assert_not connection.instance_wide?
+  end
+
+  test 'an administrator can make their existing private connection instance-wide' do
+    login_user_for_integration_test users(:doug)
+
+    patch connection_url(connection), params: { connection: { name: connection.name, instance_wide: '1' } }
+
+    assert_predicate connection.reload, :instance_wide?
+  end
+
+  test 'an administrator can make an instance-wide connection private again' do
+    communal = connections(:instance_elasticsearch)
+    login_user_for_integration_test users(:doug)
+
+    patch connection_url(communal), params: { connection: { name: communal.name, instance_wide: '0' } }
+
+    assert_not communal.reload.instance_wide?
+  end
+
+  test 'a non-admin owner cannot make their private connection instance-wide through forged parameters' do
+    login_user_for_integration_test users(:joey)
+    private_connection = connections(:private_ollama)
+
+    patch connection_url(private_connection), params: { connection: { name: private_connection.name, instance_wide: '1' } }
+
+    assert_not private_connection.reload.instance_wide?
   end
 
   test 'the owner deletes a connection' do

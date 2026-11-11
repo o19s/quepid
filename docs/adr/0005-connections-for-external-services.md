@@ -174,9 +174,9 @@ A connection can have several users: one OpenAI connection can back an AI judge 
 
 - Every connection has a responsible user owner. Private connections can be selected for new
   configurations only by that owner; only the owner can change or delete them.
-- An administrator can create an explicitly **instance-wide** connection. Everyone can select
-  it and administrators manage it, while its creator remains the responsible owner. Availability
-  is chosen at creation. Missing ownership never grants public access.
+- An administrator can create, or later flip, an explicitly **instance-wide** connection. Everyone
+  can select it and administrators manage it, while its creator remains the responsible owner.
+  Missing ownership never grants public access.
 - Connections are not shared with teams. Owners share configured embedders (and, once migrated,
   AI judges). Teammates can run, test and edit the consumer using its existing connection without
   gaining permission to attach a private connection to another configuration. A new consumer or
@@ -302,8 +302,8 @@ Settled by what was built:
 
 - **Timeout:** only the connection's. A consumer has no override; the embedder form has no timeout
   field.
-- **Who may create an instance-wide connection:** administrators only. Availability cannot be
-  changed through the form afterwards; administrators manage it, with a responsible owner retained.
+- **Who may make a connection instance-wide:** administrators only, on create or update.
+  Administrators manage it, with a responsible owner retained.
 - **Names:** the model and the UI both say "Connection".
 
 Still open:
