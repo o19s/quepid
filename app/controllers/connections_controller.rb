@@ -11,10 +11,12 @@ class ConnectionsController < ApplicationController
   def index
     @connections = current_user.connections_involved_with.includes(:owner).order(:name)
     @embedder_counts = Embedder.where(connection_id: @connections.map(&:id)).group(:connection_id).count
+    @ai_judge_counts = AiJudge.where(connection_id: @connections.map(&:id)).group(:connection_id).count
   end
 
   def show
     @embedders = current_user.embedders_involved_with.where(connection_id: @connection.id).order(:name)
+    @ai_judges = AiJudge.for_user(current_user).where(connection_id: @connection.id).order(:name)
   end
 
   def new
@@ -34,7 +36,7 @@ class ConnectionsController < ApplicationController
   def create
     @connection = Connection.new(connection_params)
     @connection.owner = current_user
-    @connection.instance_wide = current_user.administrator? && true == deserialize_bool_param(params.dig(:connection, :instance_wide))
+    @connection.instance_wide = administrator_sets_instance_wide?
 
     if @connection.save
       redirect_to edit_connection_path(@connection), notice: 'Connection was successfully created.'
@@ -45,6 +47,7 @@ class ConnectionsController < ApplicationController
 
   def update
     @connection.assign_attributes(connection_params)
+    @connection.instance_wide = administrator_sets_instance_wide?
 
     if @connection.save
       redirect_to edit_connection_path(@connection), notice: 'Connection was successfully updated.'
@@ -55,9 +58,10 @@ class ConnectionsController < ApplicationController
 
   # Refused while anything uses it: deleting would leave those embedders without a URL or key.
   def destroy
-    in_use = @connection.embedders.count
-    if in_use.positive?
-      redirect_to connections_path, alert: "#{@connection.name} is used by #{helpers.pluralize(in_use, 'embedder')}. Point them at another connection first."
+    in_use = { 'embedder' => @connection.embedders.count, 'AI judge' => @connection.ai_judges.count }.select { |_, count| count.positive? }
+    if in_use.any?
+      users = in_use.map { |kind, count| helpers.pluralize(count, kind) }.to_sentence
+      redirect_to connections_path, alert: "#{@connection.name} is used by #{users}. Point them at another connection first."
       return
     end
 
@@ -79,6 +83,13 @@ class ConnectionsController < ApplicationController
     return if @connection.manageable_by?(current_user)
 
     redirect_to connection_path(@connection), alert: 'Only the owner, or an administrator for an instance-wide connection, can change or delete it.'
+  end
+
+  # Only an administrator may make a connection instance-wide, on create or update; the form hides
+  # the checkbox from everyone else, so a non-admin submission never carries it and this just
+  # defensively keeps the connection private rather than trusting a forged param.
+  def administrator_sets_instance_wide?
+    current_user.administrator? && true == deserialize_bool_param(params.dig(:connection, :instance_wide))
   end
 
   # The form never shows the saved secret, so a blank or masked one means "keep it".

@@ -35,6 +35,7 @@ require 'test_helper'
 #  type                        :string(255)
 #  created_at                  :datetime         not null
 #  updated_at                  :datetime         not null
+#  connection_id               :bigint
 #  default_scorer_id           :integer
 #  escalates_to_id             :integer
 #  invited_by_id               :integer
@@ -42,6 +43,7 @@ require 'test_helper'
 #
 # Indexes
 #
+#  index_users_on_connection_id         (connection_id)
 #  index_users_on_default_scorer_id     (default_scorer_id)
 #  index_users_on_escalates_to_id       (escalates_to_id)
 #  index_users_on_invitation_token      (invitation_token) UNIQUE
@@ -553,6 +555,18 @@ class UserTest < ActiveSupport::TestCase
       )
 
       assert_predicate again.errors, :present?
+    end
+  end
+
+  describe 'connections owned by a user' do
+    let(:user) { users(:doug) }
+
+    test 'cannot be deleted while an AI judge uses one of their connections' do
+      AiJudge.create!(name: 'On their key', system_prompt: 'Judge it.', owner: user, connection: connections(:openai))
+      Embedder.where(connection_id: user.owned_connections.select(:id)).delete_all
+
+      assert_not user.destroy
+      assert_includes user.errors[:base].first, 'AI judges'
     end
   end
 end

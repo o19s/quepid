@@ -35,6 +35,7 @@ require 'test_helper'
 #  type                        :string(255)
 #  created_at                  :datetime         not null
 #  updated_at                  :datetime         not null
+#  connection_id               :bigint
 #  default_scorer_id           :integer
 #  escalates_to_id             :integer
 #  invited_by_id               :integer
@@ -42,6 +43,7 @@ require 'test_helper'
 #
 # Indexes
 #
+#  index_users_on_connection_id         (connection_id)
 #  index_users_on_default_scorer_id     (default_scorer_id)
 #  index_users_on_escalates_to_id       (escalates_to_id)
 #  index_users_on_invitation_token      (invitation_token) UNIQUE
@@ -212,6 +214,54 @@ class AiJudgeTest < ActiveSupport::TestCase
       expensive.destroy!
 
       assert_nil cheap.reload.escalates_to_id
+    end
+  end
+
+  describe 'on a connection' do
+    let(:doug) { users(:doug) }
+
+    it 'calls out through the connection and drops its own key, URL and timeout' do
+      judge = AiJudge.create!(name: 'Connected', system_prompt: 'Judge it.', owner: doug, llm_key: 'own-key',
+                              judge_options: { llm_service_url: 'https://own.example', llm_timeout: 9, llm_model: 'gpt-4o' })
+
+      judge.update!(connection: connections(:openai))
+
+      assert_nil judge.reload.llm_key
+      assert_equal({ llm_model: 'gpt-4o', llm_provider: 'openai' }, judge.judge_options)
+    end
+
+    it 'takes its provider from the connection' do
+      judge = AiJudge.new(name: 'Mismatch', system_prompt: 'Judge it.', owner: doug, connection: connections(:anthropic),
+                          judge_options: { llm_provider: 'openai', llm_model: 'claude-x' })
+
+      assert_predicate judge, :valid?
+      assert_equal 'anthropic', judge.judge_options[:llm_provider]
+    end
+
+    it 'refuses a connection that cannot judge' do
+      judge = AiJudge.new(name: 'Mismatch', system_prompt: 'Judge it.', owner: doug, connection: connections(:voyage))
+      assert_not judge.valid?
+      assert_includes judge.errors[:connection], "to Voyage AI can't run an AI judge"
+    end
+
+    it 'only takes a connection that both its owner and the person saving it can select' do
+      judge = AiJudge.new(name: 'Borrowed', system_prompt: 'Judge it.', owner: doug,
+                          judge_options: { llm_provider: 'ollama' }, connection: connections(:private_ollama))
+      assert_not judge.valid?
+      assert_includes judge.errors[:connection], "isn't one you can use"
+
+      judge.connection = connections(:shared_ollama)
+      judge.connection_assignment_user = users(:random)
+      assert_not judge.valid?
+      assert_includes judge.errors[:connection], "isn't one you can use"
+    end
+
+    it 'can move to another connection but not back to settings of its own' do
+      judge = AiJudge.create!(name: 'Kept', system_prompt: 'Judge it.', owner: doug, connection: connections(:openai))
+
+      judge.connection = nil
+      assert_not judge.valid?
+      assert_includes judge.errors[:connection], 'can be changed but not removed'
     end
   end
 end

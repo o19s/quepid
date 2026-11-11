@@ -57,9 +57,10 @@ class Connection < ApplicationRecord
 
   belongs_to :owner, class_name: 'User'
 
-  # User's deletion guard and the connections controller refuse deletion while an embedder
-  # uses a connection. Unused connections are destroyed with their owner.
+  # User's deletion guard and the connections controller refuse deletion while an embedder or an
+  # AI judge uses a connection. Unused connections are destroyed with their owner.
   has_many :embedders, dependent: :nullify, inverse_of: :connection
+  has_many :ai_judges, dependent: :nullify, inverse_of: :connection
 
   encrypts :secret, deterministic: false
 
@@ -85,6 +86,7 @@ class Connection < ApplicationRecord
   validate :extra_headers_are_a_flat_object
   validate :retry_settings_are_sensible
   validate :provider_still_makes_embeddings, on: :update
+  validate :provider_unchanged_while_judges_use_it, on: :update
   validate :instance_wide_owner_is_administrator
 
   # Permission to attach a connection to a new configuration; existing shared embedders
@@ -260,6 +262,14 @@ class Connection < ApplicationRecord
     return if ConnectionProvider.find(provider)&.capabilities&.include?('embeddings')
 
     errors.add(:provider, "can't make embeddings, and embedders use this connection")
+  end
+
+  # A judge's prompt and model are written for its provider, so they don't follow the connection
+  # to another one the way an embedder does.
+  def provider_unchanged_while_judges_use_it
+    return unless provider_changed? && ai_judges.exists?
+
+    errors.add(:provider, "can't change while AI judges use this connection")
   end
 
   # A connection left unnamed is called after its provider: "OpenAI Connection".

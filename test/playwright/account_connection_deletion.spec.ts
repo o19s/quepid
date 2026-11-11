@@ -76,7 +76,7 @@ test("account deletion preserves an owner whose connection is used by an embedde
   await confirmation.getByRole("button", { name: "Confirm", exact: true }).click()
   expect((await deletion).status()).toBe(422)
   await expect(page.locator("#error_explanation_danger_zone")).toContainText(
-    "Please point embedders using this user's connections at another connection"
+    "Please point embedders and AI judges using this user's connections at another connection"
   )
   await page.screenshot({ path: testInfo.outputPath("connection-restricted.png"), fullPage: true })
   const current = await page.request.get("api/users/current")

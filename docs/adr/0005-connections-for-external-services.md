@@ -1,6 +1,6 @@
 # ADR 0005 — Connections: one record for reaching and authenticating to an external service
 
-- **Status:** Proposed (the model, registry, management UI and embedders are built on `feature/connections`; AI judges are not moved yet)
+- **Status:** Proposed (the model, registry, management UI and embedders are built on `feature/connections`; AI judges are in their deprecation period, §3)
 - **Date:** 2026-10-29
 - **Affects (when built):** `app/models/llm_provider.rb`, `app/models/embedder_provider.rb`,
   `app/models/embedder.rb`, `app/models/ai_judge.rb`, `app/models/search_endpoint.rb` (later),
@@ -174,9 +174,9 @@ A connection can have several users: one OpenAI connection can back an AI judge 
 
 - Every connection has a responsible user owner. Private connections can be selected for new
   configurations only by that owner; only the owner can change or delete them.
-- An administrator can create an explicitly **instance-wide** connection. Everyone can select
-  it and administrators manage it, while its creator remains the responsible owner. Availability
-  is chosen at creation. Missing ownership never grants public access.
+- An administrator can create, or later flip, an explicitly **instance-wide** connection. Everyone
+  can select it and administrators manage it, while its creator remains the responsible owner.
+  Missing ownership never grants public access.
 - Connections are not shared with teams. Owners share configured embedders (and, once migrated,
   AI judges). Teammates can run, test and edit the consumer using its existing connection without
   gaining permission to attach a private connection to another configuration. A new consumer or
@@ -302,8 +302,8 @@ Settled by what was built:
 
 - **Timeout:** only the connection's. A consumer has no override; the embedder form has no timeout
   field.
-- **Who may create an instance-wide connection:** administrators only. Availability cannot be
-  changed through the form afterwards; administrators manage it, with a responsible owner retained.
+- **Who may make a connection instance-wide:** administrators only, on create or update.
+  Administrators manage it, with a responsible owner retained.
 - **Names:** the model and the UI both say "Connection".
 
 Still open:
@@ -344,10 +344,11 @@ Still open:
 2. A Connections page; instance-wide connections; the Check connection button. Done.
 3. Embedders move onto connections: a picker on the form, new ones require a connection, old ones
    keep working and are warned about (the deprecation period, §3). Done.
-4. AI judges move onto connections, the same way. Not started.
+4. AI judges move onto connections, the same way. In the deprecation period (§9); data migration done, clean-up not started.
 5. `HttpClient` replaces `LlmConnection`, built from a connection; rate limits enforced. Not started.
 6. The data migration, then, separately, dropping the old columns (§3). Old columns dropped for
-   embedders; no existing embedders required a data migration (§9). Not started for judges.
+   embedders; no existing embedders required a data migration (§9). Judges' data migration done,
+   their old columns not yet dropped (§9).
 7. Search endpoints, under their own ADR.
 
 ## 8. Tests
@@ -361,8 +362,10 @@ Still open:
   capability for a consumer is rejected by the picker and by validation.
 - Access: new consumers can select owned or instance-wide connections. Shared consumers keep
   using their saved private connection. Direct connection team grants are not supported.
-- Migration (judges): backfill gives one connection per judge with the same owner, leaving teams on the judge;
-  dual read prefers the connection; a consumer with both reads the connection.
+- Migration (judges): backfill gives one connection per judge with the same owner (falling back to
+  the lowest-ID human teammate across its teams, then the lowest-ID human administrator, aborting
+  first if any judge would be left ownerless), leaving teams on the judge; dual read prefers the
+  connection; a consumer with both reads the connection.
 - Fingerprint: editing a connection's URL changes the embedder fingerprint; editing its secret,
   name or timeout does not.
 
@@ -406,7 +409,38 @@ can spend its connection's credentials by using that embedder, but cannot create
 configuration with the private connection. Instance-wide connections are the explicit exception.
 The clone form clears an inaccessible private connection and asks the new owner to choose one.
 
-Not built: renaming `LlmConnection` to `HttpClient` and building it from a `Connection`; moving
-AI judges onto connections, and the matching migration of their own settings to connections and
-dropping those columns; the rate limit (the field is stored, nothing enforces it); search
-endpoints.
+- **AI judges use a connection, in their deprecation period (§3, stage 2).** `users.connection_id`
+  is optional. The judge form has a Connection dropdown (own and instance-wide connections whose
+  provider has `chat` or `typed_judge`) instead of the key field, and no URL or timeout fields;
+  the judge's provider comes from its connection (set on save; the form shows it read-only, hidden
+  with a "Choose a connection first" placeholder until one is chosen - including for a judge still
+  on its own URL and key, which the form no longer marks deprecated or exposes editable hidden
+  fields for).
+  `LlmService` takes the URL, timeout, retry settings and auth headers from the connection, and the
+  API version falls back to the connection's when the judge sets none. New judges need a connection
+  (enforced in `AiJudgesController#create`, so code and tests that build judges directly needn't);
+  one that has a connection can change it but not drop it. A judge from before connections keeps
+  running on its own `llm_key` and `llm_service_url`/`llm_timeout` until someone edits it, but the
+  wizard's "Test & Refine" now requires a connection for every judge, no own-settings exception;
+  choosing a connection clears them. A clone never takes the original's key or connection: its form
+  opens with none and asks the cloner to choose one of theirs.
+- The connection checks shared by embedders and judges (who may assign a connection, not dropping
+  one) are the `ConnectionConsumer` concern, and the capability-filtered picker is
+  `ConnectionsHelper#connection_options_for`, as §6 asked.
+- A connection used by AI judges can't be deleted, nor its owner's account, and its provider can't
+  change (a judge's prompt and model are written for its provider). The connection pages count and
+  list the judges that use it.
+- **AI judges' data migration (§3, stage 3's first half) is done.** `MigrateAiJudgesToConnections`
+  backfills a private connection for every judge still on its own key or URL, preserving the key,
+  URL, timeout, API version, model and prompt exactly; it resolves an owner (the judge's own, else
+  the lowest-ID human teammate across its teams, else the lowest-ID human administrator) and
+  aborts before writing anything if any judge would be left ownerless. It is data-only and
+  irreversible (`down` raises). With it, manual per-judge migration is no longer needed:
+  `migrate_connection` and `AiJudge#migrate_to_connection!` are removed; a judge still found
+  without a connection (e.g. built directly, bypassing the migration) can only be pointed at a
+  connection by editing it, same as any pre-connection judge. The clean-up half of stage 3 -
+  dropping `llm_key` and `judge_options`' URL/timeout - is not done; those columns stay for now.
+
+Not built: renaming `LlmConnection` to `HttpClient` and building it from a `Connection`; dropping
+`users.llm_key` and the `judge_options` URL/timeout, the clean-up half of judges' stage 3 (§3); the
+rate limit (the field is stored, nothing enforces it); search endpoints.

@@ -245,12 +245,7 @@ export default class extends Controller {
   }
 
   syncNumberOfRowsFromQuery() {
-    const mapped = this.queryParamsSettings()
-    if (mapped.numberOfRows !== undefined) {
-      this.settings.numberOfRows = mapped.numberOfRows
-      if (this.hasNumberOfRowsTarget) this.numberOfRowsTarget.value = mapped.numberOfRows
-    }
-    if (this.hasNumberOfRowsTarget) this.numberOfRowsTarget.max = mapped.maxNumberOfRows ?? ""
+    this.applyMappedNumberOfRows(this.queryParamsSettings())
   }
 
   updateNumberOfRows() {
@@ -259,12 +254,18 @@ export default class extends Controller {
     const mapped = this.queryParamsSettings(value)
     if (!validateNumberOfRows(value, mapped.maxNumberOfRows)) return
     this.settings.queryParams = mapped.queryParams
+    this.applyMappedNumberOfRows(mapped)
+    this.formatQueryEditor()
+  }
+
+  // Shared by syncNumberOfRowsFromQuery() and updateNumberOfRows(): applies what the mapper
+  // derived for numberOfRows/maxNumberOfRows to both settings and the DOM target.
+  applyMappedNumberOfRows(mapped) {
     if (mapped.numberOfRows !== undefined) {
       this.settings.numberOfRows = mapped.numberOfRows
       if (this.hasNumberOfRowsTarget) this.numberOfRowsTarget.value = mapped.numberOfRows
     }
     if (this.hasNumberOfRowsTarget) this.numberOfRowsTarget.max = mapped.maxNumberOfRows ?? ""
-    this.formatQueryEditor()
   }
 
   refreshQueryWarning(value) {

@@ -196,7 +196,7 @@ export default class extends withStatusMessages(Controller) {
         this.testUrlValue,
         {
           system_prompt: formData.get("user[system_prompt]"),
-          llm_key: formData.get("user[llm_key]"),
+          connection_id: formData.get("user[connection_id]"),
           judge_options: this.judgeOptions(formData),
           query_doc_pair: {
             query_text: this.queryTextTarget.value,

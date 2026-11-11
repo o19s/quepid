@@ -9,7 +9,7 @@ vi.mock("api/json", () => ({ getJson: vi.fn(), postJson: vi.fn() }))
 function fixture(valueOverrides = {}) {
   const form = document.createElement("form")
   form.innerHTML =
-    '<input name="user[llm_key]" value="key"><textarea name="user[system_prompt]">draft</textarea><input name="user[judge_options][llm_provider]" value="openai"><input name="user[judge_options][llm_include_images]" value="false">'
+    '<select name="user[connection_id]"><option value="7" selected>OpenAI</option></select><textarea name="user[system_prompt]">draft</textarea><input name="user[judge_options][llm_provider]" value="openai"><input name="user[judge_options][llm_include_images]" value="false">'
   const element = document.createElement("div")
   form.appendChild(element)
   const targets = Object.fromEntries(
@@ -119,6 +119,7 @@ it("uses the active JSON configuration and current editor content with image pre
     "test",
     expect.objectContaining({
       system_prompt: "draft",
+      connection_id: "7",
       judge_options: { llm_provider: "ollama", llm_include_images: false },
       query_doc_pair: expect.objectContaining({ document_fields: '{"title":"Edited"}' })
     }),

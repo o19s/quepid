@@ -35,6 +35,7 @@
 #  type                        :string(255)
 #  created_at                  :datetime         not null
 #  updated_at                  :datetime         not null
+#  connection_id               :bigint
 #  default_scorer_id           :integer
 #  escalates_to_id             :integer
 #  invited_by_id               :integer
@@ -42,6 +43,7 @@
 #
 # Indexes
 #
+#  index_users_on_connection_id         (connection_id)
 #  index_users_on_default_scorer_id     (default_scorer_id)
 #  index_users_on_escalates_to_id       (escalates_to_id)
 #  index_users_on_invitation_token      (invitation_token) UNIQUE
@@ -62,6 +64,11 @@ class AiJudge < User
   encrypts :llm_key, deterministic: false
 
   belongs_to :owner, class_name: 'User', optional: true
+
+  # Where to reach the provider and the key to use (ADR 0005). Judges made before connections have
+  # none and keep running on their own llm_key and URL until someone moves them onto one; new
+  # judges get one (AiJudgesController requires it, so code that builds judges directly needn't).
+  belongs_to :connection, optional: true, inverse_of: :ai_judges
 
   # The judge this one wakes when it is unsure of an answer. A judge that
   # another judge points at is on call: it sleeps until escalated to
@@ -85,6 +92,9 @@ class AiJudge < User
   validates :llm_key, length: { maximum: 255 }, allow_blank: true
   validates :system_prompt, length: { maximum: 4000 }, allow_nil: true, presence: true
   validate :escalation_chain_does_not_loop, if: :escalates_to_id_changed?
+  include ConnectionConsumer
+
+  before_validation :leave_own_settings_for_connection
 
   def on_call?
     escalated_from.any?
@@ -104,6 +114,16 @@ class AiJudge < User
     links.to_h { |id, target_id| [ id, names[target_id] ] }
   end
 
+  # The provider the judge speaks. Judges saved before providers were a concept are OpenAI-shaped.
+  def llm_provider_key
+    LlmProvider.find(judge_options[:llm_provider])&.key || 'openai'
+  end
+
+  # Runs this judge's calls: through its connection, or on its own settings if it predates them.
+  def llm_service
+    LlmService.new(llm_key, judge_options, connection)
+  end
+
   def judge_options
     opts = options&.dig('judge_options') || {}
     opts.deep_symbolize_keys
@@ -113,7 +133,44 @@ class AiJudge < User
     self.options = (options || {}).merge('judge_options' => value.to_h.deep_stringify_keys)
   end
 
+  # The judge_options a judge would end up with once connected: the provider becomes the
+  # connection's. Shared by leave_own_settings_for_connection (actually saving) and the wizard's
+  # draft_judge (previewing a connection switch before anyone saves).
+  def self.judge_options_with_connection_provider judge_options, connection
+    return judge_options unless connection && LlmProvider.find(connection.provider)
+
+    judge_options.merge(llm_provider: connection.provider)
+  end
+
+  # Why connection can't run an AI judge, or nil - the capability half of connection_problem,
+  # pulled out so the wizard's draft_judge preview can check it too without saving (its unsaved
+  # AiJudge never runs before_validation/connection_problem).
+  def self.unsupported_for_judging_reason connection
+    definition = connection.provider_definition
+    label = definition&.label || connection.provider
+    "to #{label} can't run an AI judge" unless definition&.capabilities&.intersect?(%w[chat typed_judge])
+  end
+
   private
+
+  # Why the connection doesn't fit this judge, or nil. The first thing wrong is the one worth saying.
+  def connection_problem
+    capability_problem = self.class.unsupported_for_judging_reason(connection)
+    return capability_problem if capability_problem
+
+    "isn't one you can use" unless connection_usable_by_owner?
+  end
+
+  # On a connection, the judge's own key, URL and timeout are no longer used, so they aren't kept,
+  # and the provider is the connection's.
+  def leave_own_settings_for_connection
+    return unless connection
+
+    self.llm_key = nil
+    self.judge_options = self.class
+      .judge_options_with_connection_provider(judge_options, connection)
+      .except(:llm_service_url, :llm_timeout)
+  end
 
   # A loop would leave every judge in it on call, so nobody in it would ever
   # judge. Walks the chain from the new target; it is short, so one query per
