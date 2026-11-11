@@ -594,11 +594,10 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
       end
     end
 
-    test 'a judge with its own settings is told to move, and cannot be saved until it is on a connection' do
+    test 'a legacy judge with no connection hides its provider field, and cannot be saved until it is on one' do
       get edit_ai_judge_url(legacy_judge)
-      assert_select '.row:not(.d-none) #judge_options_llm_provider'
-      assert_select '#llm_provider_help', text: /deprecated/
-      assert_select 'input[type=hidden][name="user[judge_options][llm_service_url]"][value="https://api.openai.com"]'
+      assert_select '.row.d-none #judge_options_llm_provider'
+      assert_select '#llm_provider_help', count: 0
 
       patch ai_judge_url(legacy_judge), params: { user: { name: 'Still own', judge_options: { llm_service_url: 'https://api.openai.com', llm_model: 'gpt-4o' } } }
       assert_response :unprocessable_content

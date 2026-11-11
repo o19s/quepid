@@ -223,13 +223,11 @@ class AiJudgeTest < ActiveSupport::TestCase
     it 'calls out through the connection and drops its own key, URL and timeout' do
       judge = AiJudge.create!(name: 'Connected', system_prompt: 'Judge it.', owner: doug, llm_key: 'own-key',
                               judge_options: { llm_service_url: 'https://own.example', llm_timeout: 9, llm_model: 'gpt-4o' })
-      assert_predicate judge, :own_settings?
 
       judge.update!(connection: connections(:openai))
 
       assert_nil judge.reload.llm_key
       assert_equal({ llm_model: 'gpt-4o', llm_provider: 'openai' }, judge.judge_options)
-      assert_not_predicate judge, :own_settings?
     end
 
     it 'takes its provider from the connection' do

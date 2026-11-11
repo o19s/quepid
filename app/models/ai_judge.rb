@@ -119,11 +119,6 @@ class AiJudge < User
     LlmProvider.find(judge_options[:llm_provider])&.key || 'openai'
   end
 
-  # Made before connections and not moved onto one yet: it calls out with its own key and URL.
-  def own_settings?
-    connection_id.nil? && (llm_key.present? || judge_options[:llm_service_url].present?)
-  end
-
   # Runs this judge's calls: through its connection, or on its own settings if it predates them.
   def llm_service
     LlmService.new(llm_key, judge_options, connection)

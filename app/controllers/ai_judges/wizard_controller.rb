@@ -56,7 +56,7 @@ module AiJudges
         return
       end
 
-      if (error = test_setup_problem(saved, connection))
+      if (error = test_setup_problem(connection))
         render json: { error: error }, status: :unprocessable_content
         return
       end
@@ -113,10 +113,9 @@ module AiJudges
       ai_judge
     end
 
-    def test_setup_problem saved, connection
+    def test_setup_problem connection
       return "That connection isn't one you can use." if params[:connection_id].present? && connection.nil?
       return connection_capability_problem(connection) if connection
-      return nil if saved&.own_settings?
 
       'Choose a connection to test the judge with.'
     end

@@ -249,6 +249,7 @@ module AiJudges
         assert_no_difference [ 'AiJudge.count', 'QueryDocPair.count', 'Judgement.count' ] do
           post ai_judge_test_prompt_url(ai_judge_id: judge.id), params: {
             system_prompt:  'Unsaved draft.',
+            connection_id:  random_openai.id,
             judge_options:  { llm_provider: 'openai', llm_service_url: 'https://api.openai.com', llm_model: 'gpt-4o', llm_include_images: false },
             query_doc_pair: { query_text: 'q', doc_id: 'd', document_fields: '{}' },
           }, as: :json

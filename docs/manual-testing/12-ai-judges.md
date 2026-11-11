@@ -12,7 +12,7 @@ AI Judges let an LLM stand in for a human judge. `AiJudge` is a `User` subclass 
   1. Open **AI Judges → Create AI Judge**, or **Create AI Judge** on a Team page (that team starts selected).
   2. Enter a Name; confirm **Test & Refine** appears. Leave teams unchecked for a private judge, or select teams to share it.
   3. Choose connections to different providers (the provider follows the connection). Confirm registry presets and help, provider-specific options and read-only fields. Switching between chat models and Jev replaces untouched stock prompts while retaining custom instructions.
-  4. Choose a **Connection**; choosing one sets the provider. The **Llm Provider** field appears read-only once a connection is chosen; only a judge that still has its own URL and key marks it deprecated. Only your own and instance-wide connections whose provider can judge are offered. If you owned no LLM connection, opening the form made one private connection per LLM provider, marked "no key yet" until you add its key under **Connections**.
+  4. Choose a **Connection**; choosing one sets the provider. The **Llm Provider** field appears read-only once a connection is chosen, and stays hidden (with a "Choose a connection first" placeholder) until then. Only your own and instance-wide connections whose provider can judge are offered. If you owned no LLM connection, opening the form made one private connection per LLM provider, marked "no key yet" until you add its key under **Connections**.
   5. Switch between Structured Fields and JSON; confirm only the active representation submits.
      Remove `jev_min_confidence` in JSON and switch tabs both ways; confirm the old floor is cleared.
      Omit OpenAI's model in JSON and repeat; confirm the effective default returns. There are no URL or timeout fields: they come from the connection.
@@ -22,10 +22,10 @@ AI Judges let an LLM stand in for a human judge. `AiJudge` is a `User` subclass 
 - **Edge cases:**
   - [ ] Blank name/prompt or malformed configuration JSON returns validation errors, retains entered values and team selections, and creates no judge.
   - [ ] Keyless judges still appear as AI judges rather than human accounts.
-  - [ ] A judge still on its own URL and key no longer offers a manual **Migrate to connection** action - the route/button are gone; the form just says to choose a connection to save changes. The `MigrateAiJudgesToConnections` data migration ships with this change, so this state shouldn't exist in a real deployment - reach it by creating a judge with an `llm_key`/`judge_options.llm_service_url` and no `connection_id` directly (e.g. via `rails runner`).
-  - [ ] Saving changes to a judge that still has its own URL and key is refused until it has a connection; it keeps judging meanwhile.
+  - [ ] A judge still on its own URL and key no longer offers a manual **Migrate to connection** action - the route/button are gone; the form just says to choose a connection to save changes, and its **Llm Provider** field is hidden like a brand-new judge's (no more deprecation notice or read-only legacy value). The `MigrateAiJudgesToConnections` data migration ships with this change, so this state shouldn't exist in a real deployment - reach it by creating a judge with an `llm_key`/`judge_options.llm_service_url` and no `connection_id` directly (e.g. via `rails runner`).
+  - [ ] Saving changes to a judge that still has its own URL and key is refused until it has a connection; it keeps judging meanwhile, but testing it from the wizard now also requires choosing a connection first (there's no more own-settings exception).
   - [ ] Saving without a connection is refused with the reason and creates no judge. A provider edited in the JSON tab is replaced by the connection's on save.
-  - [ ] A judge saved before connections keeps its own URL/key editable (hidden fields) and marks the **Llm Provider** field deprecated; saving other changes keeps them, and choosing a connection moves it (its own key is cleared).
+  - [ ] Choosing a connection on a judge saved before connections moves it onto that connection (its own key is cleared) and saves the rest of the form's changes along with it.
   - [ ] Testing or running a judge on a connection that has no key yet marks the pair unrateable with "… has no key yet: add it under Connections".
 
 ### 12.2 Edit / delete an AI Judge

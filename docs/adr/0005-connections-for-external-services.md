@@ -412,15 +412,18 @@ The clone form clears an inaccessible private connection and asks the new owner 
 - **AI judges use a connection, in their deprecation period (§3, stage 2).** `users.connection_id`
   is optional. The judge form has a Connection dropdown (own and instance-wide connections whose
   provider has `chat` or `typed_judge`) instead of the key field, and no URL or timeout fields;
-  the judge's provider comes from its connection (set on save; the form shows it read-only,
-  marked deprecated only on a judge still on its own URL and key).
+  the judge's provider comes from its connection (set on save; the form shows it read-only, hidden
+  with a "Choose a connection first" placeholder until one is chosen - including for a judge still
+  on its own URL and key, which the form no longer marks deprecated or exposes editable hidden
+  fields for).
   `LlmService` takes the URL, timeout, retry settings and auth headers from the connection, and the
   API version falls back to the connection's when the judge sets none. New judges need a connection
   (enforced in `AiJudgesController#create`, so code and tests that build judges directly needn't);
   one that has a connection can change it but not drop it. A judge from before connections keeps
-  running on its own `llm_key` and `llm_service_url`/`llm_timeout`, and its form says so; choosing
-  a connection clears them. A clone never takes the original's key or connection: its form opens
-  with none and asks the cloner to choose one of theirs.
+  running on its own `llm_key` and `llm_service_url`/`llm_timeout` until someone edits it, but the
+  wizard's "Test & Refine" now requires a connection for every judge, no own-settings exception;
+  choosing a connection clears them. A clone never takes the original's key or connection: its form
+  opens with none and asks the cloner to choose one of theirs.
 - The connection checks shared by embedders and judges (who may assign a connection, not dropping
   one) are the `ConnectionConsumer` concern, and the capability-filtered picker is
   `ConnectionsHelper#connection_options_for`, as §6 asked.
