@@ -5,7 +5,11 @@ import { element } from "utils/dom"
 // The scaffolding shared by every "Check connection" button: loading state, the POST itself, and
 // a uniform error alert. Only how a successful result renders differs between forms, so that part
 // is the caller's onSuccess(result, checkResultTarget).
-export async function runCheck(checkUrl, formData, { checkResultTarget, checkButtonTarget, onSuccess }) {
+export async function runCheck(
+  checkUrl,
+  formData,
+  { checkResultTarget, checkButtonTarget, onSuccess }
+) {
   setButtonLoading(checkButtonTarget, true)
   checkResultTarget.replaceChildren()
 

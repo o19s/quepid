@@ -514,6 +514,54 @@
         95
       ],
       "note": "Response data is JSON-encoded with to_json before assignment in JavaScript, preserving it as data rather than raw source. Mapper code execution and its resource limits are separate trust boundaries."
+    },
+    {
+      "warning_type": "Dangerous Eval",
+      "warning_code": 13,
+      "fingerprint": "99e1f4222c704700b113b57a46e18d9c8b47d8add594bdad6b80a8af32f46fc7",
+      "check_name": "Evaluation",
+      "message": "Dynamic code evaluation",
+      "file": "lib/v8_mapper_executor.rb",
+      "line": 128,
+      "link": "https://brakemanscanner.org/docs/warning_types/dangerous_eval/",
+      "code": "MiniRacer::Context.new.eval(code_mapper)",
+      "render_path": null,
+      "location": {
+        "type": "method",
+        "class": "V8MapperExecutor",
+        "method": "apply_request_args_mapper"
+      },
+      "user_input": null,
+      "confidence": "Weak",
+      "cwe_id": [
+        913,
+        95
+      ],
+      "note": "Intentional execution of user-authored or LLM-generated mapper JavaScript in MiniRacer, same as extract_docs/extract_number_of_results above; this is a supported mapper operation, not Ruby eval. Execution time and memory limits and exposed Ruby callbacks remain unresolved under server-side JavaScript execution in docs/todo/todo.md."
+    },
+    {
+      "warning_type": "Dangerous Eval",
+      "warning_code": 13,
+      "fingerprint": "1d8d4df079384eef619c733caedc0412c5c33865ad92224c8bd99cb0d0db3c41",
+      "check_name": "Evaluation",
+      "message": "Dynamic string evaluated as code",
+      "file": "lib/v8_mapper_executor.rb",
+      "line": 132,
+      "link": "https://brakemanscanner.org/docs/warning_types/dangerous_eval/",
+      "code": "MiniRacer::Context.new.eval(\"requestArgsMapper(#{args.to_json}, #{number_of_rows.to_json});\")",
+      "render_path": null,
+      "location": {
+        "type": "method",
+        "class": "V8MapperExecutor",
+        "method": "apply_request_args_mapper"
+      },
+      "user_input": null,
+      "confidence": "Weak",
+      "cwe_id": [
+        913,
+        95
+      ],
+      "note": "args/number_of_rows are JSON-encoded with to_json before interpolation, so this calls requestArgsMapper with data, not attacker-controlled source; the mapper code itself is the trusted/reviewed half of this trust boundary, tracked separately in docs/todo/todo.md."
     }
   ],
   "brakeman_version": "8.1.0"
