@@ -226,6 +226,21 @@ module Admin
     describe 'deleting a user' do
       let(:target) { users(:random_1) }
 
+      test 'a connection in use blocks deletion and displays the restriction' do
+        connection = connections(:private_ollama)
+        owner = users(:joey)
+
+        assert_no_difference([ 'User.count', 'Connection.count', 'Embedder.count' ]) do
+          delete :destroy, params: { id: owner.id }
+        end
+
+        assert_response :unprocessable_content
+        assert_template :edit
+        assert_select '#error_explanation_attributes', text: /embedders.*connections/
+        assert_equal owner.id, connection.reload.owner_id
+        assert_equal connection.id, embedders(:private_ollama).reload.connection_id
+      end
+
       test 'removes the user and returns to the list' do
         assert_difference 'User.count', -1 do
           delete :destroy, params: { id: target.id }

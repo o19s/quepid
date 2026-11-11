@@ -1,0 +1,126 @@
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <h1><i class="bi bi-plug-fill" aria-hidden="true"></i> Connections</h1>
+  <div class="btn-toolbar mb-2 mb-md-0">
+    <%= page_create_button 'Create Connection', new_connection_path %>
+  </div>
+</div>
+
+<div class="alert alert-info" role="alert">
+  <i class="bi bi-info-circle-fill" aria-hidden="true"></i>
+  A Connection defines how Quepid authenticates with external providers using a URL and API key.
+  Enter credentials once to reuse across your embedders and AI Judges.
+  You can share configured embedders and AI Judges with your team while keeping the connection details private to the owner.
+  Administrators can also provide instance-wide connections selectable by everyone.
+</div>
+
+<div class="card">
+  <div class="card-body">
+    <ul class="nav nav-pills mb-3">
+      <% ({ nil => 'All' }.merge(ConnectionsHelper::KINDS)).each do |kind, title| %>
+        <li class="nav-item">
+          <%= link_to title, connections_path(kind: kind), class: ['nav-link', { active: @kind == kind }],
+                                                           aria: { current: (@kind == kind ? 'page' : nil) } %>
+        </li>
+      <% end %>
+    </ul>
+    <% if 'search' == @kind %>
+      <div class="alert alert-secondary small" role="status">
+        <i class="bi bi-hourglass-split" aria-hidden="true"></i>
+        Coming soon: search endpoints will use these connections for their URL and key, so you manage them in one place: change a URL or rotate a key once and every endpoint using it picks it up.
+      </div>
+    <% end %>
+    <% if @connections.any? %>
+      <div class="table-responsive">
+        <table class="table table-sm table-hover">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Provider</th>
+              <th>URL</th>
+              <th>Authentication</th>
+              <th>Status</th>
+              <th>Owner</th>
+              <th>Availability</th>
+              <th>Used by</th>
+              <th class="text-end"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @connections.each do |connection| %>
+              <tr>
+                <td>
+                  <%= link_to connection.name, connection_path(connection) %>
+                  <% if connection.archived %>
+                    <span class="badge bg-secondary">Archived</span>
+                  <% end %>
+                </td>
+                <td><%= connection.provider_definition&.label || connection.provider %></td>
+                <td><code class="text-break"><%= connection.base_url %></code></td>
+                <td>
+                  <%= Connection::AUTH_SCHEME_LABELS[connection.auth_scheme] %>
+                  <% if connection.secret.present? %>
+                    <i class="bi bi-key-fill text-muted" title="A secret is saved" aria-label="A secret is saved"></i>
+                  <% end %>
+                </td>
+                <td data-controller="connection-status"
+                    data-connection-status-url-value="<%= connection_status_path(connection) %>">
+                  <%# Grey while asking, then a green plug if the provider answers or a red one if it doesn't. %>
+                  <button type="button" class="btn btn-link p-0 text-muted" data-connection-status-target="button"
+                          data-action="click->connection-status#check" aria-label="Checking connection" title="Checking...">
+                    <i class="bi bi-plug-fill" aria-hidden="true"></i>
+                  </button>
+                </td>
+                <td>
+                  <% if connection.owner == current_user %>
+                    <span class="badge bg-secondary">You</span>
+                  <% else %>
+                    <%= connection.owner.fullname %>
+                  <% end %>
+                </td>
+                <td>
+                  <% if connection.instance_wide? %>
+                    <span class="badge bg-info text-dark">Instance-wide</span>
+                  <% else %>
+                    <span class="text-muted">Private</span>
+                  <% end %>
+                </td>
+                <td>
+                  <% used_by = { 'embedder' => @embedder_counts.fetch(connection.id, 0), 'AI judge' => @ai_judge_counts.fetch(connection.id, 0) }.select { |_, count| count.positive? } %>
+                  <% if used_by.any? %>
+                    <%= used_by.map { |kind, count| pluralize(count, kind) }.join(', ') %>
+                  <% else %>
+                    <span class="text-muted">&mdash;</span>
+                  <% end %>
+                </td>
+                <td class="text-end">
+                  <% if connection.manageable_by?(current_user) %>
+                    <div class="btn-group btn-group-sm" role="group">
+                      <%= link_to edit_connection_path(connection), class: 'btn btn-link p-0 me-2', title: 'Edit', 'aria-label': 'Edit' do %>
+                        <i class="bi bi-pencil" aria-hidden="true"></i>
+                      <% end %>
+                      <%= group_button_to connection_path(connection),
+                                          method: :delete,
+                                          button_class: "text-danger p-0",
+                                          title: "Delete",
+                                          aria: { label: "Delete" },
+                                          confirm: "Delete connection #{connection.name}?" do %>
+                        <i class="bi bi-x-circle" aria-hidden="true"></i>
+                      <% end %>
+                    </div>
+                  <% end %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% elsif @kind %>
+      <p class="text-muted mb-0">No connections of this kind. <%= link_to 'Show all', connections_path %>.</p>
+    <% else %>
+      <p class="text-muted mb-0">
+        You don't have any connections yet. <%= link_to 'Create one', new_connection_path %> to keep the URL and key
+        of a provider in one place.
+      </p>
+    <% end %>
+  </div>
+</div>

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_24_233000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_10_120000) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -265,6 +265,25 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_24_233000) do
     t.index ["owner_id"], name: "index_cases_on_owner_id"
   end
 
+  create_table "connections", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "provider", limit: 50, null: false
+    t.string "base_url", limit: 500
+    t.string "auth_scheme", limit: 20, default: "bearer", null: false
+    t.string "auth_header", limit: 100
+    t.string "secret", limit: 4000
+    t.json "extra_headers"
+    t.integer "timeout", default: 30, null: false
+    t.integer "requests_per_minute", default: 0, null: false
+    t.json "options"
+    t.boolean "archived", default: false, null: false
+    t.integer "owner_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.boolean "instance_wide", default: false, null: false
+    t.index ["owner_id", "id"], name: "index_connections_on_owner_id_and_id"
+  end
+
   create_table "curator_variables", id: :integer, charset: "latin1", force: :cascade do |t|
     t.datetime "created_at", precision: nil, null: false
     t.string "name", limit: 500
@@ -275,7 +294,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_24_233000) do
   end
 
   create_table "embedders", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
-    t.string "api_key", limit: 4000
     t.boolean "archived", default: false, null: false
     t.datetime "created_at", null: false
     t.integer "dimensions"
@@ -286,10 +304,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_24_233000) do
     t.json "options"
     t.integer "owner_id"
     t.string "provider", limit: 50, null: false
-    t.string "service_url", limit: 500
-    t.integer "timeout", default: 30, null: false
     t.string "truncation", limit: 20, default: "none", null: false
     t.datetime "updated_at", null: false
+    t.bigint "connection_id"
+    t.index ["connection_id"], name: "index_embedders_on_connection_id"
     t.index ["owner_id", "id"], name: "index_embedders_on_owner_id_and_id"
   end
 
@@ -867,6 +885,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_24_233000) do
     t.string "type"
     t.datetime "updated_at", precision: nil, null: false
     t.integer "escalates_to_id"
+    t.bigint "connection_id"
+    t.index ["connection_id"], name: "index_users_on_connection_id"
     t.index ["default_scorer_id"], name: "index_users_on_default_scorer_id"
     t.index ["email"], name: "ix_user_username", unique: true
     t.index ["escalates_to_id"], name: "index_users_on_escalates_to_id"

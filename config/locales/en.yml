@@ -40,3 +40,8 @@ en:
     attributes:
       user:
         llm_key: "LLM Key"
+      connection:
+        base_url: "URL"
+        secret: "Key"
+        requests_per_minute: "Requests per minute"
+        extra_headers_text: "Extra headers"

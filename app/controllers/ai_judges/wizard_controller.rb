@@ -38,8 +38,11 @@ module AiJudges
     end
 
     def test_prompt
-      ai_judge = AiJudge.new(system_prompt: params[:system_prompt], llm_key: params[:llm_key])
-      ai_judge.judge_options = judge_options_params.to_h
+      # A judge being edited lends its saved settings: a judge from before connections has its
+      # own key, which the form never shows, and its connection may be one only its owner can pick.
+      saved = AiJudge.for_user(current_user).find_by(id: params[:ai_judge_id])
+      connection = test_connection(saved)
+      ai_judge = draft_judge(saved, connection)
 
       # The judge is handed the scale, never the book/scorer it came from -
       # a book's own scale if there's a book context, otherwise a scorer's
@@ -49,6 +52,11 @@ module AiJudges
       if provider&.needs_scale? && scale.empty?
         error = "#{provider.label} rates against a scale, so it can only be tested from a book, " \
                 'or by picking a rating scale in the form.'
+        render json: { error: error }, status: :unprocessable_content
+        return
+      end
+
+      if (error = test_setup_problem(connection))
         render json: { error: error }, status: :unprocessable_content
         return
       end
@@ -69,7 +77,7 @@ module AiJudges
         return
       end
 
-      llm_service = LlmService.new(ai_judge.llm_key, ai_judge.judge_options)
+      llm_service = ai_judge.llm_service
       judgement = Judgement.new(query_doc_pair: query_doc_pair, user: ai_judge)
       llm_service.perform_safe_judgement judgement, scale: scale
       JudgementFinalizer.call judgement, scale: scale
@@ -85,6 +93,40 @@ module AiJudges
 
     def set_scorer
       @scorer = current_user.scorers_involved_with.where(id: params[:scorer_id]).first
+    end
+
+    # The connection the form has picked: one the user can select, or the one the judge being
+    # edited already has (a teammate testing a shared judge runs it on its owner's connection).
+    def test_connection saved
+      id = params[:connection_id].presence
+      return nil if id.nil?
+      return saved.connection if saved && saved.connection_id.to_s == id.to_s
+
+      current_user.connections_involved_with.find_by(id: id)
+    end
+
+    # The form's current values, unsaved, calling out the way the judge would.
+    def draft_judge saved, connection
+      ai_judge = AiJudge.new(system_prompt: params[:system_prompt], connection: connection,
+                             llm_key: connection ? nil : saved&.llm_key)
+      ai_judge.judge_options = AiJudge.judge_options_with_connection_provider(judge_options_params.to_h, connection)
+      ai_judge
+    end
+
+    def test_setup_problem connection
+      return "That connection isn't one you can use." if params[:connection_id].present? && connection.nil?
+      return connection_capability_problem(connection) if connection
+
+      'Choose a connection to test the judge with.'
+    end
+
+    # Same capability check AiJudge#connection_problem makes at save time (a connection whose
+    # provider can't chat or judge), so a preview never gets further than the save path would -
+    # draft_judge's unsaved AiJudge is never validated, so this calls the class method
+    # connection_problem itself relies on instead of re-deriving the rule.
+    def connection_capability_problem connection
+      reason = AiJudge.unsupported_for_judging_reason(connection)
+      "That connection #{reason}." if reason
     end
 
     def query_doc_pair_params

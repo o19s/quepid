@@ -15,7 +15,8 @@ import {
   queryParamsMode,
   queryParamsWarning,
   urlBucket,
-  validateNumberOfRows
+  validateNumberOfRows,
+  mapQueryParamsSettings
 } from "utils/tune_relevance"
 import coreFlash from "utils/core_flash"
 import { normalizeSearchEngine, searchEngineLabel } from "utils/search_engines"
@@ -193,6 +194,7 @@ export default class extends Controller {
       onChange: (value) => {
         if (this.formattingQueryEditor) return
         this.settings.queryParams = value
+        this.syncNumberOfRowsFromQuery()
         this.refreshQueryWarning(value)
         this.refreshCuratorVars()
         this.refreshTemplateWarning()
@@ -201,6 +203,15 @@ export default class extends Controller {
   }
 
   refreshQueryEditor() {
+    if (!this.settings) return
+    this.syncNumberOfRowsFromQuery()
+    this.formatQueryEditor()
+  }
+
+  // Split from refreshQueryEditor() so updateNumberOfRows() can re-render the editor
+  // without re-running syncNumberOfRowsFromQuery() - it already derived the same
+  // numberOfRows/max from the mapper a moment ago and applied them directly.
+  formatQueryEditor() {
     if (!this.settings) return
     const isStatic = this.settings.searchEngine === "static"
     if (this.hasStaticEngineMessageTarget) this.staticEngineMessageTarget.hidden = !isStatic
@@ -222,6 +233,39 @@ export default class extends Controller {
     this.refreshQueryWarning(value)
     if (this.hasQueryEditorTarget) this.queryEditorTarget.dataset.mode = queryParamsMode(value)
     this.editor?.setMode?.(queryParamsMode(value))
+  }
+
+  queryParamsSettings(numberOfRows) {
+    return mapQueryParamsSettings(
+      this.settings.queryParams || "",
+      this.settings.searchEngine === "searchapi" ? this.settings.mapperCode : null,
+      this.capability.search.evaluateMapper,
+      numberOfRows
+    )
+  }
+
+  syncNumberOfRowsFromQuery() {
+    this.applyMappedNumberOfRows(this.queryParamsSettings())
+  }
+
+  updateNumberOfRows() {
+    const value = this.numberOfRowsTarget.value
+    this.settings.numberOfRows = value
+    const mapped = this.queryParamsSettings(value)
+    if (!validateNumberOfRows(value, mapped.maxNumberOfRows)) return
+    this.settings.queryParams = mapped.queryParams
+    this.applyMappedNumberOfRows(mapped)
+    this.formatQueryEditor()
+  }
+
+  // Shared by syncNumberOfRowsFromQuery() and updateNumberOfRows(): applies what the mapper
+  // derived for numberOfRows/maxNumberOfRows to both settings and the DOM target.
+  applyMappedNumberOfRows(mapped) {
+    if (mapped.numberOfRows !== undefined) {
+      this.settings.numberOfRows = mapped.numberOfRows
+      if (this.hasNumberOfRowsTarget) this.numberOfRowsTarget.value = mapped.numberOfRows
+    }
+    if (this.hasNumberOfRowsTarget) this.numberOfRowsTarget.max = mapped.maxNumberOfRows ?? ""
   }
 
   refreshQueryWarning(value) {
@@ -581,16 +625,25 @@ export default class extends Controller {
     this.settings.fieldSpec = this.displayedFieldsValue()
     this.settings.numberOfRows = this.numberOfRowsTarget.value
     this.settings.escapeQuery = this.escapeQueryTarget.checked
-    if (!validateNumberOfRows(this.settings.numberOfRows))
-      return this.showError("Number of Results to Show must be between 1 and 100.")
+    const maximum = this.queryParamsSettings().maxNumberOfRows
+    if (!validateNumberOfRows(this.settings.numberOfRows, maximum)) {
+      this.showError(
+        maximum === null
+          ? "Number of Results to Show must be a positive integer."
+          : "Number of Results to Show must be between 1 and 100."
+      )
+      return
+    }
     const queryParams = this.settings.queryParams || ""
     const needsJson =
       this.capability.endpoints.usesJsonQueryParams(this.settings.searchEngine) ||
       (this.settings.searchEngine === "searchapi" && queryParams.trim().startsWith("{"))
     if (needsJson) {
       const formatted = formatJson(queryParams)
-      if (!formatted)
-        return this.showError("Please provide a valid formatted JSON object for the query DSL.")
+      if (!formatted) {
+        this.showError("Please provide a valid formatted JSON object for the query DSL.")
+        return
+      }
       this.settings.queryParams = formatted
     }
     this.saving = true

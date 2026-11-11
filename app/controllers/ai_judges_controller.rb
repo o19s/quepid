@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 class AiJudgesController < ApplicationController
+  include TeamAssignable
+
   before_action :set_team, only: [ :new, :clone, :create, :update, :destroy ]
   before_action :set_ai_judge, only: [ :show, :edit, :update, :destroy ]
   before_action :set_book, only: [ :show, :new, :edit, :create, :update ]
@@ -23,22 +25,22 @@ class AiJudgesController < ApplicationController
     @ai_judge.system_prompt = provider.default_system_prompt
     @ai_judge.judge_options = {
       llm_provider:    provider.key,
-      llm_service_url: provider.default_service_url,
       llm_model:       provider.default_model,
-      llm_timeout:     30,
       llm_api_version: provider.default_api_version,
     }
   end
 
   def clone
     source = AiJudge.for_user(current_user).where(id: @team.members.select(:id)).find(params.expect(:id))
+    # The copy is the cloner's own judge, so it calls out through a connection they pick, never
+    # the original's key or connection.
     @ai_judge = current_user.owned_ai_judges.build(
       name:          "Clone of #{source.name}",
-      llm_key:       source.llm_key,
       system_prompt: source.system_prompt,
-      judge_options: source.judge_options.deep_dup
+      judge_options: source.judge_options.except(:llm_service_url, :llm_timeout)
     )
     @ai_judge.team_ids = [ @team.id ]
+    @ai_judge.errors.add(:connection, 'is required: choose one of your connections for this copy')
     render :new
   end
 
@@ -46,7 +48,9 @@ class AiJudgesController < ApplicationController
 
   def create
     @ai_judge = current_user.owned_ai_judges.build
+    @ai_judge.connection_assignment_user = current_user
     @ai_judge.assign_attributes(ai_judge_params)
+    @ai_judge.errors.add(:connection, 'is required: it holds the URL and key (create one under Connections)') unless @ai_judge.connection
 
     if @ai_judge.errors.empty? && escalation_target_visible? && @ai_judge.save
       apply_team_ids(@ai_judge, submitted_team_ids)
@@ -57,7 +61,10 @@ class AiJudgesController < ApplicationController
   end
 
   def update
+    @ai_judge.connection_assignment_user = current_user
     @ai_judge.assign_attributes(ai_judge_params)
+    # A judge from before connections keeps running on its own settings, but changes to it wait until it is on one.
+    @ai_judge.errors.add(:connection, 'is required: choose a connection first') unless @ai_judge.connection
     if @ai_judge.errors.empty? && escalation_target_visible? && @ai_judge.save
       apply_team_ids(@ai_judge, submitted_team_ids)
       redirect_to(@team ? team_path(@team) : ai_judge_path(@ai_judge), notice: 'AI Judge was successfully updated.', status: :see_other)
@@ -105,23 +112,6 @@ class AiJudgesController < ApplicationController
     @scorer = current_user.scorers_involved_with.where(id: @scorer_id).first if @scorer_id.present?
   end
 
-  # Checkboxes suck: only touch teams the current user can actually see, so
-  # this can't accidentally unshare the judge from a team the submitting
-  # user isn't a member of (BooksController#update's team_ids handling
-  # doesn't scope to current_user.teams the same way - don't copy that
-  # pattern). Loads current_user.teams once and derives both the
-  # membership check and the selected teams from it, rather than querying
-  # it twice. Used by both create (where ai_judge.teams starts empty, so
-  # there's nothing to keep) and update (where it is).
-  def apply_team_ids ai_judge, team_ids
-    user_teams = current_user.teams.to_a
-    selected_ids = Array(team_ids).compact_blank.map(&:to_i)
-
-    kept_teams = ai_judge.teams.reject { |t| user_teams.any? { |ut| ut.id == t.id } }
-    selected_teams = user_teams.select { |t| selected_ids.include?(t.id) }
-    ai_judge.teams.replace(kept_teams | selected_teams)
-  end
-
   # The team_ids checkboxes render inside the `user` form object
   # (form_with model: @ai_judge), so they submit as user[team_ids][],
   # not a top-level param.
@@ -152,7 +142,7 @@ class AiJudgesController < ApplicationController
   end
 
   def ai_judge_params
-    params_to_return = params.expect(user: [ :name, :llm_key, :system_prompt, :options, :escalates_to_id,
+    params_to_return = params.expect(user: [ :name, :connection_id, :system_prompt, :options, :escalates_to_id,
                                              { judge_options: {} } ])
     if params_to_return[:options]
       @submitted_options = params_to_return[:options]

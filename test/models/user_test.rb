@@ -35,6 +35,7 @@ require 'test_helper'
 #  type                        :string(255)
 #  created_at                  :datetime         not null
 #  updated_at                  :datetime         not null
+#  connection_id               :bigint
 #  default_scorer_id           :integer
 #  escalates_to_id             :integer
 #  invited_by_id               :integer
@@ -42,6 +43,7 @@ require 'test_helper'
 #
 # Indexes
 #
+#  index_users_on_connection_id         (connection_id)
 #  index_users_on_default_scorer_id     (default_scorer_id)
 #  index_users_on_escalates_to_id       (escalates_to_id)
 #  index_users_on_invitation_token      (invitation_token) UNIQUE
@@ -322,6 +324,34 @@ class UserTest < ActiveSupport::TestCase
     let(:team_member_1) { users(:team_member_1) }
     let(:shared_team_case) { cases(:shared_team_case) }
 
+    it 'keeps an owner and their records when an embedder uses their connection' do
+      owner = users(:joey)
+      connection = connections(:private_ollama)
+      embedder = embedders(:private_ollama)
+
+      assert_no_difference([ 'User.count', 'Connection.count', 'Embedder.count' ]) do
+        assert_not owner.destroy
+      end
+
+      assert_match(/embedders.*connections/, owner.errors.full_messages_for(:base).join)
+      assert_equal owner.id, connection.reload.owner_id
+      assert_equal owner.id, embedder.reload.owner_id
+      assert_equal connection.id, embedder.connection_id
+    end
+
+    it 'blocks deletion even when someone else owns the embedder using the connection' do
+      owner = users(:joey)
+      connection = connections(:private_ollama)
+      embedder = embedders(:private_ollama)
+      embedder.update!(owner: users(:doug))
+
+      assert_not owner.destroy
+
+      assert_match(/embedders.*connections/, owner.errors.full_messages_for(:base).join)
+      assert_equal connection.id, embedder.reload.connection_id
+      assert_equal users(:doug).id, embedder.owner_id
+    end
+
     it 'ensures a user who is a member of a team that is deleted keeps the team' do
       user.destroy
       assert_not team.destroyed?
@@ -525,6 +555,18 @@ class UserTest < ActiveSupport::TestCase
       )
 
       assert_predicate again.errors, :present?
+    end
+  end
+
+  describe 'connections owned by a user' do
+    let(:user) { users(:doug) }
+
+    test 'cannot be deleted while an AI judge uses one of their connections' do
+      AiJudge.create!(name: 'On their key', system_prompt: 'Judge it.', owner: user, connection: connections(:openai))
+      Embedder.where(connection_id: user.owned_connections.select(:id)).delete_all
+
+      assert_not user.destroy
+      assert_includes user.errors[:base].first, 'AI judges'
     end
   end
 end

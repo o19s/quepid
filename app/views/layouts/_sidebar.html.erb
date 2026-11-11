@@ -35,6 +35,8 @@
           <%= render 'embedders/icon', size: '1.5rem', style: "color: #{make_active?({path: 'embedder'}) ? 'white' : 'cornflowerblue'};" %>
         <% end %>
       </li>
+      <%= render "layouts/sidebar_item", url: connections_path, label: "Connections", icon: "bi-plug-fill",
+                 active: make_active?({path: 'connection'}), data: { turbo_prefetch: false } %>
       <% unless desktop_mode? %>
         <%= render "layouts/sidebar_item", url: teams_path, label: "Teams", icon: "bi-people-fill",
                    active: make_active?({path: 'teams'}), data: { turbo_prefetch: false } %>

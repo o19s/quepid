@@ -9,7 +9,6 @@
 # Table name: embedders
 #
 #  id             :bigint           not null, primary key
-#  api_key        :string(4000)
 #  archived       :boolean          default(FALSE), not null
 #  dimensions     :integer
 #  input_template :text(65535)
@@ -18,15 +17,15 @@
 #  name           :string(255)      not null
 #  options        :json
 #  provider       :string(50)       not null
-#  service_url    :string(500)
-#  timeout        :integer          default(30), not null
 #  truncation     :string(20)       default("none"), not null
 #  created_at     :datetime         not null
 #  updated_at     :datetime         not null
+#  connection_id  :bigint
 #  owner_id       :integer
 #
 # Indexes
 #
+#  index_embedders_on_connection_id    (connection_id)
 #  index_embedders_on_owner_id_and_id  (owner_id,id)
 #
 class Embedder < ApplicationRecord
@@ -47,10 +46,6 @@ class Embedder < ApplicationRecord
   # long the provider took, in milliseconds.
   CheckResult = Data.define(:input, :dimensions, :preview, :elapsed_ms)
 
-  # Fields the embedder form and API accept; controllers permit this plus their own extras
-  # (e.g. :archived, :team_ids).
-  PERMITTED_PARAMS = [ :name, :provider, :service_url, :model, :api_key, :dimensions, :truncation, :instruction, :input_template, :timeout ].freeze
-
   # too late now!
   # rubocop:disable-next Rails/HasAndBelongsToMany
   has_and_belongs_to_many :teams,
@@ -58,36 +53,56 @@ class Embedder < ApplicationRecord
 
   belongs_to :owner, class_name: 'User', optional: true
 
+  # Where to reach the provider and the key to use, kept once for everything that calls it
+  # (ADR 0005). Every embedder has one; optional only so a not-yet-valid new record can exist
+  # before the connection is picked.
+  belongs_to :connection, optional: true, inverse_of: :embedders
+
   # Deleting an embedder unlinks its cases; the vectors already stored on their
   # queries stay, and are recognisably stale by their fingerprint.
   has_many :cases, dependent: :nullify, inverse_of: :embedder
 
   include ForUserScope
 
-  encrypts :api_key, deterministic: false
-
   scope :not_archived, -> { where(archived: false) }
 
+  before_validation :take_provider_from_connection
   before_validation :drop_settings_the_provider_ignores
-  after_update_commit :revectorize_cases, if: -> { saved_changes.keys.intersect?(VECTOR_SETTINGS) }
+  after_update_commit :revectorize_cases, if: -> { saved_changes.keys.intersect?(VECTOR_SETTINGS + [ 'connection_id' ]) }
 
   validates :name, presence: true
   validates :provider, inclusion: { in: ->(_) { EmbedderProvider.keys }, message: 'is not a known provider' }
   validates :model, presence: true
-  validates :service_url, presence: true
-  validates :api_key, length: { maximum: 1000 }, allow_blank: true
   validates :truncation, inclusion: { in: TRUNCATIONS }
   validates :dimensions, numericality: { only_integer: true, greater_than: 0 }, allow_nil: true
   validates :dimensions, presence: { message: 'are required to truncate' }, unless: -> { 'none' == truncation }
-  validates :timeout, numericality: { only_integer: true, greater_than: 0, less_than_or_equal_to: 600 }
   validate :native_truncation_supported
-  validate :api_key_present_when_required
+  include ConnectionConsumer
+
+  validate :connection_required_when_created, on: :create
   validate :input_template_has_query
-  validate :http_service_url
 
   def provider_definition
     @provider_definition ||= EmbedderProvider.find(provider)
   end
+
+  # The provider is the embedder's own choice, and its connection has to be for that provider (a
+  # Voyage embedder can't use an Ollama connection). Left blank, it is the connection's.
+  def provider
+    super.presence || connection&.provider
+  end
+
+  # Its connection's URL and timeout.
+  def service_url
+    connection&.base_url
+  end
+
+  def timeout
+    connection&.timeout
+  end
+
+  # The headers a request carries (however the connection sends its key) and its retry settings.
+  delegate :request_headers, :retry_options, to: :connection
 
   def adapter
     provider_definition.adapter_class.new(self)
@@ -119,7 +134,7 @@ class Embedder < ApplicationRecord
   # Changes whenever one of VECTOR_SETTINGS changes; vectors stored with an older
   # fingerprint are stale (see QueryVectorStatus).
   def fingerprint
-    Digest::SHA256.hexdigest(VECTOR_SETTINGS.map { |attribute| self[attribute].to_s }.to_json)[0, 16]
+    Digest::SHA256.hexdigest(VECTOR_SETTINGS.map { |attribute| public_send(attribute).to_s }.to_json)[0, 16]
   end
 
   # Identifies the exact text sent for a query, so a stored vector can be checked
@@ -128,18 +143,14 @@ class Embedder < ApplicationRecord
     Digest::SHA256.hexdigest(render_input(text))[0, 16]
   end
 
+  # Whether a key is set, for the form and the API, which never show the key itself.
   def masked_api_key
-    api_key.present? ? MASKED_API_KEY : ''
+    connection.secret.present? ? MASKED_API_KEY : ''
   end
 
   # Cases per embedder for list pages, in one grouped query.
   def self.cases_count_by_embedder_id embedder_ids
     Case.where(embedder_id: embedder_ids).group(:embedder_id).count
-  end
-
-  # A blank or masked submitted key means "keep the saved one" -- the form never shows it.
-  def self.keep_existing_key? submitted
-    submitted.blank? || MASKED_API_KEY == submitted
   end
 
   def mark_archived!
@@ -148,15 +159,28 @@ class Embedder < ApplicationRecord
 
   private
 
-  def http_service_url
-    return if service_url.blank?
+  # An embedder created from just a connection takes that connection's provider.
+  def take_provider_from_connection
+    return unless connection && self[:provider].blank?
 
-    uri = URI.parse(service_url)
-    return if uri.is_a?(URI::HTTP) && uri.host.present?
+    self[:provider] = connection.provider
+    @provider_definition = nil
+  end
 
-    errors.add(:service_url, 'must be a valid http:// or https:// URL')
-  rescue URI::InvalidURIError
-    errors.add(:service_url, 'must be a valid http:// or https:// URL')
+  # A new embedder needs a connection: its URL, key and timeout live there.
+  def connection_required_when_created
+    return if connection
+
+    errors.add(:connection, 'is required: it holds the URL and key (create one under Connections)')
+  end
+
+  # Why the connection can't be used, or nil. The first thing wrong is the one worth saying.
+  def connection_problem
+    label = connection.provider_definition&.label || connection.provider
+    return "to #{label} can't make embeddings" unless connection.provider_definition&.capabilities&.include?('embeddings')
+    return "is for #{label}, not #{provider_definition&.label || provider}" if connection.provider != provider
+
+    "isn't one you can use" unless connection_usable_by_owner?
   end
 
   def revectorize_cases
@@ -193,13 +217,6 @@ class Embedder < ApplicationRecord
     return if allowed.empty? || dimensions.nil? || allowed.include?(dimensions)
 
     errors.add(:dimensions, "must be one of #{allowed.to_sentence(two_words_connector: ' or ', last_word_connector: ' or ')} for #{definition.label}")
-  end
-
-  def api_key_present_when_required
-    definition = provider_definition
-    return if definition.nil? || !definition.requires_key? || api_key.present?
-
-    errors.add(:api_key, "is required for #{definition.label}")
   end
 
   def input_template_has_query

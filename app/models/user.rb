@@ -33,6 +33,7 @@
 #  type                        :string(255)
 #  created_at                  :datetime         not null
 #  updated_at                  :datetime         not null
+#  connection_id               :bigint
 #  default_scorer_id           :integer
 #  escalates_to_id             :integer
 #  invited_by_id               :integer
@@ -40,6 +41,7 @@
 #
 # Indexes
 #
+#  index_users_on_connection_id         (connection_id)
 #  index_users_on_default_scorer_id     (default_scorer_id)
 #  index_users_on_escalates_to_id       (escalates_to_id)
 #  index_users_on_invitation_token      (invitation_token) UNIQUE
@@ -127,6 +129,13 @@ class User < ApplicationRecord
            inverse_of:  :owner,
            dependent:   :nullify
 
+  # Unused connections are destroyed with their owner; used ones block account deletion.
+  has_many :owned_connections,
+           class_name:  'Connection',
+           foreign_key: :owner_id,
+           inverse_of:  :owner,
+           dependent:   :destroy
+
   # too late now!
   # rubocop:disable-next Rails/HasAndBelongsToMany
   has_and_belongs_to_many :teams,
@@ -205,6 +214,15 @@ class User < ApplicationRecord
   before_create :set_defaults
   before_destroy :check_scorer_ownership_before_removing!, prepend: true
   before_destroy :check_judgements_before_removing!, prepend: true
+  before_destroy :check_connections_before_removing!, prepend: true
+
+  def check_connections_before_removing!
+    in_use = owned_connections.select(:id)
+    return unless Embedder.exists?(connection_id: in_use) || AiJudge.exists?(connection_id: in_use)
+
+    errors.add(:base, "Please point embedders and AI judges using this user's connections at another connection, or delete them, before deleting this user.")
+    throw(:abort)
+  end
 
   def check_judgements_before_removing!
     if judgements.any?
@@ -304,6 +322,12 @@ class User < ApplicationRecord
   # All the embedders the user owns or that are shared with one of their teams.
   def embedders_involved_with
     Embedder.for_user(self)
+  end
+
+  # Connections the user can attach to new configurations: their own and instance-wide ones.
+  # Changing one is narrower; see Connection#manageable_by?.
+  def connections_involved_with
+    Connection.usable_by(self)
   end
 
   def locked?

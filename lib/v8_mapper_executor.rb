@@ -3,6 +3,14 @@
 class V8MapperExecutor
   class MapperError < StandardError; end
 
+  # Mapper globals a code_mapper may optionally define, unlike docsMapper/numberOfResultsMapper
+  # (which validateMappersExist requires every mapper to define, so each call's eval always
+  # overwrites them). @context is one persistent MiniRacer::Context reused across every mapper
+  # call for a run (FetchService builds one V8MapperExecutor for the whole batch), so an
+  # optional global a previous call's mapper defined would otherwise leak into a later call
+  # whose mapper doesn't define it - reset before every eval of code_mapper closes that gap.
+  OPTIONAL_MAPPER_GLOBALS = %w[requestArgsMapper].freeze
+
   attr_reader :logs
 
   def initialize js_file_path
@@ -48,6 +56,7 @@ class V8MapperExecutor
   def extract_docs code_mapper, response_body
     @context.eval('var docs = [];')
 
+    reset_optional_mapper_globals
     @context.eval(code_mapper)
 
     @context.eval('validateMappersExist()')
@@ -82,6 +91,7 @@ class V8MapperExecutor
   def extract_number_of_results code_mapper, response_body
     @context.eval('var numberOfResults = 0;')
 
+    reset_optional_mapper_globals
     @context.eval(code_mapper)
 
     @context.eval('validateMappersExist()')
@@ -108,7 +118,28 @@ class V8MapperExecutor
     raise MapperError, "JavaScript execution error: #{e.message}"
   end
 
+  # requestArgsMapper is optional (most mappers, e.g. Vespa, don't need to shape the outgoing
+  # request themselves) and isn't covered by validateMappersExist, so args is returned
+  # untouched when the mapper doesn't define one - unlike extract_docs/extract_number_of_results
+  # above, which require their mapper function to exist.
+  # rubocop:disable-next Style/DocumentDynamicEvalDefinition
+  def apply_request_args_mapper code_mapper, args, number_of_rows
+    reset_optional_mapper_globals
+    @context.eval(code_mapper)
+
+    return args if 'undefined' == @context.eval('typeof requestArgsMapper')
+
+    @context.eval("requestArgsMapper(#{args.to_json}, #{number_of_rows.to_json});")
+  rescue MiniRacer::Error => e
+    raise MapperError, "JavaScript execution error: #{e.message}"
+  end
+
   private
+
+  # rubocop:disable-next Style/DocumentDynamicEvalDefinition
+  def reset_optional_mapper_globals
+    OPTIONAL_MAPPER_GLOBALS.each { |name| @context.eval("#{name} = undefined;") }
+  end
 
   def attach_ruby_methods
     # Capture log messages to @logs array

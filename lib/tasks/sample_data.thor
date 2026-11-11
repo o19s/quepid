@@ -155,11 +155,16 @@ class SampleData < Thor
     # model (sentence-transformers/all-minilm-l6-v2, 384 dims) the Qdrant demo collection's
     # 'dense' vector was built with, so the QDRANT CASE below gets real nearest-neighbour
     # results instead of a vector no document was indexed against.
+    ollama_connection = ::Connection.find_or_create_by provider: 'ollama', base_url: 'http://ollama:31434' do |connection|
+      connection.name        = 'Ollama'
+      connection.auth_scheme = 'none'
+      connection.owner       = realistic_activity_user
+    end
     minilm_embedder = ::Embedder.find_or_create_by name: 'MiniLM Embedder (Ollama)' do |embedder|
-      embedder.provider    = 'ollama'
-      embedder.service_url = 'http://ollama:31434'
-      embedder.model       = 'all-minilm'
-      embedder.owner       = realistic_activity_user
+      embedder.provider   = 'ollama'
+      embedder.connection = ollama_connection
+      embedder.model      = 'all-minilm'
+      embedder.owner      = realistic_activity_user
     end
     print_step "Seeded embedder: name: #{minilm_embedder.name}, provider: #{minilm_embedder.provider}"
 
@@ -199,57 +204,16 @@ class SampleData < Thor
     }
     user_params = user_specifics # user_defaults.merge(user_specifics)
     osc_ai_judge = seed_judge user_params
+    # The judges run on connections of the user who owns them; the OSC team shares the judges.
+    osc_ai_judge.owner ||= realistic_activity_user
+    osc_ai_judge.connection = ollama_connection
     osc_ai_judge.judge_options = {
       llm_provider:    'ollama',
-      llm_service_url: 'http://ollama:31434',
       llm_model:       'qwen3:0.6b',
-      llm_timeout:     60,
       llm_api_version: '',
     }
     osc_ai_judge.save!
     print_user_info user_params
-
-    ######################################
-    # Azure OpenAI AI Judge
-    ######################################
-
-    user_specifics = {
-      name:          'Azure OpenAI Judge',
-      llm_key:       'your-azure-openai-key',
-      system_prompt: LlmProvider::CHAT_SYSTEM_PROMPT,
-    }
-    user_params = user_specifics
-    azure_openai_judge = seed_judge user_params
-    azure_openai_judge.judge_options = {
-      llm_provider:    'azure_openai',
-      llm_service_url: 'https://YOUR-RESOURCE.openai.azure.com',
-      llm_model:       'gpt-4.1',
-      llm_timeout:     30,
-      llm_api_version: '2024-12-01-preview',
-    }
-    azure_openai_judge.save!
-    print_step "Seeded AI judge: name: #{user_specifics[:name]}"
-
-    ######################################
-    # Azure AI Foundry Anthropic Judge
-    ######################################
-
-    user_specifics = {
-      name:          'Azure Anthropic Judge',
-      llm_key:       'your-azure-ai-services-key',
-      system_prompt: LlmProvider::CHAT_SYSTEM_PROMPT,
-    }
-    user_params = user_specifics
-    azure_anthropic_judge = seed_judge user_params
-    azure_anthropic_judge.judge_options = {
-      llm_provider:    'azure_ai_foundry_anthropic',
-      llm_service_url: 'https://YOUR-RESOURCE.services.ai.azure.com/anthropic',
-      llm_model:       'claude-haiku-5-5',
-      llm_timeout:     30,
-      llm_api_version: '',
-    }
-    azure_anthropic_judge.save!
-    print_step "Seeded AI judge: name: #{user_specifics[:name]}"
 
     print_step 'End of seeding users................'
 
@@ -486,8 +450,6 @@ class SampleData < Thor
     osc.members << osc_member_user unless osc.members.include?(osc_member_user)
     osc.members << realistic_activity_user unless osc.members.include?(realistic_activity_user)
     osc.members << osc_ai_judge unless osc.members.include?(osc_ai_judge)
-    osc.members << azure_openai_judge unless osc.members.include?(azure_openai_judge)
-    osc.members << azure_anthropic_judge unless osc.members.include?(azure_anthropic_judge)
     osc.cases << tens_of_queries_case unless osc.cases.include?(tens_of_queries_case)
     osc.search_endpoints << statedecoded_solr_endpoint unless osc.search_endpoints.include?(statedecoded_solr_endpoint)
     print_step 'End of seeding teams................'
@@ -503,8 +465,6 @@ class SampleData < Thor
 
     book.teams << osc unless book.teams.include?(osc)
     book.ai_judges << osc_ai_judge unless book.ai_judges.include?(osc_ai_judge)
-    book.ai_judges << azure_openai_judge unless book.ai_judges.include?(azure_openai_judge)
-    book.ai_judges << azure_anthropic_judge unless book.ai_judges.include?(azure_anthropic_judge)
     book.save
 
     # this code copied from populate_controller.rb and should be in a service...

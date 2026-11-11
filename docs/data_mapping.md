@@ -7,7 +7,7 @@ The `User` model is a typical model used for authenticating and authorizing a us
 Everything starts with a user. The user owns entities they create, so if a user is removed all associated objects are removed as well.
 
 In order to share stuff (eg. cases, scorers, etc) with other users, a user can create a `Team` and add any existing user to the team. Anything shared with a team is then shared with any members of the team.
-The user that creates a `Team` is both the owner of the team and a member in the team.
+The user that creates a `Team` is added as a member. Teams have no separate owner or member roles. A member is a `User` linked through `teams_members`; AI judges are also User records and use this relationship when shared with a team.
 
 ## Live interactions with Search Engine
 
@@ -42,7 +42,9 @@ The data modeled by a Book can be imported back into a Case.  We take the rateab
 
 ## Embedders
 
-An `Embedder` is a connection to an external API that turns text into a vector embedding (OpenAI, Voyage AI, Ollama, or any OpenAI-compatible server). Like a `SearchEndpoint`, it has an owner and is shared with teams through the `teams_embedders` join table. It stores the `provider` key, `service_url`, `model`, an encrypted `api_key`, and how to size the vectors (`dimensions` with `truncation`: `none`, `native` to ask the provider, or `client` to cut and re-normalize). Models that take an `instruction` get their input built from `input_template`. What each provider supports lives in code (`EmbedderProvider`), not in the database. `Embedder#fingerprint` changes whenever a setting that affects the vectors changes, so vectors produced earlier can be recognised as stale.
+An `Embedder` turns text into a vector embedding (OpenAI, Voyage AI, Ollama, or any OpenAI-compatible server). Like a `SearchEndpoint`, it has an owner and is shared with teams through the `teams_embedders` join table. Reaching the provider and authenticating to it is a `Connection`'s job, not the embedder's own: an `Embedder` holds `connection_id`, the `provider` key (kept in sync with the connection's `provider`), `model`, and how to size the vectors (`dimensions` with `truncation`: `none`, `native` to ask the provider, or `client` to cut and re-normalize). Models that take an `instruction` get their input built from `input_template`. What each provider supports lives in code (`EmbedderProvider`), not in the database. `Embedder#fingerprint` changes whenever a setting that affects the vectors changes (including the connection's URL or provider), so vectors produced earlier can be recognised as stale. See ADR 0005 for why the URL and key moved to `Connection`.
+
+A `Connection` always retains a responsible user owner. Private connections can be selected only by that owner. An administrator can create an explicitly `instance_wide` connection that everyone can select and administrators manage; its creator remains the responsible owner. Connections are not shared with teams. Instead, an owner shares a configured embedder: teammates can use, test and edit that embedder with its existing connection without gaining permission to attach the private connection to another embedder. A clone needs a connection its new owner can select. Existing cases keep their assigned embedder when it is unshared. AI judges have not yet moved their credentials into Connections.
 
 A `Case` can point at one embedder through `embedder_id`, the same way it points at its `Scorer`. Books have no embedder.
 
