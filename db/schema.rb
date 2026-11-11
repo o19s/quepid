@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_05_150000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_10_120000) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -885,6 +885,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_05_150000) do
     t.string "type"
     t.datetime "updated_at", precision: nil, null: false
     t.integer "escalates_to_id"
+    t.bigint "connection_id"
+    t.index ["connection_id"], name: "index_users_on_connection_id"
     t.index ["default_scorer_id"], name: "index_users_on_default_scorer_id"
     t.index ["email"], name: "ix_user_username", unique: true
     t.index ["escalates_to_id"], name: "index_users_on_escalates_to_id"
