@@ -344,10 +344,11 @@ Still open:
 2. A Connections page; instance-wide connections; the Check connection button. Done.
 3. Embedders move onto connections: a picker on the form, new ones require a connection, old ones
    keep working and are warned about (the deprecation period, §3). Done.
-4. AI judges move onto connections, the same way. In the deprecation period (§9); data migration and clean-up not started.
+4. AI judges move onto connections, the same way. In the deprecation period (§9); data migration done, clean-up not started.
 5. `HttpClient` replaces `LlmConnection`, built from a connection; rate limits enforced. Not started.
 6. The data migration, then, separately, dropping the old columns (§3). Old columns dropped for
-   embedders; no existing embedders required a data migration (§9). Not started for judges.
+   embedders; no existing embedders required a data migration (§9). Judges' data migration done,
+   their old columns not yet dropped (§9).
 7. Search endpoints, under their own ADR.
 
 ## 8. Tests
@@ -361,8 +362,10 @@ Still open:
   capability for a consumer is rejected by the picker and by validation.
 - Access: new consumers can select owned or instance-wide connections. Shared consumers keep
   using their saved private connection. Direct connection team grants are not supported.
-- Migration (judges): backfill gives one connection per judge with the same owner, leaving teams on the judge;
-  dual read prefers the connection; a consumer with both reads the connection.
+- Migration (judges): backfill gives one connection per judge with the same owner (falling back to
+  the lowest-ID human teammate across its teams, then the lowest-ID human administrator, aborting
+  first if any judge would be left ownerless), leaving teams on the judge; dual read prefers the
+  connection; a consumer with both reads the connection.
 - Fingerprint: editing a connection's URL changes the embedder fingerprint; editing its secret,
   name or timeout does not.
 
@@ -430,8 +433,17 @@ The clone form clears an inaccessible private connection and asks the new owner 
 - A connection used by AI judges can't be deleted, nor its owner's account, and its provider can't
   change (a judge's prompt and model are written for its provider). The connection pages count and
   list the judges that use it.
+- **AI judges' data migration (§3, stage 3's first half) is done.** `MigrateAiJudgesToConnections`
+  backfills a private connection for every judge still on its own key or URL, preserving the key,
+  URL, timeout, API version, model and prompt exactly; it resolves an owner (the judge's own, else
+  the lowest-ID human teammate across its teams, else the lowest-ID human administrator) and
+  aborts before writing anything if any judge would be left ownerless. It is data-only and
+  irreversible (`down` raises). With it, manual per-judge migration is no longer needed:
+  `migrate_connection` and `AiJudge#migrate_to_connection!` are removed; a judge still found
+  without a connection (e.g. built directly, bypassing the migration) can only be pointed at a
+  connection by editing it, same as any pre-connection judge. The clean-up half of stage 3 -
+  dropping `llm_key` and `judge_options`' URL/timeout - is not done; those columns stay for now.
 
-Not built: renaming `LlmConnection` to `HttpClient` and building it from a `Connection`; the data
-migration of judges' own settings to connections and dropping `users.llm_key` and the
-`judge_options` URL/timeout (§3, stage 3); the rate limit (the field is stored, nothing enforces
-it); search endpoints.
+Not built: renaming `LlmConnection` to `HttpClient` and building it from a `Connection`; dropping
+`users.llm_key` and the `judge_options` URL/timeout, the clean-up half of judges' stage 3 (§3); the
+rate limit (the field is stored, nothing enforces it); search endpoints.

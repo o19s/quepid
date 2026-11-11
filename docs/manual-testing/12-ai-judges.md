@@ -22,7 +22,7 @@ AI Judges let an LLM stand in for a human judge. `AiJudge` is a `User` subclass 
 - **Edge cases:**
   - [ ] Blank name/prompt or malformed configuration JSON returns validation errors, retains entered values and team selections, and creates no judge.
   - [ ] Keyless judges still appear as AI judges rather than human accounts.
-  - [ ] On a judge that still has its own URL and key, anyone who can open it sees **Migrate to connection** in the yellow notice. It creates a private connection holding that URL, key and timeout, owned by the judge's owner (or, for a judge with no owner, by whoever migrates it, who then owns the judge), and moves the judge onto it.
+  - [ ] A judge still on its own URL and key (from before the `MigrateAiJudgesToConnections` data migration backfilled one for it) no longer offers a manual **Migrate to connection** action - the yellow notice just says to choose a connection to save changes, and the route/button are gone.
   - [ ] Saving changes to a judge that still has its own URL and key is refused until it has a connection; it keeps judging meanwhile.
   - [ ] Saving without a connection is refused with the reason and creates no judge. A provider edited in the JSON tab is replaced by the connection's on save.
   - [ ] A judge saved before connections shows a notice that it still uses its own URL and key; saving other changes keeps them, and choosing a connection moves it (its own key is cleared).

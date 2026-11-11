@@ -4,7 +4,7 @@ class AiJudgesController < ApplicationController
   include TeamAssignable
 
   before_action :set_team, only: [ :new, :clone, :create, :update, :destroy ]
-  before_action :set_ai_judge, only: [ :show, :edit, :update, :destroy, :migrate_connection ]
+  before_action :set_ai_judge, only: [ :show, :edit, :update, :destroy ]
   before_action :set_book, only: [ :show, :new, :edit, :create, :update ]
   before_action :set_scorer, only: [ :show, :new, :edit, :create, :update ]
   before_action :provision_llm_connections, only: [ :show, :new, :clone, :edit ]
@@ -65,23 +65,13 @@ class AiJudgesController < ApplicationController
     @ai_judge.connection_assignment_user = current_user
     @ai_judge.assign_attributes(ai_judge_params)
     # A judge from before connections keeps running on its own settings, but changes to it wait until it is on one.
-    @ai_judge.errors.add(:connection, 'is required: choose one, or migrate this judge to a new connection first') unless @ai_judge.connection
+    @ai_judge.errors.add(:connection, 'is required: choose a connection first') unless @ai_judge.connection
     if @ai_judge.errors.empty? && escalation_target_visible? && @ai_judge.save
       apply_team_ids(@ai_judge, submitted_team_ids)
       redirect_to(@team ? team_path(@team) : ai_judge_path(@ai_judge), notice: 'AI Judge was successfully updated.', status: :see_other)
     else
       render 'edit', status: :unprocessable_content
     end
-  end
-
-  # Anyone who can open the judge: the connection goes to its owner, or to them if it has none.
-  def migrate_connection
-    return redirect_to edit_ai_judge_path(@ai_judge), alert: 'This judge is already on a connection.', status: :see_other unless @ai_judge.own_settings?
-
-    connection = @ai_judge.migrate_to_connection!(current_user)
-    redirect_to edit_ai_judge_path(@ai_judge), notice: "Migrated to the new connection #{connection.name}.", status: :see_other
-  rescue ActiveRecord::RecordInvalid => e
-    redirect_to edit_ai_judge_path(@ai_judge), alert: "Could not migrate to a connection: #{e.record.errors.full_messages.to_sentence}", status: :see_other
   end
 
   def destroy

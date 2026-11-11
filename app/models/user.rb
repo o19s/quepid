@@ -33,11 +33,11 @@
 #  type                        :string(255)
 #  created_at                  :datetime         not null
 #  updated_at                  :datetime         not null
+#  connection_id               :bigint
 #  default_scorer_id           :integer
 #  escalates_to_id             :integer
 #  invited_by_id               :integer
 #  owner_id                    :integer
-#  connection_id               :bigint
 #
 # Indexes
 #

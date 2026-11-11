@@ -59,21 +59,8 @@
         <% if ai_judge.own_settings? %>
           <div class="alert alert-warning small mt-2 mb-0" id="own-settings-notice">
             This judge still uses its own URL and key, a configuration that is going away. It keeps running as it
-            is, but to save changes, first choose a connection or migrate it to a new connection holding its URL and key.
-            <% if ai_judge.persisted? %>
-              <div class="mt-2">
-                <%# A link, not button_to: this sits inside the judge's form. %>
-                <%= link_to 'Migrate to connection', migrate_connection_ai_judge_path(ai_judge),
-                            class: 'btn btn-warning btn-sm', data: { turbo_method: :post } %>
-                <span class="ms-2">
-                  <% if ai_judge.owner %>
-                    Creates a private connection for <%= ai_judge.owner.fullname %>, whose key this is.
-                  <% else %>
-                    This judge has no owner: migrating makes it yours, on a connection of yours.
-                  <% end %>
-                </span>
-              </div>
-            <% end %>
+            is, but choose a connection to save changes. Existing configured judges are moved to connections by
+            the database migration.
           </div>
         <% end %>
       </div>

@@ -35,11 +35,11 @@
 #  type                        :string(255)
 #  created_at                  :datetime         not null
 #  updated_at                  :datetime         not null
+#  connection_id               :bigint
 #  default_scorer_id           :integer
 #  escalates_to_id             :integer
 #  invited_by_id               :integer
 #  owner_id                    :integer
-#  connection_id               :bigint
 #
 # Indexes
 #
@@ -122,28 +122,6 @@ class AiJudge < User
   # Made before connections and not moved onto one yet: it calls out with its own key and URL.
   def own_settings?
     connection_id.nil? && (llm_key.present? || judge_options[:llm_service_url].present?)
-  end
-
-  # Moves a judge from before connections onto a new private connection of its owner's, holding
-  # the URL, key and timeout it had: the key was the owner's, so the connection is too. A judge with
-  # no owner (seeded, shared with a team) becomes the migrating user's, since a connection must
-  # belong to someone. Returns the connection; raises if either doesn't save.
-  def migrate_to_connection! migrating_user = owner
-    self.owner ||= migrating_user
-    provider = ConnectionProvider.find(llm_provider_key)
-    created = owner.owned_connections.new(
-      provider.connection_attributes(
-        base_url:    judge_options[:llm_service_url].presence || provider.default_base_url,
-        api_version: judge_options[:llm_api_version].presence || provider.default_api_version
-      ).merge(name: name, secret: llm_key)
-    )
-    # An out-of-range timeout from before connections falls back to the connection's default.
-    created.timeout = judge_options[:llm_timeout].to_i if judge_options[:llm_timeout].to_i.between?(1, 600)
-    transaction do
-      created.save!
-      update!(connection: created)
-    end
-    created
   end
 
   # Runs this judge's calls: through its connection, or on its own settings if it predates them.

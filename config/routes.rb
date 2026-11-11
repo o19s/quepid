@@ -105,9 +105,7 @@ Rails.application.routes.draw do
     post ':ai_judge_id/test_prompt', to: 'ai_judges/wizard#test_prompt', as: :ai_judge_test_prompt
   end
 
-  resources :ai_judges do
-    post :migrate_connection, on: :member
-  end
+  resources :ai_judges
 
   resources :embedders do
     member do

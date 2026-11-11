@@ -603,54 +603,23 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
 
       patch ai_judge_url(legacy_judge), params: { user: { name: 'Still own', judge_options: { llm_service_url: 'https://api.openai.com', llm_model: 'gpt-4o' } } }
       assert_response :unprocessable_content
-      assert_includes response.body, 'migrate this judge to a new connection first'
+      assert_includes response.body, 'is required: choose a connection first'
       assert_not_equal 'Still own', legacy_judge.reload.name
       assert_equal '1234asdf5678', legacy_judge.llm_key
     end
 
-    test 'the owner can migrate a judge with its own settings to a new connection holding them' do
-      legacy = AiJudge.create!(name: 'Old Judge', system_prompt: 'Judge it.', owner: user, llm_key: 'own-key',
-                               judge_options: { llm_service_url: 'https://own.example', llm_timeout: 45, llm_model: 'gpt-4o' })
-      get edit_ai_judge_url(legacy)
-      assert_select 'a[data-turbo-method="post"][href=?]', migrate_connection_ai_judge_path(legacy), text: 'Migrate to connection'
-
-      assert_difference 'user.owned_connections.count', 1 do
-        post migrate_connection_ai_judge_url(legacy)
-      end
-      assert_redirected_to edit_ai_judge_url(legacy)
-      legacy.reload
-      connection = legacy.connection
-      assert_equal [ user, 'openai', 'https://own.example', 'own-key', 45 ],
-                   [ connection.owner, connection.provider, connection.base_url, connection.secret, connection.timeout ]
-      assert_nil legacy.llm_key
-      assert_not_predicate legacy, :own_settings?
-    end
-
-    test 'migrating a judge with no owner makes it the migrating user\'s' do
-      assert_nil legacy_judge.owner
+    test 'legacy judges no longer offer manual migration to a connection' do
       get edit_ai_judge_url(legacy_judge)
-      assert_select 'a', text: 'Migrate to connection'
 
-      post migrate_connection_ai_judge_url(legacy_judge)
-
-      legacy_judge.reload
-      assert_equal user, legacy_judge.owner
-      assert_equal user, legacy_judge.connection.owner
-      assert_equal '1234asdf5678', legacy_judge.connection.secret
+      assert_select '#own-settings-notice'
+      assert_select 'a', text: 'Migrate to connection', count: 0
+      assert_includes response.body, 'choose a connection to save changes'
     end
 
-    test 'a teammate can migrate an owned judge, and the connection goes to its owner' do
-      legacy = AiJudge.create!(name: 'Doug Judge', system_prompt: 'Judge it.', owner: users(:doug), llm_key: 'dougs-key',
-                               judge_options: { llm_service_url: 'https://own.example', llm_model: 'gpt-4o' })
-      legacy.teams << team
-      get edit_ai_judge_url(legacy)
-      assert_select '#own-settings-notice a', text: 'Migrate to connection'
-
-      post migrate_connection_ai_judge_url(legacy)
-
-      legacy.reload
-      assert_equal users(:doug), legacy.owner
-      assert_equal users(:doug), legacy.connection.owner
+    test 'the manual connection migration route is removed' do
+      assert_raises(ActionController::RoutingError) do
+        Rails.application.routes.recognize_path("/ai_judges/#{legacy_judge.id}/migrate_connection", method: :post)
+      end
     end
 
     test 'a judge on a connection shows its provider read-only, without the deprecation note' do
@@ -658,15 +627,6 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
 
       assert_select '.row:not(.d-none) #judge_options_llm_provider[aria-readonly=true]'
       assert_select '#llm_provider_help', count: 0
-    end
-
-    test 'a judge already on a connection has nothing to migrate' do
-      assert_no_difference 'Connection.count' do
-        post migrate_connection_ai_judge_url(ai_judge)
-      end
-      assert_equal 'This judge is already on a connection.', flash[:alert]
-      get edit_ai_judge_url(ai_judge)
-      assert_select 'a', text: 'Migrate to connection', count: 0
     end
 
     test 'a new judge has no provider until a connection is chosen' do
