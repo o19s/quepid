@@ -149,7 +149,7 @@ it, skip `bin/setup_docker` and prepare the databases directly:
 export DB_ADAPTER=postgresql
 docker compose up -d postgres
 bin/docker r bin/rails db:create db:schema:load
-bin/docker r bundle exec thor sample_data:sample_data   # optional seed data
+bin/docker r thor sample_data:sample_data   # optional seed data
 ```
 
 ## 4. Day-to-day

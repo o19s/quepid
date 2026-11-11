@@ -11,6 +11,6 @@ Data is persisted between restarts in the `./volumes` sub directories.
 
 3. Go to http://localhost and register your user
 
-4. Grant your user admin permissions via: `docker compose exec app bundle exec thor user:grant_administrator EMAIL`
+4. Grant your user admin permissions via: `docker compose exec app thor user:grant_administrator EMAIL`
 
 To stop Quepid run `docker compose down`.

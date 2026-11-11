@@ -216,13 +216,13 @@ As you read through the rest of this guide, just ignore the `bin/docker r` part 
 If you want to create some cases that have 100's and 1000's of queries, then do:
 
 ```bash
- bin/docker r bundle exec thor sample_data:large_data
+ bin/docker r thor sample_data:large_data
 ```
 
 or
 
 ```bash
- bundle exec thor sample_data:large_data
+ thor sample_data:large_data
 ```
 
 Solr requests are retried with backoff when the remote Solr is slow or returns 5xx/429.
@@ -502,7 +502,7 @@ For some reason we can't run both with one command, _though we should be able to
 If you want to create a LOT of queries for a user for testing, then run
 
 ```bash
-bin/docker r bundle exec thor sample_data:large_data
+bin/docker r thor sample_data:large_data
 ```
 
 You will have two users, `quepid+100sOfQueries@o19s.com` and `quepid+1000sOfQueries@o19s.com` to test with.
@@ -512,7 +512,7 @@ You will have two users, `quepid+100sOfQueries@o19s.com` and `quepid+1000sOfQuer
 If you want to test the Jupyterlite notebooks, or work with a "real" case and book, then run
 
 ```bash
-bin/docker r bundle exec thor sample_data:haystack_party
+bin/docker r thor sample_data:haystack_party
 ```
 
 You will have lots of user data from the Haystack rating party book and case to work with. This data is sourced from the public case https://go.quepidapp.com/case/6789/try/12?sort=default and https://go.quepidapp.com/books/25
@@ -637,7 +637,7 @@ bin/docker r bin/rake test:stylelint
 To see available tasks:
 
 ```bash
-bin/docker r bundle exec thor list
+bin/docker r thor list
 ```
 
 Additional documentation is in [Operating Documentation](docs/operating_documentation.md#scripting-users-cases-ratings).
