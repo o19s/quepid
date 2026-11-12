@@ -25,15 +25,17 @@ import { expect, Page } from "@playwright/test"
 //
 // Case IDs here are just whatever the shared dev DB currently has at that row, not a fixed
 // fixture in the Rails-test-suite sense — if this case or its snapshot/search-endpoint ever
-// gets deleted, recreate it the same way (clone a real case → take a snapshot with "Record
-// Document Fields?" checked → create a `static` SearchEndpoint pointing at
-// `/api/cases/:id/snapshots/:snapshot_id/search` → point the clone's try at it) rather than
-// reverting to a live external engine. See DEVELOPER_GUIDE.md's Playwright E2E section.
-export const DEFAULT_RICH_CASE_ID = 219
+// gets deleted, recreate it with `thor sample_data:e2e_fixture` (lib/tasks/sample_data.thor's
+// RICH_CASE_FIXTURE_ID, the same 219 as below — rename one and rename the other to match) or by
+// hand (clone a real case → take a snapshot with "Record Document Fields?" checked → create a
+// `static` SearchEndpoint pointing at `/api/cases/:id/snapshots/:snapshot_id/search` → point the
+// clone's try at it) rather than reverting to a live external engine. See DEVELOPER_GUIDE.md's
+// Playwright E2E section.
+export const RICH_CASE_FIXTURE_ID = 219
 
 function readCaseId(): number {
   const raw = process.env.QUEPID_E2E_CASE_ID
-  if (raw === undefined || raw === "") return DEFAULT_RICH_CASE_ID
+  if (raw === undefined || raw === "") return RICH_CASE_FIXTURE_ID
   const n = Number(raw)
   if (!Number.isInteger(n) || n < 1) {
     throw new Error(`QUEPID_E2E_CASE_ID must be a positive integer; got ${JSON.stringify(raw)}`)
