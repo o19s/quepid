@@ -149,13 +149,12 @@ Use the `quepid+admin@o19s.com` seed account (Part 1) to test this part.
 Requires `PROXY_ALLOWLIST_ADMIN_MANAGED=true` (on in the dev `docker-compose.yml`). See DEVELOPER_GUIDE.md "Proxying to internal search engines".
 
 - [ ] **Steps:**
-  1. As an admin, open Admin > **Proxy Allowlist** in the sidebar. Confirm the warning that entries apply to every logged-in user's proxy requests, a **From ENV (read-only)** section listing `PROXY_ALLOWED_NETWORKS` / `PROXY_ALLOWED_HOSTS` entries (or saying there are none) with no edit or delete controls, and a **Managed here** section.
+  1. As an admin, open Admin > **Proxy Allowlist** in the sidebar. Confirm the warning that entries apply to every logged-in user's proxy requests, and the Proxy Allowlist Entries section.
   2. Click **New Allowlist Entry**, choose Network, enter `10.0.5.0/24` with a note, and create.
   3. Edit the entry: change the value to `10.0.6.0/24` and the note, and save. If possible, do this as a second admin.
   4. Delete the entry, accepting the confirmation.
 - **Expected:** After create, the entry is listed with its kind, value, note, and the admin's email and time under both Added and Last changed. The edit form shows the kind read-only; after saving, the new value and note are shown and Last changed names the editing admin. After delete, the entry is gone. The Rails log has one `[proxy_allowlist]` line per create, update (old → new value) and delete, naming the admin.
 - **Edge cases:**
   - [ ] Invalid and too-broad values are rejected with a validation message and nothing saved, both on add and on edit: `10.0.0.0/8` (broader than /16), `127.0.0.1`, `0.0.0.0/16` and `169.254.169.254` (loopback/unspecified/link-local), `10.0.0.0/99` (invalid), host `*.internal` (wildcard), and a duplicate of an existing entry. On edit, the stored value is unchanged.
-  - [ ] With `PROXY_ALLOWED_NETWORKS` set, its entries appear under From ENV only, and deleting a managed entry with the same value leaves the ENV entry in effect.
   - [ ] Set `PROXY_ALLOWLIST_ADMIN_MANAGED=false` in `.env` and recreate the app container (a plain restart keeps the old environment): no sidebar link, and `/admin/proxy_allowlist_entries` returns 404.
   - [ ] As a non-admin, `/admin/proxy_allowlist_entries` redirects with "You must be a Quepid Administrator." (14.1).

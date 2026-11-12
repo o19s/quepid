@@ -55,10 +55,12 @@ class ProxyAllowlistTest < ActiveSupport::TestCase
       assert_nil ProxyAllowlist.admin_network_error(IPAddr.new('fd00::/48'))
     end
 
-    test 'rejects ranges broader than the limits, naming the limit and family' do
-      assert_equal 'is broader than /16; admin-managed IPv4 entries are limited to /16 or narrower (use PROXY_ALLOWED_NETWORKS for wider ranges)',
+    test 'rejects ranges broader than the limits, naming the limit, family and workaround' do
+      assert_equal 'is broader than /16; admin-managed IPv4 entries are limited to /16 or narrower ' \
+                   '(add several narrower entries to cover a wider range)',
                    ProxyAllowlist.admin_network_error(IPAddr.new('10.0.0.0/15'))
-      assert_equal 'is broader than /48; admin-managed IPv6 entries are limited to /48 or narrower (use PROXY_ALLOWED_NETWORKS for wider ranges)',
+      assert_equal 'is broader than /48; admin-managed IPv6 entries are limited to /48 or narrower ' \
+                   '(add several narrower entries to cover a wider range)',
                    ProxyAllowlist.admin_network_error(IPAddr.new('fd00::/47'))
     end
 
@@ -94,10 +96,8 @@ class ProxyAllowlistTest < ActiveSupport::TestCase
   end
 
   describe 'blocked?' do
-    def allowlist networks: [], hosts: [], admin_managed: false
+    def allowlist admin_managed: false
       config = ActiveSupport::OrderedOptions.new
-      config.proxy_allowed_networks = networks.map { |network| IPAddr.new(network) }
-      config.proxy_allowed_hosts = hosts
       config.proxy_allowlist_admin_managed = admin_managed
       ProxyAllowlist.new(config: config)
     end
@@ -119,22 +119,6 @@ class ProxyAllowlistTest < ActiveSupport::TestCase
       %w[8.8.8.8 2001:4860:4860::8888].each do |ip|
         assert_not blocked?(list, ip), "expected #{ip} to be allowed"
       end
-    end
-
-    test 'ENV networks allow any address inside them, including link-local, matched after unwrapping IPv4-mapped' do
-      list = allowlist(networks: [ '10.0.5.0/24', '169.254.0.0/16' ])
-      assert_not blocked?(list, '10.0.5.20')
-      assert_not blocked?(list, '::ffff:10.0.5.20')
-      assert_not blocked?(list, '169.254.169.254')
-      assert blocked?(list, '10.0.6.20')
-    end
-
-    test 'ENV hosts allow loopback and private addresses but never link-local, matching a normalized name' do
-      list = allowlist(hosts: [ 'search.internal' ])
-      assert_not blocked?(list, '127.0.0.1', hostname: 'SEARCH.Internal.')
-      assert_not blocked?(list, '10.1.2.3')
-      assert blocked?(list, '169.254.169.254')
-      assert blocked?(list, '10.1.2.3', hostname: 'other.internal')
     end
 
     test 'stored entries are ignored, without a query, when the flag is off' do
@@ -182,7 +166,9 @@ class ProxyAllowlistTest < ActiveSupport::TestCase
     end
 
     test 'defaults to the application config' do
-      with_proxy_allowed_networks('10.0.5.0/24') do
+      store(ProxyAllowlistEntry::NETWORK, '10.0.5.0/24')
+
+      with_proxy_allowlist_admin_managed(true) do
         assert_not ProxyAllowlist.new.blocked?(IPAddr.new('10.0.5.20'), hostname: 'x')
       end
     end

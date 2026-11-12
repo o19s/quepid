@@ -70,18 +70,11 @@ module Admin
         Rails.application.config.proxy_allowlist_admin_managed = @original_admin_managed
       end
 
-      test 'index lists ENV entries read-only and stored entries with attribution' do
+      test 'index lists stored entries with attribution' do
         entry
-        with_proxy_allowed_networks('192.168.1.50') do
-          with_proxy_allowed_hosts('env.internal') do
-            get admin_proxy_allowlist_entries_path
-          end
-        end
+        get admin_proxy_allowlist_entries_path
 
         assert_response :success
-        assert_select '#env-entries code', text: '192.168.1.50/32'
-        assert_select '#env-entries code', text: 'env.internal'
-        assert_select '#env-entries a, #env-entries form', count: 0
         assert_select "#managed-entries tr##{ActionView::RecordIdentifier.dom_id(entry)}" do
           assert_select 'code', text: '10.0.5.0/24'
           assert_select 'td', text: 'Prod Solr'

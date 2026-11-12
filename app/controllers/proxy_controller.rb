@@ -19,8 +19,8 @@ class ProxyController < ApplicationController
   # curl -b cookies.txt -X GET "http://localhost:3000/proxy/fetch?url=http://quepid-solr.dev.o19s.com:8985/solr/media/select&q=*:*" -u 'solr:SolrRocks'
   #
   # Note: the target URL must resolve to a public IP. Loopback, link-local, and RFC1918
-  # private ranges are blocked by validate_proxy_url!, unless allowed by ProxyAllowlist
-  # (PROXY_ALLOWED_NETWORKS, PROXY_ALLOWED_HOSTS, or admin-managed entries).
+  # private ranges are blocked by validate_proxy_url! via ProxyAllowlist, unless an
+  # administrator has added a matching allowlist entry (see ProxyAllowlistEntry).
   #
   def fetch
     url_param = proxy_url_params

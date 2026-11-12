@@ -141,48 +141,12 @@ Rails.application.config.require_proxy_with_basic_auth_credentials = bool.deseri
 # Require proxying independently of desktop mode; existing endpoints are only warned about.
 Rails.application.config.require_proxy_for_all_search_endpoints = bool.deserialize(ENV.fetch('REQUIRE_PROXY_FOR_ALL_SEARCH_ENDPOINTS', false))
 
-# == Proxy Allowed Networks
-# The proxy refuses loopback, link-local and private addresses to prevent SSRF. List the
-# internal networks your search engines live on, as comma separated CIDR ranges or single
-# IPs (e.g. "10.0.5.0/24,192.168.1.50"), to let the proxy reach them. Matching is on the
-# resolved IP, not the hostname. Anything not listed stays blocked; a listed range is
-# trusted as is, so keep ranges narrow. An invalid entry is ignored with a warning, which
-# leaves that address blocked.
-#
-# Parsed after initialization because ProxyAllowlist (app/services) can't be autoloaded
-# while initializers run; nothing reads these lists before the first request.
-Rails.application.config.after_initialize do
-  Rails.application.config.proxy_allowed_networks = ENV.fetch('PROXY_ALLOWED_NETWORKS', '')
-    .split(',').map(&:strip).compact_blank.filter_map do |network|
-      parsed, error = ProxyAllowlist.parse_network(network)
-      Rails.logger.warn("PROXY_ALLOWED_NETWORKS: ignoring invalid entry #{network.inspect} (#{error})") if error
-      parsed
-    end
-end
-
-# == Proxy Allowed Hosts
-# Exact hostnames (comma separated, no wildcards) the proxy may reach even when they resolve
-# to loopback or private addresses, e.g. an internal load balancer or a VPC search domain
-# whose IPs change. Prefer this to listing a whole VPC range. Link-local addresses
-# (including cloud metadata at 169.254.169.254) stay blocked for these names. An invalid
-# entry is ignored with a warning.
-#
-Rails.application.config.after_initialize do
-  Rails.application.config.proxy_allowed_hosts = ENV.fetch('PROXY_ALLOWED_HOSTS', '')
-    .split(',').map { |host| ProxyAllowlist.normalize_host(host) }.compact_blank.select do |host|
-      _parsed, error = ProxyAllowlist.parse_host(host)
-      next true unless error
-
-      Rails.logger.warn("PROXY_ALLOWED_HOSTS: ignoring #{host.inspect}: #{error}; put IPs and ranges in PROXY_ALLOWED_NETWORKS")
-      false
-    end
-end
-
 # == Proxy Allowlist Admin Managed
-# When enabled, Quepid administrators can add proxy allowlist entries (networks and
-# hostnames) from the admin area, on top of PROXY_ALLOWED_NETWORKS and PROXY_ALLOWED_HOSTS.
-# Admin entries can never reach loopback (including 0.0.0.0) or link-local addresses, and networks broader
-# than /16 (IPv4) or /48 (IPv6) are refused. Changes apply without a restart.
+# The proxy refuses loopback, link-local and private addresses to prevent SSRF, unless
+# PROXY_ALLOWLIST_ADMIN_MANAGED is on, in which case Quepid administrators can add proxy
+# allowlist entries (networks and hostnames) from the admin area, without a restart. Admin
+# entries can never reach loopback (including 0.0.0.0) or link-local addresses, and networks
+# broader than /16 (IPv4) or /48 (IPv6) are refused.
 #
 Rails.application.config.proxy_allowlist_admin_managed = bool.deserialize(ENV.fetch('PROXY_ALLOWLIST_ADMIN_MANAGED', false))
 

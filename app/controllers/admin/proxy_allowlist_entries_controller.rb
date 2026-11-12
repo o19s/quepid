@@ -9,8 +9,6 @@ module Admin
 
     def index
       @entries = ProxyAllowlistEntry.includes(:created_by, :updated_by).order(:kind, :value)
-      @env_networks = Rails.application.config.proxy_allowed_networks
-      @env_hosts = Rails.application.config.proxy_allowed_hosts
     end
 
     def new

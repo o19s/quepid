@@ -3,10 +3,9 @@
 require 'ipaddr'
 
 # Decides which internal addresses the proxy may reach, and validates allowlist
-# entries. The ENV lists (PROXY_ALLOWED_NETWORKS / PROXY_ALLOWED_HOSTS, parsed at
-# boot in config/initializers/customize_quepid.rb) are the authoritative baseline.
-# When PROXY_ALLOWLIST_ADMIN_MANAGED is on, ProxyAllowlistEntry rows add to them,
-# within the hard limits below.
+# entries. By default every loopback, link-local and private address is blocked.
+# When PROXY_ALLOWLIST_ADMIN_MANAGED is on, ProxyAllowlistEntry rows can allow
+# specific ones, within the hard limits below.
 class ProxyAllowlist
   HOSTNAME_FORMAT = /\A[a-z0-9_-]+(\.[a-z0-9_-]+)*\z/
   HOST_ERROR = 'not a plain hostname (no wildcards, schemes, ports or paths)'
@@ -67,7 +66,8 @@ class ProxyAllowlist
       network = native(network)
       min_prefix = network.ipv4? ? MIN_ADMIN_IPV4_PREFIX : MIN_ADMIN_IPV6_PREFIX
       if network.prefix < min_prefix
-        return "is broader than /#{min_prefix}; admin-managed #{network.ipv4? ? 'IPv4' : 'IPv6'} entries are limited to /#{min_prefix} or narrower (use PROXY_ALLOWED_NETWORKS for wider ranges)"
+        return "is broader than /#{min_prefix}; admin-managed #{network.ipv4? ? 'IPv4' : 'IPv6'} entries are limited to /#{min_prefix} or narrower " \
+               '(add several narrower entries to cover a wider range)'
       end
 
       ADMIN_FORBIDDEN_ERROR if ADMIN_FORBIDDEN_NETWORKS.any? { |forbidden| overlap?(network, forbidden) }
@@ -93,12 +93,7 @@ class ProxyAllowlist
     address = self.class.native(address)
     hostname = self.class.normalize_host(hostname)
 
-    # Operators can open specific internal networks with PROXY_ALLOWED_NETWORKS.
-    return false if @config.proxy_allowed_networks.any? { |network| network.include?(address) }
-
     return true if address.link_local?
-    # A PROXY_ALLOWED_HOSTS name may reach private addresses, but never link-local ones.
-    return false if @config.proxy_allowed_hosts.include?(hostname)
 
     if @config.proxy_allowlist_admin_managed
       verdict = stored_entry_verdict(address, hostname)

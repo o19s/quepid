@@ -17,28 +17,6 @@ The proxy SHALL refuse a target URL when any address it resolves to is loopback,
 - **WHEN** a logged-in user proxies a URL whose host resolves only to public addresses
 - **THEN** the request is forwarded
 
-### Requirement: ENV networks are authoritative
-Networks and single IPs listed in `PROXY_ALLOWED_NETWORKS` SHALL be allowed exactly as they are today, independent of the admin-managed flag and of any stored entries. Invalid entries SHALL be ignored with a warning in the Rails log naming the variable.
-
-#### Scenario: Address inside an ENV network
-- **WHEN** `PROXY_ALLOWED_NETWORKS=10.0.5.0/24` and a user proxies a URL resolving to `10.0.5.20`
-- **THEN** the request is forwarded
-
-#### Scenario: Invalid ENV network entry
-- **WHEN** `PROXY_ALLOWED_NETWORKS=10.0.0.0/99` at boot
-- **THEN** the entry is ignored, a warning naming `PROXY_ALLOWED_NETWORKS` is logged, and addresses in `10.0.0.0/8` stay blocked
-
-### Requirement: ENV hosts are authoritative
-Hostnames listed in `PROXY_ALLOWED_HOSTS` SHALL be allowed to reach loopback and private addresses exactly as they are today, independent of the admin-managed flag. Link-local addresses SHALL stay blocked for them.
-
-#### Scenario: ENV host resolving to a private address
-- **WHEN** `PROXY_ALLOWED_HOSTS=search.internal` and `search.internal` resolves to `10.1.2.3`
-- **THEN** a proxied request to `http://search.internal/` is forwarded
-
-#### Scenario: ENV host resolving to link-local
-- **WHEN** `PROXY_ALLOWED_HOSTS=search.internal` and `search.internal` resolves to `169.254.169.254`
-- **THEN** the request is refused with HTTP 400
-
 ### Requirement: Admin management is off unless enabled
 Unless `PROXY_ALLOWLIST_ADMIN_MANAGED` is true, Quepid SHALL NOT offer the proxy allowlist admin page and SHALL ignore any stored entries when deciding proxy requests. Disabling the flag SHALL NOT delete stored entries.
 
@@ -108,17 +86,6 @@ An administrator SHALL be able to remove an admin-managed entry. Removal SHALL a
 #### Scenario: Remove a network
 - **WHEN** an administrator removes the stored `10.0.5.0/24` entry
 - **THEN** the entry no longer appears and the next proxied request to `10.0.5.20` is refused with HTTP 400
-
-### Requirement: Admin entries are additive to ENV
-Admin-managed entries SHALL only add targets. The admin page SHALL list the ENV entries as read-only, and nothing done on the page SHALL remove, override or narrow an ENV entry.
-
-#### Scenario: ENV entries are read-only
-- **WHEN** `PROXY_ALLOWED_NETWORKS=192.168.1.50` and an administrator opens the admin page
-- **THEN** `192.168.1.50` is listed as coming from ENV, with no edit or remove control
-
-#### Scenario: Removing an admin entry does not affect ENV
-- **WHEN** `10.0.5.0/24` is allowed by both ENV and a stored entry, and the administrator removes the stored entry
-- **THEN** proxied requests to `10.0.5.20` are still forwarded
 
 ### Requirement: Admin network entries cannot cover loopback or link-local
 Saving an admin network entry SHALL be refused, with a validation message, if the range overlaps loopback (`127.0.0.0/8`, `::1`), unspecified (`0.0.0.0/8`, `::`) or link-local (`169.254.0.0/16`, `fe80::/10`) addresses.

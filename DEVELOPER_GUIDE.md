@@ -1396,38 +1396,26 @@ The credential-only proxy setting remains independently configurable.
 ## Proxying to internal search engines
 
 The proxy refuses targets that resolve to loopback, link-local or private
-addresses (RFC1918, carrier-grade NAT, IPv6 unique-local) to prevent SSRF. To
-proxy to an engine on an internal network, set `PROXY_ALLOWED_NETWORKS` to a
-comma separated list of CIDR ranges or single IPs, e.g.
-`PROXY_ALLOWED_NETWORKS=10.0.5.0/24,192.168.1.50`. Matching is on the
-resolved IP, and every address a hostname resolves to must be allowed. Anything
-not listed stays blocked. Keep the ranges narrow.
+addresses (RFC1918, carrier-grade NAT, IPv6 unique-local) to prevent SSRF.
+Anything not explicitly allowed stays blocked.
 
-For engines whose IPs change, such as an internal load balancer or a VPC search
-domain, list the exact hostname in `PROXY_ALLOWED_HOSTS` instead, e.g.
-`PROXY_ALLOWED_HOSTS=internal-search-123.us-east-1.elb.amazonaws.com`. This is
-narrower than opening the VPC's range. A listed name may reach private
-addresses, but link-local addresses stay blocked.
-
-Invalid entries in either variable are ignored with a warning in the Rails log.
-
-To manage additional entries without a restart, set
+To proxy to an engine on an internal network, set
 `PROXY_ALLOWLIST_ADMIN_MANAGED=true` and restart once. Quepid administrators
 then get a Proxy Allowlist page in the admin area, where they can add, edit and
-remove networks and hostnames. These entries are additive: they widen the ENV
-lists and never remove or override an ENV entry, which the page lists
-read-only. They also have hard limits that ENV entries do not: they can never
-reach loopback (including `0.0.0.0`) or link-local addresses (including cloud
-metadata), and networks
-broader than /16 (IPv4) or /48 (IPv6) are refused, so use
-`PROXY_ALLOWED_NETWORKS` for anything wider. Changes apply to the next proxied
-request. Each entry records who added it and who last changed it, and every
-add, edit and remove is written to the Rails log. Entries apply to every
-logged-in user's proxy requests, and the first account to sign up becomes an
-administrator, so only enable the flag once your administrator accounts exist.
-Turning the flag off ignores stored entries without deleting them. The
-development `docker-compose.yml` turns the flag on so the end-to-end tests cover
-the page.
+remove networks (CIDR ranges or single IPs) and hostnames, without a further
+restart. A network entry matches on the resolved IP, and every address a
+hostname resolves to must be allowed; a host entry may reach private addresses
+for that name, but link-local addresses (including cloud metadata) stay
+blocked either way. Entries have hard limits: they can never reach loopback
+(including `0.0.0.0`) or link-local addresses, and networks broader than /16
+(IPv4) or /48 (IPv6) are refused. Changes apply to the next proxied request.
+Each entry records who added it and who last changed it, and every add, edit
+and remove is written to the Rails log. Entries apply to every logged-in
+user's proxy requests, and the first account to sign up becomes an
+administrator, so only enable the flag once your administrator accounts
+exist. Turning the flag off ignores stored entries without deleting them. The
+development `docker-compose.yml` turns the flag on so the end-to-end tests
+cover the page.
 
 ## Seed Data
 
