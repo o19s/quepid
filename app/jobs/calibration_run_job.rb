@@ -24,7 +24,7 @@ class CalibrationRunJob < ApplicationJob
 
     # The run's own settings, which a tuning run may have changed from the judge's.
     judge = run.tuned_judge
-    llm_service = LlmService.new(judge.llm_key, judge.judge_options)
+    llm_service = judge.llm_service
     scale = JudgeScale.for(run.book)
 
     cancelled = false
