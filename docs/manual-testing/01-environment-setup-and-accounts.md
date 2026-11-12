@@ -156,6 +156,7 @@ Invitations are generated from the **Teams > Add Team Member** flow (see Part 9)
   - [ ] Delete an account that has outstanding/pending team invitations it sent — confirm deletion succeeds and the invitee can still accept the invitation.
   - [ ] Try deleting an account with judgements requiring reassignment and a private case — confirm the Danger Zone shows the validation error and the account, case and its queries remain intact.
   - [ ] Try deleting an account that authored an Annotation (Part 5.4), including one on its private case — confirm the Danger Zone shows an annotations restriction error. The account, private case, queries, annotations and linked score history remain intact; the user stays signed in.
+  - [ ] Try deleting an account that owns a connection used by an embedder, including an embedder owned by someone else — confirm the Danger Zone explains that the embedders must use another connection or be deleted first. The account, private cases, connections and embedders remain intact; the user stays signed in. Confirm an administrator cannot delete the account either. After moving or deleting those embedders, account deletion succeeds and removes the unused connections.
 
 ### 1.10 Transactional emails (invitation & password reset)
 

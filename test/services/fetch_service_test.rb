@@ -171,6 +171,61 @@ class FetchServiceTest < ActiveSupport::TestCase
     end
   end
 
+  describe 'Qdrant mapper-based endpoint' do
+    let(:atry) { tries(:for_case_queries_case) }
+    let(:first_query) { queries(:first_query) }
+
+    before do
+      atry.search_endpoint.api_method = 'POST'
+      atry.search_endpoint.search_engine = 'searchapi'
+      atry.search_endpoint.mapper_based_search_engine_id = 'qdrant'
+      atry.search_endpoint.mapper_code = MapperBasedSearchEngine.find('qdrant').mapper_code
+    end
+
+    it 'preserves an explicit limit already baked into query_params over number_of_rows' do
+      fetch_service = FetchService.new options
+      atry.number_of_rows = 37
+      atry.query_params = '{"query": {"nearest": {"text": "#$query##"}}, "limit": 10}'
+
+      # requestArgsMapper leaves an existing "limit" alone - this is what lets
+      # ratedDocsQueryParamsMapper's own explicit limit (sized to the rated-doc count, not
+      # the page size) survive the same request-building pipeline. See qdrant.js.
+      stub_request(:post, 'http://test.com/solr/tmdb/select')
+        .with(body: hash_including('limit' => 10))
+        .to_return(status: 200, body: '{}')
+
+      response = fetch_service.make_request(atry, first_query)
+      assert_equal 200, response.status
+    end
+
+    it 'adds limit even when query_params has none at all' do
+      fetch_service = FetchService.new options
+      atry.number_of_rows = 5
+      atry.query_params = '{"query": {"nearest": {"text": "#$query##"}}}'
+
+      stub_request(:post, 'http://test.com/solr/tmdb/select')
+        .with(body: hash_including('limit' => 5))
+        .to_return(status: 200, body: '{}')
+
+      response = fetch_service.make_request(atry, first_query)
+      assert_equal 200, response.status
+    end
+
+    it 'does not inject limit for a mapper with no requestArgsMapper, e.g. Vespa' do
+      fetch_service = FetchService.new options
+      atry.search_endpoint.mapper_based_search_engine_id = 'vespa'
+      atry.search_endpoint.mapper_code = MapperBasedSearchEngine.find('vespa').mapper_code
+      atry.query_params = 'select * from movies where title contains "#$query##"'
+
+      stub_request(:post, 'http://test.com/solr/tmdb/select')
+        .with(body: { 'yql' => 'select * from movies where title contains "First Query"' })
+        .to_return(status: 200, body: '{}')
+
+      response = fetch_service.make_request(atry, first_query)
+      assert_equal 200, response.status
+    end
+  end
+
   describe 'Solr JSON Query DSL' do
     let(:atry) { tries(:for_case_queries_case) }
     let(:first_query) { queries(:first_query) }

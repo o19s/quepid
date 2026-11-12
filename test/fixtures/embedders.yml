@@ -3,7 +3,6 @@
 # Table name: embedders
 #
 #  id             :bigint           not null, primary key
-#  api_key        :string(4000)
 #  archived       :boolean          default(FALSE), not null
 #  dimensions     :integer
 #  input_template :text(65535)
@@ -12,15 +11,15 @@
 #  name           :string(255)      not null
 #  options        :json
 #  provider       :string(50)       not null
-#  service_url    :string(500)
-#  timeout        :integer          default(30), not null
 #  truncation     :string(20)       default("none"), not null
 #  created_at     :datetime         not null
 #  updated_at     :datetime         not null
+#  connection_id  :bigint
 #  owner_id       :integer
 #
 # Indexes
 #
+#  index_embedders_on_connection_id    (connection_id)
 #  index_embedders_on_owner_id_and_id  (owner_id,id)
 #
 
@@ -28,9 +27,8 @@
 openai_small:
   name:        OpenAI small
   provider:    openai
-  service_url: https://api.openai.com
+  connection:  openai
   model:       text-embedding-3-small
-  api_key:     sk-test-openai
   dimensions:  512
   truncation:  native
   owner:       doug
@@ -40,7 +38,7 @@ openai_small:
 private_ollama:
   name:        Private Ollama
   provider:    ollama
-  service_url: http://ollama:11434
+  connection:  private_ollama
   model:       qwen3-embedding:0.6b
   instruction: Given a web search query, retrieve relevant passages
   owner:       joey

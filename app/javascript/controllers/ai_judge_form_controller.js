@@ -8,6 +8,7 @@ export default class extends Controller {
     "json",
     "jsonTab",
     "provider",
+    "connection",
     "preset",
     "help",
     "url",
@@ -101,6 +102,21 @@ export default class extends Controller {
   currentPreset() {
     if (!this.hasProviderTarget) return null
     return this.presetsValue?.[this.providerTarget.value]
+  }
+
+  // A connection is for one provider, so choosing it chooses the provider too.
+  connectionChanged() {
+    const provider = this.connectionTarget.selectedOptions[0]?.dataset.provider
+    const row = this.hasProviderTarget ? this.providerTarget.closest(".row") : null
+    if (!provider || !this.hasProviderTarget) {
+      // Hidden again once there is no connection to take it from.
+      row?.classList.add("d-none")
+      return
+    }
+    row?.classList.remove("d-none")
+    if (this.providerTarget.value === provider) return
+    this.providerTarget.value = provider
+    this.providerChanged()
   }
 
   providerChanged() {

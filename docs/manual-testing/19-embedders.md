@@ -11,15 +11,15 @@ For a local run, the Ollama container needs an embedding model: `docker exec oll
 ### 19.1 Create an embedder and test it
 
 - [ ] **Steps:**
-  1. Click **Embedders** in the sidebar, then **Create Embedder**.
-  2. Cycle the **Provider** dropdown through OpenAI, Voyage AI, Cohere, Ollama and OpenAI-compatible.
-  3. For each, confirm URL and Model fill with that provider's defaults and the **Provider notes** panel updates. OpenAI, Voyage and Cohere show the API key (marked required) and hide Instruction/Input template; Ollama hides the API key and shows Instruction/Input template; OpenAI-compatible shows both.
-  4. Pick Ollama, set Model to an installed embedding model, Truncation **Native**, Dimensions `128`, and an Instruction.
+  1. Open **Connections** and create or check a connection for the embedding service if you do not already have one.
+  2. Click **Embedders** in the sidebar, then **Create Embedder**.
+  3. Select an owned or instance-wide connection. The connection's provider sets the default Model; provider-specific notes and settings update. The embedder has no URL, key or timeout fields. Ollama shows Instruction/Input template; OpenAI, Voyage and Cohere hide them; OpenAI-compatible shows them.
+  4. Pick an Ollama connection and set Model to an installed embedding model, Truncation **Native**, Dimensions `128`, and an Instruction.
   5. Click **Check connection**.
   6. Save.
 - **Expected:** Check connection shows the dimension count, the exact text sent (the instruction wrapped in `Instruct: … / Query: …`) and the first few vector values. Saving redirects to the embedder's edit page with "Embedder was successfully created."
 - **Edge cases:**
-  - [ ] Submit `https://example.com/with a space` — Save shows "Service url must be a valid http:// or https:// URL" and does not create an embedder. HTTP(S) local hostnames, ports and provider path prefixes remain supported. Missing-host (`https://`) and embedded-newline rejection are covered by model tests; the browser blocks a missing-host submission and strips newlines from the URL field before submission.
+  - [ ] On the connection form, submit `https://example.com/with a space` — Save shows "Base url must be a valid http:// or https:// URL" and does not create a connection. HTTP(S) local hostnames, ports and provider path prefixes remain supported. Missing-host (`https://`) and embedded-newline rejection are covered by model tests; the browser blocks a missing-host submission and strips newlines from the URL field before submission.
   - [ ] Voyage AI with Native truncation and Dimensions `300` — Save shows "Dimensions must be one of 256, 512, 1024 or 2048 for Voyage AI".
   - [ ] Truncation **Client-side** shows the Matryoshka warning; the Native option is disabled for a provider without a dimensions parameter.
   - [ ] A wrong key or unreachable URL — Check connection shows the provider's error in red rather than failing silently.
@@ -27,15 +27,19 @@ For a local run, the Ollama container needs an embedding model: `docker exec oll
 ### 19.2 Edit, clone, share and delete an embedder
 
 - [ ] **Steps:**
-  1. Open a saved embedder. Confirm the API key field is empty, with the placeholder "Saved — leave blank to keep it".
-  2. Click **Check connection** without typing a key — it should use the saved key.
+  1. Open a saved embedder. Confirm its saved connection is selected; URL, key and timeout come from that connection.
+  2. Click **Check connection** — it should use the saved connection's key.
+     As a teammate with access to the embedder but no direct access to its connection, confirm
+     the check still works with the saved connection. Change the model or sample text before
+     checking and reload afterward to confirm the check did not save those changes. A check
+     cannot switch to a different connection the teammate cannot use.
   3. Change the name, check a team under **Teams to Share this Embedder With**, save.
-  4. From the list, **Clone** it and save the clone without typing a key.
+  4. From the list, **Clone** it, confirm the same connection is selected, and save the clone.
   5. Sign in as a member of the shared team and confirm the embedder appears in their list.
   6. Delete the clone from the list (confirmation dialog).
   7. Open the team's page (**Teams** → the team). Find the **Embedders** card.
   8. Click the red ⊗ on the shared embedder and confirm.
-- **Expected:** The saved key is never rendered into the page; blank keeps it; the clone keeps the source's key; the shared embedder is visible to team members; deleted embedders disappear from the list. The team page lists the team's embedders (provider, model, size, owner, how many cases use it) with a **Create Embedder** button that pre-selects the team; step 8 shows "… unshared from …", the card empties, and cases already using the embedder keep it.
+- **Expected:** The saved key is never rendered into the page; the clone keeps the source's connection only when the new owner owns it or it is instance-wide; otherwise the form explains that a connection must be chosen and does not offer the private original; the shared embedder is visible to team members; deleted embedders disappear from the list. The team page lists the team's embedders (provider, model, size, owner, how many cases use it) with a **Create Embedder** button that pre-selects the team; step 8 shows "… unshared from …", the card empties, and cases already using the embedder keep it.
 
 ### 19.3 Pick a case's embedder
 
@@ -68,5 +72,17 @@ For a local run, the Ollama container needs an embedding model: `docker exec oll
   - Step 4: the new query has its vector before its first search (no badge).
   - Step 5: rows show "vector outdated" (amber) until the automatic re-run finishes; the tooltip says the settings changed.
   - Step 6: rows show "vectorisation failed" (red); the tooltip has the provider's error (e.g. 401). Older vectors are kept.
-  - Step 7: all queries are redone.
+  - Step 7: the button shows a spinner and "Vectorising…" while the request is queued and the job is running; all queries are redone.
 
+
+### 19.5 Private and instance-wide connections
+
+- [ ] **Steps:**
+  1. Create a named Ollama connection with its URL and no authentication. Check it before saving; verify an invalid URL is rejected and a reachable provider reports success.
+  2. Open **Access**. There is no team picker. A non-administrator has no instance-wide control; an administrator can choose **Instance-wide** at creation. Save a private connection and reload it.
+  3. Create an embedder using that private connection. Confirm it selects the provider and default model from the connection, check it, save it and share the embedder with a disposable team containing another human user.
+  4. As that teammate, verify the connection is absent from **Connections** and cannot be opened directly. Open the shared embedder, change its sample text/model and check it. Reload to verify the check saved nothing; rename and save it to verify normal editing still works.
+  5. Clone the shared embedder. The private original connection is not offered; a notice asks for an owned or instance-wide connection. Select one available to the teammate and save the copy.
+  6. As an administrator, create an instance-wide connection. Verify its owner remains shown and its availability survives reload. As the teammate, select it in a new embedder and verify its provider determines the embedder settings; the teammate cannot edit or delete the connection.
+  7. Remove the disposable copies, shared embedder, connections and team. An in-use connection must refuse deletion until its embedder is removed.
+- **Expected:** Connection access is independent of team membership. Sharing a configured embedder permits use of its existing connection without granting permission to attach that private connection to a new configuration. Instance-wide availability is explicit and retains a responsible administrator owner. Existing cases continue using their assigned embedder after it is unshared.

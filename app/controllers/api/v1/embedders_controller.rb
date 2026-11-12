@@ -4,6 +4,9 @@ module Api
   module V1
     # @tags embedders
     class EmbeddersController < Api::ApiController
+      include Embedders::ParameterFiltering
+      include TeamAssignable
+
       before_action :set_embedder, only: [ :show, :update, :destroy ]
 
       # @parameter archived(query) [Boolean] Whether to list archived embedders instead of active ones.
@@ -27,14 +30,12 @@ module Api
       #       embedder: Hash{
       #         name: String,
       #         provider: String,
-      #         service_url: String,
+      #         connection_id: Integer,
       #         model: String,
-      #         api_key: String,
       #         dimensions: Integer,
       #         truncation: String,
       #         instruction: String,
       #         input_template: String,
-      #         timeout: Integer,
       #         archived: Boolean,
       #         team_ids: Array<Integer>
       #       }
@@ -44,16 +45,18 @@ module Api
       #   [JSON{
       #     "embedder": {
       #       "name": "OpenAI small, 512 dims",
-      #       "provider": "openai",
-      #       "service_url": "https://api.openai.com",
+      #       "connection_id": 1,
       #       "model": "text-embedding-3-small",
-      #       "api_key": "sk-...",
       #       "dimensions": 512,
       #       "truncation": "native"
       #     }
       #   }]
+      #
+      # The embedder takes its provider, URL, key and timeout from connection_id (one the user can
+      # use whose service makes embeddings) -- it has none of its own.
       def create
         @embedder = current_user.owned_embedders.build(embedder_params.except(:team_ids))
+        @embedder.connection_assignment_user = current_user
 
         if @embedder.save
           apply_team_ids(@embedder, embedder_params[:team_ids]) if embedder_params.key?(:team_ids)
@@ -63,11 +66,9 @@ module Api
         end
       end
 
-      # A blank or masked api_key leaves the saved key alone.
       # @request_body_example rename [JSON{ "embedder": { "name": "Renamed" }}]
       def update
         update_params = embedder_params.except(:team_ids)
-        update_params = update_params.except(:api_key) if Embedder.keep_existing_key?(update_params[:api_key])
 
         if @embedder.update(update_params)
           apply_team_ids(@embedder, embedder_params[:team_ids]) if embedder_params.key?(:team_ids)
@@ -87,19 +88,11 @@ module Api
 
       def set_embedder
         @embedder = current_user.embedders_involved_with.find(params.expect(:id))
-      end
-
-      # Only teams the current user belongs to are added or removed; others are kept.
-      def apply_team_ids embedder, team_ids
-        user_team_ids = current_user.teams.pluck(:id)
-        selected = Array(team_ids).compact_blank.map(&:to_i) & user_team_ids
-        kept = embedder.team_ids - user_team_ids
-
-        embedder.team_ids = kept | selected
+        @embedder.connection_assignment_user = current_user
       end
 
       def embedder_params
-        params.expect(embedder: [ *Embedder::PERMITTED_PARAMS, :archived, { team_ids: [] } ])
+        params.expect(embedder: [ *embedder_parameter_keys, :archived, { team_ids: [] } ])
       end
     end
   end

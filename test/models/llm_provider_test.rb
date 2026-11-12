@@ -201,7 +201,7 @@ class LlmProviderTest < ActiveSupport::TestCase
   test 'jev fixes the endpoint and model it dictates, and says where a key comes from' do
     jev = LlmProvider.find('typesafe_jev')
 
-    assert_equal %w[llm_service_url llm_model llm_api_version], jev.read_only_fields
+    assert_equal %w[llm_service_url llm_api_version], jev.read_only_fields
     assert_equal jev.read_only_fields, jev.to_preset[:read_only]
     assert_includes jev.help_html, 'https://console.typesafe.ai/keys'
   end

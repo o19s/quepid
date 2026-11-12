@@ -7,8 +7,9 @@ module EmbedderAdapters
     URL = 'https://api.openai.com/v1/embeddings'
 
     let(:embedder) do
-      Embedder.new(name: 'Test', provider: 'openai', service_url: 'https://api.openai.com',
-                   model: 'text-embedding-3-small', api_key: 'sk-test', timeout: 30)
+      Embedder.new(name: 'Test', provider: 'openai',
+                   connection: Connection.new(provider: 'openai', base_url: 'https://api.openai.com', secret: 'sk-test', auth_scheme: 'bearer'),
+                   model: 'text-embedding-3-small')
     end
 
     def openai_response *vectors
@@ -119,7 +120,8 @@ module EmbedderAdapters
     end
 
     test 'keeps a path prefix on the service url' do
-      embedder.assign_attributes(provider: 'openai_compatible', service_url: 'http://vllm:8000/proxy', api_key: nil)
+      embedder.provider = 'openai_compatible'
+      embedder.connection.assign_attributes(base_url: 'http://vllm:8000/proxy', secret: nil)
       stub = stub_request(:post, 'http://vllm:8000/proxy/v1/embeddings')
         .to_return(status: 200, headers: { 'Content-Type' => 'application/json' }, body: openai_response([ 1.0 ]))
 

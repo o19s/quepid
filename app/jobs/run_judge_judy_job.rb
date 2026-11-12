@@ -86,7 +86,7 @@ class RunJudgeJudyJob < ApplicationJob
     cancelled = false
     total_pairs = book.query_doc_pairs_within_rank_depth.count
     cancellable = provider_job_id.present? || SolidQueue::Job.exists?(active_job_id: job_id)
-    llm_service = LlmService.new judge.llm_key, judge.judge_options
+    llm_service = judge.llm_service
     scale = JudgeScale.for(book)
     loop do
       break if number_of_pairs && counter >= number_of_pairs

@@ -4,6 +4,14 @@ require 'test_helper'
 
 class AiJudgesOwnershipControllerTest < ActionDispatch::IntegrationTest
   let(:user) { users(:random) }
+  let(:random_openai) do
+    Connection.create!(name: 'Random OpenAI', provider: 'openai', base_url: 'https://api.openai.com',
+                       auth_scheme: 'bearer', secret: '1234asdf5678', owner: users(:random))
+  end
+  let(:random_jev) do
+    Connection.create!(name: 'Random Jev', provider: 'typesafe_jev', base_url: 'https://api.typesafe.ai',
+                       auth_scheme: 'bearer', secret: 'abc123', owner: users(:random))
+  end
   let(:ai_judge) { users(:judge_judy) }
   let(:team) { teams(:shared) }
 
@@ -27,7 +35,7 @@ class AiJudgesOwnershipControllerTest < ActionDispatch::IntegrationTest
     assert_difference('User.count') do
       post ai_judges_url,
            params: { user: {
-             name: ai_judge.name, llm_key: ai_judge.llm_key, system_prompt: ai_judge.system_prompt
+             name: ai_judge.name, connection_id: random_openai.id, system_prompt: ai_judge.system_prompt
            } }
     end
     new_judge = User.order(:id).last
@@ -41,7 +49,7 @@ class AiJudgesOwnershipControllerTest < ActionDispatch::IntegrationTest
     assert_difference('User.count') do
       post ai_judges_url,
            params: { user: {
-             name: ai_judge.name, llm_key: ai_judge.llm_key, system_prompt: ai_judge.system_prompt,
+             name: ai_judge.name, connection_id: random_openai.id, system_prompt: ai_judge.system_prompt,
              team_ids: [ team.id ]
            } }
     end
@@ -129,6 +137,7 @@ class AiJudgesOwnershipControllerTest < ActionDispatch::IntegrationTest
 
     test 'team members can edit a shared judge while inaccessible team memberships survive' do
       hidden_team = teams(:owned_team)
+      ai_judge.update_column(:connection_id, connections(:openai).id)
       ai_judge.teams << hidden_team
       patch ai_judge_url(ai_judge), params: { user: { name: 'Shared edited', team_ids: [ '' ] } }
       assert_response :see_other
@@ -138,7 +147,8 @@ class AiJudgesOwnershipControllerTest < ActionDispatch::IntegrationTest
     end
 
     test 'cannot share a judge with an inaccessible team' do
-      post ai_judges_url, params: { user: { name: 'Private', system_prompt: 'Judge it.', team_ids: [ teams(:owned_team).id ] } }
+      post ai_judges_url, params: { user: { name: 'Private', system_prompt: 'Judge it.', connection_id: random_openai.id,
+                                            team_ids: [ teams(:owned_team).id ] } }
       assert_response :see_other
       assert_empty AiJudge.order(:id).last.teams
     end

@@ -60,10 +60,10 @@ describe("wizard contracts", () => {
   })
 })
 
-it("keeps Search API JSON and generic parameter lists unchanged, and parses Vespa scalar/repeated parameters", () => {
-  expect(searchApiValidationArgs('{"yql":"select * from movies"}', "yql")).toBe(
-    '{"yql":"select * from movies"}'
-  )
+it("parses Vespa JSON and scalar/repeated parameters while preserving generic parameter lists", () => {
+  expect(searchApiValidationArgs('{"yql":"select * from movies"}', "yql")).toEqual({
+    yql: "select * from movies"
+  })
   expect(searchApiValidationArgs("q=test", null)).toBe("q=test")
   expect(searchApiValidationArgs("select * from movies", "yql")).toEqual({
     yql: "select * from movies"
@@ -86,7 +86,7 @@ describe("edge cases", () => {
   it("treats text as a bare query unless it starts with a key= param", () => {
     expect(searchApiValidationArgs("hello a=1", "q")).toEqual({ q: "hello a=1" })
     expect(plain(searchApiValidationArgs("  a=1&b=2", "q"))).toEqual({ a: "1", b: "2" })
-    expect(searchApiValidationArgs('{"a":1}', "q")).toBe('{"a":1}')
+    expect(searchApiValidationArgs('{"a":1}', "q")).toEqual({ a: 1 })
     expect(searchApiValidationArgs("a=1", undefined)).toBe("a=1")
   })
 
@@ -140,4 +140,15 @@ describe("edge cases", () => {
     expect(formatValidationError({ searchError: "", data: "from data" })).toBe("from data")
     expect(formatValidationError({ message: 5 })).toBe("Quepid could not search this endpoint.")
   })
+})
+
+it("parses whitespace-prefixed Vespa JSON but leaves incomplete input untouched", () => {
+  expect(
+    searchApiValidationArgs(' \n {"yql":"select * from sources * where true"}', "yql")
+  ).toEqual({ yql: "select * from sources * where true" })
+  expect(searchApiValidationArgs(' {"yql":', "yql")).toBe(' {"yql":')
+})
+
+it("parses an empty Vespa JSON object as arguments rather than query text", () => {
+  expect(searchApiValidationArgs("{}", "yql")).toEqual({})
 })

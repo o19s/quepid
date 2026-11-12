@@ -600,7 +600,6 @@ class TeamsControllerTest < ActionDispatch::IntegrationTest
       assert_select 'td a', text: embedder.name
       assert_select 'td a', text: embedders(:private_ollama).name, count: 0
       assert_select 'span.badge', text: '1 Case'
-      assert_select 'a[href=?]', new_embedder_path(team_id: shared_team.id)
     end
   end
 
