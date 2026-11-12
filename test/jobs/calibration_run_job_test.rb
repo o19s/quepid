@@ -67,6 +67,18 @@ class CalibrationRunJobTest < ActiveJob::TestCase
     assert_not_equal 'Only cheddar is relevant.', judge.reload.system_prompt
   end
 
+  test "a judge on a connection calls out with the connection's key" do
+    connections(:openai).update!(secret: OPENAI_VALID_KEY)
+    connected = AiJudge.create!(name: 'Connected', system_prompt: 'Judge it.', owner: users(:doug),
+                                judge_options: { llm_model: 'gpt-4o' }, connection: connections(:openai))
+    run = CalibrationRun.create!(sample: sample, judge: connected, judge_snapshot: CalibrationRun.snapshot_of(connected))
+
+    CalibrationRunJob.perform_now(run)
+
+    assert_predicate run.reload, :done?
+    assert_requested(:post, /api\.openai\.com/, times: 30, headers: { 'Authorization' => "Bearer #{OPENAI_VALID_KEY}" })
+  end
+
   test 'a run where most calls fail ends as failed, with the error' do
     judge.update!(llm_key: OPENAI_BAD_KEY)
 
