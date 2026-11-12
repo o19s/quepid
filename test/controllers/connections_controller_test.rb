@@ -22,6 +22,25 @@ class ConnectionsControllerTest < ActionDispatch::IntegrationTest
     }.merge(overrides)
   end
 
+  test 'index filters to AI & ML or search backends' do
+    own_ollama = Connection.create!(owner: user, name: 'My Ollama', provider: 'ollama',
+                                    base_url: 'http://localhost:11434', auth_scheme: 'none')
+    get connections_url(kind: 'search')
+
+    assert_response :success
+    assert_select 'td', text: connections(:instance_elasticsearch).name
+    assert_select 'td a', text: own_ollama.name, count: 0
+    assert_select 'a.nav-link.active', text: 'Search backends'
+    assert_select '.alert', text: /Coming soon/
+
+    get connections_url(kind: 'ai')
+
+    assert_select 'td', text: connections(:instance_elasticsearch).name, count: 0
+    assert_select 'td a', text: own_ollama.name
+    assert_select 'a.nav-link.active', text: 'AI & ML backends'
+    assert_select '.alert', text: /Coming soon/, count: 0
+  end
+
   test 'index lists the connections the user can use, and marks who owns them' do
     get connections_url
 
@@ -207,13 +226,38 @@ class ConnectionsControllerTest < ActionDispatch::IntegrationTest
     assert_equal 'sk-rotated', connection.reload.secret
   end
 
-  test 'update cannot change ownership or publish a private connection through forged parameters' do
+  test 'update cannot change ownership through forged parameters' do
     login_user_for_integration_test users(:doug)
 
-    patch connection_url(connection), params: { connection: { name: 'Same', owner_id: user.id, instance_wide: '1', team_ids: [ team.id ] } }
+    patch connection_url(connection), params: { connection: { name: 'Same', owner_id: user.id, team_ids: [ team.id ] } }
 
     assert_equal users(:doug), connection.reload.owner
-    assert_not connection.instance_wide?
+  end
+
+  test 'an administrator can make their existing private connection instance-wide' do
+    login_user_for_integration_test users(:doug)
+
+    patch connection_url(connection), params: { connection: { name: connection.name, instance_wide: '1' } }
+
+    assert_predicate connection.reload, :instance_wide?
+  end
+
+  test 'an administrator can make an instance-wide connection private again' do
+    communal = connections(:instance_elasticsearch)
+    login_user_for_integration_test users(:doug)
+
+    patch connection_url(communal), params: { connection: { name: communal.name, instance_wide: '0' } }
+
+    assert_not communal.reload.instance_wide?
+  end
+
+  test 'a non-admin owner cannot make their private connection instance-wide through forged parameters' do
+    login_user_for_integration_test users(:joey)
+    private_connection = connections(:private_ollama)
+
+    patch connection_url(private_connection), params: { connection: { name: private_connection.name, instance_wide: '1' } }
+
+    assert_not private_connection.reload.instance_wide?
   end
 
   test 'the owner deletes a connection' do
@@ -263,5 +307,18 @@ class ConnectionsControllerTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to connections_url
     assert_match(/used by 1 embedder/, flash[:alert])
+  end
+
+  test 'a connection an AI judge uses cannot be deleted, and lists the judge' do
+    login_user_for_integration_test users(:doug)
+    judge = AiJudge.create!(name: 'Doug judge', system_prompt: 'Judge it.', owner: users(:doug), connection: connections(:openai))
+
+    get connection_url(connections(:openai))
+    assert_select 'a[href=?]', edit_ai_judge_path(judge), text: 'Doug judge'
+
+    assert_no_difference -> { Connection.count } do
+      delete connection_url(connections(:openai))
+    end
+    assert_match(/used by .*1 AI judge/, flash[:alert])
   end
 end

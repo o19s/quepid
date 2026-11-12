@@ -89,7 +89,7 @@ class LlmProvider
     chat model: it answers with a rating, a probability distribution and a
     confidence, and cannot return a rating outside your scale.<br>
     <b>URL:</b> <code>https://api.typesafe.ai</code> (fixed)<br>
-    <b>Model:</b> <code>jev-latest</code> (fixed)<br>
+    <b>Model:</b> <code>jev-latest</code>, or a specific version to pin it<br>
     <b>Key:</b> Your TypeSafe API key from
     <a href="https://console.typesafe.ai/keys" target="_blank" rel="noopener">console.typesafe.ai/keys</a><br>
     <b>API Version:</b> Not used<br>
@@ -265,7 +265,7 @@ class LlmProvider
       adapter:               'LlmJudgeAdapters::Jev',
       default_service_url:   'https://api.typesafe.ai',
       default_model:         'jev-latest',
-      read_only_fields:      %w[llm_service_url llm_model llm_api_version],
+      read_only_fields:      %w[llm_service_url llm_api_version],
       default_system_prompt: JEV_SYSTEM_PROMPT,
       prompt_label:          'Judging instructions',
       prompt_hint:           'Jev has no system prompt: this text is sent as the instructions on the ' \

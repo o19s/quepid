@@ -46,9 +46,6 @@ class Embedder < ApplicationRecord
   # long the provider took, in milliseconds.
   CheckResult = Data.define(:input, :dimensions, :preview, :elapsed_ms)
 
-  # Request context only; the owner-access validation still applies when no assigning user is set.
-  attr_accessor :connection_assignment_user
-
   # too late now!
   # rubocop:disable-next Rails/HasAndBelongsToMany
   has_and_belongs_to_many :teams,
@@ -80,10 +77,9 @@ class Embedder < ApplicationRecord
   validates :dimensions, numericality: { only_integer: true, greater_than: 0 }, allow_nil: true
   validates :dimensions, presence: { message: 'are required to truncate' }, unless: -> { 'none' == truncation }
   validate :native_truncation_supported
-  validate :connection_fits_and_is_usable
-  validate :connection_accessible_to_assigner
+  include ConnectionConsumer
+
   validate :connection_required_when_created, on: :create
-  validate :connection_not_removed, on: :update
   validate :input_template_has_query
 
   def provider_definition
@@ -163,24 +159,6 @@ class Embedder < ApplicationRecord
 
   private
 
-  # Validates that `connection_assignment_user` has access to the key being set, since team members
-  # may edit an embedder owned by someone else. The embedder's existing key remains valid
-  # so unrelated edits (like renaming) aren't blocked. Running this check before saving
-  # surfaces standard form validation errors instead of unhandled 500 server errors.
-  # An Embedder follows these rules:
-  # - Connection unchanged: allowed. Someone can use a shared embedder without having direct access to its underlying connection.
-  # - New or different connection: the current user must own it or it must be instance-wide.
-  # - No connection selected: this check passes; separate validations handle missing or removed connections.
-  # - Access denied: it adds a validation error, preventing the save or connection check.
-  def connection_accessible_to_assigner
-    return if connection_assignment_user.nil?
-    return if connection_id.nil? || !connection_id_changed?
-    return if connection_assignment_user.connections_involved_with.exists?(id: connection_id)
-    return if errors.added?(:connection, "isn't one you can use")
-
-    errors.add(:connection, "isn't one you can use")
-  end
-
   # An embedder created from just a connection takes that connection's provider.
   def take_provider_from_connection
     return unless connection && self[:provider].blank?
@@ -196,21 +174,6 @@ class Embedder < ApplicationRecord
     errors.add(:connection, 'is required: it holds the URL and key (create one under Connections)')
   end
 
-  # An embedder on a connection can move to another, but not back to settings of its own, which
-  # the form no longer has.
-  def connection_not_removed
-    return unless connection_id.nil? && connection_id_was.present?
-
-    errors.add(:connection, 'can be changed but not removed')
-  end
-
-  def connection_fits_and_is_usable
-    return unless connection
-
-    problem = connection_problem
-    errors.add(:connection, problem) if problem
-  end
-
   # Why the connection can't be used, or nil. The first thing wrong is the one worth saying.
   def connection_problem
     label = connection.provider_definition&.label || connection.provider
@@ -218,12 +181,6 @@ class Embedder < ApplicationRecord
     return "is for #{label}, not #{provider_definition&.label || provider}" if connection.provider != provider
 
     "isn't one you can use" unless connection_usable_by_owner?
-  end
-
-  # An unchanged connection stays allowed, so renaming an embedder never trips over access that
-  # was withdrawn later; picking a new one needs the owner to be able to use it.
-  def connection_usable_by_owner?
-    !connection_id_changed? || owner&.connections_involved_with&.exists?(id: connection_id)
   end
 
   def revectorize_cases

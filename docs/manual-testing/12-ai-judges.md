@@ -11,17 +11,21 @@ AI Judges let an LLM stand in for a human judge. `AiJudge` is a `User` subclass 
 - [ ] **Steps:**
   1. Open **AI Judges → Create AI Judge**, or **Create AI Judge** on a Team page (that team starts selected).
   2. Enter a Name; confirm **Test & Refine** appears. Leave teams unchecked for a private judge, or select teams to share it.
-  3. Choose an LLM Provider. Confirm registry presets and help, provider-specific options and read-only fields. Switching between chat models and Jev replaces untouched stock prompts while retaining custom instructions.
-  4. Enter a key if the provider requires one. Local Ollama can save with a blank key.
+  3. Choose connections to different providers (the provider follows the connection). Confirm registry presets and help, provider-specific options and read-only fields. Switching between chat models and Jev replaces untouched stock prompts while retaining custom instructions.
+  4. Choose a **Connection**; choosing one sets the provider. The **Llm Provider** field appears read-only once a connection is chosen, and stays hidden (with a "Choose a connection first" placeholder) until then. Only your own and instance-wide connections whose provider can judge are offered; create one under **Connections** first if you have none yet.
   5. Switch between Structured Fields and JSON; confirm only the active representation submits.
      Remove `jev_min_confidence` in JSON and switch tabs both ways; confirm the old floor is cleared.
-     Omit OpenAI's URL/model/timeout in JSON and repeat; confirm the effective defaults return instead of blank connection settings.
+     Omit OpenAI's model in JSON and repeat; confirm the effective default returns. There are no URL or timeout fields: they come from the connection.
   6. Review the System Prompt, test it as described in 12.4, then Save.
   7. Reload and confirm name, provider, prompt and sharing persist; the index shows the owner and teams.
 - **Expected:** Top-level Save redirects to the judge form. Legacy nested team submissions return to the team. Successful mutations use Turbo-compatible redirects.
 - **Edge cases:**
   - [ ] Blank name/prompt or malformed configuration JSON returns validation errors, retains entered values and team selections, and creates no judge.
   - [ ] Keyless judges still appear as AI judges rather than human accounts.
+  - [ ] A judge still on its own URL and key no longer offers a manual **Migrate to connection** action - the route/button are gone; the form just says to choose a connection to save changes, and its **Llm Provider** field is hidden like a brand-new judge's (no more deprecation notice or read-only legacy value). The `MigrateAiJudgesToConnections` data migration ships with this change, so this state shouldn't exist in a real deployment - reach it by creating a judge with an `llm_key`/`judge_options.llm_service_url` and no `connection_id` directly (e.g. via `rails runner`).
+  - [ ] Saving changes to a judge that still has its own URL and key is refused until it has a connection; it keeps judging meanwhile, but testing it from the wizard now also requires choosing a connection first (there's no more own-settings exception).
+  - [ ] Saving without a connection is refused with the reason and creates no judge. A provider edited in the JSON tab is replaced by the connection's on save.
+  - [ ] Choosing a connection on a judge saved before connections moves it onto that connection (its own key is cleared) and saves the rest of the form's changes along with it.
 
 ### 12.2 Edit / delete an AI Judge
 
@@ -155,10 +159,10 @@ A judge can name a second judge to wake when it can't give a usable rating ("esc
 
 - [ ] **Steps:**
   1. Open `/teams/:team_id/ai_judges/:id/clone` for a judge shared with your team (the route is supported; no Clone button is provided).
-  2. Confirm the unsaved form has `Clone of {name}`, the original key/prompt/provider settings and only the originating team checked. Opening must not create a judge.
-  3. Clear the system prompt and Save. Confirm validation retains name, key, options, team selection and the nested create action; correct the prompt and retry.
+  2. Confirm the unsaved form has `Clone of {name}`, the original prompt/provider settings and only the originating team checked, no connection chosen, and an error asking for one of your connections. Opening must not create a judge.
+  3. Choose a connection, clear the system prompt and Save. Confirm validation retains name, connection, options, team selection and the nested create action; correct the prompt and retry.
   4. Confirm the redirect to the team with creation notice. Reopen the new judge and verify settings, requester ownership and a distinct ID; the source is unchanged.
-- **Expected:** Only judge configuration is copied. Account privileges/tokens, book assignments and judgements are not copied; saving uses the existing create contract.
+- **Expected:** Only judge configuration is copied. The original's key and connection, account privileges/tokens, book assignments and judgements are not copied; saving uses the existing create contract.
 - **Edge cases:** Inaccessible teams/private judges and sources outside the specified team return 404. Malformed Options JSON retains input for retry. Uncheck the team before Save to make the clone private.
 
 ### 12.12 Open the New calibration dialog

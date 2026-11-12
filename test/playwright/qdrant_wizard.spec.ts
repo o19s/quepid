@@ -141,8 +141,9 @@ for (const { idField, docId } of [
         await expect(
           modal.getByRole("heading", { name: "How Should We Display Your Results?" })
         ).toBeVisible()
-        await expect(modal.getByLabel("ID Field", { exact: true })).toHaveValue("id")
-        await modal.getByLabel("ID Field", { exact: true }).fill(idField)
+        await expect(modal.locator("#wizardIdField")).toHaveValue("id")
+        await modal.getByRole("combobox", { name: "ID Field", exact: true }).fill(idField)
+        await modal.getByRole("combobox", { name: "ID Field", exact: true }).press("Enter")
         await next().click()
         await modal.getByPlaceholder("Search query").fill("matrix")
         await modal.getByRole("button", { name: "Add Query", exact: true }).click()

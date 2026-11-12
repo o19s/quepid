@@ -468,4 +468,21 @@ class LlmServiceTest < ActiveSupport::TestCase
                        headers: { 'Authorization' => 'Bearer 1234asdf5678' })
     end
   end
+
+  describe 'through a connection' do
+    test 'posts to the connection, authenticated the way the connection sends its key' do
+      connection = connections(:anthropic)
+      stub = stub_request(:post, 'https://api.anthropic.com/v1/messages')
+        .with(headers: { 'x-api-key' => 'sk-ant-test' })
+        .to_return(status: 200, headers: { 'Content-Type' => 'application/json' },
+                   body: { content: [ { type: 'text', text: '{"explanation": "fine", "judgment": 2}' } ] }.to_json)
+
+      service = LlmService.new('ignored-own-key', { llm_provider: 'anthropic', llm_service_url: 'https://own.example' }, connection)
+      judgement = Judgement.new(query_doc_pair: query_doc_pair, user: judge)
+      service.perform_judgement(judgement)
+
+      assert_requested stub
+      assert_equal 2, judgement.rating
+    end
+  end
 end

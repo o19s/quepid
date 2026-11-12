@@ -36,7 +36,7 @@
         <div class="row mb-3">
           <%= form.label :provider, class: 'col-sm-3 col-form-label' %>
           <div class="col-sm-9">
-            <%= form.select :provider, ConnectionProvider.select_options, {},
+            <%= form.select :provider, ConnectionProvider.grouped_select_options, {},
                   class: 'form-select',
                   data: { connection_form_target: 'provider', action: 'change->connection-form#changeProvider' } %>
           </div>
@@ -187,9 +187,9 @@
             <p class="text-muted small">Connections are private to their owner. Share configured embedders with teams so members can use them without receiving access to the connection.</p>
             <% if current_user.administrator? %>
               <div class="form-check mb-3">
-                <%= form.check_box :instance_wide, class: 'form-check-input', disabled: connection.persisted? %>
+                <%= form.check_box :instance_wide, class: 'form-check-input' %>
                 <%= form.label :instance_wide, 'Instance-wide — available to every user on this instance', class: 'form-check-label' %>
-                <div class="form-text">Everyone can select it for their own embedders. Administrators manage it; the creator remains its responsible owner. Availability is set when the connection is created.</div>
+                <div class="form-text">Everyone can select it for their own embedders. Administrators manage it; the creator remains its responsible owner.</div>
               </div>
             <% end %>
           </div>

@@ -6,6 +6,18 @@ module AiJudges
   class WizardControllerTest < ActionDispatch::IntegrationTest
     let(:user) { users(:random) }
     let(:book) { books(:james_bond_movies) }
+    let(:random_openai) do
+      Connection.create!(name: 'Random OpenAI', provider: 'openai', base_url: 'https://api.openai.com',
+                         auth_scheme: 'bearer', secret: '1234asdf5678', owner: users(:random))
+    end
+    let(:random_jev) do
+      Connection.create!(name: 'Random Jev', provider: 'typesafe_jev', base_url: 'https://api.typesafe.ai',
+                         auth_scheme: 'bearer', secret: 'abc123', owner: users(:random))
+    end
+    let(:random_voyage) do
+      Connection.create!(name: 'Random Voyage', provider: 'voyage', base_url: 'https://api.voyageai.com',
+                         auth_scheme: 'bearer', secret: 'pa-test-voyage', owner: users(:random))
+    end
 
     setup do
       login_user_for_integration_test user
@@ -49,7 +61,7 @@ module AiJudges
         assert_no_difference [ 'AiJudge.count', 'QueryDocPair.count' ] do
           post ai_judge_test_prompt_url(ai_judge_id: 'new'), params: {
             system_prompt:  'You are a grocery store shopper. You like cheese. Is this a cheese?',
-            llm_key:        OPENAI_VALID_KEY,
+            connection_id:  random_openai.id,
             judge_options:  {
               llm_provider:    'openai',
               llm_service_url: 'https://api.openai.com',
@@ -76,7 +88,7 @@ module AiJudges
 
         post ai_judge_test_prompt_url(ai_judge_id: 'new', book_id: scoped_book.id), params: {
           system_prompt:  'You are a grocery store shopper. You like cheese. Is this a cheese?',
-          llm_key:        OPENAI_VALID_KEY,
+          connection_id:  random_openai.id,
           judge_options:  {
             llm_provider:    'openai',
             llm_service_url: 'https://api.openai.com',
@@ -102,7 +114,7 @@ module AiJudges
 
         post ai_judge_test_prompt_url(ai_judge_id: 'new', scorer_id: scorer.id), params: {
           system_prompt:  'You are a grocery store shopper. You like cheese. Is this a cheese?',
-          llm_key:        OPENAI_VALID_KEY,
+          connection_id:  random_openai.id,
           judge_options:  {
             llm_provider:    'openai',
             llm_service_url: 'https://api.openai.com',
@@ -132,7 +144,7 @@ module AiJudges
         assert_no_difference 'Judgement.count' do
           post ai_judge_test_prompt_url(ai_judge_id: 'new', book_id: book.id), params: {
             system_prompt:  'Judge this',
-            llm_key:        OPENAI_VALID_KEY,
+            connection_id:  random_openai.id,
             judge_options:  { llm_provider: 'openai', llm_service_url: 'https://api.openai.com', llm_model: 'gpt-4o' },
             query_doc_pair: { query_text: 'what year was this released?', doc_id: 'goldeneye', document_fields: '{}' },
           }
@@ -153,7 +165,7 @@ module AiJudges
 
         post ai_judge_test_prompt_url(ai_judge_id: 'new', book_id: book.id), params: {
           system_prompt:  'Judge this',
-          llm_key:        OPENAI_VALID_KEY,
+          connection_id:  random_openai.id,
           judge_options:  { llm_provider: 'openai', llm_service_url: 'https://api.openai.com', llm_model: 'gpt-4o' },
           query_doc_pair: { query_text: 'what year was this released?', doc_id: 'goldeneye', document_fields: '{}' },
         }
@@ -167,7 +179,7 @@ module AiJudges
       test 'refuses to preview a judge that needs a book when there is no book or scale, and says what to do' do
         post ai_judge_test_prompt_url(ai_judge_id: 'new'), params: {
           system_prompt:  'Judge this',
-          llm_key:        'abc123',
+          connection_id:  random_jev.id,
           judge_options:  { llm_provider: 'typesafe_jev' },
           query_doc_pair: { query_text: 'cheese', doc_id: 'd1', document_fields: '{}' },
         }
@@ -183,7 +195,7 @@ module AiJudges
 
         post ai_judge_test_prompt_url(ai_judge_id: 'new', book_id: scaleless_book.id), params: {
           system_prompt:  'Judge this',
-          llm_key:        'abc123',
+          connection_id:  random_jev.id,
           judge_options:  { llm_provider: 'typesafe_jev' },
           query_doc_pair: { query_text: 'cheese', doc_id: 'd1', document_fields: '{}' },
         }
@@ -197,7 +209,7 @@ module AiJudges
       test 'returns a validation error instead of running the LLM when document_fields is malformed JSON' do
         post ai_judge_test_prompt_url(ai_judge_id: 'new'), params: {
           system_prompt:  'You are a grocery store shopper. You like cheese. Is this a cheese?',
-          llm_key:        OPENAI_VALID_KEY,
+          connection_id:  random_openai.id,
           judge_options:  {
             llm_provider:    'openai',
             llm_service_url: 'https://api.openai.com',
@@ -221,7 +233,7 @@ module AiJudges
       test 'malformed options returns 422 without calling the provider' do
         register_default_openai_stubs
         post ai_judge_test_prompt_url(ai_judge_id: 'new'), params: {
-          system_prompt: 'Judge it.', llm_key: OPENAI_VALID_KEY,
+          system_prompt: 'Judge it.', connection_id: random_openai.id,
           judge_options: { llm_provider: 'openai', llm_service_url: 'https://api.openai.com', llm_model: 'gpt-4o' },
           query_doc_pair: { query_text: 'q', doc_id: 'd', document_fields: '{}', options: '{bad' }
         }, as: :json
@@ -236,9 +248,10 @@ module AiJudges
         original_prompt = judge.system_prompt
         assert_no_difference [ 'AiJudge.count', 'QueryDocPair.count', 'Judgement.count' ] do
           post ai_judge_test_prompt_url(ai_judge_id: judge.id), params: {
-            system_prompt: 'Unsaved draft.', llm_key: OPENAI_VALID_KEY,
-            judge_options: { llm_provider: 'openai', llm_service_url: 'https://api.openai.com', llm_model: 'gpt-4o', llm_include_images: false },
-            query_doc_pair: { query_text: 'q', doc_id: 'd', document_fields: '{}' }
+            system_prompt:  'Unsaved draft.',
+            connection_id:  random_openai.id,
+            judge_options:  { llm_provider: 'openai', llm_service_url: 'https://api.openai.com', llm_model: 'gpt-4o', llm_include_images: false },
+            query_doc_pair: { query_text: 'q', doc_id: 'd', document_fields: '{}' },
           }, as: :json
         end
         assert_response :success
@@ -251,6 +264,41 @@ module AiJudges
         get ai_judge_sample_query_doc_pair_url(ai_judge_id: 'new')
         assert_response :success
         assert_nil response.parsed_body.dig('query_doc_pair', 'id')
+      end
+    end
+
+    describe 'connections' do
+      let(:params) do
+        { system_prompt: 'Judge it.', judge_options: { llm_provider: 'openai', llm_model: 'gpt-4o' },
+          query_doc_pair: { query_text: 'q', doc_id: 'd', document_fields: '{}' } }
+      end
+
+      test 'refuses a connection that is not yours' do
+        post ai_judge_test_prompt_url(ai_judge_id: 'new'), params: params.merge(connection_id: connections(:openai).id)
+
+        assert_response :unprocessable_content
+        assert_equal "That connection isn't one you can use.", response.parsed_body['error']
+      end
+
+      test 'refuses a connection whose provider cannot run an AI judge' do
+        post ai_judge_test_prompt_url(ai_judge_id: 'new'), params: params.merge(connection_id: random_voyage.id)
+
+        assert_response :unprocessable_content
+        assert_equal "That connection to Voyage AI can't run an AI judge.", response.parsed_body['error']
+      end
+
+      test 'a teammate tests a shared judge on its owner connection' do
+        judge = users(:judge_judy)
+        judge.update_columns(connection_id: connections(:openai).id, llm_key: nil)
+        stub = stub_request(:post, 'https://api.openai.com/v1/chat/completions')
+          .with(headers: { 'Authorization' => 'Bearer sk-test-openai' })
+          .to_return(status: 200, headers: { 'Content-Type' => 'application/json' },
+                     body: { choices: [ { message: { content: '{"explanation": "ok", "judgment": 1}' } } ] }.to_json)
+
+        post ai_judge_test_prompt_url(ai_judge_id: judge.id), params: params.merge(connection_id: connections(:openai).id)
+
+        assert_response :success
+        assert_requested stub
       end
     end
   end
