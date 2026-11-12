@@ -246,6 +246,14 @@ The Playwright MCP tools may be exposed as deferred tools rather than a direct n
 Follow [Screenshot capture and diffing — Comparison baselines](docs/screenshot_review.md#comparison-baselines)
 and its [capture and verification conventions](docs/screenshot_review.md#capture-and-verification).
 
+### Screenshots in pull requests
+
+When you create a PR whose diff changes anything a user sees (templates, CSS, JS that renders UI, sidebar or nav links, flash and validation messages), fill the template's **Screenshots** section with the changed screens:
+
+- Capture them with the `branch-ui-diff` skill against the merge-base. For a changed screen, include a before/after pair. For a new screen, include only an "after", and say it is new. Open and check every image before using it.
+- `gh` cannot upload images, so don't commit screenshots to the branch or push them to another branch. Instead, write a placeholder for each image in the PR body (e.g. `<!-- drop 14.14-index-after.png here -->`) with a one-line caption saying what it shows. Then give the user the absolute path of each PNG under `.playwright-mcp/<topic>/` so they can drag it into the PR description on github.com.
+- If the diff has no visible change, write "No UI changes" in that section rather than leaving it empty.
+
 ## Code reviews
 
 When asked to review code, do not use subagents. Review the code in the conversation for bugs, errors, bad practices, regressions, lost functionality, and overengineering.

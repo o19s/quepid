@@ -6,5 +6,9 @@ db/schema.rb linguist-generated
 # Mark the yarn lockfile as having been generated.
 yarn.lock linguist-generated
 
+# Collapse OpenSpec change proposals (incl. archive/) in GitHub PR diffs so they
+# don't crowd out code review. They remain one click away via "Load diff".
+openspec/changes/** linguist-generated
+
 # Mark any vendored files as having been vendored.
 vendor/* linguist-vendored
