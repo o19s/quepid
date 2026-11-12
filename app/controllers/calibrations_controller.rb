@@ -24,6 +24,8 @@ class CalibrationsController < ApplicationController
   end
 
   def create
+    return refuse("This book has no rating scale, so it can't be calibrated.") if @book.scale.blank?
+
     judge = visible_ai_judges.find { |candidate| candidate.id == calibration_params[:judge_id].to_i }
     return refuse('Choose an AI judge to calibrate.') unless judge
 

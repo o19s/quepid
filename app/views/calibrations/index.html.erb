@@ -9,10 +9,24 @@
 
 <div class="d-flex justify-content-between align-items-center mt-3 mb-3">
   <h3 class="mb-0">Calibration</h3>
-  <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#new_calibration_modal">
-    <i class="bi bi-bullseye" aria-hidden="true"></i> New calibration
-  </button>
+  <% if @book.scale.blank? %>
+    <button type="button" class="btn btn-primary" disabled>
+      <i class="bi bi-bullseye" aria-hidden="true"></i> New calibration
+    </button>
+  <% else %>
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#new_calibration_modal">
+      <i class="bi bi-bullseye" aria-hidden="true"></i> New calibration
+    </button>
+  <% end %>
 </div>
+
+<% if @book.scale.blank? %>
+  <div class="alert alert-warning" role="alert">
+    <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
+    You can't calibrate on this book: it has no rating scale. A calibration compares ratings on the book's scale and
+    asks the AI judge to rate on it, so without one there's nothing to compare.
+  </div>
+<% end %>
 
 <% if @runs.empty? %>
   <%= render 'about' %>
@@ -34,8 +48,8 @@
           <th scope="col">Compared against</th>
           <th scope="col" class="text-end">Sample</th>
           <th scope="col">Status</th>
-          <th scope="col" class="text-end">α</th>
-          <th scope="col" class="text-end">Exact</th>
+          <th scope="col" class="text-end"><abbr title="Agreement (Krippendorff's α): 1 means perfect agreement">α</abbr></th>
+          <th scope="col" class="text-end"><abbr title="Share of pairs graded exactly the same">Exact</abbr></th>
           <th scope="col">Started</th>
         </tr>
       </thead>
@@ -46,5 +60,7 @@
   </div>
 <% end %>
 
-<%= render 'new_modal', book: @book, judges: @judges, references: @references, samples: @samples,
-           preselected_judge_id: @preselected_judge_id %>
+<% if @book.scale.present? %>
+  <%= render 'new_modal', book: @book, judges: @judges, references: @references, samples: @samples,
+             preselected_judge_id: @preselected_judge_id %>
+<% end %>

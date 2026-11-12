@@ -27,8 +27,29 @@ module CalibrationsHelper
     share.nil? ? '—' : number_to_percentage(share * 100, precision: 0)
   end
 
+  # α bands, best first. 0.8 and 0.667 are Krippendorff's own cut-offs (reliable / lowest usable).
+  CALIBRATION_ALPHA_BANDS = [
+    [ 0.9, 'Perfect', 'success' ],
+    [ 0.8, 'Good', 'teal' ],
+    [ 0.667, 'Moderate', 'warning' ],
+    [ 0.4, 'Not so good', 'orange' ],
+    [ -Float::INFINITY, 'Bad', 'danger' ]
+  ].freeze
+
+  def calibration_alpha_band alpha
+    CALIBRATION_ALPHA_BANDS.find { |floor, _, _| alpha >= floor }.drop(1)
+  end
+
   def calibration_alpha agreement
-    agreement.alpha.nil? ? '—' : format('%.2f', agreement.alpha)
+    return '—' if agreement.alpha.nil?
+
+    label, color = calibration_alpha_band(agreement.alpha)
+    safe_join([
+                content_tag(:i, nil, class: 'bi bi-circle-fill me-1 small', style: "color: var(--bs-#{color})",
+                                     title: label, 'aria-hidden': true),
+                content_tag(:span, "#{label}: ", class: 'visually-hidden'),
+                format('%.2f', agreement.alpha)
+              ])
   end
 
   # "openai rates 0.3 lower than Osc Team Member, on average" -- which way the

@@ -67,6 +67,17 @@ class CalibrationsControllerTest < ActionDispatch::IntegrationTest
       assert_select '#calibration_pairs_same:not([disabled])'
     end
 
+    test "says a book without a scale can't be calibrated, and offers no dialog" do
+      book.update_columns(scale: [])
+
+      get book_calibrations_path(book, judge_id: judge.id)
+
+      assert_response :success
+      assert_select '.alert-warning', text: /no rating scale/
+      assert_select 'button[disabled]', text: /New calibration/
+      assert_select '#new_calibration_modal', count: 0
+    end
+
     test 'refuses a book the user cannot see' do
       get book_calibrations_path(books(:empty_book_2))
 
@@ -75,6 +86,17 @@ class CalibrationsControllerTest < ActionDispatch::IntegrationTest
   end
 
   describe 'starting one' do
+    test 'refuses a book without a scale' do
+      rate_pairs_for_calibration(book, reference)
+      book.update_columns(scale: [])
+
+      assert_no_difference 'CalibrationRun.count' do
+        post book_calibrations_path(book), params: start_params
+      end
+      assert_redirected_to book_calibrations_path(book)
+      assert_match(/no rating scale/, flash[:alert])
+    end
+
     test 'draws a sample, starts the run and shows it' do
       rate_pairs_for_calibration(book, reference)
 
@@ -244,6 +266,18 @@ class CalibrationsControllerTest < ActionDispatch::IntegrationTest
       assert_select 'h5', text: "#{judge.name}'s runs on these pairs"
       assert_select 'h5 + p + div tbody tr', count: 2
       assert_select 'h5 + p + div', text: /Other Judge/, count: 0
+    end
+
+    test 'names the run its results belong to when the pairs have several runs' do
+      calibration_run = started_run
+      perform_enqueued_jobs only: CalibrationRunJob
+      post rerun_book_calibration_path(book, calibration_run), params: { settings: { system_prompt: 'Be strict.' } }
+      perform_enqueued_jobs only: CalibrationRunJob
+
+      get book_calibration_path(book, calibration_run)
+
+      assert_select 'h5', text: /Results for run #1 of 2/
+      assert_select 'tbody td', text: %r{\A\s*30 / 0\s*\z}, count: 2
     end
 
     test 'shows ranks agreement for a sample drawn by queries' do

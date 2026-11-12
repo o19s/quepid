@@ -16,6 +16,15 @@
     <p class="text-muted small">Figures so far, over the <%= pluralize(run.answered_count, 'pair') %> answered. They update when the run finishes.</p>
   <% end %>
 
+  <% if sample_runs.size > 1 %>
+    <h5 class="mb-2">
+      Results for run #<%= sample_runs.index(run) + 1 %> of <%= sample_runs.size %>
+      <span class="small text-muted fw-normal">
+        · started <%= time_ago_in_words(run.created_at) %> ago<% if (settings = calibration_settings(run)).present? %> · <%= settings %><% end %>
+      </span>
+    </h5>
+  <% end %>
+
   <ul class="nav nav-tabs mb-3" role="tablist">
     <li class="nav-item" role="presentation">
       <%# Buttons, not links: with Quepid's <base href>, href="#..." navigates to the root. %>
@@ -53,9 +62,10 @@
           <th scope="col">Settings</th>
           <th scope="col">Changed since the run before</th>
           <th scope="col">Status</th>
-          <th scope="col" class="text-end">α</th>
-          <th scope="col" class="text-end">Exact</th>
-          <th scope="col" class="text-end">Within one</th>
+          <th scope="col" class="text-end"><abbr title="Pairs the judge rated / marked unrateable (unrateable ones aren't compared)">Rated / Unrateable</abbr></th>
+          <th scope="col" class="text-end"><abbr title="Agreement (Krippendorff's α): 1 means perfect agreement">α</abbr></th>
+          <th scope="col" class="text-end"><abbr title="Share of pairs graded exactly the same">Exact</abbr></th>
+          <th scope="col" class="text-end"><abbr title="Share of pairs at most one grade apart">Within one</abbr></th>
           <% if run.sample.by_queries? %><th scope="col" class="text-end">Score shift</th><th scope="col" class="text-end">τ</th><% end %>
         </tr>
       </thead>
@@ -76,6 +86,15 @@
               <% end %>
             </td>
             <td><%= calibration_status_badge(sample_run) %></td>
+            <td class="text-end">
+              <% if figures %>
+                <% answers = sample_run.answers.to_a %>
+                <% unrateable = answers.count(&:unrateable) %>
+                <%= answers.size - unrateable %> / <%= unrateable %>
+              <% else %>
+                —
+              <% end %>
+            </td>
             <td class="text-end"><%= figures ? calibration_alpha(figures) : '—' %></td>
             <td class="text-end"><%= figures ? calibration_percent(figures.exact_share) : '—' %></td>
             <td class="text-end"><%= figures ? calibration_percent(figures.within_one_share) : '—' %></td>
