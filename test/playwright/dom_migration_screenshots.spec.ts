@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test"
 import fs from "node:fs"
 import path from "node:path"
 import {
-  DEFAULT_RICH_CASE_ID,
+  RICH_CASE_FIXTURE_ID,
   createTeamViaApi,
   deleteCaseViaApi,
   deleteTeamViaApi,
@@ -13,8 +13,8 @@ import {
 const PHASE = process.env.MIGRATION_SHOT_PHASE === "before" ? "before" : "after"
 /** Configured cases are read-only sources; all mutations use disposable clones. */
 const SHARE_SOURCE_ID = Number(process.env.QUEPID_E2E_SHARE_CASE_ID || 1)
-/** Case with queries in DB for hit-count / annotations — see DEFAULT_RICH_CASE_ID's comment. */
-const QUERIES_SOURCE_ID = Number(process.env.QUEPID_E2E_QUERIES_CASE_ID || DEFAULT_RICH_CASE_ID)
+/** Case with queries in DB for hit-count / annotations — see RICH_CASE_FIXTURE_ID's comment. */
+const QUERIES_SOURCE_ID = RICH_CASE_FIXTURE_ID
 let SHARE_CASE_ID: number
 let QUERIES_CASE_ID: number
 const createdCaseIds: number[] = []

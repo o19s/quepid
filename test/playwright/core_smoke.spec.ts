@@ -37,7 +37,7 @@ test.describe("core layout golden paths", () => {
     // Deliberately pinned to live-Solr case 6, not the suite's default static
     // fixture (case 219): the "Parsing" tab renders Solr's debug payload, which
     // a static search endpoint never returns (see case_helpers.ts's
-    // DEFAULT_RICH_CASE_ID comment).
+    // RICH_CASE_FIXTURE_ID comment).
     await gotoCase(page, "", 6)
     await expandFirstQuery(page)
 

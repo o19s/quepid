@@ -251,7 +251,7 @@ curl -X POST http://localhost:3000/api/books/2/judgements/ -H 'Authorization: Be
 The see available tasks:
 
 ```
-docker compose run app bundle exec thor list
+docker compose run app thor list
 ```
 
 Examples include:
@@ -274,7 +274,7 @@ thor user:grant_administrator EMAIL         # grant administrator privileges to 
 thor user:reset_password EMAIL NEWPASSWORD  # resets user's password
 ```
 
-To see more details about any of the tasks, run `bin/docker r bundle exec thor help TASKNAME`:
+To see more details about any of the tasks, run `bin/docker r thor help TASKNAME`:
 
 ```
 thor help user:create

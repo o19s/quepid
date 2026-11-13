@@ -1,6 +1,6 @@
 import { test, expect, type Page } from "@playwright/test"
 import {
-  DEFAULT_RICH_CASE_ID,
+  RICH_CASE_FIXTURE_ID,
   apiHeaders,
   createDisposableCase,
   deleteCaseViaApi,
@@ -14,7 +14,7 @@ import {
  * snapshot actually gets created/listed, or exercised annotation creation.
  *
  * These use a case with a *working* search endpoint and existing queries —
- * DEFAULT_RICH_CASE_ID (case_helpers.ts), same case the suite's own
+ * RICH_CASE_FIXTURE_ID (case_helpers.ts), same case the suite's own
  * default CASE_ID now points at. Snapshot creation doesn't strictly require
  * live results (it posts whatever query docs are in memory, even none), but
  * annotation creation does: the annotation controller refuses with "Can't create
@@ -22,7 +22,7 @@ import {
  * run or the case has a recorded score, both true here.
  */
 
-const SNAPSHOT_CASE_ID = Number(process.env.QUEPID_E2E_SNAPSHOT_CASE_ID || DEFAULT_RICH_CASE_ID)
+const SNAPSHOT_CASE_ID = RICH_CASE_FIXTURE_ID
 
 async function gotoSnapshotCase(page: Page): Promise<void> {
   await page.goto(`case/${SNAPSHOT_CASE_ID}`)

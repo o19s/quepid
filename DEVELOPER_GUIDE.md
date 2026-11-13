@@ -216,13 +216,13 @@ As you read through the rest of this guide, just ignore the `bin/docker r` part 
 If you want to create some cases that have 100's and 1000's of queries, then do:
 
 ```bash
- bin/docker r bundle exec thor sample_data:large_data
+ bin/docker r thor sample_data:large_data
 ```
 
 or
 
 ```bash
- bundle exec thor sample_data:large_data
+ thor sample_data:large_data
 ```
 
 Solr requests are retried with backoff when the remote Solr is slow or returns 5xx/429.
@@ -391,7 +391,7 @@ Environment variables (all optional, sensible defaults baked in):
 
 * `QUEPID_BASE_URL` — defaults to `http://localhost:3000` when run inside the app container, or `http://localhost:${APP_PORT:-3000}` from the host (see `test/playwright/env.ts`). Override for a different host/port. With `RAILS_RELATIVE_URL_ROOT`, include the subpath (e.g. `http://localhost:3000/quepid-app`); `test/playwright/env.ts` normalizes a trailing slash so relative `page.goto()` paths resolve under the mount.
 * `QUEPID_E2E_EMAIL` / `QUEPID_E2E_PASSWORD` — sign-in credentials used by `auth.setup.ts`, default to the same sandbox login CLAUDE.md documents for the Playwright MCP flow (`quepid+realisticactivity@o19s.com` / `password`). The resulting session is cached at `test/playwright/.auth/user.json` (gitignored).
-* `QUEPID_E2E_CASE_ID` — the case ID the suite navigates to for all case-page specs, defaults to `DEFAULT_RICH_CASE_ID` in `test/playwright/case_helpers.ts` (`"E2E Static Fixture (10s of Queries)"` in the shared dev DB — a clone of case 6 whose try uses a `static` search endpoint, so results are deterministic; that constant's comment explains how to recreate it). **Must be a case with queries** — if your seed data's case has none, the shared `gotoCase()` helper times out waiting for the query list to render, and every case-page spec fails. Override with an ID from your own seed data if it differs, e.g. `QUEPID_E2E_CASE_ID=1`. Note that case IDs in the shared dev DB aren't a fixed fixture — they're just whatever row currently holds that ID, which can drift as the DB is reseeded or mutated over time (e.g. id `1` has been both `"10s of Queries"` and, later, a near-empty `"SOLR CASE"`). If you're regenerating baselines to visually diff against previously committed ones, confirm via `docker compose exec app bundle exec rails runner "puts Case.find(<id>).case_name"` that the ID still resolves to the case you expect before trusting the diff.
+* `QUEPID_E2E_CASE_ID` — the case ID the suite navigates to for all case-page specs, defaults to `RICH_CASE_FIXTURE_ID` in `test/playwright/case_helpers.ts` (`"E2E Static Fixture (10s of Queries)"` in the shared dev DB — a clone of case 6 whose try uses a `static` search endpoint, so results are deterministic; `bin/docker r thor sample_data:e2e_fixture` creates it, and `sample_data` runs it too; it forces id 219 and skips if that id already exists). **Must be a case with queries** — if your seed data's case has none, the shared `gotoCase()` helper times out waiting for the query list to render, and every case-page spec fails. Override with an ID from your own seed data if it differs, e.g. `QUEPID_E2E_CASE_ID=1`. Note that case IDs in the shared dev DB aren't a fixed fixture — they're just whatever row currently holds that ID, which can drift as the DB is reseeded or mutated over time (e.g. id `1` has been both `"10s of Queries"` and, later, a near-empty `"SOLR CASE"`). If you're regenerating baselines to visually diff against previously committed ones, confirm via `docker compose exec app bundle exec rails runner "puts Case.find(<id>).case_name"` that the ID still resolves to the case you expect before trusting the diff.
 
 Structure:
 
@@ -502,7 +502,7 @@ For some reason we can't run both with one command, _though we should be able to
 If you want to create a LOT of queries for a user for testing, then run
 
 ```bash
-bin/docker r bundle exec thor sample_data:large_data
+bin/docker r thor sample_data:large_data
 ```
 
 You will have two users, `quepid+100sOfQueries@o19s.com` and `quepid+1000sOfQueries@o19s.com` to test with.
@@ -512,7 +512,7 @@ You will have two users, `quepid+100sOfQueries@o19s.com` and `quepid+1000sOfQuer
 If you want to test the Jupyterlite notebooks, or work with a "real" case and book, then run
 
 ```bash
-bin/docker r bundle exec thor sample_data:haystack_party
+bin/docker r thor sample_data:haystack_party
 ```
 
 You will have lots of user data from the Haystack rating party book and case to work with. This data is sourced from the public case https://go.quepidapp.com/case/6789/try/12?sort=default and https://go.quepidapp.com/books/25
@@ -637,7 +637,7 @@ bin/docker r bin/rake test:stylelint
 To see available tasks:
 
 ```bash
-bin/docker r bundle exec thor list
+bin/docker r thor list
 ```
 
 Additional documentation is in [Operating Documentation](docs/operating_documentation.md#scripting-users-cases-ratings).
