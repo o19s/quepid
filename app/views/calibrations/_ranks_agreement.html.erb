@@ -1,0 +1,112 @@
+<%# locals: (run:) %>
+<%# How each query's score would move: nDCG@10 of the search's order, with each judge's grades. %>
+<% impact = run.score_impact %>
+<% judge_name = run.judge.name %>
+<% reference_name = calibration_judge_name(run.reference) %>
+<% if impact.nil? %>
+  <div class="text-muted py-3">
+    <p class="mb-2">
+      This calibration sampled pairs from anywhere in the book, so there are no whole top lists to score.
+    </p>
+    <p class="mb-0">
+      To see how case scores would move, start a <strong>New calibration</strong> and sample by <strong>queries</strong>:
+      it takes each query's top <%= CalibrationSample::QUERY_DEPTH %> pairs, and shows pair agreement too.
+    </p>
+  </div>
+<% else %>
+  <p class="small text-muted">
+    Each query's top <%= CalibrationSample::QUERY_DEPTH %>, scored with nDCG@10 in the order the search returned it: once with
+    <%= reference_name %>'s grades, once with <%= judge_name %>'s. A disagreement at rank 1 moves the score more than one at
+    rank 9, as it does in a case's score.
+  </p>
+
+  <div class="row g-3 mb-3">
+    <div class="col-sm-6 col-lg-3">
+      <div class="card h-100"><div class="card-body">
+        <div class="text-muted small">Same query order (Kendall's τ)</div>
+        <div class="fs-2 fw-semibold"><%= impact.kendall_tau.nil? ? '—' : format('%.2f', impact.kendall_tau) %></div>
+        <div class="small text-muted">
+          <% if !impact.enough? %>
+            Not enough queries compared (<%= impact.n %> of the <%= CalibrationScoreImpact::MIN_QUERIES %> needed).
+          <% elsif impact.kendall_tau.nil? %>
+            Undefined: one of them scored every query the same.
+          <% else %>
+            Do both find the same queries easy and hard? 1 is the same order, 0 unrelated.
+          <% end %>
+        </div>
+      </div></div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+      <div class="card h-100"><div class="card-body">
+        <div class="text-muted small">Average score shift</div>
+        <div class="fs-2 fw-semibold"><%= impact.mean_absolute_difference.nil? ? '—' : format('%.2f', impact.mean_absolute_difference) %></div>
+        <div class="small text-muted">nDCG@10 per query, either way</div>
+      </div></div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+      <div class="card h-100"><div class="card-body">
+        <div class="text-muted small">Queries that move ≥ <%= CalibrationScoreImpact::BIG_SHIFT %></div>
+        <div class="fs-2 fw-semibold"><%= impact.big_shifts %> <span class="fs-6 text-muted fw-normal">of <%= impact.n %></span></div>
+        <div class="small text-muted">
+          <% if impact.largest_shift %>largest: <%= format('%.2f', impact.largest_shift) %><% end %>
+        </div>
+      </div></div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+      <div class="card h-100"><div class="card-body">
+        <div class="text-muted small">Queries compared</div>
+        <div class="fs-2 fw-semibold"><%= impact.n %></div>
+        <div class="small text-muted">
+          <% if impact.incomplete.positive? %>
+            <%= pluralize(impact.incomplete, 'query', plural: 'queries') %> left out: <%= judge_name %> gave an unrateable answer on
+            <%= impact.incomplete == 1 ? 'it' : 'them' %>, and a hole in the list changes the score by itself.
+          <% else %>
+            every sampled query
+          <% end %>
+        </div>
+      </div></div>
+    </div>
+  </div>
+
+  <% if (difference = impact.mean_difference) %>
+    <p class="fs-6">
+      <i class="bi bi-arrow-down-up text-primary" aria-hidden="true"></i>
+      <% if difference.abs < 0.01 %>
+        With <%= judge_name %>'s grades the search scores about the same as with <%= reference_name %>'s, on average.
+      <% else %>
+        With <%= judge_name %>'s grades the search scores <%= format('%.2f', difference.abs) %>
+        <%= difference.negative? ? 'lower' : 'higher' %> than with <%= reference_name %>'s, on average.
+      <% end %>
+    </p>
+  <% end %>
+
+  <% if impact.queries.any? %>
+    <h5>Per query</h5>
+    <p class="small text-muted mb-2">Largest shift first.</p>
+    <div class="table-responsive">
+      <table class="table table-sm align-middle" id="calibration-queries">
+        <thead>
+          <tr>
+            <th scope="col">Query</th>
+            <th scope="col" class="text-end"><%= reference_name %></th>
+            <th scope="col" class="text-end"><%= judge_name %></th>
+            <th scope="col" class="text-end">Shift</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% impact.queries.sort_by { |query| -query.difference.abs }.each do |query| %>
+            <% big = query.difference.abs >= CalibrationScoreImpact::BIG_SHIFT %>
+            <tr>
+              <td><%= link_to query.query_text, book_query_doc_pairs_path(run.book, q: query.query_text) %></td>
+              <td class="text-end"><%= format('%.2f', query.reference_score) %></td>
+              <td class="text-end"><%= format('%.2f', query.judge_score) %></td>
+              <td class="text-end <%= big ? 'fw-semibold' : 'text-muted' %>">
+                <%= format('%+.2f', query.difference) %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
+<% end %>

@@ -1,0 +1,66 @@
+<% title = capture do %>
+  <i class="bi bi-book"></i> <%= book_title @book %>
+<% end %>
+<%= page_header title %>
+<%= turbo_stream_from @book.calibrations_broadcast_channel %>
+
+<%= render 'books/tabs', book: @book %>
+<div data-controller="stale-stream-guard" hidden></div>
+
+<div class="d-flex justify-content-between align-items-center mt-3 mb-3">
+  <h3 class="mb-0">Calibration</h3>
+  <% if @book.scale.blank? %>
+    <button type="button" class="btn btn-primary" disabled>
+      <i class="bi bi-bullseye" aria-hidden="true"></i> New calibration
+    </button>
+  <% else %>
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#new_calibration_modal">
+      <i class="bi bi-bullseye" aria-hidden="true"></i> New calibration
+    </button>
+  <% end %>
+</div>
+
+<% if @book.scale.blank? %>
+  <div class="alert alert-warning" role="alert">
+    <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
+    You can't calibrate on this book: it has no rating scale. A calibration compares ratings on the book's scale and
+    asks the AI judge to rate on it, so without one there's nothing to compare.
+  </div>
+<% end %>
+
+<% if @runs.empty? %>
+  <%= render 'about' %>
+
+  <div class="card">
+    <div class="card-body text-center text-muted py-5">
+      <i class="bi bi-bullseye fs-1 d-block mb-2" aria-hidden="true"></i>
+      No calibrations on this book yet.
+    </div>
+  </div>
+<% else %>
+  <%= render 'about_toggle' %>
+
+  <div class="table-responsive">
+    <table class="table align-middle">
+      <thead>
+        <tr>
+          <th scope="col">Judge</th>
+          <th scope="col">Compared against</th>
+          <th scope="col" class="text-end">Sample</th>
+          <th scope="col">Status</th>
+          <th scope="col" class="text-end"><abbr title="Agreement (Krippendorff's α): 1 means perfect agreement">α</abbr></th>
+          <th scope="col" class="text-end"><abbr title="Share of pairs graded exactly the same">Exact</abbr></th>
+          <th scope="col">Started</th>
+        </tr>
+      </thead>
+      <tbody>
+        <%= render partial: 'run_row', collection: @runs, as: :run %>
+      </tbody>
+    </table>
+  </div>
+<% end %>
+
+<% if @book.scale.present? %>
+  <%= render 'new_modal', book: @book, judges: @judges, references: @references, samples: @samples,
+             preselected_judge_id: @preselected_judge_id %>
+<% end %>
