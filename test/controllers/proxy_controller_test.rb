@@ -3,6 +3,8 @@
 require 'test_helper'
 
 class ProxyControllerTest < ActionDispatch::IntegrationTest
+  cover 'ProxyController#validate_proxy_url!'
+
   let(:user) { users(:joey) }
 
   # Hostnames used in this file's stubs that don't resolve via real DNS. The proxy's
@@ -273,52 +275,54 @@ class ProxyControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
-  describe 'PROXY_ALLOWED_NETWORKS' do
-    test 'allows a private address inside a listed network' do
-      stub = stub_request(:get, 'http://10.0.5.20:8983/solr/select?q=*:*').to_return(body: '{}', headers: { 'Content-Type' => 'application/json' })
-
-      with_proxy_allowed_networks('10.0.5.0/24') do
-        get proxy_fetch_url params: { url: 'http://10.0.5.20:8983/solr/select', q: '*:*' }
-      end
-
-      assert_response :success
-      assert_requested stub
+  describe 'admin-managed allowlist entries' do
+    def stored_network value
+      ProxyAllowlistEntry.create!(kind: ProxyAllowlistEntry::NETWORK, value: value)
     end
 
-    test 'allows a single listed IP' do
-      stub = stub_request(:get, 'http://127.0.0.1:8983/solr/select').to_return(body: '{}', headers: { 'Content-Type' => 'application/json' })
-
-      with_proxy_allowed_networks('127.0.0.1') do
-        get proxy_fetch_url params: { url: 'http://127.0.0.1:8983/solr/select' }
-      end
-
-      assert_response :success
-      assert_requested stub
+    def stored_host value
+      ProxyAllowlistEntry.create!(kind: ProxyAllowlistEntry::HOST, value: value)
     end
 
-    test 'still blocks a private address outside the listed networks' do
-      with_proxy_allowed_networks('10.0.5.0/24') do
-        get proxy_fetch_url params: { url: 'http://10.0.6.1/' }
+    def stub_ok url
+      stub_request(:get, url).to_return(body: '{}', headers: { 'Content-Type' => 'application/json' })
+    end
+
+    test 'are ignored, without querying them, when the flag is off' do
+      stored_network('10.0.5.0/24')
+      queries = []
+      callback = ->(*, payload) { queries << payload[:sql] if payload[:sql].include?('proxy_allowlist_entries') }
+
+      with_proxy_allowlist_admin_managed(false) do
+        ActiveSupport::Notifications.subscribed(callback, 'sql.active_record') do
+          get proxy_fetch_url params: { url: 'http://10.0.5.20/' }
+        end
       end
 
       assert_response :bad_request
       assert_equal 'Proxy URL resolves to a disallowed address', response.parsed_body['proxy_error']
+      assert_empty queries
     end
 
-    test 'still blocks the cloud metadata endpoint when only RFC1918 is listed' do
-      with_proxy_allowed_networks('10.0.0.0/8', '172.16.0.0/12', '192.168.0.0/16') do
-        get proxy_fetch_url params: { url: 'http://169.254.169.254/latest/meta-data/' }
+    test 'a stored network allows an address inside it when the flag is on' do
+      stored_network('10.0.5.0/24')
+      stub = stub_ok('http://10.0.5.20/')
+
+      with_proxy_allowlist_admin_managed(true) do
+        get proxy_fetch_url params: { url: 'http://10.0.5.20/' }
       end
 
-      assert_response :bad_request
+      assert_response :success
+      assert_requested stub
     end
 
-    test 'matches a hostname by its resolved IPv4-mapped IPv6 address' do
-      stub = stub_request(:get, 'http://solr.internal/solr/select').to_return(body: '{}', headers: { 'Content-Type' => 'application/json' })
+    test 'a stored host resolving to a private address is allowed' do
+      stored_host('search.internal')
+      stub = stub_ok('http://search.internal/_search')
 
-      resolving('solr.internal', '::ffff:10.0.5.20') do
-        with_proxy_allowed_networks('10.0.5.0/24') do
-          get proxy_fetch_url params: { url: 'http://solr.internal/solr/select' }
+      resolving('search.internal', '10.1.2.3') do
+        with_proxy_allowlist_admin_managed(true) do
+          get proxy_fetch_url params: { url: 'http://search.internal/_search' }
         end
       end
 
@@ -326,58 +330,12 @@ class ProxyControllerTest < ActionDispatch::IntegrationTest
       assert_requested stub
     end
 
-    test 'blocks a hostname when any resolved address is outside the listed networks' do
-      resolving('solr.internal', '10.0.5.20', '127.0.0.1') do
-        with_proxy_allowed_networks('10.0.5.0/24') do
-          get proxy_fetch_url params: { url: 'http://solr.internal/solr/select' }
-        end
-      end
+    test 'a stored host resolving to loopback, unspecified or link-local is blocked' do
+      stored_host('search.internal')
 
-      assert_response :bad_request
-    end
-  end
-
-  describe 'PROXY_ALLOWED_HOSTS' do
-    test 'allows a listed hostname that resolves to a private address' do
-      stub = stub_request(:get, 'http://search.internal:9200/_search').to_return(body: '{}', headers: { 'Content-Type' => 'application/json' })
-
-      resolving('search.internal', '172.18.0.5') do
-        with_proxy_allowed_hosts('search.internal') do
-          get proxy_fetch_url params: { url: 'http://search.internal:9200/_search' }
-        end
-      end
-
-      assert_response :success
-      assert_requested stub
-    end
-
-    test 'still blocks an unlisted hostname that resolves to the same private address' do
-      resolving('other.internal', '172.18.0.5') do
-        with_proxy_allowed_hosts('search.internal') do
-          get proxy_fetch_url params: { url: 'http://other.internal:9200/_search' }
-        end
-      end
-
-      assert_response :bad_request
-    end
-
-    test 'matches hostnames case-insensitively and ignores a trailing dot' do
-      stub = stub_request(:get, /search\.internal/i).to_return(body: '{}', headers: { 'Content-Type' => 'application/json' })
-
-      resolving('SEARCH.Internal.', '10.1.2.3') do
-        with_proxy_allowed_hosts('search.internal') do
-          get proxy_fetch_url params: { url: 'http://SEARCH.Internal./_search' }
-        end
-      end
-
-      assert_response :success
-      assert_requested stub
-    end
-
-    test 'still blocks a listed hostname that resolves to link-local addresses' do
-      [ '169.254.169.254', 'fe80::1' ].each do |ip|
+      [ '127.0.0.1', '::1', '0.0.0.0', '::', '169.254.169.254', 'fe80::1' ].each do |ip|
         resolving('search.internal', ip) do
-          with_proxy_allowed_hosts('search.internal') do
+          with_proxy_allowlist_admin_managed(true) do
             get proxy_fetch_url params: { url: 'http://search.internal/_search' }
           end
         end
@@ -386,14 +344,82 @@ class ProxyControllerTest < ActionDispatch::IntegrationTest
       end
     end
 
-    test 'still blocks a listed hostname when any resolved address is link-local' do
-      resolving('search.internal', '10.1.2.3', '169.254.169.254') do
-        with_proxy_allowed_hosts('search.internal') do
-          get proxy_fetch_url params: { url: 'http://search.internal/_search' }
+    test 'stored network rows covering loopback, inserted directly, still cannot reach it' do
+      now = Time.current
+      ProxyAllowlistEntry.insert_all!(%w[127.0.0.0/8 0.0.0.0/8].map { |value| { kind: ProxyAllowlistEntry::NETWORK, value: value, created_at: now, updated_at: now } })
+
+      with_proxy_allowlist_admin_managed(true) do
+        [ 'http://127.0.0.1/', 'http://0.0.0.0:3000/' ].each do |url|
+          get proxy_fetch_url params: { url: url }
+          assert_response :bad_request, url
+        end
+      end
+    end
+
+    test 'still blocks a private address outside a stored network' do
+      stored_network('10.0.5.0/24')
+
+      with_proxy_allowlist_admin_managed(true) do
+        get proxy_fetch_url params: { url: 'http://10.0.6.1/' }
+      end
+
+      assert_response :bad_request
+      assert_equal 'Proxy URL resolves to a disallowed address', response.parsed_body['proxy_error']
+    end
+
+    test 'a stored network matches a hostname by its resolved IPv4-mapped IPv6 address' do
+      stored_network('10.0.5.0/24')
+      stub = stub_ok('http://solr.internal/solr/select')
+
+      resolving('solr.internal', '::ffff:10.0.5.20') do
+        with_proxy_allowlist_admin_managed(true) do
+          get proxy_fetch_url params: { url: 'http://solr.internal/solr/select' }
+        end
+      end
+
+      assert_response :success
+      assert_requested stub
+    end
+
+    test 'a stored network still blocks a hostname when any resolved address is outside it' do
+      stored_network('10.0.5.0/24')
+
+      resolving('solr.internal', '10.0.5.20', '127.0.0.1') do
+        with_proxy_allowlist_admin_managed(true) do
+          get proxy_fetch_url params: { url: 'http://solr.internal/solr/select' }
         end
       end
 
       assert_response :bad_request
+    end
+
+    test 'still blocks an unstored hostname that resolves to the same private address as a stored one' do
+      stored_host('search.internal')
+
+      resolving('other.internal', '172.18.0.5') do
+        with_proxy_allowlist_admin_managed(true) do
+          get proxy_fetch_url params: { url: 'http://other.internal:9200/_search' }
+        end
+      end
+
+      assert_response :bad_request
+    end
+
+    test 'editing a stored network takes effect on the next request' do
+      entry = stored_network('10.0.5.0/24')
+      stub = stub_ok('http://10.0.6.20/')
+
+      with_proxy_allowlist_admin_managed(true) do
+        entry.update!(value: '10.0.6.0/24')
+
+        get proxy_fetch_url params: { url: 'http://10.0.6.20/' }
+        assert_response :success
+
+        get proxy_fetch_url params: { url: 'http://10.0.5.20/' }
+        assert_response :bad_request
+      end
+
+      assert_requested stub
     end
   end
 

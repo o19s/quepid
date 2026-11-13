@@ -342,6 +342,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_10_120000) do
     t.index ["user_id"], name: "index_mapper_wizard_states_on_user_id"
   end
 
+  create_table "proxy_allowlist_entries", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
+    t.string "kind", null: false
+    t.string "value", null: false
+    t.string "note"
+    t.integer "created_by_id"
+    t.integer "updated_by_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["created_by_id"], name: "index_proxy_allowlist_entries_on_created_by_id"
+    t.index ["kind", "value"], name: "index_proxy_allowlist_entries_on_kind_and_value", unique: true
+    t.index ["updated_by_id"], name: "index_proxy_allowlist_entries_on_updated_by_id"
+  end
+
   create_table "queries", id: :integer, charset: "utf8mb3", force: :cascade do |t|
     t.bigint "arranged_at"
     t.bigint "arranged_next"

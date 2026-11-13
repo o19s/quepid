@@ -71,20 +71,12 @@ module ActiveSupport
       Rails.application.config.require_proxy_for_all_search_endpoints = original
     end
 
-    def with_proxy_allowed_networks *networks
-      original = Rails.application.config.proxy_allowed_networks
-      Rails.application.config.proxy_allowed_networks = networks.map { |network| IPAddr.new(network) }
+    def with_proxy_allowlist_admin_managed value
+      original = Rails.application.config.proxy_allowlist_admin_managed
+      Rails.application.config.proxy_allowlist_admin_managed = value
       yield
     ensure
-      Rails.application.config.proxy_allowed_networks = original
-    end
-
-    def with_proxy_allowed_hosts *hosts
-      original = Rails.application.config.proxy_allowed_hosts
-      Rails.application.config.proxy_allowed_hosts = hosts
-      yield
-    ensure
-      Rails.application.config.proxy_allowed_hosts = original
+      Rails.application.config.proxy_allowlist_admin_managed = original
     end
 
     def with_cookies_url value

@@ -1,20 +1,51 @@
 schema: spec-driven
 
-# Project context (optional)
-# This is shown to AI when creating artifacts.
-# Add your tech stack, conventions, style guides, domain knowledge, etc.
-# Example:
-#   context: |
-#     Tech stack: TypeScript, React, Node.js
-#     We use conventional commits
-#     Domain: e-commerce platform
+# Project context, shown to the AI when it creates any artifact.
+# Keep this short: the authoritative rules live in AGENTS.md and DEVELOPER_GUIDE.md,
+# so link to them rather than restating them here.
+context: |
+  Quepid is a search relevance tuning app: users build cases of queries against a search
+  endpoint (Solr, Elasticsearch, OpenSearch, Vectara, Algolia, Qdrant, custom APIs), rate
+  results by hand or with LLM judges, and score them.
 
-# Per-artifact rules (optional)
-# Add custom rules for specific artifacts.
-# Example:
-#   rules:
-#     proposal:
-#       - Keep proposals under 500 words
-#       - Always include a "Non-goals" section
-#     tasks:
-#       - Break tasks into chunks of max 2 hours
+  Before writing any artifact, read AGENTS.md (agent rules: scope, change control, Docker,
+  git, testing) and DEVELOPER_GUIDE.md (development conventions). They are authoritative;
+  where this config and they disagree, they win.
+
+  Stack: Rails 8.1 on Ruby 4.0, Minitest, ActiveJob + SolidQueue, ActionCable. Frontend is
+  Rails-rendered HTML with Hotwire (Turbo + Stimulus) and vanilla JS on importmap; Bootstrap 5;
+  plain .css (no SCSS). Node 26, yarn. Vitest for JS unit tests, Playwright for E2E.
+  Everything runs in Docker; commands run via `docker compose exec app ...`.
+
+  Two UI surfaces deliberately differ: the case workspace ("core", loads core.css) and the
+  ordinary Rails pages (application.css, Turbo Drive). Say which one a change touches.
+
+  Instance configuration comes from ENV, parsed in config/initializers/customize_quepid.rb
+  and documented in .env.example.
+
+  Useful references: docs/app_structure.md (how the app is built), docs/data_mapping.md
+  (data model), docs/core_ui_implementation_reference.md (case workspace), docs/adr/
+  (architecture decisions), docs/todo/ (backlog, NOT-DOING.md for rejected ideas),
+  docs/manual-testing/ (tracked manual scenarios).
+
+# Per-artifact rules.
+rules:
+  proposal:
+    - State plainly which existing behavior changes and which stays the same; AGENTS.md requires behavior be preserved unless the change is authorized.
+    - Include a Non-goals section.
+    - Check docs/todo/NOT-DOING.md and docs/todo/ for prior decisions on the same idea and cite them.
+    - Name the affected surface(s) (case workspace, Rails pages, admin, API) and any new or changed ENV flags.
+    - Call out security impact (auth, SSRF, credentials, admin-only access) when the change touches them.
+  specs:
+    - Main specs under openspec/specs/ use "## Purpose" and "## Requirements"; delta specs in a change use ADDED/MODIFIED/REMOVED Requirements.
+    - Every requirement has at least one "#### Scenario:" with WHEN/THEN bullets, written as user- or operator-observable behavior rather than implementation detail.
+  design:
+    - Follow existing patterns in the codebase before introducing new ones; name the files or classes being followed.
+    - Keep changes focused; flag any renames, file moves or broad rewrites as needing explicit approval (see AGENTS.md).
+    - Note any architecture decision that deserves an ADR in docs/adr/.
+  tasks:
+    - "Include test tasks for each layer touched: Minitest for Ruby, Vitest for JS (test/javascript/, mirroring app/javascript/), and a Playwright spec that performs the changed flow's key action, with afterAll cleanup of any rows it creates."
+    - Include a task to add or update docs/manual-testing/ scenarios when user-facing behavior changes.
+    - Include tasks to update .env.example and docs/ when configuration or documented behavior changes.
+    - Include a final verification task listing the exact `docker compose exec app ...` test and lint commands to run.
+    - Do not include tasks to stage, commit or merge; the user handles git.

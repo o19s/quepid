@@ -167,6 +167,17 @@ class User < ApplicationRecord
 
   has_many :annotations, dependent: :restrict_with_error
 
+  has_many :created_proxy_allowlist_entries,
+           class_name:  'ProxyAllowlistEntry',
+           foreign_key: 'created_by_id',
+           dependent:   :nullify,
+           inverse_of:  :created_by
+  has_many :updated_proxy_allowlist_entries,
+           class_name:  'ProxyAllowlistEntry',
+           foreign_key: 'updated_by_id',
+           dependent:   :nullify,
+           inverse_of:  :updated_by
+
   # Validations
   validates :name,
             length: { maximum: 255 }

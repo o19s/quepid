@@ -16,6 +16,7 @@ services:
       - BROWSER=/dev/null
       - PUPPETEER_SKIP_DOWNLOAD=true
       - PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
+      - PROXY_ALLOWLIST_ADMIN_MANAGED=${PROXY_ALLOWLIST_ADMIN_MANAGED:-true} # on in dev so the e2e test covers the admin proxy allowlist page (set false in .env to turn off); off by default elsewhere
     volumes:
       - .:/srv/app:cached
       - ./log:/log
