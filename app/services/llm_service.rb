@@ -37,6 +37,9 @@ class LlmService
   rescue RuntimeError => e
     judgement.explanation = "BOOM: Runtime Error: #{e.message}"
     judgement.unrateable = true
+  rescue JSON::ParserError => e
+    judgement.explanation = "BOOM: LLM API returned a response that is not JSON: #{e.message}"
+    judgement.unrateable = true
   rescue Faraday::Error => e
     # This will catch all Faraday errors including TimeoutError, ConnectionFailed, etc.
     judgement.explanation = "BOOM: API request failed: #{e.message}"
