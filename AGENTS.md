@@ -164,6 +164,7 @@ Follow [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md) for development conventions.
 
 ## Code Style
 
+- Before writing or reviewing Rails code (queries, validations, controllers, concerns, naming), follow [AI coding style guide](docs/ai_coding_styleguide.md).
 - Instead of treating true/false parameters as strings in controller methods use our helper `archived = deserialize_bool_param(params[:archived])` to make them booleans.
 - Urls generated should never start with / as we need relative links.
 - In Ruby we say `credentials?` versus `has_credentials?` for predicates.
