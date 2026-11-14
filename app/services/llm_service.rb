@@ -78,5 +78,9 @@ class LlmService
 
     body = response.body
     body.is_a?(String) ? JSON.parse(body) : body
+  rescue JSON::ParserError => e
+    # A 200 that is not JSON (an HTML error page from a proxy, a truncated body)
+    # is an API failure like any other, so callers' RuntimeError handling applies.
+    raise "LLM API Error: response was not valid JSON (#{e.message})"
   end
 end
