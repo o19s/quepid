@@ -10,7 +10,7 @@ class BookImporter
   # can't attach its judgement to someone else's pair, move a pair - and every judgement on
   # it - into a book the uploader doesn't own, or forge created_at/updated_at. Keys an export
   # emits that aren't attributes (e.g. `judgement_id`) are dropped rather than raising.
-  ASSIGNABLE_JUDGEMENT_KEYS = [ :rating, :unrateable, :judge_later, :explanation ].freeze
+  ASSIGNABLE_JUDGEMENT_KEYS = [ :rating, :unrateable, :judge_later, :explanation, :confidence ].freeze
 
   ASSIGNABLE_QUERY_DOC_PAIR_KEYS = [
     :query_text, :doc_id, :position, :document_fields, :information_need, :notes, :options

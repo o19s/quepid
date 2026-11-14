@@ -26,6 +26,12 @@
     </div>
   <% end %>
   <%= render 'judgements/escalation_notice', judgement: judgement, book: book %>
+  <% if judgement.confidence %>
+    <p class="text-muted small mb-2" id="judgement-confidence">
+      Confidence reported by the judge: <strong><%= format_confidence(judgement.confidence) %></strong>.
+      Changing the rating here clears it, because it belongs to the judge's answer.
+    </p>
+  <% end %>
   <%= tag.div class: class_names('card', 'mb-3': image_url) do %>
     <div class="row g-0">
       <% if image_url %>

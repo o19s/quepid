@@ -5,6 +5,7 @@
 # Table name: judgements
 #
 #  id                          :bigint           not null, primary key
+#  confidence                  :float(24)
 #  explanation                 :text(65535)
 #  judge_later                 :boolean          default(FALSE)
 #  rating                      :float(24)
@@ -165,6 +166,48 @@ class JudgementTest < ActiveSupport::TestCase
     it 'says nothing for a rateable judgement or a person' do
       assert_nil reason_for('fine', unrateable: false)
       assert_nil reason_for('no idea', user: users(:matt))
+    end
+  end
+
+  describe 'confidence' do
+    let(:query_doc_pair) { query_doc_pairs(:one) }
+
+    def judged rating:, confidence:
+      Judgement.create!(user: users(:random), query_doc_pair: query_doc_pair, rating: rating, confidence: confidence)
+    end
+
+    test 'is optional, and must be between 0 and 1 when given' do
+      assert_predicate Judgement.new(query_doc_pair: query_doc_pair, rating: 1), :valid?
+      [ 0, 0.5, 1 ].each { |c| assert_predicate Judgement.new(query_doc_pair: query_doc_pair, rating: 1, confidence: c), :valid? }
+      [ -0.1, 1.1, 'sure' ].each { |c| assert_not_predicate Judgement.new(query_doc_pair: query_doc_pair, rating: 1, confidence: c), :valid? }
+    end
+
+    test 'a new rating saved without a confidence drops the old one' do
+      judgement = judged(rating: 1, confidence: 0.4)
+      judgement.update!(rating: 3)
+
+      assert_nil judgement.reload.confidence
+    end
+
+    test 'a re-run that repeats both rating and confidence keeps it' do
+      judgement = judged(rating: 1, confidence: 0.4)
+      judgement.update!(rating: 2, confidence: 0.4)
+
+      assert_in_delta 0.4, judgement.reload.confidence
+    end
+
+    test 'saving without touching the rating keeps it' do
+      judgement = judged(rating: 1, confidence: 0.4)
+      judgement.update!(explanation: 'edited')
+
+      assert_in_delta 0.4, judgement.reload.confidence
+    end
+
+    test 'an unrateable judgement keeps the confidence it was rejected for' do
+      judgement = judged(rating: 1, confidence: 0.2)
+      judgement.mark_unrateable!
+
+      assert_in_delta 0.2, judgement.reload.confidence
     end
   end
 end

@@ -50,6 +50,9 @@ module LlmJudgeAdapters
       # those checks correctly treat it the same as a missing rating.
       judgement.rating = numeric_judgment(result[:judgment])
       judgement.explanation = result[:explanation]
+      # Chat models report no confidence; assign nil anyway so a judge that moved off a
+      # confidence-reporting model doesn't keep that model's old value (ADR 0008).
+      judgement.confidence = nil
 
       judgement
     end

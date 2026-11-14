@@ -59,4 +59,11 @@ class JudgementHelperTest < ActionView::TestCase
     single_scale = [ 5, 5 ]
     assert_equal 'hsl(0, 100%, 50%)', calculate_hsl_color(5, single_scale)
   end
+
+  test 'format_confidence rounds to two places and leaves none as nil' do
+    assert_equal '0.62', format_confidence(0.618)
+    assert_equal '0.9', format_confidence(0.9)
+    assert_equal '0', format_confidence(0.0)
+    assert_nil format_confidence(nil)
+  end
 end
