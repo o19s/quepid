@@ -79,7 +79,7 @@
               <%= judgement.rating %>
             </td>
             <td>
-              <%= judgement.confidence&.round(2) %>
+              <%= format_confidence(judgement.confidence) %>
             </td>
             <% unless @compact %>
               <td>

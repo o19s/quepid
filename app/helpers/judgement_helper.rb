@@ -2,6 +2,11 @@
 
 # Helper methods for judgement-related views
 module JudgementHelper
+  # A judge's reported confidence for display, e.g. "0.62"; nil when it reported none.
+  def format_confidence confidence
+    number_with_precision(confidence, precision: 2, strip_insignificant_zeros: true)
+  end
+
   # Generate rating buttons based on the book's scale
   # @param book [Book] The book containing the scale
   # @return [Array] Array of button configuration hashes, with :use_backup_labels indicating if fallbacks were used
