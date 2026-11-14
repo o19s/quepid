@@ -18,6 +18,12 @@
 
 ---
 
+**Why this ADR exists.** [ADR 0007 — configurable judgement merging](https://github.com/frutik/quepid/pull/15)
+lets a book weight each judgement by the judge's confidence when it merges judgements into a
+rating. Judges that report none are weighted 1. 0007 deliberately adds no storage. It depends on
+confidence being stored, for any judge, with "reported none" kept apart from "reported 1.0". This
+ADR is that storage. It also serves the escalation and calibration work, which needed it first.
+
 ## 1. Context
 
 Some judges say how sure they are:
