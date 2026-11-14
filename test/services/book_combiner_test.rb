@@ -86,6 +86,19 @@ class BookCombinerTest < ActiveSupport::TestCase
     assert_empty @target.query_doc_pairs.reload
   end
 
+  test 'copies a confidence with a copied rating and drops it from an averaged one' do
+    target_pair = pair(@target)
+    target_pair.judgements.create!(user: @user, rating: 0, confidence: 0.9)
+    source_pair = pair(@source)
+    source_pair.judgements.create!(user: @user, rating: 1, confidence: 0.7)
+    source_pair.judgements.create!(user: users(:doug), rating: 1, confidence: 0.6)
+
+    BookCombiner.new(@target, [ @source ]).combine
+
+    assert_nil target_pair.judgements.find_by!(user: @user).confidence
+    assert_in_delta 0.6, target_pair.judgements.find_by!(user: users(:doug)).confidence
+  end
+
   test 'rolls back pairs if the final book save fails' do
     pair(@source).judgements.create!(user: @user, rating: 1)
     @target.name = ''

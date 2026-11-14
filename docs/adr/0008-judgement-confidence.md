@@ -1,6 +1,6 @@
 # ADR 0008 — Judgement confidence: storing how sure a judge was, for any judge
 
-- **Status:** Proposed
+- **Status:** Proposed (built on `docs/adr-0008-judgement-confidence`)
 - **Date:** 2026-11-14
 - **Affects (when built):** `judgements` table (a migration), `app/models/judgement.rb`,
   `app/services/llm_judge_adapters/` (`base.rb`, `jev.rb`; `anthropic.rb` and `open_ai.rb` through
@@ -57,7 +57,8 @@ row's current rating, and any source of judgements may fill it.**
 ### 2.1 The field
 
 - `judgements.confidence`: a nullable float in [0, 1]. The model validates the range, with
-  `allow_nil`. A database check constraint backs it up where MySQL supports one.
+  `allow_nil`. There is no database check constraint: the repo uses none, and Quepid runs on MySQL,
+  PostgreSQL and SQLite.
 - **NULL means the judge reported no confidence.** NULL never means 0, and it is never stored as 1.
   People, chat-LLM judges and imports without the field leave it NULL. Treating NULL as weight 1 is
   a reader's decision (ADR 0007), not a stored fact, so calibration can still tell a person from a
@@ -78,8 +79,9 @@ the confidence or clears it. Each write path in the code today, and what it does
 | `RunJudgeJudyJob`, `AiJudges::WizardController` (preview) | through the adapter | as the adapter set it |
 | `JudgementFromRatingJob` (rating made in a case) | the current user's judgement | nil (cleared by the model rule below) |
 | `JudgementsController`, `BulkJudgeController` (judging UI) | the current user's judgement | nil (cleared by the model rule below) |
-| `api/v1/judgements` create and update | any user's judgement | accepted as a parameter. Changing `rating` without sending `confidence` clears it. |
+| `api/v1/judgements` create and update | any user's judgement | accepted as a parameter and documented in the OpenAPI schema (`lib/assets/source_oas.json`). Changing `rating` without sending `confidence` clears it. |
 | `BookImporter` | any user's judgement | `:confidence` joins `ASSIGNABLE_JUDGEMENT_KEYS` |
+| `BooksController` scale remap (`update_all`, skips callbacks) | renames grades in place, e.g. 5 → 4 | kept: the judge's answer is the same, only its label changed |
 | `BookCombiner#merge_judgement` | copies, or averages two ratings of one judge | copied when the rating is copied. Cleared when two ratings are averaged, because the average is nobody's answer. |
 
 Behind the table sits one rule on the model, so a path added later cannot leak a stale value: **when
@@ -101,8 +103,9 @@ floor matter most. The explanation text keeps its current wording, which
   A missing or non-numeric confidence becomes nil, not 0.0. A 0.0 would weigh a judgement out of
   ADR 0007's merge. A value outside [0, 1] is stored as nil, with a note in the explanation. **The
   rating is kept**, because a valid rating should not fail over a bad side value. Today's
-  `below_confidence_floor?` uses `to_f`, which turns a missing confidence into 0 and so below any
-  floor. It moves to the same parse.
+  `below_confidence_floor?` used `to_f`. It now reads the number strictly too, without the range
+  check that storage applies: a missing or unreadable confidence still counts as below the floor,
+  as it did, and a value above 1 still clears it.
 - **From an import or the API:** a value outside [0, 1] or a non-numeric one makes the judgement
   invalid, the same way an invalid rating does today. `BookImporter` validates candidates with
   `judgement.valid?`. The caller sent the number on purpose, so a bad one is the caller's error to

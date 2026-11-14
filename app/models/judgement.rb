@@ -5,6 +5,7 @@
 # Table name: judgements
 #
 #  id                          :bigint           not null, primary key
+#  confidence                  :float(24)
 #  explanation                 :text(65535)
 #  judge_later                 :boolean          default(FALSE)
 #  rating                      :float(24)
@@ -27,6 +28,7 @@
 #  fk_rails_...  (query_doc_pair_id => query_doc_pairs.id)
 #
 class Judgement < ApplicationRecord
+  before_save :clear_stale_confidence
   after_commit :sync_case_ratings
   after_commit :broadcast_judge_activity
 
@@ -48,6 +50,9 @@ class Judgement < ApplicationRecord
   validates :user_id, :uniqueness => { :scope => :query_doc_pair_id }, unless: -> { user_id.nil? }
   validates :rating,
             presence: true, unless: :rating_not_required?
+  # How sure the judge was of this rating, as it reported it (ADR 0008). nil means it reported
+  # none, which is not the same as 0 or 1.
+  validates :confidence, numericality: { in: 0..1 }, allow_nil: true
 
   def rating_not_required?
     unrateable || judge_later
@@ -71,6 +76,11 @@ class Judgement < ApplicationRecord
     self.unrateable = false unless val.nil?
     self.judge_later = false unless val.nil?
     write_attribute(:rating, val)
+  end
+
+  def confidence= val
+    @confidence_assigned = true
+    super
   end
 
   # Why an AI judge's answer was unrateable, as a phrase ("its confidence
@@ -123,6 +133,15 @@ class Judgement < ApplicationRecord
   end
 
   private
+
+  # A confidence is only true of the answer it came with: a save that gives this judgement a new
+  # rating without also assigning a confidence (a person rating in a case, an API update) drops the
+  # old one. Assigning the same value still counts, so a re-run that repeats both keeps it. A rating
+  # cleared by mark_unrateable keeps its confidence -- that is what it was rejected for.
+  def clear_stale_confidence
+    self[:confidence] = nil if will_save_change_to_rating? && !rating.nil? && !@confidence_assigned
+    @confidence_assigned = false
+  end
 
   def broadcast_judge_activity
     pair = QueryDocPair.find_by(id: query_doc_pair_id)

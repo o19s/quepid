@@ -79,6 +79,7 @@ module Api
         @judgement = user ? @book.judgements.find_or_initialize_by(lookup) : @book.judgements.build(lookup)
         @judgement.rating = judgement_params[:rating] if judgement_params[:rating].present?
         @judgement.explanation = judgement_params[:explanation] if judgement_params[:explanation].present?
+        @judgement.confidence = judgement_params[:confidence] if judgement_params.key?(:confidence)
 
         @judgement.mark_unrateable if judgement_params[:unrateable]
 
@@ -112,7 +113,7 @@ module Api
       end
 
       def extract_judgement_params
-        params.expect(judgement: [ :rating, :unrateable, :judge_later, :query_doc_pair_id, :user_id, :explanation ])
+        params.expect(judgement: [ :rating, :unrateable, :judge_later, :query_doc_pair_id, :user_id, :explanation, :confidence ])
       end
 
       def set_judgement

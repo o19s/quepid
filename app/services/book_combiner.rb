@@ -40,7 +40,13 @@ class BookCombiner
 
   def merge_judgement pair, source
     judgement = pair.judgements.find_or_initialize_by(user: source.user)
-    judgement.rating = judgement.rating ? (judgement.rating + source.rating) / 2 : source.rating
+    if judgement.rating
+      judgement.rating = (judgement.rating + source.rating) / 2
+      judgement.confidence = nil # an average is nobody's answer, so no one's confidence applies
+    else
+      judgement.rating = source.rating
+      judgement.confidence = source.confidence
+    end
     judgement.rating = judgement.rating.round unless @book.support_implicit_judgements
     judgement.save!
   end

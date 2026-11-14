@@ -65,6 +65,20 @@ module Api
           assert_in_delta 2, anonymous.rating
         end
 
+        test 'accepts a confidence, returns it, and drops it when a later rating comes without one' do
+          qdp.judgements.where(user: doug).find_each(&:destroy!)
+          post :create, params: { book_id: book.id, judgement: {
+            query_doc_pair_id: qdp.id, user_id: doug.id, rating: 1, confidence: 0.35
+          } }
+          assert_response :ok
+          assert_in_delta 0.35, response.parsed_body['confidence']
+
+          judgement = qdp.judgements.find_by!(user: doug)
+          put :update, params: { book_id: book.id, id: judgement.id, judgement: { rating: 0 } }
+          assert_response :ok
+          assert_nil judgement.reload.confidence
+        end
+
         test 'creates separate anonymous judgements when user_id is absent or blank' do
           anonymous = qdp.judgements.create!(rating: 2)
           [ nil, '' ].each do |judge_id|
