@@ -30,6 +30,7 @@
             <th>Document fields</th>
           <% end %>
           <th>Rating</th>
+          <th title="How sure the judge was, as it reported it. Blank when the judge reports none.">Confidence</th>
           <% unless @compact %>
             <th>Unrateable</th>
             <th>Judge Later</th>
@@ -76,6 +77,9 @@
             <% end %>
             <td>
               <%= judgement.rating %>
+            </td>
+            <td>
+              <%= judgement.confidence&.round(2) %>
             </td>
             <% unless @compact %>
               <td>

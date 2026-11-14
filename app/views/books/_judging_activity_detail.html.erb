@@ -46,6 +46,9 @@
           <% elsif judgement.rating.present? %>
             <span class="badge bg-primary">Rating: <%= judgement.rating %></span>
           <% end %>
+          <% unless judgement.confidence.nil? %>
+            <span class="badge bg-secondary">Confidence: <%= judgement.confidence.round(2) %></span>
+          <% end %>
           <% if judgement.explanation.present? %>
             <div class="small text-muted mt-1"><%= judgement.explanation %></div>
           <% end %>
