@@ -73,8 +73,10 @@ When the controller validates a set of values and the view renders them, both re
 
 - Prefer the obvious implementation to a clever one; a parser or callback a reviewer has to decode
   needs a simpler shape or a one-line reason.
-- Comments use plain words and explain why. Remove comments that only describe the change being
-  made before the pull request merges.
+- Comments use plain words and explain why.
+- Comments that explain the pull request to the reviewer (the before state, why it changed) start
+  with `# PR:` in Ruby and `// PR:` in JavaScript, and are removed before the pull request merges.
+  Plain `#` and `//` comments are permanent.
 
 ## 10. Server-rendered views first
 
