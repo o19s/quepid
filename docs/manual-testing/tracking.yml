@@ -1047,9 +1047,9 @@ parts:
           proxy-invalid-scheme: "7.11/proxy-invalid-scheme"
           proxy-loopback: "7.11/proxy-loopback"
           proxy-public: "7.11/proxy-public"
-        last_run: 2026-11-05T22:45:39Z
+        last_run: 2026-11-16T21:26:23Z
         result: pass
-        notes: "Covered live on Current :3000 via authenticated /proxy/fetch: public Solr 200; 127.0.0.1, localhost, 0.0.0.0, 10/172.16/192.168, 169.254.169.254, fc00::1, IPv4-mapped ::ffff:10.0.0.5 and the keycloak Docker IP 400 disallowed-address; file, ftp and an unresolvable host 400 Invalid proxy URL. With PROXY_ALLOWLIST_ADMIN_MANAGED on: keycloak 172.18.0.2 blocked, then allowed after a disposable admin added it, still allowed after a rejected edit to 127.0.0.1, blocked after editing to 172.18.0.3/32, allowed after editing back, still allowed after its creator was deleted, blocked after the entry was deleted; no restarts. Not covered live: flag-off restart, admin host resolving to loopback (Rails tests only), credential attachment."
+        notes: "Covered live on Current :3000 after the ENV allowlist removal (1b6a5130b), via authenticated /proxy/fetch as quepid+admin: public Solr 200; 127.0.0.1, localhost, 0.0.0.0, 10/172.16/192.168, 169.254.169.254, fc00::1, ::ffff:10.0.0.5 and keycloak (172.18.0.2, by IP and name) 400 disallowed-address; file, ftp and an unresolvable host 400 Invalid proxy URL. With PROXY_ALLOWLIST_ADMIN_MANAGED on: adding keycloak's /32 allowed it by IP and name with no restart while 172.18.0.3 stayed blocked; a rejected edit to 127.0.0.1 left it allowed; editing to 172.18.0.3/32 blocked keycloak again. Host entry keycloak allowed the name (also as KEYCLOAK.) but not its bare IP; host entry localhost still 400. Deleting entries re-blocked. Not covered live: flag-off restart (Rails tests), credential attachment."
         paths: ["app/controllers/proxy_controller.rb", "app/services/proxy_allowlist.rb", "app/models/proxy_allowlist_entry.rb", "config/initializers/customize_quepid.rb"]
 
       "7.12":
@@ -1974,9 +1974,9 @@ parts:
         paths: ["config/initializers/rails_pulse.rb", "config/recurring.yml", "config/routes.rb", "app/views/admin/home/index.html.erb", "db/migrate/20261005192545_install_rails_pulse_tables.rb", "db/rails_pulse_schema.rb", "db/migrate/20261024233000_create_rails_pulse_events.rb", "Gemfile.lock", "config/initializers/postgresql_schema_compatibility.rb"]
       "14.14":
         title: "Proxy allowlist entries"
-        last_run: 2026-11-05T22:45:39Z
+        last_run: 2026-11-16T21:26:23Z
         result: pass
-        notes: "Covered live on Current :3000 with the flag on: disposable admin allowlist-disposable@example.com added 172.18.0.2 (normalized to /32) with a note, shown with their email under Added and Last changed; as quepid+admin, adds of 10.0.0.0/8 (/16 message), 0.0.0.0/16 and 169.254.169.254 (loopback/link-local message), 10.0.0.0/99 (invalid CIDR), host *.internal (not a plain hostname) and a duplicate (already taken) all 422; an edit to 127.0.0.1 was 422 and left the entry unchanged; editing value and note through the form updated both and set Last changed to quepid+admin while Added stayed with the disposable admin; deleted through the confirm modal. One [proxy_allowlist] log line per create, update (old -> new) and delete. Not covered live: flag-off 404 and hidden link (Rails tests). Two unrelated entries (10.20.5.0/24, fd00::/48) from another session were left untouched."
+        notes: "Covered live on Current :3000 after the ENV allowlist removal (1b6a5130b) as quepid+admin: page shows the updated warning and one Proxy Allowlist Entries card, no ENV section. Added 172.18.0.2 via the form (normalized to /32, note and Added/Last changed attribution); 10.0.0.0/8 (with the new add-narrower-entries hint), 127.0.0.1, 0.0.0.0/16, 169.254.169.254, 10.0.0.0/99, host *.internal and a duplicate all 422; edit to 127.0.0.1 showed the loopback error and left the entry unchanged; edit to 172.18.0.3/32 with a new note saved; deleted via the confirm modal (other two disposable entries deleted by direct DELETE). One [proxy_allowlist] log line per create/update (old -> new)/delete. Pre-existing 10.20.5.0/24 and fd00::/48 untouched. Not covered live: flag-off 404 and hidden link, second-admin edit, non-admin redirect (Rails tests)."
         paths: ["app/controllers/admin/proxy_allowlist_entries_controller.rb", "app/views/admin/proxy_allowlist_entries/", "app/models/proxy_allowlist_entry.rb", "app/services/proxy_allowlist.rb", "app/views/layouts/_admin_sidebar.html.erb", "db/migrate/20261105120000_create_proxy_allowlist_entries.rb", "test/playwright/admin.spec.ts"]
 
   "15":
