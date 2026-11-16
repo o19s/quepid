@@ -169,7 +169,7 @@ The **Proxy requests through Quepid** option (and the case wizard's Proxy mode) 
 - **Edge cases:**
   - [ ] A public hostname that DNS-resolves to a private address is blocked (the check is on resolved addresses, not the literal URL).
   - [ ] Confirm a saved endpoint's Basic Auth credential is attached by the proxy server-side and is never present in the response or browser network tab (Part 7.3).
-  - [ ] In a local dev setup where the search engine itself runs on localhost/Docker network (e.g. Solr on `localhost:8983`), note that Proxy mode will refuse it unless allow-listed (below) and CORS mode must otherwise be used — confirm the error message makes that diagnosable.
+  - [ ] In a local dev setup where the search engine itself runs on localhost/Docker network (e.g. Solr on `localhost:8983`), note that Proxy mode always refuses loopback (it cannot be allow-listed), so CORS mode must be used; an engine on a private Docker-network address can be allow-listed (below) — confirm the error message makes that diagnosable.
   - [ ] With `PROXY_ALLOWLIST_ADMIN_MANAGED=true` (the dev `docker-compose.yml` default), add the engine's `/32` on Admin > Proxy Allowlist (Part 14.14): the next proxied request to it succeeds without a restart; edit it to a neighbouring `/32` and the request is rejected again; delete it and it stays rejected.
   - [ ] Add a host entry for a name that resolves to loopback (e.g. a hosts-file alias of `127.0.0.1`): proxying to it is still rejected even though it's an allowlisted host.
   - [ ] With an entry stored, restart with `PROXY_ALLOWLIST_ADMIN_MANAGED=false`: the stored entry is ignored (request rejected) and the admin page returns 404; restart with it back on and the entry is listed again and takes effect.
