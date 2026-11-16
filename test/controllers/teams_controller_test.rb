@@ -399,10 +399,65 @@ class TeamsControllerTest < ActionDispatch::IntegrationTest
       foreign_team = teams(:another_shared_team)
       original_name = foreign_team.name
 
-      post rename_team_path(foreign_team), params: { team: { name: 'Pwned' } }
+      patch team_path(foreign_team), params: { team: { name: 'Pwned' } }
 
       assert_redirected_to teams_path
       assert_equal original_name, foreign_team.reload.name
+    end
+
+    it 'does not let a non-member view the settings page' do
+      foreign_team = teams(:another_shared_team)
+
+      get edit_team_path(foreign_team)
+
+      assert_redirected_to teams_path
+    end
+
+    it 'does not let a non-member delete a team' do
+      foreign_team = teams(:another_shared_team)
+
+      delete team_path(foreign_team)
+
+      assert_redirected_to teams_path
+      assert Team.exists?(foreign_team.id)
+    end
+  end
+
+  describe 'edit' do
+    it 'renders the settings page' do
+      get edit_team_path(@team)
+
+      assert_response :success
+      assert_select 'form[action=?]', team_path(@team), count: 2
+      assert_select 'form input[name="_method"][value="patch"]'
+      assert_select 'form input[name="_method"][value="delete"]'
+    end
+  end
+
+  describe 'update' do
+    it 'renames the team and redirects to the show page' do
+      patch team_path(@team), params: { team: { name: 'Renamed team' } }
+
+      assert_redirected_to team_path(@team)
+      assert_equal 'Renamed team', @team.reload.name
+    end
+
+    it 're-renders the settings page with errors when the name is invalid' do
+      other_team = Team.create!(name: 'Taken name')
+
+      patch team_path(@team), params: { team: { name: other_team.name } }
+
+      assert_response :unprocessable_content
+      assert_select '#error_explanation', /Name has already been taken/
+    end
+  end
+
+  describe 'destroy' do
+    it 'deletes the team and redirects to the teams list' do
+      delete team_path(@team)
+
+      assert_redirected_to teams_path
+      assert_not Team.exists?(@team.id)
     end
   end
 

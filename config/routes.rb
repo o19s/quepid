@@ -188,9 +188,8 @@ Rails.application.routes.draw do
     resources :export, only: [ :update ], param: :book_id
   end
 
-  resources :teams, only: [ :index, :new, :create, :show ] do
+  resources :teams, only: [ :index, :new, :create, :show, :edit, :update, :destroy ] do
     member do
-      post :rename
       get 'suggest_members' => 'teams#suggest_members', as: :suggest_members
       post 'members' => 'teams#add_member', as: :members
       delete 'members/:member_id' => 'teams#remove_member', as: :member
