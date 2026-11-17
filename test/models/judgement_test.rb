@@ -209,5 +209,27 @@ class JudgementTest < ActiveSupport::TestCase
 
       assert_in_delta 0.2, judgement.reload.confidence
     end
+
+    test 'a failed save does not leak confidence tracking into a later save on the same object' do
+      judgement = judged(rating: 1, confidence: 0.4)
+      other = Judgement.create!(user: users(:doug), query_doc_pair: query_doc_pair, rating: 1)
+
+      # This attempt assigns a confidence but fails for an unrelated reason (a duplicate
+      # user_id on this pair), so it never reaches the point where confidence tracking would
+      # normally reset.
+      judgement.user_id = other.user_id
+      judgement.rating = 2
+      judgement.confidence = 0.4
+      assert_not judgement.save
+
+      # A later, unrelated save on this same object must still apply the "rating changed
+      # without a confidence" rule -- it must not still think a confidence was just assigned
+      # because of the earlier failed attempt.
+      judgement.user_id = users(:random).id
+      judgement.rating = 3
+      assert judgement.save
+
+      assert_nil judgement.reload.confidence
+    end
   end
 end

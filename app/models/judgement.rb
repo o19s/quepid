@@ -28,7 +28,7 @@
 #  fk_rails_...  (query_doc_pair_id => query_doc_pairs.id)
 #
 class Judgement < ApplicationRecord
-  before_save :clear_stale_confidence
+  after_validation :reset_confidence_tracking
   after_commit :sync_case_ratings
   after_commit :broadcast_judge_activity
 
@@ -138,7 +138,12 @@ class Judgement < ApplicationRecord
   # rating without also assigning a confidence (a person rating in a case, an API update) drops the
   # old one. Assigning the same value still counts, so a re-run that repeats both keeps it. A rating
   # cleared by mark_unrateable keeps its confidence -- that is what it was rejected for.
-  def clear_stale_confidence
+  #
+  # Runs in after_validation, not before_save: before_save never fires when validation fails, so
+  # a before_save callback would leave @confidence_assigned stuck true after a failed save,
+  # wrongly suppressing this rule if the caller then retries on the same object. after_validation
+  # always runs, pass or fail, so the tracking resets either way.
+  def reset_confidence_tracking
     self[:confidence] = nil if will_save_change_to_rating? && !rating.nil? && !@confidence_assigned
     @confidence_assigned = false
   end
