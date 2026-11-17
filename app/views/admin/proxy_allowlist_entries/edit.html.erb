@@ -1,0 +1,21 @@
+<%= page_header "Edit Proxy Allowlist Entry" do %>
+  <div class="btn-toolbar mb-2 mb-md-0">
+    <div class="btn-group me-2">
+      <%= link_to 'Back to Proxy Allowlist', admin_proxy_allowlist_entries_path, class: 'btn btn-sm btn-outline-secondary' %>
+    </div>
+  </div>
+<% end %>
+
+<%= form_for [:admin, @entry] do |form| %>
+  <%= render "shared/error_messages", record: @entry, subject: "allowlist entry" %>
+
+  <div class="card">
+    <div class="card-body">
+      <%= render "fields", form: form %>
+
+      <div class="actions">
+        <%= form.submit "Update", class: 'btn btn-sm btn-primary' %>
+      </div>
+    </div>
+  </div>
+<% end %>

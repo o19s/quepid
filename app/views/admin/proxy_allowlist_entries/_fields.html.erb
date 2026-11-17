@@ -1,0 +1,22 @@
+<%# locals: (form:) %>
+      <div class="mb-3">
+        <%= form.label :kind, class: 'form-label' %>
+        <% if form.object.new_record? %>
+          <%= form.select :kind, [ [ 'Network (CIDR range or single IP)', ProxyAllowlistEntry::NETWORK ], [ 'Host (exact hostname)', ProxyAllowlistEntry::HOST ] ], {}, class: 'form-select' %>
+        <% else %>
+          <%= form.text_field :kind, readonly: true, class: 'form-control-plaintext' %>
+          <div class="form-text">To change the kind, delete this entry and add a new one.</div>
+        <% end %>
+      </div>
+
+      <div class="mb-3">
+        <%= form.label :value, class: 'form-label' %>
+        <%= form.text_field :value, required: true, maxlength: 253, class: 'form-control', placeholder: '10.0.5.0/24 or search.internal' %>
+        <div class="form-text">A network is a CIDR range no broader than /16 (IPv4) or /48 (IPv6), or a single IP. A host is an exact hostname, with no wildcards, schemes, ports or paths. Loopback (including 0.0.0.0) and link-local addresses are never allowed.</div>
+      </div>
+
+      <div class="mb-3">
+        <%= form.label :note, class: 'form-label' %>
+        <%= form.text_field :note, maxlength: 255, class: 'form-control' %>
+        <div class="form-text">Optional, e.g. which search engine this is for.</div>
+      </div>

@@ -15,7 +15,7 @@ Use the `quepid+admin@o19s.com` seed account (Part 1) to test this part.
   2. Attempt to navigate directly to `/admin`.
 - **Expected:** Redirected to the home page with an alert like "You must be a Quepid Administrator." below the navbar in the page flow.
 - **Edge cases:**
-  - [ ] Repeat for each admin sub-page directly by URL (`/admin/users`, `/admin/announcements`, `/admin/websocket_tester`) — confirm all are equally gated, not just the index.
+  - [ ] Repeat for each admin sub-page directly by URL (`/admin/users`, `/admin/announcements`, `/admin/websocket_tester`, `/admin/proxy_allowlist_entries`) — confirm all are equally gated, not just the index.
 
 ### 14.2 Admin Home dashboard
 
@@ -143,3 +143,18 @@ Use the `quepid+admin@o19s.com` seed account (Part 1) to test this part.
 - **Edge cases:**
   - [ ] Verify a failed job remains failed and appears in monitoring.
   - [ ] Verify cleanup removes expired monitoring data while retaining recent data in an isolated database.
+
+### 14.14 Proxy allowlist entries
+
+Requires `PROXY_ALLOWLIST_ADMIN_MANAGED=true` (on in the dev `docker-compose.yml`). See DEVELOPER_GUIDE.md "Proxying to internal search engines".
+
+- [ ] **Steps:**
+  1. As an admin, open Admin > **Proxy Allowlist** in the sidebar. Confirm the warning that entries apply to every logged-in user's proxy requests, and the Proxy Allowlist Entries section.
+  2. Click **New Allowlist Entry**, choose Network, enter `10.0.5.0/24` with a note, and create.
+  3. Edit the entry: change the value to `10.0.6.0/24` and the note, and save. If possible, do this as a second admin.
+  4. Delete the entry, accepting the confirmation.
+- **Expected:** After create, the entry is listed with its kind, value, note, and the admin's email and time under both Added and Last changed. The edit form shows the kind read-only; after saving, the new value and note are shown and Last changed names the editing admin. After delete, the entry is gone. The Rails log has one `[proxy_allowlist]` line per create, update (old → new value) and delete, naming the admin.
+- **Edge cases:**
+  - [ ] Invalid and too-broad values are rejected with a validation message and nothing saved, both on add and on edit: `10.0.0.0/8` (broader than /16), `127.0.0.1`, `0.0.0.0/16` and `169.254.169.254` (loopback/unspecified/link-local), `10.0.0.0/99` (invalid), host `*.internal` (wildcard), and a duplicate of an existing entry. On edit, the stored value is unchanged.
+  - [ ] Set `PROXY_ALLOWLIST_ADMIN_MANAGED=false` in `.env` and recreate the app container (a plain restart keeps the old environment): no sidebar link, and `/admin/proxy_allowlist_entries` returns 404.
+  - [ ] As a non-admin, `/admin/proxy_allowlist_entries` redirects with "You must be a Quepid Administrator." (14.1).
