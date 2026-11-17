@@ -11,7 +11,7 @@ class TeamsController < ApplicationController
 
   helper_method :team_filters
 
-  before_action :set_team, only: [ :show, :add_member, :remove_member, :rename, :remove_case, :archive_case, :unarchive_case, :archive_search_endpoint, :unarchive_search_endpoint, :suggest_members ]
+  before_action :set_team, only: [ :show, :edit, :update, :destroy, :add_member, :remove_member, :remove_case, :archive_case, :unarchive_case, :archive_search_endpoint, :unarchive_search_endpoint, :suggest_members ]
 
   # Remove a case from the team
   def remove_case
@@ -197,6 +197,8 @@ class TeamsController < ApplicationController
     @team = Team.new
   end
 
+  def edit; end
+
   def create
     @team = Team.new(team_params)
     if @team.save
@@ -246,15 +248,22 @@ class TeamsController < ApplicationController
     end
   end
 
-  # Rename the team (server-side form).
-  def rename
+  def update
     if @team.update(team_params)
       flash[:notice] = 'Team renamed.'
+      redirect_to team_path(@team), status: :see_other
     else
-      flash[:alert] = @team.errors.full_messages.to_sentence
+      flash.now[:alert] = @team.errors.full_messages.to_sentence
+      render :edit, status: :unprocessable_content
     end
+  end
 
-    redirect_to team_path(@team), status: :see_other
+  def destroy
+    name = @team.name
+    @team.destroy
+    Analytics::Tracker.track_team_deleted_event current_user, @team
+
+    redirect_to teams_path, notice: "Team #{name} deleted.", status: :see_other
   end
 
   def remove_member

@@ -1,4 +1,5 @@
 import { test, expect, type Page } from "@playwright/test"
+import { playwrightBaseURL } from "./env"
 
 // Smoke coverage for the admin namespace (Admin::AdminController and its
 // subclasses): home#index, users#index, announcements#index/#new/#create,
@@ -16,6 +17,10 @@ const ADMIN_PASSWORD = process.env.QUEPID_E2E_ADMIN_PASSWORD ?? "password"
 // A real seeded non-admin user in the shared dev DB (not a fixture).
 const NON_ADMIN_EMAIL = process.env.QUEPID_E2E_NON_ADMIN_EMAIL ?? "quepid+es@o19s.com"
 const NON_ADMIN_PASSWORD = process.env.QUEPID_E2E_NON_ADMIN_PASSWORD ?? "password"
+
+// Notes on allowlist entries this spec creates start with this, so afterAll can
+// find and delete any a failed run left behind.
+const ALLOWLIST_NOTE_PREFIX = "Playwright allowlist"
 
 async function loginAs(page: Page, email: string, password: string): Promise<void> {
   await page.goto("sessions/new")
@@ -89,4 +94,74 @@ test.describe("admin namespace", () => {
       "You must be a Quepid Administrator."
     )
   })
+
+  test("admin can add, edit and delete a proxy allowlist entry", async ({ page }) => {
+    await loginAs(page, ADMIN_EMAIL, ADMIN_PASSWORD)
+
+    const response = await page.goto("admin/proxy_allowlist_entries")
+    expect(
+      response?.status(),
+      "Admin > Proxy Allowlist returned 404: the dev server needs PROXY_ALLOWLIST_ADMIN_MANAGED=true, " +
+        "which docker-compose.yml sets for the app service. Recreate the dev server container to pick it up."
+    ).not.toBe(404)
+    await expect(page.getByRole("heading", { name: "Proxy Allowlist" })).toBeVisible()
+
+    // A unique /32 per run so leftovers from an earlier run can't collide.
+    const stamp = Date.now()
+    const value = `10.${(stamp >> 16) & 255}.${(stamp >> 8) & 255}.${stamp & 255}/32`
+    const editedValue = `10.${(stamp >> 16) & 255}.${(stamp >> 8) & 255}.${(stamp + 1) & 255}/32`
+    const note = `${ALLOWLIST_NOTE_PREFIX} ${stamp}`
+    const editedNote = `${note} edited`
+
+    await page.getByRole("link", { name: "New Allowlist Entry" }).click()
+    await page.locator("#proxy_allowlist_entry_kind").selectOption("network")
+    await page.locator("#proxy_allowlist_entry_value").fill(value)
+    await page.locator("#proxy_allowlist_entry_note").fill(note)
+    await page.getByRole("button", { name: "Create", exact: true }).click()
+
+    await expect(page).toHaveURL(/\/admin\/proxy_allowlist_entries$/)
+    const row = page.locator("#managed-entries tbody tr", { hasText: note })
+    await expect(row).toContainText(value)
+    await expect(row.locator("td").nth(3)).toContainText(ADMIN_EMAIL)
+
+    await row.getByRole("link", { name: "Edit" }).click()
+    await expect(page.locator("#proxy_allowlist_entry_kind")).toHaveValue("network")
+    await page.locator("#proxy_allowlist_entry_value").fill(editedValue)
+    await page.locator("#proxy_allowlist_entry_note").fill(editedNote)
+    await page.getByRole("button", { name: "Update", exact: true }).click()
+
+    await expect(page).toHaveURL(/\/admin\/proxy_allowlist_entries$/)
+    const editedRow = page.locator("#managed-entries tbody tr", { hasText: editedNote })
+    await expect(editedRow).toContainText(editedValue)
+    await expect(editedRow.locator("td").nth(4)).toContainText(ADMIN_EMAIL)
+
+    await editedRow.getByRole("button", { name: "Delete" }).click()
+    await page
+      .locator("#confirmModal")
+      .getByRole("button", { name: "Confirm", exact: true })
+      .click()
+    await expect(page.locator("#managed-entries tbody tr", { hasText: note })).toHaveCount(0)
+  })
+})
+
+test.afterAll(async ({ browser }) => {
+  const page: Page = await browser.newPage({ baseURL: playwrightBaseURL() })
+  try {
+    await loginAs(page, ADMIN_EMAIL, ADMIN_PASSWORD)
+    const response = await page.goto("admin/proxy_allowlist_entries")
+    if (response?.status() === 404) return
+
+    const leftovers = page.locator("#managed-entries tbody tr", { hasText: ALLOWLIST_NOTE_PREFIX })
+    while ((await leftovers.count()) > 0) {
+      const before = await leftovers.count()
+      await leftovers.first().getByRole("button", { name: "Delete" }).click()
+      await page
+        .locator("#confirmModal")
+        .getByRole("button", { name: "Confirm", exact: true })
+        .click()
+      await expect(leftovers).toHaveCount(before - 1)
+    }
+  } finally {
+    await page.close()
+  }
 })
