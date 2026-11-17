@@ -143,34 +143,29 @@
     <div class="mb-4">
       <h4><span class="badge bg-primary">2</span> Generate Mappers with AI</h4>
       <div data-mapper-wizard-target="step2" style="display: none;">
-        <p class="text-muted">Enter your OpenAI API key to generate JavaScript mapper functions.</p>
+        <p class="text-muted">Choose a connection to generate JavaScript mapper functions with AI.</p>
 
         <div class="row g-3">
           <div class="col-md-8">
-            <label for="apiKey" class="form-label">OpenAI API Key</label>
-            <div class="input-group" data-controller="password-toggle">
-              <div class="masked-input-wrapper is-masked" data-password-toggle-target="wrapper">
-                <input type="text"
-                       class="form-control masked-field"
-                       id="apiKey"
-                       placeholder="sk-..."
-                       autocomplete="off"
-                       data-mapper-wizard-target="apiKey"
-                       data-password-toggle-target="input"
-                       data-action="input->password-toggle#renderOverlay">
-                <div class="masked-input-overlay" data-password-toggle-target="overlay" aria-hidden="true"></div>
-              </div>
-              <button type="button" class="btn btn-outline-secondary" data-action="password-toggle#toggle" aria-label="Show API key">
-                <i class="bi bi-eye" data-password-toggle-target="icon"></i>
-              </button>
+            <label for="wizardConnection" class="form-label">Connection</label>
+            <%= select_tag 'wizardConnection', chat_connection_options, class: 'form-select',
+                  id: 'wizardConnection', data: { mapper_wizard_target: 'connection' } %>
+            <div class="form-text">
+              <%= link_to 'Manage connections', connections_path, target: '_blank', rel: 'noopener' %>.
             </div>
-            <div class="form-text">Your API key is used only for this request and is not stored.</div>
+            <% unless chat_connection_offered? %>
+              <div class="alert alert-warning small mt-2 mb-0">
+                There are no AI/ML connections you can use yet. Create one first.
+                <%= link_to 'Create a connection', new_connection_path, target: '_blank', rel: 'noopener' %>.
+              </div>
+            <% end %>
           </div>
           <div class="col-md-4 d-flex align-items-end">
             <button type="button"
                     class="btn btn-success w-100"
                     data-mapper-wizard-target="generateButton"
-                    data-action="click->mapper-wizard#generateMappers">
+                    data-action="click->mapper-wizard#generateMappers"
+                    <%= 'disabled' unless chat_connection_offered? %>>
               <i class="bi bi-stars"></i> Generate Mappers with AI
             </button>
           </div>
@@ -178,7 +173,7 @@
       </div>
       <p class="mt-2 mb-0">
         <button type="button" class="btn btn-link p-0 border-0 align-baseline" data-action="click->mapper-wizard#showStep3Manually">
-          No OpenAI key? Write the mapper code by hand instead.
+          No connection? Write the mapper code by hand instead.
         </button>
       </p>
     </div>

@@ -105,12 +105,11 @@ class MapperWizardsController < ApplicationController
       return render json:   { success: false, error: 'No HTML content. Fetch HTML first.' },
                     status: :unprocessable_content
     end
-    if params[:api_key].blank?
-      return render json:   { success: false, error: 'OpenAI API key required.' },
-                    status: :unprocessable_content
-    end
 
-    service = MapperWizardService.new(api_key: params[:api_key])
+    connection, problem = wizard_connection
+    return render json: { success: false, error: problem }, status: :unprocessable_content if problem
+
+    service = MapperWizardService.new(connection: connection)
     result = service.generate_mappers(@wizard_state.html_content)
 
     if result[:success]
@@ -155,12 +154,10 @@ class MapperWizardsController < ApplicationController
       return render json:   { success: false, error: 'No HTML content.' },
                     status: :unprocessable_content
     end
-    if params[:api_key].blank?
-      return render json:   { success: false, error: 'OpenAI API key required.' },
-                    status: :unprocessable_content
-    end
+    connection, problem = wizard_connection
+    return render json: { success: false, error: problem }, status: :unprocessable_content if problem
 
-    service = MapperWizardService.new(api_key: params[:api_key])
+    service = MapperWizardService.new(connection: connection)
     result = service.refine_mapper(
       mapper_type:  params[:mapper_type],
       current_code: params[:current_code],
@@ -246,6 +243,17 @@ class MapperWizardsController < ApplicationController
 
   def set_wizard_state
     @wizard_state = MapperWizardState.find_or_create_for_user(current_user)
+  end
+
+  # The connection the wizard should call out through, or nil with why it can't yet.
+  def wizard_connection
+    id = params[:connection_id].presence
+    return [ nil, 'Choose a connection to generate mapper code with.' ] if id.nil?
+
+    connection = current_user.connections_involved_with.not_archived.find_by(id: id)
+    return [ nil, "That connection isn't one you can use." ] if connection.nil?
+
+    [ connection, nil ]
   end
 
   def combine_mapper_code number_of_results_mapper, docs_mapper

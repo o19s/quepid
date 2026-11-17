@@ -72,7 +72,7 @@ class ExperimentWithRubyLlmExtractorTest < ActionDispatch::IntegrationTest
 
     stub_request(:post, 'https://api.openai.com/v1/responses')
       .with(
-        headers: { 'Authorization' => 'Bearer sk-test' },
+        headers: { 'Authorization' => 'Bearer sk-test-openai' },
         body:    /First Result/ # proves the downloaded HTML actually made it into the prompt
       )
       .to_return(
@@ -88,7 +88,7 @@ class ExperimentWithRubyLlmExtractorTest < ActionDispatch::IntegrationTest
         headers: { 'Content-Type' => 'application/json' }
       )
 
-    service = MapperWizardService.new(api_key: 'sk-test')
+    service = MapperWizardService.new(connection: connections(:openai))
 
     fetch_result = service.fetch_html('https://search.example.com/results')
     assert fetch_result[:success], "fetch_html failed: #{fetch_result[:error]}"

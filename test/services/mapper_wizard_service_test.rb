@@ -3,12 +3,14 @@
 require 'test_helper'
 
 class MapperWizardServiceTest < ActiveSupport::TestCase
+  let(:openai_connection) { connections(:openai) }
+
   test 'provider authentication errors retain generation and refinement failure contracts' do
     stub_request(:post, 'https://api.openai.com/v1/responses')
       .to_return(status: 401, headers: { 'Content-Type' => 'application/json' }, body: {
         error: { message: 'Invalid API key', type: 'invalid_request_error', code: 'invalid_api_key' },
       }.to_json)
-    service = MapperWizardService.new(api_key: 'invalid-key')
+    service = MapperWizardService.new(connection: openai_connection)
 
     generated = service.generate_mappers('<main>Results</main>')
     assert_not generated[:success]
@@ -25,6 +27,59 @@ class MapperWizardServiceTest < ActiveSupport::TestCase
     assert_requested(:post, 'https://api.openai.com/v1/responses', times: 2)
   end
 
+  test 'rejects a connection whose provider mapper generation does not support' do
+    service = MapperWizardService.new(connection: connections(:instance_elasticsearch))
+    result = service.generate_mappers('<html>test</html>')
+
+    assert_not result[:success]
+    assert_equal "Elasticsearch isn't supported for mapper generation yet.", result[:error]
+  end
+
+  test 'rejects a connection whose provider has no default model configured' do
+    connection = Connection.new(provider: 'azure_ai_foundry_serverless',
+                                base_url: 'https://my-model.region.models.ai.azure.com',
+                                secret: 'key', owner: users(:doug))
+    service = MapperWizardService.new(connection: connection)
+    result = service.generate_mappers('<html>test</html>')
+
+    assert_not result[:success]
+    assert_equal 'Azure AI Foundry (Serverless) has no default model configured for mapper generation.', result[:error]
+  end
+
+  test 'routes an Ollama connection through its OpenAI-compatible endpoint, without requiring a key' do
+    content = "```javascript\nnumberOfResultsMapper = function(data) { return 1; }\n```\n" \
+              "```javascript\ndocsMapper = function(data) { return []; }\n```"
+    request = stub_request(:post, 'http://ollama:11434/v1/responses')
+      .to_return(status: 200, headers: { 'Content-Type' => 'application/json' }, body: {
+        id: 'test', object: 'response', status: 'completed', model: 'qwen3:0.6b',
+        output: [ { type: 'message', role: 'assistant', content: [ { type: 'output_text', text: content } ] } ]
+      }.to_json)
+
+    service = MapperWizardService.new(connection: connections(:shared_ollama))
+    result = service.generate_mappers('<main>Results</main>')
+
+    assert result[:success], "Mapper failed: #{result[:error]}"
+    assert_requested request
+  end
+
+  test 'routes an Anthropic connection through its native API with the x-api-key header' do
+    content = "```javascript\nnumberOfResultsMapper = function(data) { return 1; }\n```\n" \
+              "```javascript\ndocsMapper = function(data) { return []; }\n```"
+    request = stub_request(:post, 'https://api.anthropic.com/v1/messages')
+      .with(headers: { 'x-api-key' => 'sk-ant-test' })
+      .to_return(status: 200, headers: { 'Content-Type' => 'application/json' }, body: {
+        id: 'msg_test', type: 'message', role: 'assistant', model: 'claude-sonnet-5-5',
+        content: [ { type: 'text', text: content } ],
+        stop_reason: 'end_turn', usage: { input_tokens: 1, output_tokens: 1 }
+      }.to_json)
+
+    service = MapperWizardService.new(connection: connections(:anthropic))
+    result = service.generate_mappers('<main>Results</main>')
+
+    assert result[:success], "Mapper failed: #{result[:error]}"
+    assert_requested request
+  end
+
   test 'a Responses API answer without code retains extraction errors' do
     stub_request(:post, 'https://api.openai.com/v1/responses')
       .to_return(status: 200, headers: { 'Content-Type' => 'application/json' }, body: {
@@ -32,7 +87,7 @@ class MapperWizardServiceTest < ActiveSupport::TestCase
         model:  'gpt-4o',
         output: [ { type: 'message', role: 'assistant', content: [ { type: 'output_text', text: 'No code available' } ] } ],
       }.to_json)
-    service = MapperWizardService.new(api_key: 'test-key')
+    service = MapperWizardService.new(connection: openai_connection)
 
     generated = service.generate_mappers('<main>Results</main>')
     assert_not generated[:success]
@@ -49,7 +104,7 @@ class MapperWizardServiceTest < ActiveSupport::TestCase
   end
 
   test 'mapper samples discard boilerplate, preserve structured scripts and JSON, and report truncation' do
-    service = MapperWizardService.new(api_key: 'test-key')
+    service = MapperWizardService.new(connection: openai_connection)
     html = "<style>#{'x' * 60_000}</style>" \
            '<script>noise</script><!-- noise --><svg>noise</svg><noscript>noise</noscript><script TYPE = "application/ld+json">{"title":"Structured result"}</script><main>Search results</main>'
     sample = service.send(:strip_boilerplate, html)
@@ -342,23 +397,23 @@ class MapperWizardServiceTest < ActiveSupport::TestCase
     assert_equal 'Title 2', result[:result][1]['title']
   end
 
-  test 'generate_mappers requires API key' do
+  test 'generate_mappers requires a connection' do
     service = MapperWizardService.new
     result = service.generate_mappers('<html>test</html>')
 
     assert_not result[:success]
-    assert_equal 'API key required', result[:error]
+    assert_equal 'Choose a connection to generate mapper code with.', result[:error]
   end
 
   test 'generate_mappers requires HTML content' do
-    service = MapperWizardService.new(api_key: 'sk-test')
+    service = MapperWizardService.new(connection: openai_connection)
     result = service.generate_mappers('')
 
     assert_not result[:success]
     assert_equal 'HTML content required', result[:error]
   end
 
-  test 'refine_mapper requires API key' do
+  test 'refine_mapper requires a connection' do
     service = MapperWizardService.new
     result = service.refine_mapper(
       mapper_type:  'numberOfResultsMapper',
@@ -368,7 +423,7 @@ class MapperWizardServiceTest < ActiveSupport::TestCase
     )
 
     assert_not result[:success]
-    assert_equal 'API key required', result[:error]
+    assert_equal 'Choose a connection to generate mapper code with.', result[:error]
   end
 
   test 'extract_single_function extracts numberOfResultsMapper' do

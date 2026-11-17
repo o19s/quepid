@@ -56,6 +56,20 @@ class MapperWizardsControllerTest < ActionDispatch::IntegrationTest
     assert_select 'h1', 'Mapper Wizard'
   end
 
+  test 'the connection dropdown offers only the AI/ML connections the user can use' do
+    get new_mapper_wizard_url
+
+    assert_response :success
+    assert_select 'select#wizardConnection' do
+      assert_select 'option', text: 'OpenAI (OpenAI)'
+      assert_select 'option', text: 'Anthropic (Anthropic)'
+      assert_select 'option', text: 'Shared Ollama (Ollama)'
+      assert_select 'option', text: /Voyage/, count: 0
+      assert_select 'option', text: /Elasticsearch/, count: 0
+    end
+    assert_select 'button[data-mapper-wizard-target="generateButton"]:not([disabled])'
+  end
+
   test 'should get show for existing endpoint' do
     # Give user access to the endpoint via team (doug is member of shared team)
     search_endpoint.teams << teams(:shared)
@@ -153,13 +167,56 @@ class MapperWizardsControllerTest < ActionDispatch::IntegrationTest
 
   test 'generate_mappers requires HTML content in session' do
     post mapper_wizard_generate_mappers_url('new'),
-         params: { api_key: 'sk-test-key' },
+         params: { connection_id: connections(:openai).id },
          as:     :json
 
     assert_response :unprocessable_entity
     json = response.parsed_body
     assert_not json['success']
     assert_equal 'No HTML content. Fetch HTML first.', json['error']
+  end
+
+  test 'generate_mappers requires a connection the user can use' do
+    wizard_state = MapperWizardState.find_or_create_for_user(user)
+    wizard_state.update!(html_content: '<html>Results</html>')
+
+    post mapper_wizard_generate_mappers_url('new'), params: {}, as: :json
+
+    assert_response :unprocessable_entity
+    json = response.parsed_body
+    assert_not json['success']
+    assert_equal 'Choose a connection to generate mapper code with.', json['error']
+
+    post mapper_wizard_generate_mappers_url('new'),
+         params: { connection_id: connections(:private_ollama).id },
+         as:     :json
+
+    assert_response :unprocessable_entity
+    json = response.parsed_body
+    assert_not json['success']
+    assert_equal "That connection isn't one you can use.", json['error']
+  end
+
+  test 'generate_mappers calls the chosen connection and stores the generated mappers' do
+    wizard_state = MapperWizardState.find_or_create_for_user(user)
+    wizard_state.update!(html_content: '<main>Results</main>')
+    content = "```javascript\nnumberOfResultsMapper = function(data) { return 1; }\n```\n" \
+              "```javascript\ndocsMapper = function(data) { return []; }\n```"
+    stub_request(:post, 'https://api.openai.com/v1/responses')
+      .to_return(status: 200, headers: { 'Content-Type' => 'application/json' }, body: {
+        id: 'test', object: 'response', status: 'completed', model: 'gpt-4o',
+        output: [ { type: 'message', role: 'assistant', content: [ { type: 'output_text', text: content } ] } ]
+      }.to_json)
+
+    post mapper_wizard_generate_mappers_url('new'),
+         params: { connection_id: connections(:openai).id },
+         as:     :json
+
+    assert_response :success
+    json = response.parsed_body
+    assert json['success']
+    assert_includes json['number_of_results_mapper'], 'numberOfResultsMapper'
+    assert_includes json['docs_mapper'], 'docsMapper'
   end
 
   test 'test_mapper requires HTML content in session' do
@@ -179,10 +236,10 @@ class MapperWizardsControllerTest < ActionDispatch::IntegrationTest
   test 'refine_mapper requires HTML content in session' do
     post mapper_wizard_refine_mapper_url('new'),
          params: {
-           mapper_type:  'numberOfResultsMapper',
-           current_code: 'numberOfResultsMapper = function(data) { return 0; }',
-           feedback:     'Make it better',
-           api_key:      'sk-test-key',
+           mapper_type:   'numberOfResultsMapper',
+           current_code:  'numberOfResultsMapper = function(data) { return 0; }',
+           feedback:      'Make it better',
+           connection_id: connections(:openai).id,
          },
          as:     :json
 
