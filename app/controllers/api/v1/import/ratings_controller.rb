@@ -4,6 +4,8 @@ module Api
   module V1
     module Import
       class RatingsController < Api::ApiController
+        class MalformedLtrLine < StandardError; end
+
         before_action :set_case
 
         def create
@@ -12,7 +14,12 @@ module Api
 
           clear_queries = deserialize_bool_param(params[:clear_queries])
 
-          ratings = normalized_ratings(file_format)
+          begin
+            ratings = normalized_ratings(file_format)
+          rescue MalformedLtrLine => e
+            render json: { message: "Unable to import ratings. #{e.message}" }, status: :bad_request
+            return
+          end
 
           options = {
             format:         :hash,
@@ -38,13 +45,20 @@ module Api
         def rating_from_ltr_line ltr_line
           # Pattern: 3 qid:1 # 1370 star trek
           ltr_line = ltr_line.strip
+          original_line = ltr_line
           first_chunk = ltr_line.index(' ')
+          raise MalformedLtrLine, "Malformed LTR line: #{original_line}" if first_chunk.nil?
+
           rating = ltr_line[0..first_chunk].strip
 
           ltr_line = ltr_line[first_chunk..].strip
           second_chunk_begin = ltr_line.index('#')
+          raise MalformedLtrLine, "Malformed LTR line: #{original_line}" if second_chunk_begin.nil?
+
           ltr_line = ltr_line[(second_chunk_begin + 1)..].strip
           second_chunk_end = ltr_line.index(' ')
+          raise MalformedLtrLine, "Malformed LTR line: #{original_line}" if second_chunk_end.nil?
+
           doc_id = ltr_line[0..second_chunk_end].strip
 
           ltr_line = ltr_line[second_chunk_end..]
