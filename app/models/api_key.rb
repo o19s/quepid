@@ -17,6 +17,9 @@
 #
 class ApiKey < ApplicationRecord
   HMAC_SECRET_KEY = Rails.application.secret_key_base
+  # Lets people, and secret scanners, recognise a Quepid token.
+  TOKEN_PREFIX = 'qp_'
+
   belongs_to :user
 
   validates :token, presence: true, on: :create
@@ -29,10 +32,25 @@ class ApiKey < ApplicationRecord
 
   attr_accessor :token
 
-  def self.authenticate_by_token! token
-    digest = OpenSSL::HMAC.hexdigest 'SHA256', HMAC_SECRET_KEY, token
+  def self.generate_token
+    "#{TOKEN_PREFIX}#{SecureRandom.hex}"
+  end
 
-    find_by! token_digest: digest
+  def self.digest token
+    OpenSSL::HMAC.hexdigest 'SHA256', HMAC_SECRET_KEY, token
+  end
+
+  # We only store the HMAC digest, so look a raw token up by its digest, and then confirm the match
+  # with a constant time comparison rather than trusting the database's string comparison.
+  def self.authenticate_by_token token
+    token_digest = digest(token)
+    api_key = find_by token_digest: token_digest
+
+    api_key if api_key && ActiveSupport::SecurityUtils.secure_compare(api_key.token_digest, token_digest)
+  end
+
+  def self.authenticate_by_token! token
+    authenticate_by_token(token) || raise(ActiveRecord::RecordNotFound.new("Couldn't find ApiKey", name))
   end
 
   # Add virtual token attribute to serializable attributes, and exclude
@@ -50,8 +68,6 @@ class ApiKey < ApplicationRecord
   private
 
   def generate_token_hmac_digest
-    digest = OpenSSL::HMAC.hexdigest 'SHA256', HMAC_SECRET_KEY, token
-
-    self.token_digest = digest
+    self.token_digest = self.class.digest(token)
   end
 end

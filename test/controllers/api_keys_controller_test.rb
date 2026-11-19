@@ -21,6 +21,23 @@ class ApiKeysControllerTest < ActionDispatch::IntegrationTest
       assert_match(/\A\h{64}\z/, user.api_keys.order(:id).last.token_digest) # HMAC-SHA256, never the raw token
     end
 
+    it 'shows the new token once, and never its digest' do
+      post api_keys_path
+      follow_redirect!
+
+      api_key = user.api_keys.order(:id).last
+      token = css_select('#new-api-key-token').text
+
+      assert_match(/\Aqp_/, token)
+      assert_equal api_key, ApiKey.authenticate_by_token(token)
+      assert_not_includes response.body, api_key.token_digest
+
+      get profile_path
+
+      assert_empty css_select('#new-api-key-token')
+      assert_not_includes response.body, api_key.token_digest
+    end
+
     it 'issues a different key each time and none to anyone else' do
       assert_no_difference 'other_user.api_keys.count' do
         post api_keys_path

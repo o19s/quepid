@@ -9,7 +9,7 @@ class ApiWorkflowsTest < ActionDispatch::IntegrationTest
   def api method, path, as: users(:random), params: nil
     key = ApiKey.create!(user: as, token: SecureRandom.hex)
     send method, path, params: params&.to_json, headers: {
-      'Authorization' => ActionController::HttpAuthentication::Token.encode_credentials(key.token_digest),
+      'Authorization' => ActionController::HttpAuthentication::Token.encode_credentials(key.token),
       'Accept'        => 'application/json',
       'Content-Type'  => 'application/json',
     }

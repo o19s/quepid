@@ -131,14 +131,14 @@ Invitations are generated from the **Teams > Add Team Member** flow (see Part 9)
 - [ ] **Steps:**
   1. On the Profile page, find the Personal Access Tokens / API Keys section.
   2. Click **Generate new Token**.
-  3. Confirm the new key appears in the table, and note the example `curl` command shown.
+  3. Copy the new token from the notice above the table, confirm the new key appears in the table, and note the example `curl` command shown.
   4. Use the generated token to make an authenticated API request (e.g., `curl` to `/api/users/current`) and confirm it works.
   5. Click **Destroy** next to a key, confirm the dialog.
 - **Expected:** New tokens work for API auth immediately; destroyed tokens stop working immediately.
 - **Edge cases:**
   - [ ] Generate several tokens in a row — confirm there's no unexpected limit, or that a limit (if any) is enforced with a clear message.
   - [ ] After destroying a key, retry the same `curl` command — it should now fail authentication.
-  - [ ] Confirm what's actually displayed in the table after generation is copyable/usable (vs. a hash/digest that can't be used for auth) — this is worth double-checking since it's easy for a UI to display the wrong value here.
+  - [ ] Reload the Profile page — the token is no longer shown anywhere, only its key id and creation date, since Quepid only stores a digest of it.
 
 ### 1.9 Account deletion ("Danger Zone")
 
