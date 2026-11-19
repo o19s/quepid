@@ -164,6 +164,18 @@ class BookImporterTest < ActiveSupport::TestCase
       assert_equal [ user, doug ].sort_by(&:id), qdp.judgements.map(&:user).sort_by(&:id)
     end
 
+    test 'keeps a judgement confidence, and skips a judgement whose confidence is out of range like an invalid rating' do
+      data[:query_doc_pairs][0][:judgements] = [
+        { rating: 1.0, confidence: 0.35, user_email: user.email },
+        { rating: 1.0, confidence: 1.5, user_email: doug.email }
+      ]
+      BookImporter.new(book, user, data).import
+
+      judgements = book.query_doc_pairs.find_by(doc_id: '123').judgements
+      assert_in_delta 0.35, judgements.find_by!(user: user).confidence
+      assert_nil judgements.find_by(user: doug)
+    end
+
     test 'creates a query_doc_pair with no judgements when none are given' do
       importer = BookImporter.new book, user, data
       importer.import

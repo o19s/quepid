@@ -5,3 +5,4 @@ json.unrateable     judgement.unrateable
 json.judge_later    judgement.judge_later
 json.user_email     judgement.user.email if judgement.user
 json.explanation    judgement.explanation
+json.confidence     judgement.confidence

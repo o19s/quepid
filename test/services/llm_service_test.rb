@@ -102,6 +102,26 @@ class LlmServiceTest < ActiveSupport::TestCase
       assert_nil judgement.rating
     end
 
+    test 'a chat model reports no confidence, so a judge that used to be Jev loses its old one' do
+      judgement = Judgement.new(query_doc_pair: query_doc_pair, user: judge, rating: 1, confidence: 0.8)
+      stub_request(:post, 'https://api.openai.com/v1/chat/completions')
+        .to_return(status: 200, body: { choices: [ { message: { content: '{"judgment": 1, "explanation": "same"}' } } ] }.to_json, headers: {})
+
+      service.perform_judgement judgement
+
+      assert_nil judgement.confidence
+    end
+
+    test 'a failed call clears the confidence' do
+      judgement = Judgement.new(query_doc_pair: query_doc_pair, user: judge, confidence: 0.8)
+      stub_request(:post, 'https://api.openai.com/v1/chat/completions').to_raise(Faraday::ConnectionFailed)
+
+      service.perform_safe_judgement judgement
+
+      assert judgement.unrateable
+      assert_nil judgement.confidence
+    end
+
     test 'an answer that is not JSON marks the judgement unrateable instead of raising' do
       [ 'I am sorry, I cannot rate that document.', '{"judgment": 2, "expla', nil ].each do |content|
         judgement = Judgement.new(query_doc_pair: query_doc_pair, user: judge)

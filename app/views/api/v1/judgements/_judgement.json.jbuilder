@@ -8,3 +8,4 @@ json.unrateable judgement.unrateable
 json.judge_later judgement.judge_later
 json.user_id judgement.user_id
 json.explanation judgement.explanation
+json.confidence judgement.confidence

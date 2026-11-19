@@ -3,6 +3,7 @@
 # Table name: judgements
 #
 #  id                          :bigint           not null, primary key
+#  confidence                  :float(24)
 #  explanation                 :text(65535)
 #  judge_later                 :boolean          default(FALSE)
 #  rating                      :float(24)
