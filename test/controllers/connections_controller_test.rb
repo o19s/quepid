@@ -291,10 +291,23 @@ class ConnectionsControllerTest < ActionDispatch::IntegrationTest
     embedders(:openai_small).update!(connection: connections(:openai))
 
     get connections_url
-    assert_select 'td', text: '1 embedder'
+    assert_select 'td span.badge.rounded-pill.bg-secondary', text: '1 embedder'
 
     get connection_url(connections(:openai))
     assert_select 'a[href=?]', edit_embedder_path(embedders(:openai_small)), text: embedders(:openai_small).name
+  end
+
+  test 'index shows one lozenge per kind of use' do
+    login_user_for_integration_test users(:doug)
+    embedders(:openai_small).update!(connection: connections(:openai))
+    AiJudge.create!(name: 'Doug judge', system_prompt: 'Judge it.', owner: users(:doug), connection: connections(:openai))
+
+    get connections_url
+
+    assert_select 'td' do
+      assert_select 'span.badge.rounded-pill.bg-secondary', text: '1 embedder'
+      assert_select 'span.badge.rounded-pill.bg-secondary', text: '1 AI judge'
+    end
   end
 
   test 'a connection in use cannot be deleted' do

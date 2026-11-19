@@ -87,7 +87,9 @@
                 <td>
                   <% used_by = { 'embedder' => @embedder_counts.fetch(connection.id, 0), 'AI judge' => @ai_judge_counts.fetch(connection.id, 0) }.select { |_, count| count.positive? } %>
                   <% if used_by.any? %>
-                    <%= used_by.map { |kind, count| pluralize(count, kind) }.join(', ') %>
+                    <% used_by.each do |kind, count| %>
+                      <span class="badge rounded-pill bg-secondary"><%= pluralize(count, kind) %></span>
+                    <% end %>
                   <% else %>
                     <span class="text-muted">&mdash;</span>
                   <% end %>
