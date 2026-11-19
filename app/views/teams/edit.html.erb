@@ -1,0 +1,41 @@
+<%= page_header "Team Settings: #{@team.name}" do %>
+  <div class="btn-toolbar mb-2 mb-md-0">
+    <%= link_to 'Back to Team', team_path(@team), class: 'btn btn-sm btn-outline-secondary' %>
+  </div>
+<% end %>
+
+<div class="row">
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">Rename Team</h5>
+        <%= render "shared/error_messages", record: @team, subject: "team" %>
+        <%= form_with model: @team, local: true do |f| %>
+          <div class="mb-2">
+            <%= f.text_field :name, class: 'form-control form-control-sm', placeholder: 'New team name' %>
+          </div>
+          <div>
+            <%= f.submit 'Rename', class: 'btn btn-primary btn-sm' %>
+          </div>
+        <% end %>
+        <p class="text-muted mt-2 small">Change the display name for this team.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="card border-danger">
+      <div class="card-header text-bg-danger">Danger Zone</div>
+      <div class="card-body">
+        <h5 class="card-title">Delete Team</h5>
+        <p class="card-text small">
+          Permanently deletes this team. Members are removed; cases, books, scorers, search
+          endpoints and embedders shared with it are unshared, not deleted, and keep working
+          for their owners.
+        </p>
+        <%= button_to 'Delete Team', team_path(@team), method: :delete, class: 'btn btn-sm btn-outline-danger',
+              form: { data: { turbo_confirm: "Delete the team \"#{@team.name}\"? Members will be removed and shared resources unshared (not deleted)." } } %>
+      </div>
+    </div>
+  </div>
+</div>

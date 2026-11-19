@@ -13,3 +13,4 @@ that supersedes the old one rather than editing the old one into agreement with 
 |-----|--------|---------|
 | [0001](./0001-llm-judge-provider-architecture.md) | Proposed | LLM-as-Judge provider architecture: the adapter seam, TypeSafe Jev, and OpenAI Batch |
 | [0005](./0005-connections-for-external-services.md) | Proposed | Connections: one record for reaching and authenticating to an external service |
+| [0008](./0008-judgement-confidence.md) | Proposed | Judgement confidence: storing how sure a judge was, for any judge |

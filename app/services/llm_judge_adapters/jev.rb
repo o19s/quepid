@@ -80,6 +80,11 @@ module LlmJudgeAdapters
 
       judgement.rating = rating_from(answer, scale)
       judgement.explanation = explanation_from(answer, response_body, scale)
+      judgement.confidence = confidence_from(answer)
+      if judgement.confidence.nil? && !answer['confidence'].nil?
+        judgement.explanation = "#{judgement.explanation} [confidence #{answer['confidence'].inspect} is not " \
+                                'between 0 and 1, so it was not stored]'
+      end
 
       # Two answers can share a score and mean very different things, so a run
       # can be told to treat a flat distribution as no answer at all. Say so in
@@ -143,11 +148,19 @@ module LlmJudgeAdapters
       nil
     end
 
+    # A missing or unreadable confidence is still below any floor, as it always was: a judge
+    # that can't say how sure it is hasn't cleared the bar. It is just never stored as 0.
     def below_confidence_floor? answer
       floor = options[:jev_min_confidence]
       return false if floor.blank?
 
-      answer['confidence'].to_f < floor.to_f
+      confidence = numeric_value(answer['confidence'])
+      confidence.nil? || confidence < floor.to_f
+    end
+
+    def confidence_from answer
+      confidence = numeric_value(answer['confidence'])
+      confidence if confidence&.between?(0, 1)
     end
 
     # Jev writes no prose, so say what it actually answered: the rating, the raw

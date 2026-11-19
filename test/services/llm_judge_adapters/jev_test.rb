@@ -169,6 +169,32 @@ module LlmJudgeAdapters
       end
     end
 
+    describe 'storing the confidence' do
+      test 'keeps the reported confidence on the judgement' do
+        adapter.apply_response(judgement, score_answer(score: 0.57, confidence: 0.35), scale: JudgeScale.for(book))
+
+        assert_in_delta 0.35, judgement.confidence
+      end
+
+      test 'a missing confidence is stored as none, not as 0' do
+        adapter.apply_response(judgement, score_answer(score: 1.0, confidence: nil), scale: JudgeScale.for(book))
+
+        assert_nil judgement.confidence
+        assert_in_delta(1.0, judgement.rating)
+      end
+
+      test 'an out-of-range or malformed confidence is not stored, but the rating is kept' do
+        [ 1.7, -0.1, 'very' ].each do |bad|
+          fresh = Judgement.new(query_doc_pair: query_doc_pair, user: judge)
+          adapter.apply_response(fresh, score_answer(score: 1.0, confidence: bad), scale: JudgeScale.for(book))
+
+          assert_nil fresh.confidence
+          assert_in_delta(1.0, fresh.rating)
+          assert_includes fresh.explanation, 'is not between 0 and 1, so it was not stored'
+        end
+      end
+    end
+
     describe 'the confidence floor' do
       let(:picky) { Jev.new('ts-key', { llm_provider: 'typesafe_jev', jev_min_confidence: 0.5 }) }
 
@@ -179,6 +205,7 @@ module LlmJudgeAdapters
 
         assert_predicate judgement, :unrateable
         assert_nil judgement.rating
+        assert_in_delta 0.2, judgement.confidence, 0.001, 'the rejected confidence is what the threshold is chosen from'
         assert_includes judgement.explanation, 'confidence 0.2'
         assert_includes judgement.explanation,
                         "[confidence 0.2 is below this judge's minimum confidence of 0.5, so it was marked unrateable]"
@@ -190,6 +217,20 @@ module LlmJudgeAdapters
         assert_in_delta(1.0, judgement.rating)
         assert_not judgement.unrateable
         assert_not_includes judgement.explanation, 'minimum confidence'
+      end
+
+      test 'an over-range confidence clears the floor even though it is not stored' do
+        picky.apply_response(judgement, score_answer(score: 1.0, confidence: 1.7), scale: JudgeScale.for(book))
+
+        assert_not judgement.unrateable
+        assert_nil judgement.confidence
+      end
+
+      test 'a missing confidence is still below the floor' do
+        picky.apply_response(judgement, score_answer(score: 1.0, confidence: nil), scale: JudgeScale.for(book))
+
+        assert_predicate judgement, :unrateable
+        assert_nil judgement.confidence
       end
 
       test 'with no floor configured every answer counts' do

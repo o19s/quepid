@@ -20,6 +20,16 @@ class JudgementsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test 'the index shows each judgement confidence, and leaves it blank when the judge reported none' do
+    judgement = book.judgements.first
+    judgement.update!(rating: judgement.rating || 1, confidence: 0.354)
+
+    get book_judgements_url book
+    assert_response :success
+    assert_select 'th', text: 'Confidence'
+    assert_select 'td', text: '0.35'
+  end
+
   test 'returns not found when the book is missing or not accessible' do
     get book_judgements_url(book_id: 999_999)
     assert_response :not_found
@@ -53,6 +63,16 @@ class JudgementsControllerTest < ActionDispatch::IntegrationTest
     test 'should get edit' do
       get edit_book_judgement_url(jbm_book, existing_judgement)
       assert_response :success
+    end
+
+    test 'the edit page shows the confidence the judge reported, and nothing when it reported none' do
+      existing_judgement.update!(confidence: 0.618)
+      get edit_book_judgement_url(jbm_book, existing_judgement)
+      assert_select '#judgement-confidence strong', text: '0.62'
+
+      existing_judgement.update!(confidence: nil)
+      get edit_book_judgement_url(jbm_book, existing_judgement)
+      assert_select '#judgement-confidence', count: 0
     end
 
     describe 'an escalated pair' do

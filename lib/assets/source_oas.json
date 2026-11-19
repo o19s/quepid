@@ -53,6 +53,12 @@
               },
               "unrateable": {
                 "type": "boolean"
+              },
+              "confidence": {
+                "type": ["number", "null"],
+                "minimum": 0,
+                "maximum": 1,
+                "description": "How sure the judge was of this rating, as the judge reported it. Omit or send null when the judge reports none. Sending a new rating without a confidence clears the stored one."
               }
             }
           }

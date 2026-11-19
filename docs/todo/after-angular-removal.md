@@ -404,7 +404,7 @@ a blank credential: hidden-credential deployments rely on it.
 
 **Location:** `app/controllers/proxy_controller.rb` (`validate_proxy_url!`), `app/services/http_client_service.rb`
 
-The proxy validates the initial DNS resolution and blocks private ranges, but Faraday resolves the host again when making the request (DNS-rebinding window), and redirect following means an allowed public URL can redirect to an internal address without revalidation. Hosts and ranges opened with `PROXY_ALLOWED_HOSTS` / `PROXY_ALLOWED_NETWORKS` widen what a rebinding or redirect can reach.
+The proxy validates the initial DNS resolution and blocks private ranges, but Faraday resolves the host again when making the request (DNS-rebinding window), and redirect following means an allowed public URL can redirect to an internal address without revalidation. Hosts and ranges added by administrators when `PROXY_ALLOWLIST_ADMIN_MANAGED` is on widen what a rebinding or redirect can reach.
 
 **Fix direction:** Use a single validated connection target, disable redirects by default, or validate each redirect target through the same check, allow-lists included. Tests: redirect-to-private-address, IPv6/link-local, rebinding, non-default ports, credential forwarding.
 

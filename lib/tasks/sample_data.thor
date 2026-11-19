@@ -7,7 +7,7 @@ require 'zip'
 class SampleData < Thor
   # The Playwright specs key off this case id as RICH_CASE_FIXTURE_ID (test/playwright/case_helpers.ts) -
   # rename one and rename the other to match.
-  RICH_CASE_FIXTURE_ID  = 219
+  RICH_CASE_FIXTURE_ID = 219
 
   # rubocop:disable Metrics/AbcSize
   # rubocop:disable Metrics/MethodLength
