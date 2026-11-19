@@ -68,13 +68,23 @@ module Api
 
       test 'tokenless POST accepts API-key authentication' do
         api_key = ApiKey.create!(user: users(:doug), token: 'csrf-regression-key')
-        @request.headers['Authorization'] = ActionController::HttpAuthentication::Token.encode_credentials(api_key.token_digest)
+        @request.headers['Authorization'] = ActionController::HttpAuthentication::Token.encode_credentials(api_key.token)
 
         post :test
 
         assert_response :ok
         assert_equal users(:doug), @controller.current_user
         assert_equal api_key, @controller.current_api_key
+      end
+
+      test 'rejects the stored digest of an API key as a token' do
+        api_key = ApiKey.create!(user: users(:doug), token: SecureRandom.hex)
+        @request.headers['Authorization'] = ActionController::HttpAuthentication::Token.encode_credentials(api_key.token_digest)
+
+        post :test
+
+        assert_response :unauthorized
+        assert_nil @controller.current_api_key
       end
 
       test 'tokenless POST rejects an invalid API key even with a cookie session' do

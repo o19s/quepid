@@ -72,6 +72,40 @@ class ApiKeyTest < ActiveSupport::TestCase
     end
   end
 
+  describe '.authenticate_by_token' do
+    test 'finds the api key matching the raw token' do
+      raw_token = SecureRandom.hex
+      api_key = ApiKey.create! user: user, token: raw_token
+
+      assert_equal api_key, ApiKey.authenticate_by_token(raw_token)
+    end
+
+    test 'does not accept the stored digest as a token' do
+      api_key = ApiKey.create! user: user, token: SecureRandom.hex
+
+      assert_nil ApiKey.authenticate_by_token(api_key.token_digest)
+    end
+
+    test 'does not trust a match that is only equal under the database collation' do
+      raw_token = SecureRandom.hex
+      api_key = ApiKey.create! user: user, token: raw_token
+      # MySQL's case insensitive collation would still find this row for the lowercase digest.
+      api_key.update_column :token_digest, api_key.token_digest.upcase
+
+      assert_nil ApiKey.authenticate_by_token(raw_token)
+      assert_raises(ActiveRecord::RecordNotFound) { ApiKey.authenticate_by_token!(raw_token) }
+    end
+  end
+
+  describe '.generate_token' do
+    test 'generates a random token with the Quepid prefix' do
+      token = ApiKey.generate_token
+
+      assert_match(/\Aqp_\h{32}\z/, token)
+      assert_not_equal token, ApiKey.generate_token
+    end
+  end
+
   describe '#serializable_hash' do
     test 'includes the virtual token right after creation and excludes the digest' do
       raw_token = SecureRandom.hex
