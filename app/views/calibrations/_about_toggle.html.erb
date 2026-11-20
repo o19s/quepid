@@ -1,0 +1,11 @@
+<%# The calibration explanation, collapsed. A button, not a link: with Quepid's
+    <base href>, href="#..." points at the site root and Turbo navigates there. %>
+<p class="mb-2">
+  <button type="button" class="btn btn-link btn-sm px-0" data-bs-toggle="collapse" data-bs-target="#calibration_about"
+          aria-expanded="false" aria-controls="calibration_about">
+    <i class="bi bi-question-circle" aria-hidden="true"></i> What is calibration, and how do I use it?
+  </button>
+</p>
+<div class="collapse" id="calibration_about">
+  <%= render 'calibrations/about' %>
+</div>
