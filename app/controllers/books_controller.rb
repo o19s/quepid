@@ -132,7 +132,7 @@ class BooksController < ApplicationController
       if known_judge_ids.include?(judge_id)
         [
           turbo_stream.replace("judge-status-#{judge_id}", partial: 'books/judge_status_cell', locals: { row: row, book: @book }),
-          turbo_stream.replace("judge-count-#{judge_id}", partial: 'books/judge_count_cell', locals: { row: row }),
+          turbo_stream.replace("judge-count-#{judge_id}", partial: 'books/judge_count_cell', locals: { row: row, book: @book }),
           turbo_stream.replace("judge-last-#{judge_id}", partial: 'books/judge_last_cell', locals: { row: row })
         ]
       else

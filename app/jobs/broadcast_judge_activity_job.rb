@@ -30,7 +30,9 @@ class BroadcastJudgeActivityJob < ApplicationJob
 
   def broadcast_cells channel, book, row
     { status: 'judge_status_cell', count: 'judge_count_cell', last: 'judge_last_cell' }.each do |cell, partial|
-      locals = :status == cell ? { row: row, book: book, flash_active: true } : { row: row }
+      locals = { row: row }
+      locals[:book] = book unless :last == cell
+      locals[:flash_active] = true if :status == cell
       Turbo::StreamsChannel.broadcast_replace_to(
         *channel, target: "judge-#{cell}-#{row[:judge].id}", partial: "books/#{partial}", locals: locals
       )
