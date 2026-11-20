@@ -50,6 +50,37 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test 'removing an AI judge from a book keeps its judgements' do
+    login_user_for_integration_test user
+    james_bond_movies.ai_judges << judge_judy unless james_bond_movies.ai_judges.include?(judge_judy)
+    judgement_count = james_bond_movies.judgements.where(user: judge_judy).count
+
+    delete remove_ai_judge_book_path(james_bond_movies, ai_judge_id: judge_judy.id)
+
+    assert_redirected_to book_path(james_bond_movies)
+    assert_not james_bond_movies.reload.ai_judges.include?(judge_judy)
+    assert_equal judgement_count, james_bond_movies.judgements.where(user: judge_judy).count
+  end
+
+  test 'removing a judge that is not on the book is refused' do
+    login_user_for_integration_test user
+    stranger = AiJudge.create!(name: 'Stranger', owner: user)
+
+    delete remove_ai_judge_book_path(james_bond_movies, ai_judge_id: stranger.id)
+
+    assert_redirected_to book_path(james_bond_movies)
+    assert_equal 'AI Judge not found.', flash[:alert]
+  end
+
+  test 'judge activity offers remove and delete-judgements buttons for an assigned judge' do
+    login_user_for_integration_test user
+    james_bond_movies.ai_judges << judge_judy unless james_bond_movies.ai_judges.include?(judge_judy)
+
+    get book_path(james_bond_movies)
+
+    assert_select "form[action='#{remove_ai_judge_book_path(james_bond_movies, ai_judge_id: judge_judy.id)}']"
+  end
+
   test 'successful settings update redirects with a notice' do
     login_user_for_integration_test user
 

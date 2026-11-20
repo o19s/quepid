@@ -169,6 +169,7 @@ Rails.application.routes.draw do
       patch 'assign_anonymous'
       patch 'run_judge_judy/:ai_judge_id', action: :run_judge_judy, as: :run_judge_judy
       patch 'cancel_judge_judy/:ai_judge_id', action: :cancel_judge_judy, as: :cancel_judge_judy
+      delete 'remove_ai_judge/:ai_judge_id', action: :remove_ai_judge, as: :remove_ai_judge
       get :judge_overview
       get :judge_activity
       delete 'delete_ratings_by_assignee', action: :delete_ratings_by_assignee, as: :delete_ratings_by_assignee

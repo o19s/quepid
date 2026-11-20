@@ -8,7 +8,7 @@ class BooksController < ApplicationController
   before_action :set_book,
                 only: [ :show, :edit, :update, :destroy, :combine, :assign_anonymous, :delete_ratings_by_assignee,
                         :reset_unrateable, :reset_judge_later, :delete_query_doc_pairs_below_position,
-                        :eric_steered_us_wrong, :remap_judgement_ratings, :run_judge_judy, :cancel_judge_judy, :judge_overview, :judge_activity, :judgement_stats, :export, :archive, :unarchive ]
+                        :eric_steered_us_wrong, :remap_judgement_ratings, :run_judge_judy, :cancel_judge_judy, :remove_ai_judge, :judge_overview, :judge_activity, :judgement_stats, :export, :archive, :unarchive ]
 
   before_action :find_user, only: [ :reset_unrateable, :reset_judge_later, :delete_ratings_by_assignee ]
 
@@ -387,6 +387,14 @@ class BooksController < ApplicationController
 
     UpdateCaseJob.perform_later @book
     redirect_to book_path(@book), :notice => "Deleted #{deleted_count} judgements belonging to #{@user.fullname}.", status: :see_other
+  end
+
+  def remove_ai_judge
+    judge = @book.ai_judges.find_by(id: params[:ai_judge_id])
+    return redirect_to(book_path(@book), alert: 'AI Judge not found.', status: :see_other) unless judge
+
+    @book.ai_judges.delete(judge)
+    redirect_to book_path(@book), notice: "Removed #{judge.fullname} from this book. Its judgements were kept.", status: :see_other
   end
 
   def reset_unrateable
