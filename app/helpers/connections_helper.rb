@@ -26,4 +26,29 @@ module ConnectionsHelper
     providers = Array(capabilities).flat_map { |capability| ConnectionProvider.with_capability(capability).map(&:key) }
     current_user.connections_involved_with.not_archived.where(provider: providers)
   end
+
+  # The mapper wizard's connection dropdown: every active chat connection the user can use.
+  # Unlike connection_options_for, there is no persisted consumer to carry a sticky selection --
+  # the wizard's choice is used once per request and never saved.
+  def chat_connection_options
+    options = chat_connections.map do |connection|
+      provider_label = connection.provider_definition&.label || connection.provider
+      [ "#{connection.name} (#{provider_label})", connection.id ]
+    end
+
+    options_for_select([ [ 'Choose a connection', '' ] ] + options)
+  end
+
+  # Is there a connection the mapper wizard can generate mapper code with? The view asks this
+  # more than once per render (the empty-state warning, the disabled button), alongside
+  # chat_connection_options -- memoized so they share one query instead of three.
+  def chat_connection_offered?
+    chat_connections.any?
+  end
+
+  private
+
+  def chat_connections
+    @chat_connections ||= selectable_connections(:chat).order(:name).to_a
+  end
 end

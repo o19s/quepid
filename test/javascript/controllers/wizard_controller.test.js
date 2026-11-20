@@ -1048,9 +1048,10 @@ describe("WizardController", () => {
       controller.renderEndpointChoices()
 
       expect([...controller.endpointSelectTarget.options].map((o) => o.textContent)).toEqual([
-        "Select a search endpoint…",
+        "Search 1 endpoint…",
         "Live"
       ])
+      expect(controller.endpointTomSelect.settings.placeholder).toBe("Search 1 endpoint…")
       expect(controller.endpointSelectTarget.disabled).toBe(false)
     })
 

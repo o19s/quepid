@@ -5,8 +5,33 @@ require 'v8_mapper_executor'
 class MapperWizardService
   class WizardError < StandardError; end
 
-  def initialize api_key: nil
-    @api_key = api_key
+  # How a connection's provider maps onto RubyLLM's own provider registry (RubyLLM is used
+  # nowhere else in Quepid -- every other connection consumer talks through LlmConnection/
+  # LlmJudgeAdapters instead -- so this mapping lives here rather than in ConnectionProvider,
+  # which deliberately knows nothing about RubyLLM).
+  #
+  # azure_ai_foundry_anthropic is deliberately absent: it speaks Anthropic's native Messages
+  # API over Azure's x-api-key header, a dialect RubyLLM's "azure" provider (OpenAI-shaped)
+  # does not implement.
+  RUBY_LLM_PROVIDERS = {
+    'openai'                      => :openai,
+    'google_gemini'               => :openai,
+    'ollama'                      => :openai,
+    'anthropic'                   => :anthropic,
+    'azure_openai'                => :azure,
+    'azure_ai_foundry'            => :azure,
+    'azure_ai_foundry_serverless' => :azure,
+  }.freeze
+
+  # Of the providers routed through RubyLLM's :openai client, these two store a bare host in
+  # their connection (no "/v1") that the client expects appended. google_gemini's
+  # default_base_url already ends in its own full OpenAI-compatible path, so it's the one
+  # :openai-routed provider that doesn't need it. Azure's RubyLLM provider infers its request
+  # shape from the base URL itself, so azure-routed providers need no suffix either.
+  PROVIDERS_NEEDING_V1_SUFFIX = %w[openai ollama].freeze
+
+  def initialize connection: nil
+    @connection = connection
     @v8_executor = V8MapperExecutor.new(Rails.root.join('lib/mapper_code_logic.js'))
   end
 
@@ -41,13 +66,9 @@ class MapperWizardService
 
   # Generate mapper functions using RubyLLM
   def generate_mappers html_content
-    return { success: false, error: 'API key required' } if @api_key.blank?
     return { success: false, error: 'HTML content required' } if html_content.blank?
 
-    configure_ruby_llm
-
-    chat = RubyLLM.chat(model: 'gpt-4o')
-
+    chat = build_chat
     chat.with_instructions(generation_prompt)
 
     truncated_html, truncated = truncate_for_llm(strip_boilerplate(html_content), 50_000)
@@ -68,6 +89,8 @@ class MapperWizardService
       original_length: html_content.length,
       sent_length:     truncated_html.length
     )
+  rescue WizardError => e
+    { success: false, error: e.message }
   rescue StandardError => e
     { success: false, error: "AI generation failed: #{e.message}" }
   end
@@ -111,11 +134,7 @@ class MapperWizardService
 
   # Refine a mapper function using AI
   def refine_mapper mapper_type:, current_code:, feedback:, html_content:
-    return { success: false, error: 'API key required' } if @api_key.blank?
-
-    configure_ruby_llm
-
-    chat = RubyLLM.chat(model: 'gpt-4o')
+    chat = build_chat
 
     truncated_html, truncated = truncate_for_llm(strip_boilerplate(html_content), 30_000)
 
@@ -143,6 +162,8 @@ class MapperWizardService
     PROMPT
 
     build_refine_result(response.content, truncated, html_content.length, truncated_html.length)
+  rescue WizardError => e
+    { success: false, error: e.message }
   rescue StandardError => e
     { success: false, error: "AI refinement failed: #{e.message}" }
   end
@@ -211,10 +232,31 @@ class MapperWizardService
     document.to_html
   end
 
-  def configure_ruby_llm
-    RubyLLM.configure do |config|
-      config.openai_api_key = @api_key
+  # A Chat scoped to this call's connection -- never the global RubyLLM config, which would
+  # leak one request's provider and key into any other request handled by the same process.
+  def build_chat
+    raise WizardError, 'Choose a connection to generate mapper code with.' if @connection.blank?
+
+    ruby_llm_provider = RUBY_LLM_PROVIDERS[@connection.provider]
+    label = @connection.provider_definition&.label || @connection.provider
+    raise WizardError, "#{label} isn't supported for mapper generation yet." if ruby_llm_provider.nil?
+
+    model = LlmProvider.find(@connection.provider)&.default_model.presence
+    raise WizardError, "#{label} has no default model configured for mapper generation." if model.blank?
+
+    context = RubyLLM.context do |config|
+      config.public_send("#{ruby_llm_provider}_api_key=", @connection.secret.presence || 'not-required')
+      config.public_send("#{ruby_llm_provider}_api_base=", connection_base_url)
     end
+
+    context.chat(model: model, provider: ruby_llm_provider, assume_model_exists: true)
+  end
+
+  def connection_base_url
+    base = @connection.base_url.to_s.sub(%r{/+\z}, '')
+    return base unless PROVIDERS_NEEDING_V1_SUFFIX.include?(@connection.provider)
+
+    base.end_with?('/v1') ? base : "#{base}/v1"
   end
 
   def generation_prompt

@@ -12,7 +12,7 @@ export default class extends withStatusMessages(Controller) {
     "httpMethod",
     "basicAuthCredential",
     "customHeaders",
-    "apiKey",
+    "connection",
     "htmlPreview",
     "htmlPreviewContainer",
     "numberOfResultsMapper",
@@ -59,7 +59,7 @@ export default class extends withStatusMessages(Controller) {
     }
   }
 
-  // Lets a user without an OpenAI key (or who just prefers to write the mapper by hand) reach
+  // Lets a user without a connection (or who just prefers to write the mapper by hand) reach
   // Step 3 directly, instead of it only ever being revealed by a successful AI generation.
   showStep3Manually() {
     this.step2Target.style.display = "block"
@@ -187,9 +187,9 @@ export default class extends withStatusMessages(Controller) {
   async generateMappers(event) {
     event.preventDefault()
 
-    const apiKey = this.apiKeyTarget.value.trim()
-    if (!apiKey) {
-      this.showStatus("Please enter your OpenAI API key", "error")
+    const connectionId = this.connectionTarget.value
+    if (!connectionId) {
+      this.showStatus("Please choose a connection", "error")
       return
     }
 
@@ -197,7 +197,7 @@ export default class extends withStatusMessages(Controller) {
     this.showStatus("Generating mapper functions with AI... This may take a moment.", "info")
 
     try {
-      const data = await this.postWizardJson(this.generateUrlValue, { api_key: apiKey })
+      const data = await this.postWizardJson(this.generateUrlValue, { connection_id: connectionId })
 
       if (data.success) {
         // Update CodeMirror editors
@@ -371,9 +371,9 @@ export default class extends withStatusMessages(Controller) {
   }
 
   async refineMapper(mapperType, editor, textarea, feedback, button) {
-    const apiKey = this.apiKeyTarget.value.trim()
-    if (!apiKey) {
-      this.showStatus("Please enter your OpenAI API key", "error")
+    const connectionId = this.connectionTarget.value
+    if (!connectionId) {
+      this.showStatus("Please choose a connection", "error")
       return
     }
 
@@ -387,7 +387,7 @@ export default class extends withStatusMessages(Controller) {
         mapper_type: mapperType,
         current_code: currentCode,
         feedback: feedback,
-        api_key: apiKey
+        connection_id: connectionId
       })
 
       if (data.success) {

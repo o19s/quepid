@@ -678,10 +678,11 @@ export default class extends Controller {
     updateSearchEndpointSelect(this.endpointTomSelect, endpoints, this.settings?.searchEndpointId)
     if (endpoints.length) this.endpointTomSelect.enable()
     else this.endpointTomSelect.disable()
-    this.endpointTomSelect.settings.placeholder = endpoints.length
-      ? "Select a search endpoint…"
-      : "You do not have any Search Endpoints created yet."
-    this.endpointTomSelect.inputState()
+    if (!endpoints.length) {
+      this.endpointTomSelect.settings.placeholder =
+        "You do not have any Search Endpoints created yet."
+      this.endpointTomSelect.inputState()
+    }
   }
 
   // The named conditions that `data-wizard-when` lists in the ERB; an element is shown

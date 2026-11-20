@@ -316,7 +316,7 @@ describe("MapperWizardController AI generation and refinement", () => {
 
   function aiController(overrides = {}) {
     return buildController({
-      apiKeyTarget: { value: "  sk-test  " },
+      connectionTarget: { value: "42" },
       generateButtonTarget: document.createElement("button"),
       generateUrlValue: "/mapper_wizard/new/generate",
       refineUrlValue: "/mapper_wizard/new/refine",
@@ -368,8 +368,8 @@ describe("MapperWizardController AI generation and refinement", () => {
     )
   })
 
-  it("requires an OpenAI key before generating or refining", async () => {
-    const controller = aiController({ apiKeyTarget: { value: "   " } })
+  it("requires a connection before generating or refining", async () => {
+    const controller = aiController({ connectionTarget: { value: "" } })
 
     await controller.generateMappers({ preventDefault: vi.fn() })
     await controller.refineMapper(
@@ -382,7 +382,7 @@ describe("MapperWizardController AI generation and refinement", () => {
 
     expect(apiFetch).not.toHaveBeenCalled()
     expect(controller.showStatus).toHaveBeenCalledTimes(2)
-    expect(controller.showStatus).toHaveBeenCalledWith("Please enter your OpenAI API key", "error")
+    expect(controller.showStatus).toHaveBeenCalledWith("Please choose a connection", "error")
   })
 
   it("fills both editors with the generated mappers and reveals step 3", async () => {
@@ -395,7 +395,7 @@ describe("MapperWizardController AI generation and refinement", () => {
 
     await controller.generateMappers({ preventDefault: vi.fn() })
 
-    expect(JSON.parse(apiFetch.mock.calls[0][1].body)).toEqual({ api_key: "sk-test" })
+    expect(JSON.parse(apiFetch.mock.calls[0][1].body)).toEqual({ connection_id: "42" })
     expect(apiFetch.mock.calls[0][0]).toBe("/mapper_wizard/new/generate")
     expect(numberOfResultsEditor.setValue).toHaveBeenCalledWith("n()")
     expect(docsEditor.setValue).toHaveBeenCalledWith("d()")
@@ -474,7 +474,7 @@ describe("MapperWizardController AI generation and refinement", () => {
       mapper_type: "docsMapper",
       current_code: "docsMapper = old",
       feedback: "handle empty hits",
-      api_key: "sk-test"
+      connection_id: "42"
     })
     expect(docsEditor.setValue).toHaveBeenCalledWith("docsMapper = new")
     expect(controller.showStatus).toHaveBeenLastCalledWith(
