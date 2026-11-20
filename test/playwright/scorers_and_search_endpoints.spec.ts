@@ -90,6 +90,8 @@ test.describe("search endpoints management", () => {
   test("index lists existing endpoints, creates one, then archiving hides it from the default listing", async ({
     page
   }) => {
+    // Creation, sharing, unsharing and archiving each complete a Rails navigation.
+    test.setTimeout(60_000)
     await page.goto("search_endpoints")
     await expect(page.getByRole("heading", { name: "Search Endpoints" })).toBeVisible()
 
@@ -121,7 +123,31 @@ test.describe("search endpoints management", () => {
 
     // Confirm it shows in the default (non-archived) listing before archiving.
     await page.goto(`search_endpoints?q=${encodeURIComponent(endpointName)}`)
-    await expect(page.locator("table tbody tr", { hasText: endpointName })).toBeVisible()
+    const endpointRow = page.locator("table tbody tr", { hasText: endpointName })
+    await expect(endpointRow).toBeVisible()
+    await expect(endpointRow.locator(".badge")).toHaveCount(0)
+
+    await endpointRow.getByRole("button", { name: "Share", exact: true }).click()
+    const modal = page.locator("#shareSearchEndpointModal")
+    const teamOption = modal
+      .locator('#share-search-endpoint-team option[value]:not([value=""])')
+      .first()
+    await expect(teamOption).toHaveAttribute("value", /\d+/)
+    const teamId = await teamOption.getAttribute("value")
+    await modal.locator("#share-search-endpoint-team").selectOption(teamId!)
+    await modal.getByRole("button", { name: "Share with team", exact: true }).click()
+    await expect(page.locator("#flash-messages")).toContainText("shared with")
+    await page.goto(`search_endpoints?q=${encodeURIComponent(endpointName)}`)
+    await expect(endpointRow.locator(".badge")).toHaveText(["1 team"])
+    await page.reload()
+    await expect(endpointRow).toContainText("1 team")
+
+    await endpointRow.getByRole("button", { name: "Share", exact: true }).click()
+    await modal.locator(`[data-team-id="${teamId}"]`).click()
+    await modal.getByRole("button", { name: "Unshare from team", exact: true }).click()
+    await expect(page.locator("#flash-messages")).toContainText("unshared")
+    await page.goto(`search_endpoints?q=${encodeURIComponent(endpointName)}`)
+    await expect(endpointRow.locator(".badge")).toHaveCount(0)
 
     await page.goto(`search_endpoints/${endpointId}/edit`)
     await page.getByRole("button", { name: "Archive" }).click()

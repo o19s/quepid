@@ -30,14 +30,12 @@ class ConnectionsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select 'td', text: connections(:instance_elasticsearch).name
     assert_select 'td a', text: own_ollama.name, count: 0
-    assert_select 'a.nav-link.active', text: 'Search backends'
     assert_select '.alert', text: /Coming soon/
 
     get connections_url(kind: 'ai')
 
     assert_select 'td', text: connections(:instance_elasticsearch).name, count: 0
     assert_select 'td a', text: own_ollama.name
-    assert_select 'a.nav-link.active', text: 'AI & ML backends'
     assert_select '.alert', text: /Coming soon/, count: 0
   end
 
@@ -45,6 +43,7 @@ class ConnectionsControllerTest < ActionDispatch::IntegrationTest
     get connections_url
 
     assert_response :success
+    assert_select '.card .nav-pills', count: 0
     assert_select 'td', text: connection.name, count: 0
     assert_select 'td', text: connections(:instance_elasticsearch).name
     assert_select 'td', text: connections(:private_ollama).name, count: 0

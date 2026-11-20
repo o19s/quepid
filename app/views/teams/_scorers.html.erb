@@ -9,7 +9,7 @@
         <th>Name</th>
         <th>Scale</th>
         <th>Owner</th>
-        <th>Shared</th>
+        <th>Shared With</th>
         <th class="text-end"></th>
       </tr>
     </thead>
@@ -20,8 +20,8 @@
           <td><%= scorer.scale_list || '—' %></td>
           <td><%= scorer.owner&.fullname || '—' %></td>
           <td>
-            <span class="badge rounded-pill bg-secondary"><%= scorer_cases_counts.fetch(scorer.id, 0) %> Cases</span>
-            <span class="badge rounded-pill bg-secondary"><%= scorer.teams.length %> Teams</span>
+            <%= relationship_count scorer_cases_counts.fetch(scorer.id, 0), 'case' %>
+            <%= relationship_count scorer.teams.length, 'team' %>
           </td>
           <td class="text-end">
             <div class="btn-group btn-group-sm" role="group">

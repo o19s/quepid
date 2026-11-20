@@ -21,6 +21,9 @@ class SearchEndpointsController < ApplicationController
     query = query.search_by(params[:q], :name, :endpoint_url) if params[:q].present?
 
     @pagy, @search_endpoints = pagy(query)
+    endpoint_ids = @search_endpoints.map(&:id)
+    @team_counts = SearchEndpoint.where(id: endpoint_ids).joins(:teams).group(:id).count
+    @try_counts = Try.where(search_endpoint_id: endpoint_ids).group(:search_endpoint_id).count
   end
 
   def show

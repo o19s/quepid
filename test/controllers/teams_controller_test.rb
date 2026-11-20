@@ -107,36 +107,36 @@ class TeamsControllerTest < ActionDispatch::IntegrationTest
     assert_select 'tr', text: /Counted case 0/ do
       assert_select 'td:nth-child(4)', text: '1' # queries
       assert_select 'td:nth-child(8)', text: '1' # judgements
-      assert_select '.badge', text: '2 Teams'
+      assert_select '.badge', text: '2 teams'
     end
     assert_select 'tr', text: /Counted case 2/ do
       assert_select 'td:nth-child(4)', text: '3'
       assert_select 'td:nth-child(8)', text: '3'
-      assert_select '.badge', text: '1 Teams'
+      assert_select '.badge', text: '1 team'
     end
     assert_select 'tr', text: /Counted book 0/ do
       assert_select '.badge', text: '2 Judgements'
-      assert_select '.badge', text: '1 Cases'
-      assert_select '.badge', text: '2 Teams'
+      assert_select '.badge', text: '1 case'
+      assert_select '.badge', text: '2 teams'
     end
     assert_select 'tr', text: /Counted book 2/ do
       assert_select '.badge', text: '4 Judgements'
-      assert_select '.badge', text: '1 Teams'
+      assert_select '.badge', text: '1 team'
     end
     assert_select 'tr', text: /Counted scorer 0/ do
-      assert_select '.badge', text: '1 Cases'
-      assert_select '.badge', text: '2 Teams'
+      assert_select '.badge', text: '1 case'
+      assert_select '.badge', text: '2 teams'
     end
     assert_select 'tr', text: /Counted scorer 1/ do
-      assert_select '.badge', text: '1 Teams'
+      assert_select '.badge', text: '1 team'
     end
     assert_select 'tr', text: /Counted endpoint 0/ do
-      assert_select '.badge', text: '1 Cases' # two tries, one case
-      assert_select '.badge', text: '2 Teams'
+      assert_select '.badge', text: '1 case' # two tries, one case
+      assert_select '.badge', text: '2 teams'
     end
     assert_select 'tr', text: /Counted endpoint 1/ do
-      assert_select '.badge', text: '1 Cases'
-      assert_select '.badge', text: '1 Teams'
+      assert_select '.badge', text: '1 case'
+      assert_select '.badge', text: '1 team'
     end
   end
 
@@ -654,7 +654,7 @@ class TeamsControllerTest < ActionDispatch::IntegrationTest
       assert_response :success
       assert_select 'td a', text: embedder.name
       assert_select 'td a', text: embedders(:private_ollama).name, count: 0
-      assert_select 'span.badge', text: '1 Case'
+      assert_select 'span.badge', text: '1 case'
     end
   end
 

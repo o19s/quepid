@@ -15,14 +15,6 @@
 
 <div class="card">
   <div class="card-body">
-    <ul class="nav nav-pills mb-3">
-      <% ({ nil => 'All' }.merge(ConnectionsHelper::KINDS)).each do |kind, title| %>
-        <li class="nav-item">
-          <%= link_to title, connections_path(kind: kind), class: ['nav-link', { active: @kind == kind }],
-                                                           aria: { current: (@kind == kind ? 'page' : nil) } %>
-        </li>
-      <% end %>
-    </ul>
     <% if 'search' == @kind %>
       <div class="alert alert-secondary small" role="status">
         <i class="bi bi-hourglass-split" aria-hidden="true"></i>
@@ -72,7 +64,7 @@
                 </td>
                 <td>
                   <% if connection.owner == current_user %>
-                    <span class="badge bg-secondary">You</span>
+                    You
                   <% else %>
                     <%= connection.owner.fullname %>
                   <% end %>
@@ -85,13 +77,9 @@
                   <% end %>
                 </td>
                 <td>
-                  <% used_by = { 'embedder' => @embedder_counts.fetch(connection.id, 0), 'AI judge' => @ai_judge_counts.fetch(connection.id, 0) }.select { |_, count| count.positive? } %>
-                  <% if used_by.any? %>
-                    <% used_by.each do |kind, count| %>
-                      <span class="badge rounded-pill bg-secondary"><%= pluralize(count, kind) %></span>
-                    <% end %>
-                  <% else %>
-                    <span class="text-muted">&mdash;</span>
+                  <% used_by = { 'embedder' => @embedder_counts.fetch(connection.id, 0), 'AI judge' => @ai_judge_counts.fetch(connection.id, 0) } %>
+                  <% used_by.each do |kind, count| %>
+                    <%= relationship_count count, kind %>
                   <% end %>
                 </td>
                 <td class="text-end">

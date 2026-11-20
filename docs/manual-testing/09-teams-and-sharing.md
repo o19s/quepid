@@ -62,6 +62,8 @@ With zero teams, confirm the solo-use explanation and **Create your first team**
 
 This same modal pattern appears in two places for each resource type: on the resource's own index page (per-row Share icon), and on the Team show page (per-row Share icon in its Cases/Books/Search Endpoints/Scorers sub-tables).
 
+Sharing and usage counts in management listings and team tables use neutral pill badges only for positive counts. A zero count shows neither a pill nor text. Counts use singular labels for one and plural labels otherwise. In cells with several relationship types, each positive count names its relationship independently. Existing team-name links on the Cases index remain links. After sharing or unsharing, verify the count changes and persists after reload; removing the last relationship removes its pill.
+
 - [ ] **Steps (repeat once from each entry point, for each of the 4 resource types):**
   1. Click the Share icon.
   2. Pick a team from "Select a team to share this X with:" (only your own teams appear), click **Share with team**.

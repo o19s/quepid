@@ -8,9 +8,9 @@
       <tr>
         <th>ID</th>
         <th>Name</th>
-        <th>Number of ...</th>
+        <th>Consists of ...</th>
         <th>Owner</th>
-        <th>Shared</th>
+        <th>Shared With</th>
         <th class="text-end"></th>
       </tr>
     </thead>
@@ -25,8 +25,8 @@
           </td>
           <td><%= book.owner&.fullname || '—' %></td>
           <td>
-            <span class="badge rounded-pill bg-secondary"><%= book_cases_counts.fetch(book.id, 0) %> Cases</span>
-            <span class="badge rounded-pill bg-secondary"><%= book.teams.length %> Teams</span>
+            <%= relationship_count book_cases_counts.fetch(book.id, 0), 'case' %>
+            <%= relationship_count book.teams.length, 'team' %>
           </td>
           <td class="text-end">
             <div class="btn-group btn-group-sm" role="group">

@@ -44,7 +44,7 @@
                 </td>
                 <td><%= embedder.owner&.fullname || '—' %></td>
                 <td>
-                  <span class="badge rounded-pill bg-secondary"><%= pluralize(embedder_case_counts.fetch(embedder.id, 0), 'Case') %></span>
+                  <%= relationship_count embedder_case_counts.fetch(embedder.id, 0), 'case' %>
                 </td>
                 <td class="text-end">
                   <%= button_to unshare_embedder_teams_path,

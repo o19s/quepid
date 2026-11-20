@@ -102,8 +102,6 @@ Cases are a group of queries that you are evaluating and experimenting with.
             <td>
               <% if kase.teams.any? %>
                 <%= safe_join(kase.teams.map { |t| link_to t.name, team_path(t) }, ', ') %>
-              <% else %>
-                —
               <% end %>
             </td>
             <td><%= kase.owner&.fullname || '—' %></td>

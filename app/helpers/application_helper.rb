@@ -63,6 +63,13 @@ module ApplicationHelper
     end
   end
 
+  # Highlight existing sharing and usage relationships; omit empty counts.
+  def relationship_count count, noun
+    return unless count.positive?
+
+    tag.span(pluralize(count, noun), class: 'badge rounded-pill bg-secondary')
+  end
+
   # Bordered stat card: a large colored value over an icon label and a muted
   # caption. The block, if any, renders extra content (progress bar, actions) below.
   def metric_card value, label, caption, icon:, color:, &block

@@ -39,7 +39,7 @@ For a local run, the Ollama container needs an embedding model: `docker exec oll
   6. Delete the clone from the list (confirmation dialog).
   7. Open the team's page (**Teams** → the team). Find the **Embedders** card.
   8. Click the red ⊗ on the shared embedder and confirm.
-- **Expected:** The saved key is never rendered into the page; the clone keeps the source's connection only when the new owner owns it or it is instance-wide; otherwise the form explains that a connection must be chosen and does not offer the private original; the shared embedder is visible to team members; deleted embedders disappear from the list. The team page lists the team's embedders (provider, model, size, owner, how many cases use it) with a **Create Embedder** button that pre-selects the team; step 8 shows "… unshared from …", the card empties, and cases already using the embedder keep it.
+- **Expected:** The saved key is never rendered into the page; the clone keeps the source's connection only when the new owner owns it or it is instance-wide; otherwise the form explains that a connection must be chosen and does not offer the private original; the shared embedder is visible to team members, and the Embedders index shows a team-count pill when shared and neither a pill nor text when unshared; deleted embedders disappear from the list. The team page lists the team's embedders (provider, model, size, owner, how many cases use it) with a **Create Embedder** button that pre-selects the team; step 8 shows "… unshared from …", the card empties, and cases already using the embedder keep it.
 
 ### 19.3 Pick a case's embedder
 
@@ -79,7 +79,7 @@ For a local run, the Ollama container needs an embedding model: `docker exec oll
 
 - [ ] **Steps:**
   1. Create a named Ollama connection with its URL and no authentication. Check it before saving; verify an invalid URL is rejected and a reachable provider reports success.
-  2. Open **Access**. There is no team picker. A non-administrator has no instance-wide control; an administrator can choose **Instance-wide** at creation. Save a private connection and reload it. Edit and save it successfully; confirm the Connections index opens with the updated row and success notice. An invalid update keeps the edit form and displays its validation errors.
+  2. Open **Access**. There is no team picker. A non-administrator has no instance-wide control; an administrator can choose **Instance-wide** at creation. Save a private connection and reload it. Edit and save it successfully; confirm the Connections index opens with the updated row and success notice. The index lists connections without All, AI & ML backends or Search backends filter tabs. An invalid update keeps the edit form and displays its validation errors.
   3. Create an embedder using that private connection. Confirm it selects the provider and default model from the connection, check it, save it and share the embedder with a disposable team containing another human user.
   4. As that teammate, verify the connection is absent from **Connections** and cannot be opened directly. Open the shared embedder, change its sample text/model and check it. Reload to verify the check saved nothing; rename and save it to verify normal editing still works.
   5. Clone the shared embedder. The private original connection is not offered; a notice asks for an owned or instance-wide connection. Select one available to the teammate and save the copy.
