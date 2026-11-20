@@ -60,6 +60,10 @@ class Judgement < ApplicationRecord
 
   scope :rateable, -> { where(unrateable: false).where(judge_later: false) }
 
+  # Unrateable because the call to the model failed (LlmService writes "BOOM: ..."), not because
+  # the judge declined to rate.
+  scope :failed_call, -> { where(unrateable: true).where(arel_table[:explanation].matches('BOOM%')) }
+
   # `from`'s unrateable judgements in `book` that nobody has escalated yet,
   # skipping pairs `to` has already judged (it can't judge a pair twice).
   # A judge marking a pair "judge later" is a person deferring, not a judge

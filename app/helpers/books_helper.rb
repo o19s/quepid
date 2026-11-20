@@ -2,6 +2,32 @@
 
 # Helper methods for book-related views
 module BooksHelper
+  NON_RATING_SEGMENTS = [
+    [ :unrateable, 'Unrateable', '#adb5bd' ],
+    [ :judge_later, 'Judge later', '#dee2e6' ],
+    [ :error, 'Error', '#212529' ]
+  ].freeze
+
+  # The segments of a judge's label bar: one per scale value in the book's scale colours, then
+  # unrateable, judge later and failed calls. Empty segments are left out.
+  # @param labels [Hash] counts from Book#judge_label_counts
+  # @param book [Book]
+  # @return [Array<Hash>] name:, count:, percent:, color:
+  def judge_label_segments labels, book
+    total = labels.values.sum
+    return [] unless total.positive?
+
+    scale = book.scale.presence || labels.keys.grep(Integer).sort
+    names = book.scale_with_labels || {}
+    segments = scale.map { |value| [ value, "#{names[value.to_s] || value}: #{value}", calculate_hsl_color(value, scale) ] }
+    segments += NON_RATING_SEGMENTS
+
+    segments.filter_map do |key, name, color|
+      count = labels.fetch(key, 0)
+      { name: name, count: count, percent: 100.0 * count / total, color: color } if count.positive?
+    end
+  end
+
   # Generate options for scorer dropdown with unique scale combinations
   # @param user [User] The user to get scorers for
   # @return [Array] Array of [display_text, scorer_id] pairs for select options
