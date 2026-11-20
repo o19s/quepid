@@ -33,7 +33,7 @@ For a local run, the Ollama container needs an embedding model: `docker exec oll
      the check still works with the saved connection. Change the model or sample text before
      checking and reload afterward to confirm the check did not save those changes. A check
      cannot switch to a different connection the teammate cannot use.
-  3. Change the name, check a team under **Teams to Share this Embedder With**, save.
+  3. Change the name, check a team under **Teams to Share this Embedder With**, save. Confirm successful edits return to the Embedders index with the updated row and success notice; invalid submissions keep the edit form and entered values.
   4. From the list, **Clone** it, confirm the same connection is selected, and save the clone.
   5. Sign in as a member of the shared team and confirm the embedder appears in their list.
   6. Delete the clone from the list (confirmation dialog).
@@ -79,7 +79,7 @@ For a local run, the Ollama container needs an embedding model: `docker exec oll
 
 - [ ] **Steps:**
   1. Create a named Ollama connection with its URL and no authentication. Check it before saving; verify an invalid URL is rejected and a reachable provider reports success.
-  2. Open **Access**. There is no team picker. A non-administrator has no instance-wide control; an administrator can choose **Instance-wide** at creation. Save a private connection and reload it.
+  2. Open **Access**. There is no team picker. A non-administrator has no instance-wide control; an administrator can choose **Instance-wide** at creation. Save a private connection and reload it. Edit and save it successfully; confirm the Connections index opens with the updated row and success notice. An invalid update keeps the edit form and displays its validation errors.
   3. Create an embedder using that private connection. Confirm it selects the provider and default model from the connection, check it, save it and share the embedder with a disposable team containing another human user.
   4. As that teammate, verify the connection is absent from **Connections** and cannot be opened directly. Open the shared embedder, change its sample text/model and check it. Reload to verify the check saved nothing; rename and save it to verify normal editing still works.
   5. Clone the shared embedder. The private original connection is not offered; a notice asks for an owned or instance-wide connection. Select one available to the teammate and save the copy.

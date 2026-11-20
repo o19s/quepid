@@ -85,6 +85,30 @@ class EmbeddersControllerTest < ActionDispatch::IntegrationTest
     assert_select '[data-embedder-form-check-url-value=?]', connection_check_embedders_path
   end
 
+  test 'successful updates return to the embedders index with a success notice' do
+    original_connection = embedder.connection
+
+    patch embedder_url(embedder), params: { embedder: { name: 'Renamed embedder', team_ids: [ team.id.to_s ] } }
+
+    assert_response :see_other
+    assert_redirected_to embedders_url
+    assert_equal 'Embedder was successfully updated.', flash[:notice]
+    assert_equal 'Renamed embedder', embedder.reload.name
+    assert_equal original_connection, embedder.connection
+    assert_includes embedder.teams, team
+  end
+
+  test 'invalid updates retain the edit form and do not change the saved embedder' do
+    original_name = embedder.name
+
+    patch embedder_url(embedder), params: { embedder: { name: '', team_ids: [ team.id.to_s ] } }
+
+    assert_response :unprocessable_content
+    assert_select 'form[action=?]', embedder_path(embedder)
+    assert_select 'input[name=?][value=?]', 'embedder[name]', ''
+    assert_equal original_name, embedder.reload.name
+  end
+
   test 'create saves an embedder owned by the user and shares it' do
     assert_difference 'Embedder.count' do
       post embedders_url, params: { embedder: embedder_form_params(team_ids: [ team.id.to_s ]) }

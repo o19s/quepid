@@ -45,7 +45,7 @@ test.afterAll(async ({ browser }) => {
 })
 
 test.describe("scorers management", () => {
-  test("index lists existing scorers and a new one appears after creation", async ({ page }) => {
+  test("index lists scorers and successful edits return to the listing", async ({ page }) => {
     await page.goto("scorers")
     await expect(page.getByRole("heading", { name: "Scorer Options" })).toBeVisible()
 
@@ -68,10 +68,21 @@ test.describe("scorers management", () => {
     newScorerId = page.url().match(/\/scorers\/(\d+)\/edit/)?.[1]
     expect(newScorerId).toBeTruthy()
 
+    const invalidScale = Array.from({ length: 11 }, (_, index) => index).join(",")
+    await page.locator("#scorer_scale_list").fill(invalidScale)
+    await page.getByRole("button", { name: "Save", exact: true }).click()
+    await expect(page.locator("#error_explanation")).toBeVisible()
+    await expect(page.locator("#scorer_scale_list")).toHaveValue(invalidScale)
+    await page.locator("#scorer_scale_list").fill("0,1")
+    await page.locator("#scorer_name").fill(`${scorerName} updated`)
+    await page.getByRole("button", { name: "Save", exact: true }).click()
+    await expect(page).toHaveURL(/\/scorers$/)
+    await expect(page.locator("#flash-messages")).toContainText("Scorer updated.")
+
     // Pagination/ordering could push the new scorer off page 1 — filter by
     // name via the index's `q` search param to find it deterministically.
-    await page.goto(`scorers?q=${encodeURIComponent(scorerName)}`)
-    await expect(page.locator("table tbody tr", { hasText: scorerName })).toBeVisible()
+    await page.goto(`scorers?q=${encodeURIComponent(`${scorerName} updated`)}`)
+    await expect(page.locator("table tbody tr", { hasText: `${scorerName} updated` })).toBeVisible()
   })
 })
 

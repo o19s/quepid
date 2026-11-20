@@ -213,9 +213,23 @@ class ConnectionsControllerTest < ActionDispatch::IntegrationTest
 
     patch connection_url(connection), params: { connection: { name: 'Renamed', secret: '' } }
 
-    assert_redirected_to edit_connection_url(connection)
+    assert_redirected_to connections_url
+    assert_response :see_other
+    assert_equal 'Connection was successfully updated.', flash[:notice]
     assert_equal 'Renamed', connection.reload.name
     assert_equal 'sk-test-openai', connection.secret
+  end
+
+  test 'an invalid update renders edit and leaves the saved connection unchanged' do
+    login_user_for_integration_test users(:doug)
+    original_name = connection.name
+
+    patch connection_url(connection), params: { connection: { name: 'Unsaved name', timeout: 0 } }
+
+    assert_response :unprocessable_content
+    assert_select 'form[action=?]', connection_path(connection)
+    assert_select 'input[name=?][value=?]', 'connection[name]', 'Unsaved name'
+    assert_equal original_name, connection.reload.name
   end
 
   test 'a typed secret replaces the saved one' do

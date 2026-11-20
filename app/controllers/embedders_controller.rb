@@ -52,7 +52,7 @@ class EmbeddersController < ApplicationController
   def update
     if @embedder.update(embedder_params)
       apply_team_ids(@embedder, params.dig(:embedder, :team_ids))
-      redirect_to edit_embedder_path(@embedder), notice: 'Embedder was successfully updated.'
+      redirect_to embedders_path, notice: 'Embedder was successfully updated.', status: :see_other
     else
       render :edit, status: :unprocessable_content
     end
