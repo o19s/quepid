@@ -20,6 +20,9 @@ class ApiKeysController < ApplicationController
   def create
     @api_key = current_user.api_keys.create! token: SecureRandom.hex
 
+    # The raw token is only known right now; only its HMAC digest is stored, so show it once.
+    flash[:api_token] = @api_key.token
+
     redirect_to profile_path, status: :see_other
 
     # authenticate_with_http_basic do |email, password|

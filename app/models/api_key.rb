@@ -29,10 +29,12 @@ class ApiKey < ApplicationRecord
 
   attr_accessor :token
 
-  def self.authenticate_by_token! token
-    digest = OpenSSL::HMAC.hexdigest 'SHA256', HMAC_SECRET_KEY, token
+  def self.digest_for token
+    OpenSSL::HMAC.hexdigest 'SHA256', HMAC_SECRET_KEY, token
+  end
 
-    find_by! token_digest: digest
+  def self.authenticate_by_token! token
+    find_by! token_digest: digest_for(token)
   end
 
   # Add virtual token attribute to serializable attributes, and exclude
@@ -50,8 +52,6 @@ class ApiKey < ApplicationRecord
   private
 
   def generate_token_hmac_digest
-    digest = OpenSSL::HMAC.hexdigest 'SHA256', HMAC_SECRET_KEY, token
-
-    self.token_digest = digest
+    self.token_digest = self.class.digest_for(token)
   end
 end
