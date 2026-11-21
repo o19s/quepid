@@ -88,6 +88,8 @@ class RunJudgeJudyJob < ApplicationJob
     cancellable = provider_job_id.present? || SolidQueue::Job.exists?(active_job_id: job_id)
     llm_service = judge.llm_service
     scale = JudgeScale.for(book)
+    return refuse_unsupported_scale(book, judge, scale) unless judge.supports_scale?(scale.values)
+
     loop do
       break if number_of_pairs && counter >= number_of_pairs
 
@@ -122,6 +124,12 @@ class RunJudgeJudyJob < ApplicationJob
   end
 
   private
+
+  # A judge limited to certain scales after it was put on this book.
+  def refuse_unsupported_scale book, judge, scale
+    Rails.logger.warn("RunJudgeJudyJob: #{judge.name} (#{judge.id}) can't rate on book #{book.id}'s scale #{scale.values.inspect}")
+    broadcast_complete(book, judge)
+  end
 
   def cancellation_requested?
     arguments = SolidQueue::Job.where(active_job_id: job_id).pick(:arguments)

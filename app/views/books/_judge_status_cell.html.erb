@@ -33,6 +33,14 @@
               css_class: 'btn btn-outline-danger btn-sm',
               style: icon_btn_style,
               icon: 'bi-x-circle', title: 'Cancel judging' %>
+      <% elsif book && !row[:judge].supports_scale?(book.scale) %>
+        <%# A disabled button shows no tooltip, so the wrapper carries it. %>
+        <span title="Can't rate on this book's scale (<%= book.scale.join(',') %>)" tabindex="0">
+          <button type="button" class="btn btn-outline-danger btn-sm" style="<%= icon_btn_style %>" disabled
+                  aria-label="Judge documents (can't rate on this book's scale)">
+            <i class="bi bi-play-fill"></i>
+          </button>
+        </span>
       <% elsif !row[:on_call] %>
         <button type="button"
                 class="btn btn-outline-success btn-sm"

@@ -27,4 +27,16 @@ class BooksAiJudge < ApplicationRecord
   belongs_to :ai_judge, class_name: 'AiJudge', foreign_key: 'user_id'
 
   scope :auto_run, -> { where(auto_run: true) }
+
+  # Only on create: a judge already on a book stays, so limiting a judge later
+  # never blocks unrelated edits to its books (RunJudgeJudyJob refuses to run it).
+  validate :judge_supports_book_scale, on: :create
+
+  private
+
+  def judge_supports_book_scale
+    return if ai_judge.nil? || book.nil? || ai_judge.supports_scale?(book.scale)
+
+    errors.add(:base, "#{ai_judge.name} can't rate on this book's scale")
+  end
 end

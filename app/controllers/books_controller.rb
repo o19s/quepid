@@ -233,6 +233,8 @@ class BooksController < ApplicationController
   def create
     @book = Book.new(book_params.except(:team_ids, :ai_judge_ids, :auto_run_ai_judge_ids))
     @book.owner = current_user
+    # The scale first: assign_book_memberships checks judges against it.
+    apply_scorer_to_book(@book, book_params[:scorer_id]) if book_params[:scorer_id].present?
     assign_book_memberships
     @origin_case = current_user.cases_involved_with.find_by(id: params.dig(:book, :origin_case_id))
     @link_the_case = deserialize_bool_param(params.dig(:book, :link_the_case))
@@ -246,8 +248,6 @@ class BooksController < ApplicationController
       render :new, status: :unprocessable_content
       return
     end
-
-    apply_scorer_to_book(@book, book_params[:scorer_id])
 
     if @book.save
       @book.books_ai_judges.each(&:save!)
@@ -267,10 +267,9 @@ class BooksController < ApplicationController
   end
 
   def update
-    assign_book_memberships
-
-    # Handle scorer selection
+    # The scale first: assign_book_memberships checks judges against it.
     apply_scorer_to_book(@book, book_params[:scorer_id]) if book_params[:scorer_id].present?
+    assign_book_memberships
 
     @book.update(book_params.except(
                    :team_ids, :ai_judge_ids, :auto_run_ai_judge_ids, :link_the_case, :origin_case_id, :scorer_id,
@@ -341,6 +340,11 @@ class BooksController < ApplicationController
     if ai_judge.on_call?
       waking = ai_judge.escalated_from_names
       redirect_to book_path(@book), alert: "AI Judge #{ai_judge.name} is on call: it only judges pairs #{waking} escalates to it.", status: :see_other
+      return
+    end
+
+    unless ai_judge.supports_scale?(@book.scale)
+      redirect_to book_path(@book), alert: "AI Judge #{ai_judge.name} can't rate on this book's scale (#{@book.scale.join(',')}).", status: :see_other
       return
     end
 
@@ -512,6 +516,7 @@ class BooksController < ApplicationController
   def assign_book_memberships
     available_judges = AiJudge.for_user(current_user)
     judges = available_judges.find(Array(book_params[:ai_judge_ids]).compact_blank.uniq)
+    judges = drop_judges_unsupported_by_scale(judges)
     hidden_judges = @book.ai_judges.where.not(id: available_judges.select(:id)).to_a
     TeamSharing.new(current_user).assign_teams(@book, book_params[:team_ids])
     selected = (hidden_judges + judges).uniq
@@ -525,6 +530,17 @@ class BooksController < ApplicationController
       assignment.auto_run = auto_ids.include?(assignment.user_id)
       assignment.save! if assignment.persisted?
     end
+  end
+
+  # Newly picked judges limited to other scales than the book's (BooksAiJudge would refuse them).
+  # Judges already on the book stay. No scale yet (new's prefill) means nothing to check.
+  def drop_judges_unsupported_by_scale judges
+    return judges if @book.scale.blank?
+
+    assigned_ids = @book.ai_judge_ids
+    unsupported, supported = judges.partition { |j| assigned_ids.exclude?(j.id) && !j.supports_scale?(@book.scale) }
+    flash[:alert] = "Not assigned: #{unsupported.map(&:name).to_sentence} can't rate on this book's scale (#{@book.scale.join(',')})." if unsupported.any?
+    supported
   end
 
   # This set_book is different because we use :id, not :book_id.

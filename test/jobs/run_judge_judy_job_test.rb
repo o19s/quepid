@@ -206,6 +206,19 @@ class RunJudgeJudyJobTest < ActiveJob::TestCase
     end
   end
 
+  describe 'scale limits' do
+    test 'a judge limited to other scales than the book does not judge it' do
+      judge_judy.judge_options = judge_judy.judge_options.merge(supported_scales: '0,1,2,3') # book is 0,1
+      judge_judy.save!
+
+      assert_no_difference 'book.judgements.count' do
+        perform_enqueued_jobs do
+          RunJudgeJudyJob.perform_later(book, judge_judy, 1)
+        end
+      end
+    end
+  end
+
   describe 'successful judging' do
     test 'judges pair and broadcasts updates' do
       assert_difference 'book.judgements.count', 1 do

@@ -165,7 +165,10 @@ export default class extends Controller {
     const missingScale = needsScale && !this.hasScaleValue
     const showNotice = this.bookValue ? missingScale : needsScale
 
-    if (this.hasRunPromptButtonTarget) this.runPromptButtonTarget.disabled = missingScale
+    // ai-judge-wizard flags a scale outside the judge's typed limit; that keeps Run off too.
+    if (this.hasRunPromptButtonTarget)
+      this.runPromptButtonTarget.disabled =
+        missingScale || this.runPromptButtonTarget.dataset.unsupportedScale === "true"
     if (this.hasNeedsScaleNoticeTarget)
       this.needsScaleNoticeTarget.style.display = showNotice ? "" : "none"
   }
