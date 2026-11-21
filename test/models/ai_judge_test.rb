@@ -168,6 +168,44 @@ class AiJudgeTest < ActiveSupport::TestCase
     end
   end
 
+  describe 'supported scales' do
+    let(:judge) { AiJudge.new(name: 'ESCI Judge') }
+
+    it 'supports any scale when not limited' do
+      assert judge.supports_scale?([ 0, 1 ])
+      assert_empty judge.supported_scales
+    end
+
+    it 'parses one scale per line and only matches those exactly' do
+      judge.judge_options = { supported_scales: "3, 2,1,0\n\n0,1\n" }
+
+      assert_equal [ [ 0, 1, 2, 3 ], [ 0, 1 ] ], judge.supported_scales
+      assert judge.supports_scale?([ 0, 1, 2, 3 ])
+      assert judge.supports_scale?([ 0, 1 ])
+      assert_not judge.supports_scale?([ 0, 1, 2 ])
+      assert_not judge.supports_scale?([ 0, 1, 2, 3, 4 ])
+      assert_predicate judge, :valid?
+    end
+
+    it 'refuses to save anything but whole numbers' do
+      judge.judge_options = { supported_scales: '0,1,x' }
+
+      assert_not judge.valid?
+      assert_match(/Limit to scales/, judge.errors.full_messages.to_sentence)
+    end
+
+    it 'cannot be newly assigned to a book on another scale' do
+      judge.judge_options = { supported_scales: '0,1,2,3' }
+      judge.save!
+      book = books(:james_bond_movies) # scale 0,1
+
+      assignment = BooksAiJudge.new(book: book, ai_judge: judge)
+
+      assert_not assignment.valid?
+      assert_match(/can't rate on this book's scale/, assignment.errors.full_messages.to_sentence)
+    end
+  end
+
   describe 'escalation' do
     let(:cheap) { AiJudge.create!(name: 'Cheap Judge') }
     let(:expensive) { AiJudge.create!(name: 'Expensive Judge') }

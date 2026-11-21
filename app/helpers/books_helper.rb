@@ -4,7 +4,8 @@
 module BooksHelper
   # Generate options for scorer dropdown with unique scale combinations
   # @param user [User] The user to get scorers for
-  # @return [Array] Array of [display_text, scorer_id] pairs for select options
+  # @return [Array] [display_text, scorer_id, { data: { scale: '0,1' } }] for select options; the
+  #   scale lets the AI judge form group scales by whether a judge's limit supports them
   def scorer_options_for_select user
     # Get unique scale combinations - only need one scorer per combination
     unique_options = []
@@ -16,7 +17,7 @@ module BooksHelper
       next if seen_combinations.include?(combination_key)
 
       display_text = format_scorer_scale_display(scale, scale_with_labels)
-      unique_options << [ display_text, id ]
+      unique_options << [ display_text, id, { data: { scale: Array(scale).join(',') } } ]
       seen_combinations.add(combination_key)
     end
 

@@ -50,6 +50,13 @@
       </div>
       <div class="col-md-6">
         <h6>Rating Information</h6>
+        <%# The scale panel is a frame: picking a scale reloads only this part
+            (this page with ?scorer_id=), so unsaved edits elsewhere in the form
+            survive. target=_top keeps the scorer link a whole-page navigation. %>
+        <% missing_scale = provider&.needs_scale? && scale.empty? %>
+        <%= turbo_frame_tag 'ai-judge-scale', target: '_top', data: { ai_judge_wizard_target: 'scaleFrame' } do %>
+        <%# Read by ai-judge-wizard each time the frame loads (the frame element itself isn't replaced). %>
+        <div hidden data-ai-judge-wizard-target="scaleState" data-scorer-id="<%= scorer_id %>" data-has-scale="<%= scale.present? %>" data-scale="<%= scale.values.join(',') %>"></div>
         <%# The other half of what gets sent: for a typed model the scale IS the
             question's criteria, so show them here rather than making people guess. %>
         <% scale_source = book || scorer %>
@@ -70,7 +77,6 @@
             </div>
           </div>
         <% end %>
-        <% missing_scale = provider&.needs_scale? && scale.empty? %>
         <%# With a book, the scale always comes from the book and there's no picker
             below to keep showing - only worth a mention while nothing is set yet.
             With a manually-picked scorer, keep this visible even once a scale is
@@ -82,24 +88,31 @@
             Pick one below to test with, or open this judge from a book's Judgement Stats page (Refine Prompt) to use its scale.
           <% end %>
           <% unless book %>
-            <%# A plain GET select, navigated via onchange reading each option's own
-                data-url - NOT a <form>, since this whole partial already renders
-                inside the page's outer judge-save form_with and nested <form>s are
-                invalid HTML (the browser discards the inner one, so a would-be
-                form.submit() here actually POSTs the OUTER save form instead -
-                silently creating/saving a judge just from picking a scale). %>
+            <%# A plain select read by JS - NOT a <form>, since this whole partial
+                renders inside the page's outer judge-save form_with and nested
+                <form>s are invalid HTML (the browser discards the inner one, so
+                submitting it would POST the OUTER save form instead). As the
+                "Limit to scales" field is typed, options split into supported
+                and unsupported groups. %>
+            <div class="text-warning-emphasis" data-ai-judge-wizard-target="noScaleFits" style="display:none">
+              None of your scorers uses a scale this judge is limited to.
+            </div>
             <div class="mt-2" style="max-width: 320px;">
-              <select class="form-select form-select-sm" data-action="change->ai-judge-wizard#navigateToScale">
+              <select class="form-select form-select-sm" data-ai-judge-wizard-target="scalePicker" data-action="change->ai-judge-wizard#pickScale">
                 <option value="">Select a rating scale...</option>
-                <% scorer_options_for_select(current_user).each do |label, id| %>
+                <% scorer_options_for_select(current_user).each do |label, id, attributes| %>
                   <% picker_url = ai_judge.persisted? ? edit_ai_judge_path(ai_judge, scorer_id: id) : new_ai_judge_path(scorer_id: id) %>
-                  <%= tag.option label, value: id, selected: scorer_id.to_s == id.to_s, data: { url: picker_url } %>
+                  <%= tag.option label, value: id, selected: scorer_id.to_s == id.to_s, data: attributes[:data].merge(url: picker_url) %>
                 <% end %>
               </select>
             </div>
           <% end %>
         </div>
+        <% end %>
         <button type="button" class="btn btn-primary" <% if missing_scale %>disabled<% end %> data-ai-judge-form-target="runPromptButton" data-ai-judge-wizard-target="runPromptButton" data-action="click->ai-judge-wizard#runPrompt">Run Prompt</button>
+        <div class="form-text text-danger" data-ai-judge-wizard-target="unsupportedScaleNote" style="display:none">
+          This judge can't rate on this scale (see Limit to scales above). Pick a supported scale to run the prompt.
+        </div>
 
         <div data-ai-judge-wizard-target="loadingSpinner" style="display: none;" class="text-center my-4">
           <div class="spinner-border text-primary" role="status">

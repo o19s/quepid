@@ -10,7 +10,7 @@
 <div class="tab-content" id="pills-tabContent">
   <div class="tab-pane fade show active" id="pills-structured-fields" role="tabpanel" aria-labelledby="pills-structured-fields-tab" tabindex="0">
 
-    <% sorted_judge_options = option_defaults.merge(ai_judge.judge_options).except(:llm_include_images, :llm_service_url, :llm_timeout).reverse_merge(specs.transform_values { nil }.transform_keys(&:to_sym)).sort_by { |k, _| k.to_s == 'llm_provider' ? 0 : 1 } %>
+    <% sorted_judge_options = option_defaults.merge(ai_judge.judge_options).except(:llm_include_images, :llm_service_url, :llm_timeout, :supported_scales).reverse_merge(specs.transform_values { nil }.transform_keys(&:to_sym)).sort_by { |k, _| k.to_s == 'llm_provider' ? 0 : 1 } %>
     <% sorted_judge_options.each do |key, value| %>
       <% spec = specs[key.to_s] %>
       <% provider_unset = key.to_s == 'llm_provider' && ai_judge.connection.nil? %>
@@ -40,6 +40,21 @@
         </div>
       </div>
     <% end %>
+    <div class="row mb-3">
+      <%= label_tag 'judge_options_supported_scales', 'Limit to scales', class: 'col-sm-2 col-form-label' %>
+      <div class="col-sm-4">
+        <%= text_area_tag 'user[judge_options][supported_scales]', ai_judge.judge_options[:supported_scales],
+              id: 'judge_options_supported_scales', rows: 2,
+              class: 'form-control form-control-sm',
+              data: { ai_judge_form_target: 'structured', ai_judge_wizard_target: 'supportedScales',
+                      action: 'input->ai-judge-wizard#filterScales' } %>
+        <div class="form-text">
+          Leave blank if this judge can rate on any scale. If its model only predicts certain labels (for example, a
+          classifier trained on 0&ndash;3), enter each scale it supports on its own line, such as <code>0,1,2,3</code>.
+          The judge can then only be tested with, and assigned to, books that use one of those scales.
+        </div>
+      </div>
+    </div>
     <div class="row mb-3">
       <div class="col-sm-2">Images</div>
       <div class="col-sm-4">
