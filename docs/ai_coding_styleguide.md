@@ -83,3 +83,6 @@ When the controller validates a set of values and the view renders them, both re
 - Prefer a server-rendered page and a reload to client-side state in Stimulus.
 - Repeated inline styles become one local variable or a CSS class; spacing uses Bootstrap utilities
   (see AGENTS.md).
+- No color literals in views, JavaScript or new CSS: use the `--q-*` variables on the case
+  workspace and Bootstrap's `--bs-*` variables elsewhere. Ask before adding a new color.
+- New UI meets WCAG AA contrast, works by keyboard, and gives icon-only controls an `aria-label`.
