@@ -7,6 +7,7 @@ require 'base64'
 
 # Shared HTTP client service for making external HTTP requests.
 # Used by ProxyController, DownloadPage, and MapperWizardService.
+# A postgres:// or postgresql:// URL is answered by PostgresSearchService instead.
 #
 # Features:
 # - URL parsing with Addressable::URI (supports non-ASCII characters like café)
@@ -45,6 +46,8 @@ class HttpClientService
   # @param body [String] Optional request body
   # @return [Faraday::Response]
   def get params: {}, body: nil
+    return postgres_search(body, params) if PostgresSearchService.handles?(@uri)
+
     connection.get do |req|
       req.path = @uri.path.presence || '/'
       apply_timeouts(req)
@@ -59,6 +62,8 @@ class HttpClientService
   # @param body [String] Request body
   # @return [Faraday::Response]
   def post params: {}, body: nil
+    return postgres_search(body, params) if PostgresSearchService.handles?(@uri)
+
     connection.post do |req|
       req.path = @uri.path.presence || '/'
       apply_timeouts(req)
@@ -83,6 +88,19 @@ class HttpClientService
   end
 
   private
+
+  # The proxy splits the target URL's own query string (e.g. ?sslmode=require) into params.
+  # Before an endpoint is saved (wizard validation) the browser sends the credential as a
+  # forwarded Authorization: Basic header rather than by search_endpoint_id.
+  def postgres_search body, params
+    credentials = @credentials.presence || forwarded_basic_auth
+    PostgresSearchService.new(@uri, credentials: credentials, sslmode: params['sslmode']).search(body)
+  end
+
+  def forwarded_basic_auth
+    value = @headers.find { |name, _| 'authorization'.casecmp?(name.to_s) }&.last.to_s
+    Base64.decode64(value.delete_prefix('Basic ')) if value.start_with?('Basic ')
+  end
 
   def connection
     @connection ||= build_connection

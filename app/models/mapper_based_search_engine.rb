@@ -190,6 +190,40 @@ class MapperBasedSearchEngine
       test_query:                   '{"with_payload": true, "limit": 1}',
       additional_fields:            [ 'overview', 'cast', 'thumb:poster_path' ],
       mapper_file:                  'db/mapper_based_search_engines/qdrant.js',
+    },
+    {
+      id:                           'postgresql',
+      name:                         'PostgreSQL',
+      logo:                         'postgresql',
+      api_method:                   'POST',
+      # A browser cannot open a database connection: requests always go through Quepid,
+      # where HttpClientService hands a postgresql:// URL to PostgresSearchService.
+      proxy_requests:               true,
+      # The database user and password, sent as the endpoint's Basic Auth credential
+      # ("user:password"), which Quepid stores encrypted.
+      supports_basic_auth:          true,
+      # Results carry no total (see the mapper's numberOfResultsMapper).
+      supports_pagination:          false,
+      # "limit" is injected as a number from Try#number_of_rows, the same way as Qdrant's.
+      supports_request_args_mapper: true,
+      # No demo database ships with Quepid, so the URL starts empty.
+      search_url:                   '',
+      url_format:                   'postgresql://<host>:5432/<database>?sslmode=require',
+      # Native full-text search over a tmdb-style "movies" table with a tsvector column;
+      # docs/endpoints_postgresql.md has the table and variants (pg_trgm, pgvector, hybrid).
+      # The query text is bound as $1, never spliced into the SQL.
+      query_params:                 {
+        sql:    "SELECT id, title, overview, ts_rank(search_vector, websearch_to_tsquery('english', $1)) AS score " \
+                "FROM movies WHERE search_vector @@ websearch_to_tsquery('english', $1) ORDER BY score DESC",
+        params: [ '#$query##' ],
+      }.to_json,
+      # An already-rated-docs lookup needs the table name, which only the case's SQL knows.
+      supports_rated_docs_lookup:   false,
+      id_field:                     'id',
+      title_field:                  'title',
+      test_query:                   { sql: 'SELECT 1 AS id, current_database() AS title' }.to_json,
+      additional_fields:            [ 'overview' ],
+      mapper_file:                  'db/mapper_based_search_engines/postgresql.js',
     }
   ].freeze
 

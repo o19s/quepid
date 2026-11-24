@@ -164,6 +164,49 @@ class ProxyControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  # Runs against the test database's own server, so only when the suite runs on PostgreSQL.
+  test 'answers a postgresql URL with rows, using the endpoint credentials and the sslmode split off the URL' do
+    config = ActiveRecord::Base.connection_db_config.configuration_hash
+    skip 'needs DB_ADAPTER=postgresql' unless 'postgresql' == config[:adapter]
+
+    url = "postgresql://#{config[:host] || '127.0.0.1'}:#{config[:port] || 5432}/#{config[:database]}"
+    endpoint = SearchEndpoint.create!(
+      endpoint_url:          url,
+      search_engine:         'searchapi',
+      api_method:            'POST',
+      basic_auth_credential: "#{config[:username]}:#{config[:password]}",
+      proxy_requests:        true,
+      owner:                 user
+    )
+
+    # The browser appends the search URL to the proxy URL unencoded, as here.
+    allowing_every_address do
+      post "/proxy/fetch?search_endpoint_id=#{endpoint.id}&url=#{url}?sslmode=disable",
+           params:  { sql: 'SELECT $1::text AS id', params: [ 'trek' ], limit: 5 }.to_json,
+           headers: { 'Content-Type' => 'application/json' }
+    end
+
+    assert_response :success
+    assert_equal [ { 'id' => 'trek' } ], response.parsed_body['rows']
+  end
+
+  # The wizard validates before the endpoint exists, so the credential arrives as a header.
+  test 'answers a postgresql URL using a forwarded Basic Auth header' do
+    config = ActiveRecord::Base.connection_db_config.configuration_hash
+    skip 'needs DB_ADAPTER=postgresql' unless 'postgresql' == config[:adapter]
+
+    url = "postgresql://#{config[:host] || '127.0.0.1'}:#{config[:port] || 5432}/#{config[:database]}"
+    allowing_every_address do
+      post "/proxy/fetch?url=#{url}",
+           params:  { sql: 'SELECT 1 AS id' }.to_json,
+           headers: { 'Content-Type'  => 'application/json',
+                      'Authorization' => "Basic #{Base64.strict_encode64("#{config[:username]}:#{config[:password]}")}" }
+    end
+
+    assert_response :success
+    assert_equal [ { 'id' => 1 } ], response.parsed_body['rows']
+  end
+
   describe 'should follow 302 redirects' do
     test 'on a get' do
       old_url = 'https://example.com/old-url'
@@ -255,6 +298,12 @@ class ProxyControllerTest < ActionDispatch::IntegrationTest
       assert_response :bad_request
     ensure
       Addrinfo.define_singleton_method(:getaddrinfo, &original) if original
+    end
+
+    test 'applies the same address checks to a postgresql URL' do
+      post proxy_fetch_url(url: 'postgresql://127.0.0.1:5432/movies'), params: { sql: 'SELECT 1 AS id' }, as: :json
+      assert_response :bad_request
+      assert_equal 'Proxy URL resolves to a disallowed address', response.parsed_body['proxy_error']
     end
 
     test 'rejects non-http(s) schemes' do
@@ -479,6 +528,15 @@ class ProxyControllerTest < ActionDispatch::IntegrationTest
   private
 
   # Makes `host` resolve to `ips` for the duration of the block.
+  # The test database is on loopback or a private network.
+  def allowing_every_address
+    original = ProxyAllowlist.instance_method(:blocked?)
+    ProxyAllowlist.define_method(:blocked?) { |*, **| false }
+    yield
+  ensure
+    ProxyAllowlist.define_method(:blocked?, original)
+  end
+
   def resolving host, *ips
     original = Addrinfo.method(:getaddrinfo)
     Addrinfo.define_singleton_method(:getaddrinfo) do |name, *args|
