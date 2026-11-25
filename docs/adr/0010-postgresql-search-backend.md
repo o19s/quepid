@@ -63,6 +63,12 @@ return an `id` column, which becomes the document id. There is no total, so no n
 and no "Already Rated Documents" lookup, because building one would need the table name, which
 only the case's SQL knows.
 
+**6. The preset is off by default.** `POSTGRES_SEARCH_ENABLED=true` turns it on. Anyone who can
+use a PostgreSQL endpoint can run any `SELECT` its role allows (see §4), so an installation opts
+in rather than finding it already offered. When off, `MapperBasedSearchEngine.all` leaves the
+preset out and `PostgresSearchService.handles?` is false, so the proxy and `HttpClientService`
+treat `postgres://` URLs like any other non-HTTP URL and refuse them.
+
 ## 3. Options considered
 
 1. **An HTTP layer in front of PostgreSQL** (PostgREST, or Supabase, which uses PostgREST).

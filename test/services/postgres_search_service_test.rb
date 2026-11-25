@@ -19,6 +19,14 @@ class PostgresSearchServiceTest < ActiveSupport::TestCase
       assert PostgresSearchService.handles?(Addressable::URI.parse('postgres://db/movies'))
       assert_not PostgresSearchService.handles?(Addressable::URI.parse('https://db/movies'))
     end
+
+    it 'claims nothing when POSTGRES_SEARCH_ENABLED is off' do
+      Rails.application.config.postgres_search_enabled = false
+
+      assert_not PostgresSearchService.handles?(Addressable::URI.parse('postgresql://db/movies'))
+    ensure
+      Rails.application.config.postgres_search_enabled = true
+    end
   end
 
   describe 'requests it refuses before connecting' do

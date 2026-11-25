@@ -228,7 +228,9 @@ class MapperBasedSearchEngine
   ].freeze
 
   def self.all
-    DEFINITIONS.map { |definition| new(definition) }
+    definitions = DEFINITIONS
+    definitions = definitions.reject { |definition| 'postgresql' == definition[:id] } unless Rails.application.config.postgres_search_enabled
+    definitions.map { |definition| new(definition) }
   end
 
   def self.find id

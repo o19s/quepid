@@ -18,8 +18,10 @@ class PostgresSearchService
   MAX_ROWS = 1000
   STATEMENT_TIMEOUT = '10s'
 
+  # When disabled (POSTGRES_SEARCH_ENABLED), postgres:// URLs fall through to the HTTP checks,
+  # which refuse them.
   def self.handles? uri
-    SCHEMES.include?(uri.scheme)
+    Rails.application.config.postgres_search_enabled && SCHEMES.include?(uri.scheme)
   end
 
   def initialize uri, credentials: nil, sslmode: nil

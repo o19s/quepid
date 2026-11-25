@@ -98,6 +98,15 @@ class MapperBasedSearchEngineTest < ActiveSupport::TestCase
   describe 'the PostgreSQL definition' do
     let(:postgresql) { MapperBasedSearchEngine.find('postgresql') }
 
+    it 'is left out when POSTGRES_SEARCH_ENABLED is off' do
+      Rails.application.config.postgres_search_enabled = false
+
+      assert_nil MapperBasedSearchEngine.find('postgresql')
+      assert MapperBasedSearchEngine.find('qdrant')
+    ensure
+      Rails.application.config.postgres_search_enabled = true
+    end
+
     it 'always proxies, since only Quepid can open the database connection' do
       assert postgresql.proxy_requests
       assert postgresql.supports_basic_auth

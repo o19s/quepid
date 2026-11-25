@@ -138,6 +138,13 @@ Rails.application.config.search_endpoint_views_admin_only = bool.deserialize(ENV
 #
 Rails.application.config.require_proxy_with_basic_auth_credentials = bool.deserialize(ENV.fetch('REQUIRE_PROXY_WITH_BASIC_AUTH_CREDENTIALS', false))
 
+# == PostgreSQL Search
+# Off by default: the PostgreSQL preset lets anyone who can use an endpoint run SQL on the
+# database it points at (docs/endpoints_postgresql.md). When off, the wizard does not offer the
+# preset and the proxy and background runs refuse postgres:// URLs.
+# Tests run with it on unless they turn it off.
+Rails.application.config.postgres_search_enabled = bool.deserialize(ENV.fetch('POSTGRES_SEARCH_ENABLED', Rails.env.test?))
+
 # Require proxying independently of desktop mode; existing endpoints are only warned about.
 Rails.application.config.require_proxy_for_all_search_endpoints = bool.deserialize(ENV.fetch('REQUIRE_PROXY_FOR_ALL_SEARCH_ENDPOINTS', false))
 

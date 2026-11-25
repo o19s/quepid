@@ -7,6 +7,10 @@ PostgreSQL has no HTTP search API, so Quepid connects to the database itself. Th
 sends the query to Quepid's proxy, and background runs use the same code path
 (`PostgresSearchService`). That is why the preset always proxies requests.
 
+**The preset is off by default.** Set `POSTGRES_SEARCH_ENABLED=true` to offer it. When it is
+off, the wizard does not show the PostgreSQL tile, and the proxy and background runs refuse
+`postgresql://` URLs, so existing PostgreSQL endpoints stop returning results.
+
 **Prerequisite for the wizard and the case page:** the browser needs a fix in splainer-search.
 Its SearchAPI searcher only recognises `http(s):` URLs, so it rewrites
 `postgresql://host:5432/db` to `http://postgresql//host:5432/db` and the proxy rejects it.
