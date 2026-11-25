@@ -707,7 +707,7 @@ Export includes CSV injection protection via `make_csv_safe()` method.
 | URL Fetch | Fetch HTML/JSON from search endpoint URLs |
 | Auth Support | Basic auth and custom headers (CodeMirror JSON editor) |
 | GET/POST | Support for both HTTP methods with context-sensitive placeholders |
-| AI Generation | LLM-powered mapper code generation (GPT-4o via RubyLLM) |
+| AI Generation | LLM-powered mapper code generation (the default OpenAI model via RubyLLM) |
 | Test Mapper | Execute mapper against fetched content in V8 with result display |
 | Refine Mapper | AI-assisted improvement based on user feedback |
 | Console Logging | Capture and display console.log/error/warn output from mappers |
