@@ -11,7 +11,8 @@ require 'pg'
 # only ever reaches the database as a bind parameter ($1, $2, ...), never spliced into the
 # SQL. The SQL itself is the case author's, so it is wrapped as a subquery (only a SELECT
 # fits there) and runs in a read-only transaction with a statement timeout; the database
-# role in the endpoint's credentials should still be read-only (docs/endpoints_postgresql.md).
+# role in the endpoint's credentials should still be read-only (docs/endpoints_postgresql.md),
+# and a superuser login is refused, since a SELECT can call functions that act outside it.
 class PostgresSearchService
   SCHEMES = %w[postgres postgresql].freeze
   MAX_ROWS = 1000
@@ -69,12 +70,16 @@ class PostgresSearchService
 
   def query address, sql, params, limit
     connection = connect(address)
+    # The server reports is_superuser at login, so this costs no round trip.
+    raise PG::Error, 'Refusing to search as a superuser; use a read-only role' if 'on' == connection.parameter_status('is_superuser')
+
     connection.transaction do
       connection.exec('SET TRANSACTION READ ONLY')
       connection.exec("SET LOCAL statement_timeout = '#{STATEMENT_TIMEOUT}'")
       # Order of the inner SELECT is kept: Postgres does not reorder a subquery under a bare LIMIT.
+      # The newline keeps a trailing -- comment in the SQL from swallowing the closing parenthesis.
       connection.exec_params(
-        "SELECT * FROM (#{sql.strip.delete_suffix(';')}) AS quepid_search LIMIT #{limit}",
+        "SELECT * FROM (#{sql.strip.delete_suffix(';')}\n) AS quepid_search LIMIT #{limit}",
         params.map { |param| bind_value(param) }
       ).to_a
     end

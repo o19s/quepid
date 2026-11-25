@@ -174,7 +174,7 @@ class ProxyControllerTest < ActionDispatch::IntegrationTest
       endpoint_url:          url,
       search_engine:         'searchapi',
       api_method:            'POST',
-      basic_auth_credential: "#{config[:username]}:#{config[:password]}",
+      basic_auth_credential: postgres_search_credentials || skip('needs a database user that can create roles'),
       proxy_requests:        true,
       owner:                 user
     )
@@ -196,11 +196,12 @@ class ProxyControllerTest < ActionDispatch::IntegrationTest
     skip 'needs DB_ADAPTER=postgresql' unless 'postgresql' == config[:adapter]
 
     url = "postgresql://#{config[:host] || '127.0.0.1'}:#{config[:port] || 5432}/#{config[:database]}"
+    credentials = postgres_search_credentials || skip('needs a database user that can create roles')
     allowing_every_address do
       post "/proxy/fetch?url=#{url}",
            params:  { sql: 'SELECT 1 AS id' }.to_json,
            headers: { 'Content-Type'  => 'application/json',
-                      'Authorization' => "Basic #{Base64.strict_encode64("#{config[:username]}:#{config[:password]}")}" }
+                      'Authorization' => "Basic #{Base64.strict_encode64(credentials)}" }
     end
 
     assert_response :success

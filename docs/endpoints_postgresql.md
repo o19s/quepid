@@ -7,6 +7,13 @@ PostgreSQL has no HTTP search API, so Quepid connects to the database itself. Th
 sends the query to Quepid's proxy, and background runs use the same code path
 (`PostgresSearchService`). That is why the preset always proxies requests.
 
+**Prerequisite for the wizard and the case page:** the browser needs a fix in splainer-search.
+Its SearchAPI searcher only recognises `http(s):` URLs, so it rewrites
+`postgresql://host:5432/db` to `http://postgresql//host:5432/db` and the proxy rejects it.
+Background runs are not affected. Until a splainer-search release includes the fix, change the
+protocol check in `utilsSvc.ensureUrlHasProtocol` to `/^(https{0,1}:|[a-z][a-z0-9+.-]*:\/\/)/i`
+in your build. See ADR 0010 (`docs/adr/0010-postgresql-search-backend.md`).
+
 ## Connecting
 
 Search URL:
@@ -16,12 +23,19 @@ postgresql://<host>:5432/<database>?sslmode=require
 ```
 
 `sslmode` is optional and defaults to `prefer`. Put the database user and password in the
-endpoint's **Basic Auth** credential as `user:password`. Quepid stores it encrypted, and it
-never reaches the browser.
+endpoint's **Basic Auth** credential as `user:password`. Quepid stores it encrypted, but by
+default the browser also receives it with the endpoint's settings and sends it to the proxy with
+each query, so anyone who can use the endpoint can read the password. Set
+`REQUIRE_PROXY_WITH_BASIC_AUTH_CREDENTIALS=true` to keep it on the server: Quepid then leaves it
+out of API responses and the proxy looks it up itself. The wizard is the exception: while you
+create the endpoint, the browser sends the credential you typed to validate the connection.
 
 **Use a read-only role.** Quepid runs every query in a read-only transaction with a 10 second
-statement timeout and accepts only a `SELECT`. Anyone who can use the endpoint can still run
-any `SELECT` the role allows, so grant only what search needs:
+statement timeout and accepts only a `SELECT`. It refuses to search when the endpoint logs in as
+a superuser, because a `SELECT` can call functions that act outside the transaction, such as
+`dblink`, `pg_read_file` or `pg_terminate_backend`. Anyone who can use the endpoint can still
+run any `SELECT` the role allows, so grant only what search needs, and don't make the role a
+member of `pg_read_server_files`, `pg_signal_backend` or any role that can become a superuser:
 
 ```sql
 CREATE ROLE quepid LOGIN PASSWORD '...';

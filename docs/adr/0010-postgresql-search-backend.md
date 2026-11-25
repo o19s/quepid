@@ -52,6 +52,7 @@ only. The search text never becomes part of the SQL.
 | --- | --- |
 | Only a `SELECT` | The SQL runs as a subquery: `SELECT * FROM (<sql>) AS quepid_search LIMIT n`. |
 | No writes | Each query runs in a `READ ONLY` transaction. |
+| No superuser | The connection is refused when the server reports `is_superuser` at login. A `SELECT` can call functions that the read-only transaction does not stop (`dblink`, `pg_read_file`, `pg_terminate_backend`); a superuser can call all of them. |
 | Bounded time | `SET LOCAL statement_timeout = '10s'`. |
 | Bounded rows | `limit` comes from the try's Number of Results to Show (`requestArgsMapper`, as for Qdrant), at most 1000. |
 | Reachable hosts | The host goes through the same `ProxyAllowlist` as the HTTP proxy, and the connection is pinned to the address that was checked (`hostaddr`), so DNS can't answer differently later. |
@@ -88,7 +89,9 @@ only the case's SQL knows.
 
 - **Anyone who can use an endpoint can run any `SELECT` its database role allows.** The
   read-only transaction stops writes, not reads. The role must be read-only and granted only the
-  tables search needs; `docs/endpoints_postgresql.md` shows how. This is the same trust an
+  tables search needs; `docs/endpoints_postgresql.md` shows how. Quepid enforces only the
+  worst case, a superuser login: it can't tell a role's other grants, or its membership in roles
+  such as `pg_read_server_files`, from the login alone. This is the same trust an
   endpoint's HTTP credentials already carry, but a database role usually reaches more.
 - **The proxy pairs the endpoint's stored credential with the URL the browser sends**, so a user
   with access to an endpoint could point it at a host they control and receive the password.
@@ -104,12 +107,26 @@ only the case's SQL knows.
   requires every term, so in a hybrid query the full-text half often returns nothing for
   multi-word queries, and the fusion becomes pure vector search. That is fixed in the SQL
   recipe (match any term, rank by how many match), not in code.
+- **The connection tries only one address.** Every address the host resolves to is checked
+  against the allowlist, but only the first goes to libpq as `hostaddr`. If a host has both IPv6
+  and IPv4 addresses, the IPv6 one comes first, and Quepid's server has no IPv6 route, the query
+  fails with a 502. A plain libpq connection would fall back to IPv4. We decided to support one
+  address: database hosts usually have a single address. libpq accepts comma-separated
+  `host`/`hostaddr` lists, so passing all checked addresses would add failover without losing
+  the pinning if this becomes a problem.
 - **Each query opens a new connection**, so a background run pays connect, TLS and
   authentication for every query. This is marked as a shortcut in the code.
 - **No new dependencies:** the `pg` gem is already in the Gemfile, because Quepid can use
   PostgreSQL as its own database.
 - **Testing:** the database tests run against the test database's own server and are skipped
-  under MySQL. The `test-postgresql` CI job runs them.
+  under MySQL. The `test-postgresql` CI job runs them. They log in as a plain role,
+  `quepid_search_test`, which they create if missing, because the test database user is usually
+  a superuser.
+- **Only a `SELECT` is enforced by PostgreSQL, not by parsing.** The subquery wrapper, the
+  single-statement protocol of `exec_params` and the read-only transaction refuse a second
+  statement, a commented-out wrapper, a data-modifying `WITH`, `SELECT INTO`, `FOR UPDATE`,
+  `nextval` and switching the transaction back to read-write. Parsing the SQL in Quepid (for
+  example with `pg_query`) would add a dependency and reject legitimate SQL without closing more.
 
 ## 5. Open questions
 

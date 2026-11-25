@@ -51,7 +51,8 @@ class PostgresSearchServiceTest < ActiveSupport::TestCase
       skip 'needs DB_ADAPTER=postgresql' unless 'postgresql' == config[:adapter]
 
       @url = "postgresql://#{config[:host] || '127.0.0.1'}:#{config[:port] || 5432}/#{config[:database]}"
-      @credentials = "#{config[:username]}:#{config[:password]}"
+      @admin_credentials = "#{config[:username]}:#{config[:password]}"
+      @credentials = postgres_search_credentials || skip('needs a database user that can create roles')
     end
 
     def db_search body
@@ -81,6 +82,13 @@ class PostgresSearchServiceTest < ActiveSupport::TestCase
       assert_equal %w[603 604], body['rows'].pluck('id')
     end
 
+    it 'runs SQL that ends in a line comment' do
+      status, body = db_search({ sql: 'SELECT 1 AS id -- newest first', params: [] })
+
+      assert_equal 200, status
+      assert_equal [ { 'id' => 1 } ], body['rows']
+    end
+
     it 'binds the query text, so SQL in it is only data' do
       _, body = db_search({ sql: 'SELECT $1::text AS id', params: [ "'); DROP TABLE users; --" ] })
 
@@ -105,6 +113,13 @@ class PostgresSearchServiceTest < ActiveSupport::TestCase
 
       assert_equal 400, status
       assert_match(/read-only transaction/, body['error'])
+    end
+
+    it 'refuses to search as a superuser' do
+      status, body = allowing_every_address { search({ sql: 'SELECT 1 AS id' }, url: @url, credentials: @admin_credentials) }
+
+      assert_equal 400, status
+      assert_match(/superuser/, body['error'])
     end
 
     it 'reports a SQL error as a bad request' do
