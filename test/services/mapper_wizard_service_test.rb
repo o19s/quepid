@@ -25,6 +25,30 @@ class MapperWizardServiceTest < ActiveSupport::TestCase
     assert_requested(:post, 'https://api.openai.com/v1/responses', times: 2)
   end
 
+  test 'generation and refinement ask for the default OpenAI model, not a pinned one' do
+    requested_models = []
+    mapper = "```javascript\ndocsMapper = function(data) { return []; }\n```"
+    stub_request(:post, 'https://api.openai.com/v1/responses')
+      .with do |request|
+        requested_models << JSON.parse(request.body)['model']
+        true
+      end
+      .to_return(status: 200, headers: { 'Content-Type' => 'application/json' }, body: {
+        id: 'resp_model', object: 'response', status: 'completed', model: LlmProvider.find('openai').default_model,
+        output: [ { type: 'message', role: 'assistant', content: [ { type: 'output_text', text: mapper } ] } ],
+        usage: { input_tokens: 1, output_tokens: 1, total_tokens: 2 }
+      }.to_json)
+    service = MapperWizardService.new(api_key: 'test-key')
+
+    generated = service.generate_mappers('<main>Results</main>')
+    refined = service.refine_mapper(mapper_type: 'docsMapper', current_code: 'old()', feedback: 'fix',
+                                    html_content: '<main>Results</main>')
+
+    assert generated[:success], "Generation failed: #{generated[:error]}"
+    assert refined[:success], "Refinement failed: #{refined[:error]}"
+    assert_equal [ LlmProvider.find('openai').default_model ] * 2, requested_models
+  end
+
   test 'a Responses API answer without code retains extraction errors' do
     stub_request(:post, 'https://api.openai.com/v1/responses')
       .to_return(status: 200, headers: { 'Content-Type' => 'application/json' }, body: {

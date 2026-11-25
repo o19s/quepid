@@ -46,7 +46,7 @@ class MapperWizardService
 
     configure_ruby_llm
 
-    chat = RubyLLM.chat(model: 'gpt-4o')
+    chat = RubyLLM.chat(model: openai_model)
 
     chat.with_instructions(generation_prompt)
 
@@ -115,7 +115,7 @@ class MapperWizardService
 
     configure_ruby_llm
 
-    chat = RubyLLM.chat(model: 'gpt-4o')
+    chat = RubyLLM.chat(model: openai_model)
 
     truncated_html, truncated = truncate_for_llm(strip_boilerplate(html_content), 30_000)
 
@@ -215,6 +215,13 @@ class MapperWizardService
     RubyLLM.configure do |config|
       config.openai_api_key = @api_key
     end
+  end
+
+  # The wizard calls OpenAI directly through RubyLLM, so it uses the default OpenAI model
+  # from the provider registry instead of keeping its own copy of a model id that has to be
+  # remembered whenever OpenAI retires one.
+  def openai_model
+    LlmProvider.find('openai').default_model
   end
 
   def generation_prompt
