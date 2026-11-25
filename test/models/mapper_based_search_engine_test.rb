@@ -99,12 +99,13 @@ class MapperBasedSearchEngineTest < ActiveSupport::TestCase
     let(:postgresql) { MapperBasedSearchEngine.find('postgresql') }
 
     it 'is left out when POSTGRES_SEARCH_ENABLED is off' do
+      original = Rails.application.config.postgres_search_enabled
       Rails.application.config.postgres_search_enabled = false
 
       assert_nil MapperBasedSearchEngine.find('postgresql')
       assert MapperBasedSearchEngine.find('qdrant')
     ensure
-      Rails.application.config.postgres_search_enabled = true
+      Rails.application.config.postgres_search_enabled = original
     end
 
     it 'always proxies, since only Quepid can open the database connection' do

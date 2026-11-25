@@ -21,11 +21,12 @@ class PostgresSearchServiceTest < ActiveSupport::TestCase
     end
 
     it 'claims nothing when POSTGRES_SEARCH_ENABLED is off' do
+      original = Rails.application.config.postgres_search_enabled
       Rails.application.config.postgres_search_enabled = false
 
       assert_not PostgresSearchService.handles?(Addressable::URI.parse('postgresql://db/movies'))
     ensure
-      Rails.application.config.postgres_search_enabled = true
+      Rails.application.config.postgres_search_enabled = original
     end
   end
 
