@@ -24,7 +24,17 @@
                   <%= truncate(scorer.scale.to_s, length: 300) %>
                 </div>
               </td>
-              <td><%= scorer.owner&.fullname || 'System' %></td>
+              <td>
+                <% if scorer.owner %>
+                  <% if scorer.owner == current_user %>
+                    You
+                  <% else %>
+                    <%= scorer.owner.fullname %>
+                  <% end %>
+                <% else %>
+                  System
+                <% end %>
+              </td>
               <td class="text-end">
                 <% if scorer.communal? %>
                   <div class="d-inline-flex align-items-center">

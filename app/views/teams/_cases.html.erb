@@ -15,7 +15,7 @@
         <th>Last Run By</th>
         <th>Associated Judgements</th>
         <th>Owner</th>
-        <th>Shared</th>
+        <th>Shared With</th>
         <th class="text-end"></th>
       </tr>
     </thead>
@@ -51,7 +51,7 @@
           <td><%= ratings_counts.fetch(kase.id, 0) %></td>
           <td><%= kase.owner&.fullname || '—' %></td>
           <td>
-            <span class="badge rounded-pill bg-secondary"><%= kase.teams.length %> Teams</span>
+            <%= relationship_count kase.teams.length, 'team', record: kase, kind: :teams %>
           </td>
           <td class="text-end">
             <div class="btn-group btn-group-sm" role="group">

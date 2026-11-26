@@ -54,7 +54,7 @@ A Scorer is a JavaScript formula that turns a set of graded judgements into a si
 - [ ] **Steps:**
   1. Open one of your custom scorers, click **Edit** (or navigate from the list), change the code/scale/labels, save.
   2. As an **admin**, edit a communal scorer — confirm the warning banner "You are editing a communal scorer that is available to all users. Changes will affect everyone using this scorer." appears, and saving actually affects the shared communal scorer.
-- **Expected:** Changes persist; communal-scorer edits by an admin affect all users of that scorer.
+- **Expected:** Successful edits return to the Scorers listing with "Scorer updated." and persist after reload; communal-scorer edits by an admin affect all users of that scorer. Invalid scale submissions keep the edit form and entered values.
 - **Edge cases:**
   - [ ] As a **non-admin**, try to reach the Edit page for a communal scorer directly by URL — expect a redirect to the Scorers list with "You cannot edit communal scorers." (or a 404/not-found, since non-admins can't even load someone else's private scorer this way either).
   - [ ] As a non-admin, try to reach the Edit page for another user's private (non-shared) scorer directly by URL — expect it to fail to load rather than exposing the scorer.

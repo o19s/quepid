@@ -34,6 +34,7 @@ Search Endpoints represents a search engine (or API!) that is receiving queries 
             <th>Name</th>
             <th>Search Engine</th>
             <th>Endpoint Url</th>
+            <th>Shared With</th>
             <th class="text-end"></th>
           </tr>
         </thead>
@@ -48,7 +49,11 @@ Search Endpoints represents a search engine (or API!) that is receiving queries 
                 <% end %>
                 <%= search_endpoint.mapper_based_search_engine&.name || search_endpoint.search_engine %>
               </td>
-              <td><%= search_endpoint.endpoint_url %> </td>
+              <td><small><%= search_endpoint.endpoint_url %></small></td>
+              <td>
+                <%= relationship_count search_endpoint.teams.length, 'team', record: search_endpoint, kind: :teams %>
+                <%= relationship_count @try_counts.fetch(search_endpoint.id, 0), 'try', record: search_endpoint, kind: :tries %>
+              </td>
               <td class="text-end">
                 <%= share_modal_button 'search_endpoint', search_endpoint, name: search_endpoint.fullname %>
               </td>

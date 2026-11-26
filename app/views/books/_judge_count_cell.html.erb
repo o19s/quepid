@@ -1,4 +1,4 @@
-<%# locals: (row:) %>
+<%# locals: (row:, book:) %>
 <%# The chart td (judge-sparkline-#{id}) is never itself replaced - see
     broadcast_judge_activity_job.rb - so this cell is how fresh sparkline
     values actually reach the already-mounted chart: judge-activity-stats
@@ -9,4 +9,5 @@
     data-judge-activity-stats-judge-sparkline-outlet="#judge-sparkline-<%= row[:judge].id %>"
     data-judge-activity-stats-sparkline-value="<%= row[:sparkline].to_json %>">
   <%= row[:count] %>
+  <%= render 'books/judge_labels_bar', segments: judge_label_segments(row[:labels], book) %>
 </td>

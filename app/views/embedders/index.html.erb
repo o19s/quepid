@@ -27,7 +27,7 @@
               <th>Model</th>
               <th>Dimensions</th>
               <th>Owner</th>
-              <th>Teams</th>
+              <th>Shared With</th>
               <th class="text-end"></th>
             </tr>
           </thead>
@@ -63,7 +63,7 @@
                 </td>
                 <td>
                   <% if embedder.owner == current_user %>
-                    <span class="badge bg-secondary">You</span>
+                    You
                   <% elsif embedder.owner %>
                     <%= embedder.owner.fullname %>
                   <% else %>
@@ -71,11 +71,7 @@
                   <% end %>
                 </td>
                 <td>
-                  <% if embedder.teams.any? %>
-                    <%= embedder.teams.map(&:name).to_sentence %>
-                  <% else %>
-                    <span class="text-muted">&mdash;</span>
-                  <% end %>
+                  <%= relationship_count embedder.teams.length, 'team', record: embedder, kind: :teams %>
                 </td>
                 <td class="text-end">
                   <div class="btn-group btn-group-sm" role="group">

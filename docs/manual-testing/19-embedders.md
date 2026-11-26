@@ -33,13 +33,13 @@ For a local run, the Ollama container needs an embedding model: `docker exec oll
      the check still works with the saved connection. Change the model or sample text before
      checking and reload afterward to confirm the check did not save those changes. A check
      cannot switch to a different connection the teammate cannot use.
-  3. Change the name, check a team under **Teams to Share this Embedder With**, save.
+  3. Change the name, check a team under **Teams to Share this Embedder With**, save. Confirm successful edits return to the Embedders index with the updated row and success notice; invalid submissions keep the edit form and entered values.
   4. From the list, **Clone** it, confirm the same connection is selected, and save the clone.
   5. Sign in as a member of the shared team and confirm the embedder appears in their list.
   6. Delete the clone from the list (confirmation dialog).
   7. Open the team's page (**Teams** → the team). Find the **Embedders** card.
   8. Click the red ⊗ on the shared embedder and confirm.
-- **Expected:** The saved key is never rendered into the page; the clone keeps the source's connection only when the new owner owns it or it is instance-wide; otherwise the form explains that a connection must be chosen and does not offer the private original; the shared embedder is visible to team members; deleted embedders disappear from the list. The team page lists the team's embedders (provider, model, size, owner, how many cases use it) with a **Create Embedder** button that pre-selects the team; step 8 shows "… unshared from …", the card empties, and cases already using the embedder keep it.
+- **Expected:** The saved key is never rendered into the page; the clone keeps the source's connection only when the new owner owns it or it is instance-wide; otherwise the form explains that a connection must be chosen and does not offer the private original; the shared embedder is visible to team members, and the Embedders index shows a team-count pill when shared and neither a pill nor text when unshared; deleted embedders disappear from the list. The team page lists the team's embedders (provider, model, size, owner, how many cases use it) with a **Create Embedder** button that pre-selects the team; step 8 shows "… unshared from …", the card empties, and cases already using the embedder keep it.
 
 ### 19.3 Pick a case's embedder
 
@@ -79,10 +79,23 @@ For a local run, the Ollama container needs an embedding model: `docker exec oll
 
 - [ ] **Steps:**
   1. Create a named Ollama connection with its URL and no authentication. Check it before saving; verify an invalid URL is rejected and a reachable provider reports success.
-  2. Open **Access**. There is no team picker. A non-administrator has no instance-wide control; an administrator can choose **Instance-wide** at creation. Save a private connection and reload it.
+  2. Open **Access**. There is no team picker. A non-administrator has no instance-wide control; an administrator can choose **Instance-wide** at creation. Save a private connection and reload it. Edit and save it successfully; confirm the Connections index opens with the updated row and success notice. The index lists connections without All, AI & ML backends or Search backends filter tabs. An invalid update keeps the edit form and displays its validation errors.
   3. Create an embedder using that private connection. Confirm it selects the provider and default model from the connection, check it, save it and share the embedder with a disposable team containing another human user.
   4. As that teammate, verify the connection is absent from **Connections** and cannot be opened directly. Open the shared embedder, change its sample text/model and check it. Reload to verify the check saved nothing; rename and save it to verify normal editing still works.
   5. Clone the shared embedder. The private original connection is not offered; a notice asks for an owned or instance-wide connection. Select one available to the teammate and save the copy.
   6. As an administrator, create an instance-wide connection. Verify its owner remains shown and its availability survives reload. As the teammate, select it in a new embedder and verify its provider determines the embedder settings; the teammate cannot edit or delete the connection.
   7. Remove the disposable copies, shared embedder, connections and team. An in-use connection must refuse deletion until its embedder is removed.
 - **Expected:** Connection access is independent of team membership. Sharing a configured embedder permits use of its existing connection without granting permission to attach that private connection to a new configuration. Instance-wide availability is explicit and retains a responsible administrator owner. Existing cases continue using their assigned embedder after it is unshared.
+
+
+### 19.6 Inspect connection usage
+
+- [ ] **Steps:**
+  1. Open **Connections** with a connection used by an embedder and an AI judge. Its positive usage counts are buttons; zero counts remain absent. In the Network panel, confirm no usage-list request runs on page load or hover.
+  2. Click its embedder pill. A compact Bootstrap popover shows linked embedder names, without a visible heading or explanatory footer. Only this usage kind is fetched. Reopen it and confirm the loaded list is reused until the page is reloaded.
+  3. Follow an embedder link and return using Back. The Connections list has no leftover popover. Click an AI-judge pill and follow its link to the judge.
+  4. Use the keyboard to activate a pill. Focus moves to the first link after loading. Escape closes the popover and returns focus to the pill; clicking elsewhere also closes it.
+  5. Reduce the window height so the list cannot fit below its pill. The popover flips above rather than opening to either side.
+  6. Simulate a failed usage-list request. The popover shows a load error; restore the request and reopen it to retry. Dismiss a loading popover and confirm a late response does not reopen it.
+  7. On an instance-wide connection, confirm private embedders and AI judges belonging to unrelated users are absent from the returned list. A stale count with no visible records shows an empty-state message.
+- **Expected:** Names and links load only on demand and respect the same record visibility as their management pages. Counts remain aggregate usage counts. Cached lists are local to the current page; reloading refreshes them. No connection credentials appear in the list response.

@@ -119,6 +119,8 @@ Rails.application.routes.draw do
     resource :connection_check, only: :create, module: :embedders
   end
 
+  get 'relationship_items/:record_type/:id/:kind', to: 'relationship_items#show', as: :relationship_items
+
   resources :connections do
     # A check runs the form's current values in memory: a collection route serves the unsaved
     # form, a member route one that is saved (and can fall back on its saved secret).

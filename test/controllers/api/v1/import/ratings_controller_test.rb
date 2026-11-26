@@ -52,6 +52,18 @@ module Api
             end
           end
 
+          test 'returns bad request for malformed LTR lines' do
+            [ '3', '3 qid:1', '3 qid:1 # 1370' ].each do |line|
+              assert_no_difference 'Rating.count' do
+                post :create, params: { case_id: acase.id, file_format: 'ltr', ltr_text: line }
+              end
+
+              assert_response :bad_request
+              assert_includes response.parsed_body['message'], 'Unable to import ratings'
+              assert_includes response.parsed_body['message'], line
+            end
+          end
+
           test 'creates new queries when needed' do
             data = {
               case_id: acase.id,

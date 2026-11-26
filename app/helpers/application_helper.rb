@@ -63,6 +63,21 @@ module ApplicationHelper
     end
   end
 
+  # Highlight existing sharing and usage relationships; omit empty counts.
+  def relationship_count count, noun, record:, kind:
+    return unless count.positive?
+
+    name = record.try(:name).presence || record.try(:case_name).presence || record.id
+    button_tag pluralize(count, noun), type: 'button', class: 'badge rounded-pill bg-secondary border-0',
+                                      aria: { haspopup: 'dialog', expanded: false },
+                                      data: {
+                                        controller:                       'relationship-popover',
+                                        relationship_popover_url_value:   relationship_items_path(record_type: record.class.model_name.singular, id: record.id, kind: kind),
+                                        relationship_popover_title_value: "#{noun.pluralize.upcase_first} for #{name}",
+                                        action:                           'click->relationship-popover#toggle click@document->relationship-popover#dismissOutside keydown.esc@document->relationship-popover#escape shown.bs.popover->relationship-popover#shown turbo:before-cache@document->relationship-popover#close',
+                                      }
+  end
+
   # Bordered stat card: a large colored value over an icon label and a muted
   # caption. The block, if any, renders extra content (progress bar, actions) below.
   def metric_card value, label, caption, icon:, color:, &block
@@ -231,28 +246,23 @@ module ApplicationHelper
     data
   end
 
-  # Match the link to the core case url with the endpoint_url
-  # if we have one.  Avoids a swap in the core application.
+  # Link to a case's workspace. A case whose search endpoint is called straight from the browser
+  # has to be opened on that endpoint's protocol (an http endpoint can't be called from an https
+  # page), which avoids a swap in the core application. The href stays a relative path and the
+  # core-case-link controller switches the protocol in the browser: this markup is also rendered
+  # by background broadcasts, which have no request to take a host from.
   def link_to_core_case name, kase, try_number, options = {}
-    # Ensure options[:data] is set to { turbo_prefetch: false }
-    options[:data] ||= {}
-    options[:data][:turbo_prefetch] = false
-
-    path_params = {}
-
+    data = { turbo_prefetch: false }
     search_endpoint = kase.tries.first&.search_endpoint
-
     if search_endpoint && !search_endpoint.proxy_requests? && search_endpoint.endpoint_url
       protocol = get_protocol_from_url(search_endpoint.endpoint_url)
-      path_params = {
-        protocol: protocol,
-        port:     'https' == protocol ? 443 : nil,
-      }.compact
+      data.merge!(controller: 'core-case-link', core_case_link_protocol_value: protocol) if protocol
+    end
+    data = (options[:data] || {}).merge(data) do |key, existing, added|
+      'controller' == key.to_s ? "#{existing} #{added}" : added
     end
 
-    path = case_core_url(kase, try_number, **path_params)
-    # Call the original link_to method with the modified options
-    link_to(name, path, options)
+    link_to(name, case_core_path(kase, try_number), options.merge(data: data))
   end
 
   def get_protocol_from_url url
