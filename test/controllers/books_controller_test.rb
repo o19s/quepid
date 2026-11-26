@@ -52,14 +52,44 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
 
   test 'removing an AI judge from a book keeps its judgements' do
     login_user_for_integration_test user
-    james_bond_movies.ai_judges << judge_judy unless james_bond_movies.ai_judges.include?(judge_judy)
-    judgement_count = james_bond_movies.judgements.where(user: judge_judy).count
+    Judgement.create!(user: judge_judy, query_doc_pair: query_doc_pairs(:jbm_qdp3), rating: 1)
+
+    assert_no_difference -> { james_bond_movies.judgements.where(user: judge_judy).count } do
+      delete remove_ai_judge_book_path(james_bond_movies, ai_judge_id: judge_judy.id)
+    end
+
+    assert_redirected_to book_path(james_bond_movies)
+    assert_equal 'Removed Judge Judy from this book; 1 judgement kept.', flash[:notice]
+    assert_not_includes james_bond_movies.reload.ai_judges, judge_judy
+  end
+
+  test 'removing an AI judge with no judgements says none were kept' do
+    login_user_for_integration_test user
+
+    delete remove_ai_judge_book_path(james_bond_movies, ai_judge_id: judge_judy.id)
+
+    assert_equal 'Removed Judge Judy from this book; 0 judgements kept.', flash[:notice]
+  end
+
+  test 'removing an AI judge cancels its in-flight judging' do
+    login_user_for_integration_test user
+    job = SolidQueue::Job.create!(
+      active_job_id: SecureRandom.uuid,
+      class_name:    'RunJudgeJudyJob',
+      queue_name:    'default',
+      arguments:     {
+        'arguments' => [
+          { '_aj_globalid' => james_bond_movies.to_global_id.to_s },
+          { '_aj_globalid' => judge_judy.to_global_id.to_s },
+          nil
+        ],
+      }
+    )
 
     delete remove_ai_judge_book_path(james_bond_movies, ai_judge_id: judge_judy.id)
 
     assert_redirected_to book_path(james_bond_movies)
-    assert_not james_bond_movies.reload.ai_judges.include?(judge_judy)
-    assert_equal judgement_count, james_bond_movies.judgements.where(user: judge_judy).count
+    assert job.reload.arguments['quepid_cancelled']
   end
 
   test 'removing a judge that is not on the book is refused' do
@@ -72,13 +102,44 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
     assert_equal 'AI Judge not found.', flash[:alert]
   end
 
-  test 'judge activity offers remove and delete-judgements buttons for an assigned judge' do
+  test 'removing a judge the user cannot access is refused and offers no button' do
     login_user_for_integration_test user
-    james_bond_movies.ai_judges << judge_judy unless james_bond_movies.ai_judges.include?(judge_judy)
+    hidden_judge = AiJudge.create!(name: 'Hidden judge', owner: users(:doug))
+    james_bond_movies.ai_judges << hidden_judge
+
+    delete remove_ai_judge_book_path(james_bond_movies, ai_judge_id: hidden_judge.id)
+
+    assert_redirected_to book_path(james_bond_movies)
+    assert_equal 'AI Judge not found.', flash[:alert]
+    assert_includes james_bond_movies.reload.ai_judges, hidden_judge
 
     get book_path(james_bond_movies)
 
-    assert_select "form[action='#{remove_ai_judge_book_path(james_bond_movies, ai_judge_id: judge_judy.id)}']"
+    assert_select "form[action='#{remove_ai_judge_book_path(james_bond_movies, ai_judge_id: hidden_judge.id)}']", count: 0
+  end
+
+  test 'judge activity offers remove and delete-judgements buttons for an assigned judge with judgements' do
+    login_user_for_integration_test user
+    Judgement.create!(user: judge_judy, query_doc_pair: query_doc_pairs(:jbm_qdp3), rating: 1)
+
+    get book_path(james_bond_movies)
+
+    assert_select "form[action='#{remove_ai_judge_book_path(james_bond_movies, ai_judge_id: judge_judy.id)}']" \
+                  "[data-turbo-confirm*='1 judgement will be kept'] button[aria-label]"
+    assert_select "form[action='#{delete_ratings_by_assignee_book_path(james_bond_movies, user_id: judge_judy.id)}'] " \
+                  'button[aria-label]'
+  end
+
+  test 'judge activity offers only delete-judgements for an unassigned judge or a human with judgements' do
+    login_user_for_integration_test user
+    james_bond_movies.ai_judges.delete(judge_judy)
+    Judgement.create!(user: judge_judy, query_doc_pair: query_doc_pairs(:jbm_qdp3), rating: 1)
+
+    get book_path(james_bond_movies)
+
+    assert_select "form[action='#{remove_ai_judge_book_path(james_bond_movies, ai_judge_id: judge_judy.id)}']", count: 0
+    assert_select "form[action='#{delete_ratings_by_assignee_book_path(james_bond_movies, user_id: judge_judy.id)}']"
+    assert_select "form[action='#{delete_ratings_by_assignee_book_path(james_bond_movies, user_id: users(:doug).id)}']"
   end
 
   test 'successful settings update redirects with a notice' do

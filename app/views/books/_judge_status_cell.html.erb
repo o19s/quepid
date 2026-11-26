@@ -67,19 +67,21 @@
               class: 'btn btn-outline-danger btn-sm',
               style: icon_btn_style,
               title: 'Delete this judge\'s judgements from this book',
+              aria: { label: "Delete #{row[:judge].fullname}'s judgements from this book" },
               form: { data: { turbo_confirm: "Delete all #{row[:count]} judgements by #{row[:judge].fullname} from this book?" } } do %>
-          <i class="bi bi-eraser"></i>
+          <i class="bi bi-eraser" aria-hidden="true"></i>
         <% end %>
       <% end %>
-      <% if row[:assigned] %>
+      <% if row[:assigned] && can_refine %>
         <%= button_to remove_ai_judge_book_path(book, ai_judge_id: row[:judge].id),
               method: :delete,
               form_class: 'd-inline',
               class: 'btn btn-outline-danger btn-sm',
               style: icon_btn_style,
               title: 'Remove this judge from the book (keeps its judgements)',
-              form: { data: { turbo_confirm: "Remove #{row[:judge].fullname} from this book? Its judgements are kept." } } do %>
-          <i class="bi bi-person-x"></i>
+              aria: { label: "Remove #{row[:judge].fullname} from this book" },
+              form: { data: { turbo_confirm: "Remove #{row[:judge].fullname} from this book? Any judging in progress is cancelled; #{pluralize(row[:count], 'judgement')} will be kept." } } do %>
+          <i class="bi bi-person-x" aria-hidden="true"></i>
         <% end %>
       <% end %>
     </span>

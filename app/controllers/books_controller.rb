@@ -389,12 +389,17 @@ class BooksController < ApplicationController
     redirect_to book_path(@book), :notice => "Deleted #{deleted_count} judgements belonging to #{@user.fullname}.", status: :see_other
   end
 
+  # Like the settings form, only removes judges the current user can access,
+  # so nobody drops a judge they could not assign back. Cancels any run
+  # first: once unassigned, cancel_judge_judy can no longer find the judge.
   def remove_ai_judge
-    judge = @book.ai_judges.find_by(id: params[:ai_judge_id])
+    judge = @book.ai_judges.merge(AiJudge.for_user(current_user)).find_by(id: params[:ai_judge_id])
     return redirect_to(book_path(@book), alert: 'AI Judge not found.', status: :see_other) unless judge
 
+    RunJudgeJudyJob.cancel(@book, judge)
     @book.ai_judges.delete(judge)
-    redirect_to book_path(@book), notice: "Removed #{judge.fullname} from this book. Its judgements were kept.", status: :see_other
+    kept = helpers.pluralize(@book.judgements.where(user: judge).count, 'judgement')
+    redirect_to book_path(@book), notice: "Removed #{judge.fullname} from this book; #{kept} kept.", status: :see_other
   end
 
   def reset_unrateable
