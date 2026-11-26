@@ -11,7 +11,7 @@ class SearchEndpointsController < ApplicationController
     bool = ActiveRecord::Type::Boolean.new
     @archived = bool.deserialize(params[:archived] || false )
 
-    query = @current_user.search_endpoints_involved_with.order(updated_at: :desc)
+    query = @current_user.search_endpoints_involved_with.includes(:teams).order(updated_at: :desc)
     query = query.where(archived: @archived)
 
     query = query.where(owner_id: current_user.id) if params[:owned].present?
@@ -21,6 +21,8 @@ class SearchEndpointsController < ApplicationController
     query = query.search_by(params[:q], :name, :endpoint_url) if params[:q].present?
 
     @pagy, @search_endpoints = pagy(query)
+    endpoint_ids = @search_endpoints.map(&:id)
+    @try_counts = Try.where(search_endpoint_id: endpoint_ids).group(:search_endpoint_id).count
   end
 
   def show

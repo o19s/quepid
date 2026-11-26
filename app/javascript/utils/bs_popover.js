@@ -8,7 +8,7 @@ export function getBootstrapPopover() {
  * @param {Element} element
  * @param {{ trigger?: string, placement?: string, delayMs?: number,
  *   title?: string, body?: string | Element, html?: boolean,
- *   container?: string | Element }} options
+ *   container?: string | Element, fallbackPlacements?: string[] }} options
  */
 export function createBsPopover(element, options = {}) {
   const Popover = getBootstrapPopover()
@@ -35,6 +35,7 @@ export function createBsPopover(element, options = {}) {
 
   const instance = new Popover(element, {
     placement,
+    ...(options.fallbackPlacements ? { fallbackPlacements: options.fallbackPlacements } : {}),
     trigger: bsTrigger,
     html: !!options.html,
     delay: Number.isFinite(delayMs) ? { show: delayMs, hide: 0 } : 0,

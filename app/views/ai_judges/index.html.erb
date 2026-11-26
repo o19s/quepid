@@ -16,7 +16,7 @@
               <th>Provider</th>
               <th>Escalation</th>
               <th>Owner</th>
-              <th>Teams</th>
+              <th>Shared With</th>
               <th class="text-end"></th>
             </tr>
           </thead>
@@ -40,7 +40,7 @@
                 </td>
                 <td>
                   <% if ai_judge.owner == current_user %>
-                    <span class="badge bg-secondary">You</span>
+                    You
                   <% elsif ai_judge.owner %>
                     <%= ai_judge.owner.fullname %>
                   <% else %>
@@ -48,11 +48,7 @@
                   <% end %>
                 </td>
                 <td>
-                  <% if ai_judge.teams.any? %>
-                    <%= ai_judge.teams.map(&:name).to_sentence %>
-                  <% else %>
-                    <span class="text-muted">&mdash;</span>
-                  <% end %>
+                  <%= relationship_count ai_judge.teams.length, 'team', record: ai_judge, kind: :teams %>
                 </td>
                 <td class="text-end">
                   <div class="btn-group btn-group-sm" role="group">

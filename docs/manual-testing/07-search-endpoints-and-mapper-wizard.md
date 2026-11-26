@@ -16,7 +16,7 @@ below; mapper-based presets such as Vespa and Qdrant configure in the case wizar
 ### 7.1 Browse / filter the Search Endpoints list
 
 - [ ] **Steps:**
-  1. Go to Search Endpoints. Confirm columns: Name, Search Engine (with icon), Endpoint Url, and a per-row Share button.
+  1. Go to Search Endpoints. Confirm columns: Name, Search Engine (with icon), Endpoint Url, Shared With (separate pills for positive team and try counts; zero counts show no pill or text), and a per-row Share button.
   2. Use "Filter by name or url" text box.
   3. Toggle **Mine** (owned only).
   4. Toggle **Archived** to see archived endpoints.

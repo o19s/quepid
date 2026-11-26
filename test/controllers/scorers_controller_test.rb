@@ -125,9 +125,23 @@ class ScorersControllerTest < ActionController::TestCase
 
         put :update, params: { id: scorer.id, scorer: { name: new_name } }
 
-        assert_redirected_to edit_scorer_path(scorer)
+        assert_response :see_other
+        assert_redirected_to scorers_path
+        assert_equal 'Scorer updated.', flash[:notice]
         scorer.reload
         assert_equal new_name, scorer.name
+      end
+
+      test 'invalid updates keep the edit form and the saved scale unchanged' do
+        scorer = scorers(:random_scorer)
+        scorer.update!(owner: user)
+        original_scale = scorer.scale
+
+        put :update, params: { id: scorer.id, scorer: { scale_list: (0..10).to_a.join(',') } }
+
+        assert_response :unprocessable_content
+        assert_template :edit
+        assert_equal original_scale, scorer.reload.scale
       end
 
       test 'cannot update communal scorer' do
@@ -148,7 +162,8 @@ class ScorersControllerTest < ActionController::TestCase
 
         put :update, params: { id: communal_scorer.id, scorer: { name: new_name } }
 
-        assert_redirected_to edit_scorer_path(communal_scorer)
+        assert_response :see_other
+        assert_redirected_to scorers_path
         communal_scorer.reload
         assert_equal new_name, communal_scorer.name
       end
@@ -159,7 +174,9 @@ class ScorersControllerTest < ActionController::TestCase
 
         put :update, params: { id: scorer.id, scorer: { name: new_name } }
 
-        assert_redirected_to edit_scorer_path(scorer)
+        assert_response :see_other
+        assert_redirected_to scorers_path
+        assert_equal 'Scorer updated.', flash[:notice]
         scorer.reload
         assert_equal new_name, scorer.name
       end
@@ -169,7 +186,8 @@ class ScorersControllerTest < ActionController::TestCase
 
         put :update, params: { id: communal_scorer.id, scorer: { code: new_code } }
 
-        assert_redirected_to edit_scorer_path(communal_scorer)
+        assert_response :see_other
+        assert_redirected_to scorers_path
         communal_scorer.reload
         assert_equal new_code, communal_scorer.code
       end

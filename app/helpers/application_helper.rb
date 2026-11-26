@@ -63,6 +63,21 @@ module ApplicationHelper
     end
   end
 
+  # Highlight existing sharing and usage relationships; omit empty counts.
+  def relationship_count count, noun, record:, kind:
+    return unless count.positive?
+
+    name = record.try(:name).presence || record.try(:case_name).presence || record.id
+    button_tag pluralize(count, noun), type: 'button', class: 'badge rounded-pill bg-secondary border-0',
+                                      aria: { haspopup: 'dialog', expanded: false },
+                                      data: {
+                                        controller:                       'relationship-popover',
+                                        relationship_popover_url_value:   relationship_items_path(record_type: record.class.model_name.singular, id: record.id, kind: kind),
+                                        relationship_popover_title_value: "#{noun.pluralize.upcase_first} for #{name}",
+                                        action:                           'click->relationship-popover#toggle click@document->relationship-popover#dismissOutside keydown.esc@document->relationship-popover#escape shown.bs.popover->relationship-popover#shown turbo:before-cache@document->relationship-popover#close',
+                                      }
+  end
+
   # Bordered stat card: a large colored value over an icon label and a muted
   # caption. The block, if any, renders extra content (progress bar, actions) below.
   def metric_card value, label, caption, icon:, color:, &block

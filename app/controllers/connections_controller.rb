@@ -55,7 +55,7 @@ class ConnectionsController < ApplicationController
     @connection.instance_wide = administrator_sets_instance_wide?
 
     if @connection.save
-      redirect_to edit_connection_path(@connection), notice: 'Connection was successfully updated.'
+      redirect_to connections_path, notice: 'Connection was successfully updated.', status: :see_other
     else
       render :edit, status: :unprocessable_content
     end
