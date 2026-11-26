@@ -1,7 +1,7 @@
-<%# locals: (row:, flash_active: false, book: nil) %>
+<%# locals: (row:, book:, flash_active: false) %>
 <tr id="judge-row-<%= row[:judge].id %>">
   <%= render 'books/judge_status_cell', row: row, flash_active: flash_active, book: book %>
-  <%= render 'books/judge_count_cell', row: row %>
+  <%= render 'books/judge_count_cell', row: row, book: book %>
   <%= render 'books/judge_last_cell', row: row %>
   <td style="min-width:220px">
     <%# Always rendered, even at zero judgements - a judge's very first

@@ -60,6 +60,10 @@ class Judgement < ApplicationRecord
 
   scope :rateable, -> { where(unrateable: false).where(judge_later: false) }
 
+  # LlmService starts an unrateable judgement's explanation with this when the call to the model
+  # failed, as opposed to the judge declining to rate.
+  FAILED_CALL_PREFIX = 'BOOM'
+
   # `from`'s unrateable judgements in `book` that nobody has escalated yet,
   # skipping pairs `to` has already judged (it can't judge a pair twice).
   # A judge marking a pair "judge later" is a person deferring, not a judge
@@ -99,7 +103,7 @@ class Judgement < ApplicationRecord
       "its confidence (#{floor[1]}) was below its minimum confidence of #{floor[2]}"
     elsif text.include?('outside the scale')
       "its rating wasn't one of the book's scale values"
-    elsif text.start_with?('BOOM')
+    elsif text.start_with?(FAILED_CALL_PREFIX)
       'the call to the model failed'
     else
       'it gave no rating'
