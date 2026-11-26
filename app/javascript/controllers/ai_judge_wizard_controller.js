@@ -34,7 +34,6 @@ export default class extends withStatusMessages(Controller) {
   connect() {
     this.abortController = new AbortController()
     if (this.existingValue) this.revealStep2()
-    this.scrollToStep2IfRequested()
   }
 
   disconnect() {
@@ -53,17 +52,6 @@ export default class extends withStatusMessages(Controller) {
     this.sampleQueryDocPair()
   }
 
-  // A page opened with ?scorer_id= (e.g. a link to test against a scale) -
-  // scroll down to Test & Refine instead of leaving the user at the top.
-  // Deliberately not a #fragment: the browser's own native fragment-scroll
-  // would race this one once revealStep2() reflows the page.
-  scrollToStep2IfRequested() {
-    if (!new URLSearchParams(window.location.search).has("scorer_id")) return
-    if (!this.hasStep2Target) return
-
-    this.step2Target.closest("#test-and-refine")?.scrollIntoView({ block: "start" })
-  }
-
   // Picking a scale reloads only the scale panel - a Turbo frame - from this
   // same page with ?scorer_id=, so the criteria redraw server-side while
   // everything typed elsewhere in the not-yet-saved form stays as it is.
@@ -80,14 +68,10 @@ export default class extends withStatusMessages(Controller) {
   scaleStateTargetConnected(state) {
     const formController = this.formController
     if (formController) {
-      formController.hasScaleValue = state.dataset.hasScale === "true"
+      formController.hasScaleValue = Boolean(state.dataset.scale)
       formController.updateProviderPanels()
     }
-    if (state.dataset.scorerId) {
-      const url = new URL(this.testUrlValue, window.location.origin)
-      url.searchParams.set("scorer_id", state.dataset.scorerId)
-      this.testUrlValue = url.pathname + url.search
-    }
+    if (state.dataset.testUrl) this.testUrlValue = state.dataset.testUrl
     this.filterScales()
   }
 
@@ -113,11 +97,11 @@ export default class extends withStatusMessages(Controller) {
       .sort((a, b) => Number(a.value) - Number(b.value))
     picker.querySelectorAll("optgroup").forEach((group) => group.remove())
 
+    const supported = optionGroup("Supported scales")
+    const unsupported = optionGroup("Unsupported scales")
     if (!limits) {
       options.forEach((option) => picker.appendChild(option))
     } else {
-      const supported = optionGroup("Supported scales")
-      const unsupported = optionGroup("Unsupported scales")
       options.forEach((option) =>
         (scaleFits(limits, option.dataset.scale) ? supported : unsupported).appendChild(option)
       )
@@ -126,10 +110,8 @@ export default class extends withStatusMessages(Controller) {
       })
     }
     picker.value = selected
-    if (this.hasNoScaleFitsTarget) {
-      const nothingFits = limits && !options.some((o) => scaleFits(limits, o.dataset.scale))
-      this.noScaleFitsTarget.style.display = nothingFits ? "" : "none"
-    }
+    if (this.hasNoScaleFitsTarget)
+      this.noScaleFitsTarget.style.display = limits && !supported.children.length ? "" : "none"
   }
 
   // Run Prompt stays off while the scale the panel shows (picked, or the
@@ -250,12 +232,9 @@ export default class extends withStatusMessages(Controller) {
       if (error.name !== "AbortError") this.showError(error)
     } finally {
       this.running = false
-      const scaleNotice = this.element.querySelector(
-        "[data-ai-judge-form-target~=needsScaleNotice]"
-      )
-      this.runPromptButtonTarget.disabled =
-        Boolean(scaleNotice && scaleNotice.style.display !== "none") ||
-        this.runPromptButtonTarget.dataset.unsupportedScale === "true"
+      // ai-judge-form owns when Run is available (scale missing or outside the limit).
+      this.runPromptButtonTarget.disabled = false
+      this.formController?.jsonChanged()
       this.loadingSpinnerTarget.style.display = "none"
     }
   }

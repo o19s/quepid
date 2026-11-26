@@ -344,7 +344,7 @@ class BooksController < ApplicationController
     end
 
     unless ai_judge.supports_scale?(@book.scale)
-      redirect_to book_path(@book), alert: "AI Judge #{ai_judge.name} can't rate on this book's scale (#{@book.scale.join(',')}).", status: :see_other
+      redirect_to book_path(@book), alert: "AI Judge #{ai_judge.name} can't rate on this book's scale (#{@book.scale_list}).", status: :see_other
       return
     end
 
@@ -539,7 +539,7 @@ class BooksController < ApplicationController
 
     assigned_ids = @book.ai_judge_ids
     unsupported, supported = judges.partition { |j| assigned_ids.exclude?(j.id) && !j.supports_scale?(@book.scale) }
-    flash[:alert] = "Not assigned: #{unsupported.map(&:name).to_sentence} can't rate on this book's scale (#{@book.scale.join(',')})." if unsupported.any?
+    flash[:alert] = "Not assigned: #{unsupported.map(&:name).to_sentence} can't rate on this book's scale (#{@book.scale_list})." if unsupported.any?
     supported
   end
 

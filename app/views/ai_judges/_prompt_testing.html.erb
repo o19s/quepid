@@ -1,4 +1,4 @@
-<%# locals: (ai_judge:, book:, scorer:, scorer_id:, scale:, provider:) %>
+<%# locals: (ai_judge:, book:, scorer:, scorer_id:, scale:, provider:, test_url:) %>
 <!-- Step 2: Test & Refine -->
 <div class="mb-4" id="test-and-refine">
   <h4><span class="badge bg-primary">2</span> Test &amp; Refine</h4>
@@ -56,7 +56,7 @@
         <% missing_scale = provider&.needs_scale? && scale.empty? %>
         <%= turbo_frame_tag 'ai-judge-scale', target: '_top', data: { ai_judge_wizard_target: 'scaleFrame' } do %>
         <%# Read by ai-judge-wizard each time the frame loads (the frame element itself isn't replaced). %>
-        <div hidden data-ai-judge-wizard-target="scaleState" data-scorer-id="<%= scorer_id %>" data-has-scale="<%= scale.present? %>" data-scale="<%= scale.values.join(',') %>"></div>
+        <div hidden data-ai-judge-wizard-target="scaleState" data-test-url="<%= test_url %>" data-scale="<%= scale.values.join(',') %>"></div>
         <%# The other half of what gets sent: for a typed model the scale IS the
             question's criteria, so show them here rather than making people guess. %>
         <% scale_source = book || scorer %>

@@ -412,6 +412,8 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
       assert_select '[data-ai-judge-form-target=needsScaleNotice] form', count: 0
       assert_select '[data-ai-judge-form-target=needsScaleNotice] select option[data-url*="scorer_id="]',
                     minimum: 1
+      # Each scale the frame loads carries the URL Run Prompt then tests against.
+      assert_select '[data-ai-judge-wizard-target=scaleState][data-test-url*="test_prompt"]'
     end
 
     test 'the scale picker is deduplicated across every scorer the user has access to' do

@@ -165,6 +165,15 @@ class RunJudgeJudyJobTest < ActiveJob::TestCase
       end
     end
 
+    test 'does not wake an on-call judge limited to other scales than the book' do
+      on_call.update!(judge_options: on_call.judge_options.merge(supported_scales: '0,1,2,3,4'))
+      judge_judy.update!(escalates_to: on_call)
+
+      RunJudgeJudyJob.new.perform(book, judge_judy, 1)
+
+      assert_no_enqueued_jobs(only: RunJudgeJudyJob)
+    end
+
     test 'a pair the on-call judge already judged is skipped, not raised' do
       judge_judy.update!(escalates_to: on_call)
       RunJudgeJudyJob.new.perform(book, judge_judy, 1)

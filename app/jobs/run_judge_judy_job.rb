@@ -82,14 +82,14 @@ class RunJudgeJudyJob < ApplicationJob
   # @example Judge all pairs
   #   RunJudgeJudyJob.perform_later(book, ai_judge, nil)
   def perform book, judge, number_of_pairs, escalating_from_judge: nil
+    scale = JudgeScale.for(book)
+    return refuse_unsupported_scale(book, judge, scale) unless judge.supports_scale?(scale.values)
+
     counter = 0
     cancelled = false
     total_pairs = book.query_doc_pairs_within_rank_depth.count
     cancellable = provider_job_id.present? || SolidQueue::Job.exists?(active_job_id: job_id)
     llm_service = judge.llm_service
-    scale = JudgeScale.for(book)
-    return refuse_unsupported_scale(book, judge, scale) unless judge.supports_scale?(scale.values)
-
     loop do
       break if number_of_pairs && counter >= number_of_pairs
 
@@ -168,7 +168,7 @@ class RunJudgeJudyJob < ApplicationJob
   # The on-call judge's own run ends here too, so chains (A -> B -> C) follow.
   def wake_on_call_judge book, judge
     on_call = judge.try(:escalates_to)
-    return if on_call.nil?
+    return if on_call.nil? || !on_call.supports_scale?(book.scale)
     return unless Judgement.awaiting_escalation(book, from: judge, to: on_call).exists?
 
     RunJudgeJudyJob.perform_later(book, on_call, nil, escalating_from_judge: judge)

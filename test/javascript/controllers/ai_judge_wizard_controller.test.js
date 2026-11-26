@@ -6,6 +6,26 @@ import { HttpError } from "api/http_error"
 
 vi.mock("api/json", () => ({ getJson: vi.fn(), postJson: vi.fn() }))
 
+const TARGET_TAGS = {
+  runPromptButton: "button",
+  scalePicker: "select",
+  supportedScales: "textarea",
+  ...Object.fromEntries(
+    [
+      "rating",
+      "explanation",
+      "status",
+      "ratingInfo",
+      "step2",
+      "loadingSpinner",
+      "scaleFrame",
+      "scaleState",
+      "noScaleFits",
+      "unsupportedScaleNote"
+    ].map((name) => [name, "div"])
+  )
+}
+
 function fixture(valueOverrides = {}) {
   const form = document.createElement("form")
   form.innerHTML =
@@ -15,23 +35,7 @@ function fixture(valueOverrides = {}) {
   const targets = Object.fromEntries(
     AiJudgeWizardController.targets.map((name) => [
       name,
-      document.createElement(
-        { runPromptButton: "button", scalePicker: "select", supportedScales: "textarea" }[name] ??
-          ([
-            "rating",
-            "explanation",
-            "status",
-            "ratingInfo",
-            "step2",
-            "loadingSpinner",
-            "scaleFrame",
-            "scaleState",
-            "noScaleFits",
-            "unsupportedScaleNote"
-          ].includes(name)
-            ? "div"
-            : "input")
-      )
+      document.createElement(TARGET_TAGS[name] ?? "input")
     ])
   )
   targets.step2.style.display = "none"
@@ -131,37 +135,6 @@ it("shows rejected ratings as Unrateable and clears that state on a successful r
   expect(c.ratingTarget.textContent).toBe("0")
 })
 
-it("scrolls to Test & Refine when the url carries ?scorer_id=", () => {
-  const originalLocation = window.location
-  Object.defineProperty(window, "location", {
-    configurable: true,
-    value: { search: "?scorer_id=3" }
-  })
-
-  const c = fixture()
-  const section = document.createElement("div")
-  section.id = "test-and-refine"
-  section.scrollIntoView = vi.fn()
-  section.appendChild(c.step2Target)
-
-  c.scrollToStep2IfRequested()
-
-  expect(section.scrollIntoView).toHaveBeenCalledWith({ block: "start" })
-  Object.defineProperty(window, "location", { configurable: true, value: originalLocation })
-})
-
-it("does not scroll without ?scorer_id=", () => {
-  const c = fixture()
-  const section = document.createElement("div")
-  section.id = "test-and-refine"
-  section.scrollIntoView = vi.fn()
-  section.appendChild(c.step2Target)
-
-  c.scrollToStep2IfRequested()
-
-  expect(section.scrollIntoView).not.toHaveBeenCalled()
-})
-
 function addScaleOptions(c, scales) {
   c.scalePickerTarget.innerHTML = '<option value="">Select a rating scale...</option>'
   scales.forEach((scale, i) => {
@@ -259,8 +232,8 @@ it("pickScale loads the picked scale into the frame instead of navigating", () =
 it("a newly loaded scale becomes the one Run Prompt tests against", () => {
   const c = fixture({ testUrl: "/ai_judges/18/test_prompt?scorer_id=2" })
   const state = document.createElement("div")
-  state.dataset.scorerId = "4"
-  state.dataset.hasScale = "true"
+  state.dataset.testUrl = "/ai_judges/18/test_prompt?scorer_id=4"
+  state.dataset.scale = "0,1,2,3"
 
   c.scaleStateTargetConnected(state)
 

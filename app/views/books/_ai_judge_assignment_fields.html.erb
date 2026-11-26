@@ -5,16 +5,17 @@
   <%= form.collection_check_boxes(:ai_judge_ids, ai_judges, :id, :name) do |b| %>
     <%# Incompatible judges can't be newly picked. One already on the book stays enabled: a
         disabled checkbox isn't submitted, so saving would silently drop it. %>
+    <% limited = b.object.supported_scales.any? %>
     <% incompatible = book.scale.present? && !b.object.supports_scale?(book.scale) %>
     <% unpickable = incompatible && book.ai_judge_ids.exclude?(b.value) %>
     <div>
       <%= b.check_box(disabled: unpickable) %>
       <%= b.label %>
-      <% if b.object.supported_scales.any? %>
-        <% limits = b.object.supported_scales.map { |s| s.join(',') }.join(' or ') %>
+      <% if limited %>
+        <% limits = b.object.supported_scales_label %>
         <% if incompatible %>
           <span class="badge text-bg-warning ms-1" title="Only rates on scale <%= limits %>; it won't run on this book">
-            <i class="bi bi-exclamation-triangle" aria-hidden="true"></i> Incompatible with this book's scale (<%= book.scale.join(',') %>)
+            <i class="bi bi-exclamation-triangle" aria-hidden="true"></i> Incompatible with this book's scale (<%= book.scale_list %>)
           </span>
         <% else %>
           <small class="text-muted ms-1">only rates on scale <%= limits %></small>

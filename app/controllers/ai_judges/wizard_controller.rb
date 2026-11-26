@@ -119,7 +119,7 @@ module AiJudges
       end
       return if scale.empty? || ai_judge.supports_scale?(scale.values)
 
-      "This judge is limited to the scales #{ai_judge.supported_scales.map { |s| s.join(',') }.join('; ')}, " \
+      "This judge is limited to the scales #{ai_judge.supported_scales_label}, " \
         "so it can't rate on #{scale.values.join(',')}."
     end
 
