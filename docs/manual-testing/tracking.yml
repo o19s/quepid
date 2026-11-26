@@ -314,16 +314,18 @@ parts:
       "3.1":
         title: "Cases list — browsing and filtering"
         screenshots:
+          relationship-counts: "3.1/relationship-counts"
           cases-no-match: "3.1/cases-no-match"
           cases-archived-empty: "3.1/cases-archived-empty"
           cases-team-filter: "3.1/cases-team-filter"
           cases-id-filter: "3.1/cases-id-filter"
           cases-name-filter: "3.1/cases-name-filter"
           cases-active: "3.1/cases-active"
-        last_run: 2026-10-26T12:03:32Z
+        last_run: 2026-11-20T12:08:53Z
         result: pass
-        notes: "branch-ui-diff sweep for the Stylelint/CSS-variable change (CSS only): Current :3000 vs diff baseline :3003 at 7c27a90e on a fresh copy of the dev database, 1280x900 unless noted; captures in .playwright-mcp/branch-ui-diff-stylelint/, not recorded in screen history. Covered: list (full page), name filter 'Typeahead', archived; all pixel-identical. Not covered: ID, team and combined filters, pagination, other accounts."
-        paths: ["app/controllers/cases_controller.rb", "app/views/cases/index.html.erb", "app/models/concerns/text_search.rb", "app/views/shared/_index_filters.html.erb", "app/views/shared/_index_pagination.html.erb", "app/views/layouts/application.html.erb", "app/views/layouts/_head_common.html.erb", "app/views/layouts/_case_head.html.erb", "app/views/layouts/_case_workspace.html.erb", "app/javascript/controllers/auto_submit_controller.js", "app/models/score.rb", "db/migrate/20261002202000_add_case_latest_score_index.rb", "app/assets/stylesheets/application-overrides.css", "app/assets/stylesheets/base.css"]
+        notes: "Partial MCP Current :3000 listing check: existing case team-name links remain clickable names; no relationship-count styling was applied to rating statistics. Current relationship-counts screenshot inspected/recorded. The blank unshared-team state is implemented; creation, filtering, archiving and sharing a case were not repeated in this sample."
+        paths: ["app/controllers/cases_controller.rb", "app/views/cases/index.html.erb", "app/models/concerns/text_search.rb", "app/views/shared/_index_filters.html.erb", "app/views/shared/_index_pagination.html.erb", "app/views/layouts/application.html.erb", "app/views/layouts/_head_common.html.erb", "app/views/layouts/_case_head.html.erb", "app/views/layouts/_case_workspace.html.erb", "app/javascript/controllers/auto_submit_controller.js", "app/models/score.rb", "db/migrate/20261002202000_add_case_latest_score_index.rb", "app/assets/stylesheets/application-overrides.css", "app/assets/stylesheets/base.css", "app/helpers/application_helper.rb"]
+
       "3.2":
         title: "Create a new case (setup wizard)"
         screenshots:
@@ -930,14 +932,15 @@ parts:
       "7.1":
         title: "Browse / filter the Search Endpoints list"
         screenshots:
+          relationship-counts: "7.1/relationship-counts"
           endpoint-team: "7.1/endpoint-team"
           endpoint-archived: "7.1/endpoint-archived"
           endpoint-empty-filter: "7.1/endpoint-empty-filter"
           endpoint-filter: "7.1/endpoint-filter"
           endpoint-list: "7.1/endpoint-list"
-        last_run: 2026-10-20T18:40:34Z
+        last_run: 2026-11-20T12:07:40Z
         result: pass
-        notes: "Covered live on Current :3000: columns, icon and Share button, name, Mine, Archived and Team filters and a combined filter, a no-match filter shows no first-endpoint message, a fresh account sees \"Create your first search endpoint ...\" only unfiltered, and an unrelated endpoint redirects with the permissions message."
+        notes: "Partial MCP Current :3000 listing check: mixed team/try counts render independent positive pills; zero relationships have neither pills nor replacement text. Current relationship-counts screenshot inspected/recorded. Native endpoint regression passes creation, sharing to one team, reload, unsharing the last team, archiving and cleanup; each count updates correctly. Other filters/permission scenarios deferred. Representative Rails visuals still fail on the existing unrelated New Team sidebar baseline drift (7082 pixels); baselines unchanged."
         paths: ["app/controllers/search_endpoints_controller.rb", "app/views/search_endpoints/index.html.erb", "app/models/concerns/text_search.rb", "app/views/shared/_index_filters.html.erb", "app/views/shared/_index_pagination.html.erb", "app/javascript/controllers/codemirror_controller.js", "app/helpers/application_helper.rb", "app/javascript/controllers/auto_submit_controller.js"]
       "7.2":
         title: "Create a Search Endpoint — one per engine type"
@@ -1131,10 +1134,11 @@ parts:
           communal-edit-denied: "8.4/communal-edit-denied"
           scorer-reopened: "8.4/scorer-reopened"
           scorer-edited: "8.4/scorer-edited"
+          scorer-updated: "8.4/scorer-updated"
           scorer-edit: "8.4/scorer-edit"
-        last_run: 2026-10-25T13:51:23Z
+        last_run: 2026-11-20T01:19:08Z
         result: pass
-        notes: "Partial Herb-cleanup MCP smoke scorer5/edit, communal AP@10: ordinary sidebar appearance/sticky position retained; its identical CSS is now in head with dynamic Turbo tracking. Screenshot inspected. No scorer edit/save. 557 affected controller tests pass; native visual2pass/4known fixture/baseline failures."
+        notes: "Partial MCP Current :3000 check: created an owned disposable scorer with binary scale, edited its name and saved to Scorers listing with the updated row visible. Current scorer-updated screenshot inspected/recorded; scratch scorer deleted. All37 controller tests pass for custom/admin communal edits,303 index redirects, notices, access restrictions and422 invalid-scale rendering. Native scorer-management browser test passes11-value rejection, correcting the scale and saving to index, notice and filtered reload persistence; its scorer is removed in afterAll. Tidy passes. Representative Rails visual check retains the known unrelated New Team sidebar baseline mismatch (7082 pixels); baselines unchanged. Other code-editor/label, default-setting and sharing paths not repeated live."
         paths: ["app/views/layouts/application.html.erb", "app/views/layouts/_sidebar_styles.html.erb", "config/importmap.rb", "app/javascript/modules/editor.js", "app/controllers/scorers_controller.rb", "app/views/scorers/edit.html.erb", "app/views/scorers/_form.html.erb", "app/views/scorers/_scale_label.html.erb", "app/javascript/controllers/scorer_scale_controller.js", "app/services/team_sharing.rb", "app/models/concerns/text_search.rb", "app/javascript/controllers/codemirror_controller.js", "app/helpers/application_helper.rb"]
       "8.5":
         title: "Clone a scorer"
@@ -1234,6 +1238,7 @@ parts:
       "9.5":
         title: "Sharing a Case/Book/Search Endpoint/Scorer with a team"
         screenshots:
+          relationship-counts: "9.5/relationship-counts"
           team-scorer-unshared: "9.5/team-scorer-unshared"
           team-scorer-shared: "9.5/team-scorer-shared"
           team-scorer-form: "9.5/team-scorer-form"
@@ -1258,9 +1263,9 @@ parts:
           index-case-unshared: "9.5/index-case-unshared"
           index-case-shared: "9.5/index-case-shared"
           index-case-form: "9.5/index-case-form"
-        last_run: 2026-10-20T20:49:05Z
+        last_run: 2026-11-20T12:08:58Z
         result: pass
-        notes: "Covered live via Playwright MCP on Current :3000: disposable Case/Book/Endpoint/Scorer index Share modals all share with disposable team; Case/Book/Endpoint index unshare/re-share and Scorer roundtrip8.7. Team entrypoint all4Unshare submits; associations removed, scorer modal Not shared with any teams yet (its controller redirects to global Scorers list, explaining retained owned row). Not covered live: duplicate/concurrent/two-team/unauthorized/no-team matrices or diff-baseline replay."
+        notes: "Partial MCP Current :3000 check: shared and unshared a disposable endpoint using the index modal, verified persisted counts after reload, then removed the endpoint. Final team1 listing shows positive case/team pills and blank zero-case cells for endpoints, embedders and scorers. Current relationship-counts screenshot inspected/recorded. Native endpoint share/unshare regression passes the final positive-only pills and cleanup. Other resource sharing mutations, permissions and simultaneous sessions deferred."
         paths: ["app/views/shared/_share_case_modal.html.erb", "app/views/shared/_share_book_modal.html.erb", "app/views/shared/_share_search_endpoint_modal.html.erb", "app/views/shared/_share_scorer_modal.html.erb", "app/javascript/controllers/share_case_controller.js", "app/javascript/controllers/share_book_controller.js", "app/javascript/controllers/share_scorer_controller.js", "app/javascript/controllers/share_search_endpoint_controller.js", "app/javascript/controllers/share_entity_controller_base.js", "app/views/cases/index.html.erb", "app/views/teams/_cases.html.erb", "app/views/books/_book.html.erb", "app/views/teams/_books.html.erb", "app/views/scorers/index.html.erb", "app/views/scorers/_list.html.erb", "app/views/teams/_scorers.html.erb", "app/views/search_endpoints/index.html.erb", "app/views/teams/_search_endpoints.html.erb", "app/views/shared/_index_filters.html.erb", "app/views/shared/_index_pagination.html.erb", "app/javascript/controllers/codemirror_controller.js", "app/helpers/application_helper.rb", "app/javascript/controllers/auto_submit_controller.js", "app/controllers/share_modals_controller.rb", "app/views/share_modals/show.html.erb", "app/views/shared/_share_entity_modal.html.erb", "app/views/sessions/new.html.erb"]
       "9.6":
         title: "Archive/unarchive a Case or Search Endpoint from the team page"
@@ -1278,12 +1283,28 @@ parts:
         notes: "Refresh: team case and endpoint Archive/Unarchive confirmations, filtered archived rows, restored states driven. DB confirms both active, acting owner retained, team82 association preserved. Eight selected captures inspected and registered. Ownership transfer from a different owner and unrelated-team POST were not repeated; earlier evidence retained."
         paths: ["app/controllers/teams_controller.rb", "app/views/teams/_cases.html.erb", "app/services/team_sharing.rb", "app/models/concerns/text_search.rb", "app/views/shared/_index_filters.html.erb", "app/javascript/controllers/auto_submit_controller.js", "app/javascript/application.js", "app/javascript/controllers/confirm_dialog_controller.js", "app/views/shared/_confirm_modal.html.erb", "app/views/teams/_search_endpoints.html.erb"]
 
+      "9.7":
+        title: "Inspect sharing and usage pills"
+        screenshots:
+          books-teams: "9.7/books-teams"
+          embedders-teams: "9.7/embedders-teams"
+          judges-teams: "9.7/judges-teams"
+          endpoints-teams: "9.7/endpoints-teams"
+          endpoint-tries: "9.7/endpoint-tries"
+          team-book-cases: "9.7/team-book-cases"
+          team-scorer-teams: "9.7/team-scorer-teams"
+        last_run: 2026-11-21T11:42:00Z
+        result: pass
+        notes: "Partial MCP Current :3000 refresh: opened team pills on Books, Embedders, AI Judges and Search Endpoints, plus endpoint tries and team1 book-case/scorer-team pills. Fixed focus-induced scrolling on long team pages; links now stay in view and the native in-viewport regression passes. Final screenshots inspected and recorded. All301 affected controller tests,23 JavaScript tests,5 native browser checks and tidy pass. Browser coverage includes lazy loading, cached reopening, actual team navigation, every visible team-table pill, specific-try links and existing Connections behavior. The browser fixture health checks are stubbed; records from the earlier timed-out teardown were explicitly removed, and the final run cleaned up successfully. Controller coverage verifies source/relationship visibility, unsupported inputs and case deduplication. Zero counts and blue content pills remain unchanged. Large lists, cross-session changes and second-browser permission replay deferred. Representative Rails visuals retain the known unrelated New Team sidebar baseline mismatch (7082 pixels); baselines unchanged."
+        paths: ["app/controllers/relationship_items_controller.rb", "app/helpers/application_helper.rb", "app/views/relationship_items/show.html.erb", "app/views/shared/_relationship_popover_templates.html.erb", "app/views/layouts/application.html.erb", "app/views/books/_book.html.erb", "app/views/embedders/index.html.erb", "app/views/ai_judges/index.html.erb", "app/views/search_endpoints/index.html.erb", "app/views/teams/_cases.html.erb", "app/views/teams/_books.html.erb", "app/views/teams/_embedders.html.erb", "app/views/teams/_scorers.html.erb", "app/views/teams/_search_endpoints.html.erb", "app/javascript/controllers/relationship_popover_controller.js", "app/javascript/utils/bs_popover.js", "config/routes.rb"]
+
   "10":
     file: 10-books-management.md
     scenarios:
       "10.1":
         title: "Books list"
         screenshots:
+          relationship-counts: "10.1/relationship-counts"
           combined-filters: "10.1/combined-filters"
           archived-list: "10.1/archived-list"
           empty-filter: "10.1/empty-filter"
@@ -1291,10 +1312,11 @@ parts:
           team-search: "10.1/team-search"
           book-search: "10.1/book-search"
           book-list: "10.1/book-list"
-        last_run: 2026-10-20T20:15:36Z
-        result: fail
-        notes: "Covered live via Playwright MCP on Current :3000: index columns ID/Name/Teams/Scale/Status/share, unmatched text gives zero rows, clear restores, archived then active navigation, New Book form. Not covered live: combined team/text/archive filters, zero-account book state or diff-baseline replay. Unresolved earlier failure evidence: 2026-10-15 retained historical Base86e3de9 nonempty All-teams search500(teams.name join), while Legacy8ceb live search passed. Current replay does not reclassify that historical/runtime-specific failure."
-        paths: ["app/controllers/books_controller.rb", "app/views/books/index.html.erb", "app/models/concerns/text_search.rb", "app/views/shared/_index_filters.html.erb", "app/views/shared/_index_pagination.html.erb", "app/javascript/controllers/auto_submit_controller.js"]
+        last_run: 2026-11-20T12:07:46Z
+        result: pass
+        notes: "Partial MCP Current :3000 Books listing check: shared book shows 2 teams; unshared book has neither a pill nor text in its Teams cell. Content statistics retain their existing styling. Current relationship-counts screenshot inspected/recorded. Filters, archived books and permissions not repeated."
+        paths: ["app/controllers/books_controller.rb", "app/views/books/index.html.erb", "app/models/concerns/text_search.rb", "app/views/shared/_index_filters.html.erb", "app/views/shared/_index_pagination.html.erb", "app/javascript/controllers/auto_submit_controller.js", "app/helpers/application_helper.rb"]
+
       "10.2":
         title: "Create a new book"
         screenshots:
@@ -1653,15 +1675,17 @@ parts:
       "12.2":
         title: "Edit / delete an AI Judge"
         screenshots:
+          relationship-counts: "12.2/relationship-counts"
           deleted: "12.2/deleted"
           delete-confirm: "12.2/delete-confirm"
           delete-cancelled: "12.2/delete-cancelled"
           reloaded: "12.2/reloaded"
           edited: "12.2/edited"
           edit-form: "12.2/edit-form"
-        last_run: 2026-10-22T21:10:45Z
+          judge-updated: "12.2/judge-updated"
+        last_run: 2026-11-20T12:08:03Z
         result: pass
-        notes: "Covered live on Current :3000 (deletion edges only): deleting disposable judges without judgements (1044838953, 1044838954) through DELETE /ai_judges/:id removed them; for MT 12.1 Ollama Judge with 4 judgements, AI Judges index Delete shows the 'Delete AI judge MT 12.1 Ollama Judge?' Confirm dialog and Confirm returns to the index with the judge kept (model error 'Please reassign ownership of the 4 judgements.'), so the restriction holds, but neither a success notice nor that error is shown. Not a branch regression: the merge base 698aa8ff had the same silent destroy; origin/main added the notice/alert in a31569e4 (#1826), which this branch has not merged. Not covered this pass: edit/rename, Cancel, hidden-team preservation, other-user denial."
+        notes: "Partial MCP Current :3000 judge listing check: shared judges show singular/plural team-count pills under Shared With. Current relationship-counts screenshot inspected/recorded. This pass was read-only; judge editing, deletion and unshared-judge setup were not repeated."
         paths: ["app/controllers/ai_judges_controller.rb", "app/views/ai_judges/edit.html.erb", "app/javascript/controllers/ai_judge_form_controller.js", "app/views/ai_judges/index.html.erb", "app/views/ai_judges/_form.html.erb", "app/views/ai_judges/_provider_options.html.erb", "app/views/ai_judges/_prompt_testing.html.erb", "app/views/shared/_team_picker.html.erb", "app/models/ai_judge.rb", "app/models/concerns/for_user_scope.rb", "app/javascript/application.js", "app/javascript/controllers/confirm_dialog_controller.js", "app/views/shared/_confirm_modal.html.erb", "app/helpers/application_helper.rb"]
       "12.3":
         title: "Assign an AI Judge to a Book"
@@ -2347,16 +2371,25 @@ parts:
         paths: ["app/controllers/connections_controller.rb", "app/controllers/embedders_controller.rb", "app/controllers/embedders/connection_checks_controller.rb", "app/views/connections/", "app/views/embedders/_form.html.erb", "app/javascript/controllers/embedder_form_controller.js", "app/models/connection.rb", "app/models/embedder.rb", "app/models/embedder_provider.rb", "app/services/embedder_adapters"]
       "19.2":
         title: "Edit, clone, share and delete an embedder"
-        last_run: 2026-11-05T17:27:57Z
+        screenshots:
+          relationship-counts: "19.2/relationship-counts"
+          embedder-updated: "19.2/embedder-updated"
+        last_run: 2026-11-20T12:08:08Z
         result: pass
-        notes: "Covered live via isolated Playwright MCP sessions and native Playwright: a teammate could not list or open the owner's private connection but could open, check and rename the shared embedder using its saved connection; reloading restored unsaved settings. Cloning omitted the private connection, showed the selection notice and saved with an available instance-wide connection. The owner could not delete an in-use connection. Not covered live: clone deletion and removing the embedder's team share in this pass. Disposable records were removed after verification."
-        paths: ["app/controllers/connections_controller.rb", "app/controllers/embedders_controller.rb", "app/controllers/embedders/connection_checks_controller.rb", "app/models/connection.rb", "app/models/embedder.rb", "app/views/connections/", "app/views/embedders/index.html.erb", "app/views/embedders/_form.html.erb", "app/views/teams/_embedders.html.erb", "app/controllers/teams_controller.rb", "db/migrate/20261105150000_simplify_connection_access.rb"]
+        notes: "Partial MCP Current :3000 listing check: shared embedder shows a team-count pill on the index; its zero-case Used by cell on team1 is blank. Index and team relationship-counts screenshots inspected/recorded. Editing, cloning, sharing, checking and deletion not repeated in this sample."
+        paths: ["app/controllers/connections_controller.rb", "app/controllers/embedders_controller.rb", "app/controllers/embedders/connection_checks_controller.rb", "app/models/connection.rb", "app/models/embedder.rb", "app/views/connections/", "app/views/embedders/index.html.erb", "app/views/embedders/_form.html.erb", "app/views/teams/_embedders.html.erb", "app/controllers/teams_controller.rb", "db/migrate/20261105150000_simplify_connection_access.rb", "app/helpers/application_helper.rb"]
+
       "19.5":
         title: "Private and instance-wide connections"
-        last_run: 2026-11-06T20:02:14Z
+        screenshots:
+          relationship-counts: "19.5/relationship-counts"
+          connection-updated: "19.5/connection-updated"
+          connections-index: "19.5/connections-index"
+        last_run: 2026-11-20T12:08:32Z
         result: pass
-        notes: "Partial live coverage via Playwright MCP on Current :3000: created a disposable Ollama connection, confirmed the Provider field and provider-specific connection check succeeded, saved it, verified the connections list showed its provider, then deleted it. Disposable record was removed. Not covered in this pass: teammate access, instance-wide connections, embedder selection or in-use deletion."
-        paths: ["app/controllers/connections_controller.rb", "app/controllers/connections/checks_controller.rb", "app/controllers/embedders_controller.rb", "app/models/connection.rb", "app/models/embedder.rb", "app/models/team.rb", "app/views/connections/", "app/views/embedders/", "db/migrate/20261105150000_simplify_connection_access.rb"]
+        notes: "Partial MCP Current :3000 listing check: separate positive embedder/AI-judge pills remain; a connection with no embedders shows only its AI-judge pill. Current relationship-counts screenshot inspected/recorded. This pass was read-only; connection editing, creation, provider checks and access controls not repeated."
+        paths: ["app/controllers/connections_controller.rb", "app/controllers/connections/checks_controller.rb", "app/controllers/embedders_controller.rb", "app/models/connection.rb", "app/models/embedder.rb", "app/models/team.rb", "app/views/connections/", "app/views/embedders/", "db/migrate/20261105150000_simplify_connection_access.rb", "app/helpers/application_helper.rb"]
+
       "19.3":
         title: "Pick a case's embedder"
         last_run: 2026-11-05T17:36:01Z
@@ -2369,3 +2402,13 @@ parts:
         result: pass
         notes: "Covered live on Current :3000, case 6: with MiniLM selected and two current vectors, Re-vectorize all queries returned to the idle state with both current. Native Playwright captured and asserted the pending state showed the spinner and ‘Vectorising…’ until status polling reported completion. Not covered in this pass: a full case-wide batch, stale vectors after changing embedder settings or a provider failure."
         paths: ["app/services/query_vectorizer.rb", "app/jobs/vectorize_case_queries_job.rb", "app/models/query_vector_status.rb", "app/models/query.rb", "app/javascript/utils/live_query_events.js", "app/javascript/utils/live_query_factory.js", "app/javascript/controllers/query_row_controller.js", "app/views/core/_query_list_templates.html.erb", "app/javascript/controllers/case_embedder_core_controller.js", "app/controllers/api/v1/case_embedders_controller.rb", "app/controllers/api/v1/queries_controller.rb"]
+      "19.6":
+        title: "Inspect connection usage"
+        screenshots:
+          embedders-below: "19.6/embedders-below"
+          embedders-above: "19.6/embedders-above"
+          ai-judges-below: "19.6/ai-judges-below"
+        last_run: 2026-11-20T12:29:10Z
+        result: pass
+        notes: "Partial MCP Current :3000 check on existing owned Ollama connection: opened both usage kinds, inspected links, followed the judge link and returned with Back; no popover or expanded state survived navigation. Verified vertical placement at normal and reduced heights. Final compact design has no visible heading or footer. All36 controller tests,23 JavaScript tests,3 native Playwright checks and tidy pass. Native regression covers lazy requests, cached reopening, both destination links, Escape/focus, outside dismissal, failure/retry and scratch cleanup; controller tests cover private usages, inaccessible connections, unsupported kinds and credentials. Loading-request cancellation is covered by unit test. Teammate session replay and large lists deferred. Representative Rails visuals retain the known unrelated New Team sidebar mismatch (7082 pixels); baselines unchanged."
+        paths: ["app/controllers/connections_controller.rb", "app/views/connections/index.html.erb", "app/controllers/relationship_items_controller.rb", "app/views/relationship_items/show.html.erb", "app/javascript/controllers/relationship_popover_controller.js", "app/javascript/utils/bs_popover.js", "config/routes.rb"]

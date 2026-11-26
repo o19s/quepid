@@ -1,8 +1,7 @@
 # frozen_string_literal: true
 
 module ConnectionsHelper
-  # The index page's "kind" tabs/filter, by query param - the single place both the controller
-  # (deciding which param values are valid) and the view (rendering the tabs) read these from.
+  # Supported kind query parameters for filtering the index.
   KINDS = { 'ai' => 'AI & ML backends', 'search' => 'Search backends' }.freeze
 
   # A consumer form's connection dropdown (ADR 0005): a prompt, then every active connection the
