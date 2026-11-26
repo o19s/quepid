@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_14_120100) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_26_120000) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -193,6 +193,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_14_120100) do
     t.datetime "created_at", null: false
     t.string "export_job"
     t.string "import_job"
+    t.string "judgement_merge_rule", default: "quepid_classic", null: false
+    t.text "judgement_merge_tiers"
     t.string "name"
     t.integer "owner_id"
     t.string "populate_job"

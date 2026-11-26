@@ -89,6 +89,12 @@ class JudgeScale
     values[level.to_f.round.clamp(0, size - 1)]
   end
 
+  # The scale value closest to `value`, for a merged rating that falls between two scale
+  # values (JudgementMerger). Halfway between two values goes to the higher one.
+  def nearest value
+    values.min_by { |scale_value| [ (scale_value - value).abs, -scale_value ] }
+  end
+
   # Is this a rating a human judge could also have given? Ratings arrive as
   # floats (judgements.rating is a float column) while the scale is integers,
   # so both sides are compared as floats -- exactly, with no tolerance: a value

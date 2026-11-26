@@ -1,0 +1,14 @@
+<%# locals: (book:) %>
+<% modal_body = capture do %>
+  <%= form_with(model: book, url: judgement_merging_book_path(book), method: :patch, id: "judgement-merging-form") do |form| %>
+    <%= render "books/judgement_merging_fields", form: form, book: book %>
+  <% end %>
+<% end %>
+
+<% modal_footer = capture do %>
+  <%= button_tag "Save", type: "submit", form: "judgement-merging-form", class: "btn btn-primary" %>
+<% end %>
+
+<%= render "shared/modal_shell", id: "judgement_merging_modal", title: "Judgement Merging",
+                                 title_tag: :h1, title_class: "fs-5", dialog_class: "modal-lg",
+                                 body: modal_body, footer: modal_footer %>

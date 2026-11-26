@@ -42,6 +42,9 @@ class BookImporter
     @book.scale = params_to_use[:scale] if params_to_use.key?(:scale)
     @book.scale_with_labels = params_to_use[:scale_with_labels] if params_to_use[:scale_with_labels].present?
 
+    apply_judgement_merging(params_to_use)
+    @book.errors.add(:base, 'Judgement merge rule or tiers are not ones Quepid knows.') unless valid_judgement_merging?
+
     validate_standalone_judgements
 
     emails_of_judges(params_to_use).each do |email|
@@ -87,9 +90,19 @@ class BookImporter
     @book.name = params_to_use[:name] if params_to_use.key?(:name)
     @book.name = DEFAULT_BOOK_NAME if @book.name.blank?
     @book.show_rank = params_to_use[:show_rank] if params_to_use.key?(:show_rank)
+    apply_judgement_merging(params_to_use)
     return unless params_to_use.key?(:support_implicit_judgements)
 
     @book.support_implicit_judgements = params_to_use[:support_implicit_judgements]
+  end
+
+  def valid_judgement_merging?
+    Book.judgement_merge_rules.key?(@book.judgement_merge_rule) && @book.judgement_merge_tiers_valid?
+  end
+
+  def apply_judgement_merging params_to_use
+    @book.judgement_merge_rule = params_to_use[:judgement_merge_rule] if params_to_use.key?(:judgement_merge_rule)
+    @book.judgement_merge_tiers = params_to_use[:judgement_merge_tiers] if params_to_use.key?(:judgement_merge_tiers)
   end
 
   # Set scale information (already set in #validate, but ensure it's persisted)

@@ -58,6 +58,16 @@ class Judgement < ApplicationRecord
     unrateable || judge_later
   end
 
+  # Who made the judgement, as a book's judgement merge tiers name it (ADR 0007).
+  JUDGE_KINDS = %w[human ai anonymous].freeze
+
+  def judge_kind
+    if user.nil? then 'anonymous'
+    elsif user.ai_judge? then 'ai'
+    else 'human'
+    end
+  end
+
   scope :rateable, -> { where(unrateable: false).where(judge_later: false) }
 
   # LlmService starts an unrateable judgement's explanation with this when the call to the model
@@ -157,8 +167,9 @@ class Judgement < ApplicationRecord
     JudgementSync.activity(pair.book, user) if pair && user
   end
 
+  # user_id counts because the judge's kind decides which judgements a book's merge tiers use.
   def sync_case_ratings
-    return unless destroyed? || previous_changes.keys.intersect?(%w[rating unrateable judge_later query_doc_pair_id])
+    return unless destroyed? || previous_changes.keys.intersect?(%w[rating unrateable judge_later query_doc_pair_id user_id])
     return unless QueryDocPair.exists?(query_doc_pair_id)
 
     JudgementSync.changed(query_doc_pair_id)

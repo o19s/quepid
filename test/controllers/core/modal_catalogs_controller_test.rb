@@ -55,6 +55,7 @@ module Core
       assert_select '[data-judgements-core-book-id-param=?]', book.id.to_s, count: 1 do
         assert_select '[data-slot="name"]', text: book.name
         assert_select 'a[href=?]', book_path(book, script_name: '').delete_prefix('/')
+        assert_select 'div', text: 'Judgement merging: Every judge counts. Combined by Quepid classic'
       end
       assert_select 'script', 0
       assert_select '[data-judgements-core-book-id-param=?]', books(:empty_book_2).id.to_s, count: 0

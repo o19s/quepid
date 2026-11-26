@@ -90,6 +90,7 @@
   </div>
 </div>
 
+<%= render 'judgement_merging_modal', book: @book %>
 <%= render partial: 'unleash_modal', collection: @book.ai_judges, as: :ai_judge, locals: { book: @book } %>
 <% ai_judges_for_modals = (@book.ai_judges + @judge_activity.to_a.map { |r| r[:judge] }.select(&:ai_judge?)).uniq %>
 <%= render partial: 'judging_modal', collection: ai_judges_for_modals, as: :ai_judge, locals: { book: @book } %>

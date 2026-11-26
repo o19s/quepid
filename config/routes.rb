@@ -168,6 +168,7 @@ Rails.application.routes.draw do
       patch 'combine'
       patch 'archive'
       patch 'unarchive'
+      patch 'judgement_merging'
       patch 'assign_anonymous'
       patch 'run_judge_judy/:ai_judge_id', action: :run_judge_judy, as: :run_judge_judy
       patch 'cancel_judge_judy/:ai_judge_id', action: :cancel_judge_judy, as: :cancel_judge_judy

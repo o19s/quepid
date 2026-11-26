@@ -6,6 +6,8 @@
 #  archived                    :boolean          default(FALSE), not null
 #  export_job                  :string(255)
 #  import_job                  :string(255)
+#  judgement_merge_rule        :string(255)      default("quepid_classic"), not null
+#  judgement_merge_tiers       :text(65535)
 #  name                        :string(255)
 #  populate_job                :string(255)
 #  rank_depth                  :integer

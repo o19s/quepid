@@ -12,7 +12,8 @@ module Books
     # update flow so a re-exported file can't silently rename the book or change its
     # scale/rank settings as a side effect of importing more judgements.
     BOOK_LEVEL_ATTRIBUTES = [
-      :name, :scale, :scale_with_labels, :show_rank, :support_implicit_judgements, :scorer
+      :name, :scale, :scale_with_labels, :show_rank, :support_implicit_judgements, :scorer,
+      :judgement_merge_rule, :judgement_merge_tiers
     ].freeze
 
     before_action :set_book,

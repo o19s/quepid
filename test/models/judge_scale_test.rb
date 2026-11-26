@@ -132,4 +132,14 @@ class JudgeScaleTest < ActiveSupport::TestCase
   test 'NONE is an empty scale' do
     assert_predicate JudgeScale::NONE, :empty?
   end
+
+  test 'nearest snaps a value to the closest scale value, ties going up' do
+    scale = JudgeScale.new([ 0, 1, 3 ])
+
+    assert_equal 1, scale.nearest(1.4)
+    assert_equal 3, scale.nearest(2.0)
+    assert_equal 1, scale.nearest(0.5)
+    assert_equal 0, scale.nearest(-1.0)
+    assert_equal 3, scale.nearest(7.0)
+  end
 end

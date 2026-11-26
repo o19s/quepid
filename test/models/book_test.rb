@@ -8,6 +8,8 @@
 #  archived                    :boolean          default(FALSE), not null
 #  export_job                  :string(255)
 #  import_job                  :string(255)
+#  judgement_merge_rule        :string(255)      default("quepid_classic"), not null
+#  judgement_merge_tiers       :text(65535)
 #  name                        :string(255)
 #  populate_job                :string(255)
 #  rank_depth                  :integer
@@ -443,6 +445,62 @@ class BookTest < ActiveSupport::TestCase
       assert_not_includes book.query_doc_pairs_within_rank_depth, nil_position_pair
     ensure
       nil_position_pair&.destroy
+    end
+  end
+
+  describe 'judgement merging' do
+    let(:book) { books(:james_bond_movies) }
+
+    it 'defaults to quepid_classic with no tiers' do
+      assert_predicate Book.new, :judgement_merge_rule_quepid_classic?
+      assert_nil Book.new.judgement_merge_tiers
+    end
+
+    it 'rejects an unknown rule' do
+      book.judgement_merge_rule = 'telepathy'
+
+      assert_not book.valid?
+      assert book.errors.key?(:judgement_merge_rule)
+    end
+
+    it 'accepts tiers that name each judge kind at most once' do
+      book.judgement_merge_tiers = %w[human ai]
+
+      assert_predicate book, :valid?
+    end
+
+    it 'rejects unknown or repeated judge kinds in the tiers' do
+      [ %w[human robot], %w[human human], 'human' ].each do |tiers|
+        book.judgement_merge_tiers = tiers
+
+        assert_not book.valid?, "#{tiers.inspect} should be invalid"
+      end
+    end
+
+    it 'reads and writes tiers as a comma-separated list for the form' do
+      book.judgement_merge_tier_list = 'human,ai'
+
+      assert_equal %w[human ai], book.judgement_merge_tiers
+      assert_equal 'human,ai', book.judgement_merge_tier_list
+
+      book.judgement_merge_tier_list = ''
+
+      assert_nil book.judgement_merge_tiers
+    end
+
+    it 'resyncs its cases when the rule or tiers change' do
+      assert_enqueued_with(job: UpdateCaseJob, args: [ book ]) do
+        book.update!(judgement_merge_rule: 'mean')
+      end
+      assert_enqueued_with(job: UpdateCaseJob, args: [ book ]) do
+        book.update!(judgement_merge_tiers: %w[human])
+      end
+    end
+
+    it 'does not resync its cases for other changes' do
+      assert_no_enqueued_jobs(only: UpdateCaseJob) do
+        book.update!(name: 'Renamed')
+      end
     end
   end
 

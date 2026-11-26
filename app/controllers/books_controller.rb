@@ -8,7 +8,8 @@ class BooksController < ApplicationController
   before_action :set_book,
                 only: [ :show, :edit, :update, :destroy, :combine, :assign_anonymous, :delete_ratings_by_assignee,
                         :reset_unrateable, :reset_judge_later, :delete_query_doc_pairs_below_position,
-                        :eric_steered_us_wrong, :remap_judgement_ratings, :run_judge_judy, :cancel_judge_judy, :judge_overview, :judge_activity, :judgement_stats, :export, :archive, :unarchive ]
+                        :eric_steered_us_wrong, :remap_judgement_ratings, :run_judge_judy, :cancel_judge_judy, :judge_overview, :judge_activity, :judgement_stats, :export, :archive, :unarchive,
+                        :judgement_merging ]
 
   before_action :find_user, only: [ :reset_unrateable, :reset_judge_later, :delete_ratings_by_assignee ]
 
@@ -301,6 +302,16 @@ class BooksController < ApplicationController
     redirect_to books_path, notice: "Book '#{@book.name}' has been archived.", status: :see_other
   end
 
+  # Changes only how judgements merge, from the book overview. The full update would also
+  # reassign teams and AI judges from params this form does not send.
+  def judgement_merging
+    if @book.update(params.expect(book: [ :judgement_merge_rule, :judgement_merge_tier_list ]))
+      redirect_to book_path(@book), notice: 'Judgement merging saved.', status: :see_other
+    else
+      redirect_to book_path(@book), alert: @book.errors.full_messages.to_sentence, status: :see_other
+    end
+  end
+
   def unarchive
     @book.update(archived: false)
     redirect_to books_path(archived: true), notice: "Book '#{@book.name}' has been unarchived.", status: :see_other
@@ -591,6 +602,9 @@ class BooksController < ApplicationController
                                           :auto_populate_case_judgements,
                                           :delete_export_file, :delete_import_file,
                                           :show_rank, :scoring_guidelines, :rank_depth,
+                                          # PR: not shared with Api::V1::BooksController through a concern: the form
+                                          # sends tiers as a comma list, the API as an array.
+                                          :judgement_merge_rule, :judgement_merge_tier_list,
                                           { team_ids: [], ai_judge_ids: [], auto_run_ai_judge_ids: [] } ])
 
     # Use a top-level parameter because nested team_ids are not accepted here.

@@ -540,7 +540,7 @@ See [`todo/QUEPID_FEATURES.md` §4](./todo/QUEPID_FEATURES.md#4-authentication--
 ## Edge Cases and Business Rules
 
 1. **Scale cannot change:** Book scale cannot be changed if judgements exist (scale_cannot_be_changed_if_judgements_exist)
-2. **Optimistic-pessimistic rating (RatingsManager.calculate_rating_from_judgements):** 1-2 judgements → average; 3+ → take top 3, if all agree use that value, else use minimum (pessimistic)
+2. **Judgement merging (JudgementMerger, ADR 0007):** each book picks `judgement_merge_rule` (`quepid_classic` by default: 1-2 judgements → average; 3+ → minimum of the top 3; or `mean`, `median`, `min`, `max`, `majority`, `first` = earliest judgement) and optional `judgement_merge_tiers` (judge kinds `human`/`ai`/`anonymous` in precedence order; only the first tier with judgements counts). Changing either re-syncs the book's cases
 3. **Proxy + JSONP:** api_method cannot be JSONP when proxy_requests is true
 4. **User deletion:** Cannot delete user with judgements (must reassign); cannot delete if owned scorers are shared with teams
 5. **HTTPS/HTTP:** Quepid runs HTTPS where possible; main page may be HTTP if Solr is HTTP (CORS)

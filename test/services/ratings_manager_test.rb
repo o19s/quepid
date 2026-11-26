@@ -109,90 +109,50 @@ class RatingsImporterTest < ActiveSupport::TestCase
     end
   end
 
-  describe 'calculate_rating_from_judgements (optimistic-pessimistic approach)' do
-    let(:star_wars_book) { books(:book_of_star_wars_judgements) }
-    let(:service)        { RatingsManager.new(star_wars_book) }
+  describe 'the book judgement merging reaches its cases' do
+    let(:merging_book) { Book.create!(name: 'Merging', scale: [ 0, 1, 2, 3 ], owner: user) }
+    let(:kase) { Case.create!(case_name: 'Merging case', owner: user, book: merging_book, auto_populate_case_judgements: true) }
 
-    def create_judgements_with_ratings query_doc_pair, ratings_array
-      ratings_array.each_with_index do |rating, index|
-        # Create a unique user for each judgement to avoid uniqueness constraint
-        user = User.create!(
-          email:    "judge_#{query_doc_pair.id}_#{index}@example.com",
-          password: 'password123',
-          agreed:   true
-        )
-        query_doc_pair.judgements.create!(user: user, rating: rating)
+    def case_rating
+      Rating.joins(:query).find_by(queries: { case_id: kase.id }, doc_id: 'doc1')&.rating
+    end
+
+    it 'rates the case by the rule and tiers, and resyncs when they change' do
+      merging_book.update!(judgement_merge_rule: 'mean', judgement_merge_tiers: %w[human ai])
+      kase.queries.create!(query_text: 'dog')
+      pair = merging_book.query_doc_pairs.create!(query_text: 'dog', doc_id: 'doc1')
+
+      perform_enqueued_jobs do
+        pair.judgements.create!(user: users(:random), rating: 3.0)
+        pair.judgements.create!(user: users(:judge_judy), rating: 0.0)
       end
-      query_doc_pair.judgements.rateable
+
+      assert_in_delta 3.0, case_rating # human first: the AI 0 is ignored
+
+      perform_enqueued_jobs do
+        merging_book.update!(judgement_merge_rule: 'min', judgement_merge_tiers: nil)
+      end
+
+      assert_in_delta 0.0, case_rating # every judge counts, the lowest wins
     end
 
-    it 'returns the single rating when only one judgement exists' do
-      qdp = star_wars_book.query_doc_pairs.create!(query_text: 'test', doc_id: 'doc1')
-      judgements = create_judgements_with_ratings(qdp, [ 2 ])
+    it 'resyncs the case when a judgement moves to another kind of judge' do
+      merging_book.update!(judgement_merge_rule: 'mean', judgement_merge_tiers: %w[human ai anonymous])
+      kase.queries.create!(query_text: 'dog')
+      pair = merging_book.query_doc_pairs.create!(query_text: 'dog', doc_id: 'doc1')
+      anonymous = nil
 
-      assert_equal 2, service.send(:calculate_rating_from_judgements, judgements)
-    end
+      perform_enqueued_jobs do
+        anonymous = pair.judgements.create!(user: nil, rating: 3.0)
+        pair.judgements.create!(user: users(:judge_judy), rating: 0.0)
+      end
 
-    it 'returns the rating when two judges agree' do
-      qdp = star_wars_book.query_doc_pairs.create!(query_text: 'test', doc_id: 'doc2')
-      judgements = create_judgements_with_ratings(qdp, [ 3, 3 ])
+      assert_in_delta 0.0, case_rating # no human yet, so the AI tier wins
 
-      assert_equal 3, service.send(:calculate_rating_from_judgements, judgements)
-    end
+      # What "Assign Anonymous Judgements to a User" on the book does.
+      perform_enqueued_jobs { anonymous.update!(user: users(:random)) }
 
-    it 'returns the average when two judges disagree' do
-      qdp = star_wars_book.query_doc_pairs.create!(query_text: 'test', doc_id: 'doc3')
-      judgements = create_judgements_with_ratings(qdp, [ 4, 1 ])
-
-      # With only 2 judgements, we average: (4 + 1) / 2 = 2.5
-      assert_in_delta(2.5, service.send(:calculate_rating_from_judgements, judgements))
-    end
-
-    it 'returns the rating when three judges agree' do
-      qdp = star_wars_book.query_doc_pairs.create!(query_text: 'test', doc_id: 'doc4')
-      judgements = create_judgements_with_ratings(qdp, [ 2, 2, 2 ])
-
-      assert_equal 2, service.send(:calculate_rating_from_judgements, judgements)
-    end
-
-    it 'returns minimum of top 3 when three judges disagree' do
-      qdp = star_wars_book.query_doc_pairs.create!(query_text: 'test', doc_id: 'doc5')
-      judgements = create_judgements_with_ratings(qdp, [ 3, 2, 1 ])
-
-      # Top 3 are [3, 2, 1], min is 1
-      assert_equal 1, service.send(:calculate_rating_from_judgements, judgements)
-    end
-
-    it 'uses top 3 highest ratings when more than 3 judgements exist and they agree' do
-      qdp = star_wars_book.query_doc_pairs.create!(query_text: 'test', doc_id: 'doc6')
-      # 5 judgements: [3, 3, 3, 1, 0] - top 3 are all 3s, which agree
-      judgements = create_judgements_with_ratings(qdp, [ 3, 3, 3, 1, 0 ])
-
-      assert_equal 3, service.send(:calculate_rating_from_judgements, judgements)
-    end
-
-    it 'returns minimum of top 3 when more than 3 judgements exist and top 3 disagree' do
-      qdp = star_wars_book.query_doc_pairs.create!(query_text: 'test', doc_id: 'doc7')
-      # 5 judgements: [3, 2, 2, 1, 0] - top 3 are [3, 2, 2], min is 2
-      judgements = create_judgements_with_ratings(qdp, [ 3, 2, 2, 1, 0 ])
-
-      assert_equal 2, service.send(:calculate_rating_from_judgements, judgements)
-    end
-
-    it 'ignores lower ratings when determining consensus among top 3' do
-      qdp = star_wars_book.query_doc_pairs.create!(query_text: 'test', doc_id: 'doc8')
-      # 4 judgements: [3, 3, 3, 0] - top 3 all agree on 3, the 0 is ignored
-      judgements = create_judgements_with_ratings(qdp, [ 3, 3, 3, 0 ])
-
-      assert_equal 3, service.send(:calculate_rating_from_judgements, judgements)
-    end
-
-    it 'handles implicit (float) ratings' do
-      qdp = star_wars_book.query_doc_pairs.create!(query_text: 'test', doc_id: 'doc9')
-      judgements = create_judgements_with_ratings(qdp, [ 2.5, 2.5, 1.5 ])
-
-      # Top 3 are [2.5, 2.5, 1.5], they disagree, min is 1.5
-      assert_in_delta(1.5, service.send(:calculate_rating_from_judgements, judgements))
+      assert_in_delta 3.0, case_rating # now a human judgement, which comes first
     end
   end
 end
