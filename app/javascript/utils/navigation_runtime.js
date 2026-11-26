@@ -1,3 +1,5 @@
+import { switchProtocol } from "utils/protocol"
+
 export function createNavigationRuntime({
   location = globalThis.location,
   window = globalThis.window
@@ -47,13 +49,12 @@ export function createNavigationRuntime({
       return (currentLocation().protocol === "https:") !== searchUrl.startsWith("https")
     },
     swapQuepidUrlTLS: () => {
-      const url = absoluteUrl().replace(":3000", "")
-      const queryIndex = url.indexOf("?")
-      const isHttps = url.startsWith("https")
-      let base = url.substring(0, queryIndex === -1 ? url.length : queryIndex)
-      const protocol = isHttps ? "http" : "https"
-      base = isHttps ? base.replace("https", "http") : base.replace("http", "https")
-      return [`${base}?protocolToSwitchTo=${protocol}`, protocol]
+      const protocol = absoluteUrl().startsWith("https") ? "http" : "https"
+      const url = switchProtocol(absoluteUrl(), protocol)
+      url.search = ""
+      url.hash = ""
+      url.searchParams.set("protocolToSwitchTo", protocol)
+      return [url.toString(), protocol]
     },
     getQuepidProtocol: () => (absoluteUrl().startsWith("https") ? "http" : "https"),
     appendQueryParams: (url, params) => `${url}${url.includes("?") ? "&" : "?"}${params}`,
