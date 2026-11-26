@@ -71,10 +71,10 @@ module ApplicationHelper
     button_tag pluralize(count, noun), type: 'button', class: 'badge rounded-pill bg-secondary border-0',
                                       aria: { haspopup: 'dialog', expanded: false },
                                       data: {
-                                        controller:                   'connection-usage',
-                                        connection_usage_url_value:   relationship_items_path(record_type: record.class.model_name.singular, id: record.id, kind: kind),
-                                        connection_usage_title_value: "#{noun.pluralize.capitalize} for #{name}",
-                                        action:                       'click->connection-usage#toggle click@document->connection-usage#dismissOutside keydown.esc@document->connection-usage#escape shown.bs.popover->connection-usage#shown turbo:before-cache@document->connection-usage#close',
+                                        controller:                       'relationship-popover',
+                                        relationship_popover_url_value:   relationship_items_path(record_type: record.class.model_name.singular, id: record.id, kind: kind),
+                                        relationship_popover_title_value: "#{noun.pluralize.upcase_first} for #{name}",
+                                        action:                           'click->relationship-popover#toggle click@document->relationship-popover#dismissOutside keydown.esc@document->relationship-popover#escape shown.bs.popover->relationship-popover#shown turbo:before-cache@document->relationship-popover#close',
                                       }
   end
 

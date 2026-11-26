@@ -51,7 +51,7 @@ Search Endpoints represents a search engine (or API!) that is receiving queries 
               </td>
               <td><small><%= search_endpoint.endpoint_url %></small></td>
               <td>
-                <%= relationship_count @team_counts.fetch(search_endpoint.id, 0), 'team', record: search_endpoint, kind: :teams %>
+                <%= relationship_count search_endpoint.teams.length, 'team', record: search_endpoint, kind: :teams %>
                 <%= relationship_count @try_counts.fetch(search_endpoint.id, 0), 'try', record: search_endpoint, kind: :tries %>
               </td>
               <td class="text-end">

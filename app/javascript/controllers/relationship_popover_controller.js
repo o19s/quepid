@@ -18,13 +18,12 @@ export default class extends Controller {
       trigger: "manual",
       placement: "bottom",
       fallbackPlacements: ["top"],
-      html: true,
-      body: this.template("connectionUsageLoading")
+      html: true
     })
     this.opened = true
     this.element.setAttribute("aria-expanded", "true")
     this.handle.setBody(
-      this.loadedContent?.cloneNode(true) || this.template("connectionUsageLoading")
+      this.loadedContent?.cloneNode(true) || this.template("relationshipPopoverLoading")
     )
     this.handle.instance?.show()
     if (this.loadedContent) return
@@ -36,16 +35,16 @@ export default class extends Controller {
         headers: { Accept: "text/html" },
         signal: request.signal
       })
-      if (!response.ok) throw new Error("Unable to load usage")
+      if (!response.ok) throw new Error("Unable to load this list")
       const html = new DOMParser().parseFromString(await response.text(), "text/html")
-      const content = html.querySelector("[data-connection-usage-list]")
+      const content = html.querySelector("[data-relationship-list]")
       if (!content) throw new Error("Missing usage list")
       if (request.signal.aborted) return
 
       this.loadedContent = document.importNode(content, true)
       this.replaceBody(this.loadedContent.cloneNode(true))
     } catch {
-      if (!request.signal.aborted) this.replaceBody(this.template("connectionUsageError"))
+      if (!request.signal.aborted) this.replaceBody(this.template("relationshipPopoverError"))
     }
   }
 
@@ -73,6 +72,7 @@ export default class extends Controller {
   }
 
   dismissOutside(event) {
+    if (!this.opened) return
     if (this.element.contains(event.target) || this.popover?.contains(event.target)) return
     this.close()
   }

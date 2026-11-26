@@ -84,7 +84,8 @@ test("usage loads only on click, is reused, dismisses and links to each record",
   test.setTimeout(60_000)
   const requests: string[] = []
   page.on("request", (request) => {
-    if (new URL(request.url()).pathname.endsWith("/usage")) requests.push(request.url())
+    if (new URL(request.url()).pathname.includes("/relationship_items/connection/"))
+      requests.push(request.url())
   })
   await page.goto("connections")
   const row = page.getByRole("row").filter({ hasText: name })
@@ -94,7 +95,7 @@ test("usage loads only on click, is reused, dismisses and links to each record",
   await expect(row.getByRole("link", { name: `${name} embedder` })).toHaveCount(0)
 
   await embedderPill.click()
-  const popover = page.getByRole("dialog", { name: `Embedders using ${name}`, exact: true })
+  const popover = page.getByRole("dialog", { name: `Embedders for ${name}`, exact: true })
   const embedderLink = popover.getByRole("link", { name: `${name} embedder`, exact: true })
   await expect(embedderLink).toHaveAttribute("href", new RegExp(`/embedders/${embedderId}/edit$`))
   await expect(embedderLink).toBeFocused()
@@ -116,22 +117,22 @@ test("usage loads only on click, is reused, dismisses and links to each record",
   await expect(page.locator(".popover")).toHaveCount(0)
 
   await row.getByRole("button", { name: "1 AI judge", exact: true }).click()
-  const judgePopover = page.getByRole("dialog", { name: `AI Judges using ${name}`, exact: true })
+  const judgePopover = page.getByRole("dialog", { name: `AI judges for ${name}`, exact: true })
   await judgePopover.getByRole("link", { name: `${name} judge`, exact: true }).click()
   await expect(page).toHaveURL(new RegExp(`/ai_judges/${judgeId}/edit$`))
 })
 
 test("failed loads can be retried and outside clicks dismiss the popover", async ({ page }) => {
   await page.goto("connections")
-  const route = `**/connections/${connectionId}/usage?kind=embedders`
+  const route = `**/relationship_items/connection/${connectionId}/embedders`
   await page.route(route, (request) => request.fulfill({ status: 503, body: "Unavailable" }))
   const pill = page
     .getByRole("row")
     .filter({ hasText: name })
     .getByRole("button", { name: "1 embedder", exact: true })
   await pill.click()
-  const popover = page.getByRole("dialog", { name: `Embedders using ${name}`, exact: true })
-  await expect(popover).toContainText("Unable to load usage")
+  const popover = page.getByRole("dialog", { name: `Embedders for ${name}`, exact: true })
+  await expect(popover).toContainText("Unable to load this list")
   await page.keyboard.press("Escape")
   await page.unroute(route)
   await pill.click()

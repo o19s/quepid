@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { apiFetch } from "api/fetch"
 import { createBsPopover } from "utils/bs_popover"
-import ConnectionUsageController from "controllers/connection_usage_controller"
+import RelationshipPopoverController from "controllers/relationship_popover_controller"
 import { buildControllerFixture } from "../support/controller_fixture"
 
 vi.mock("api/fetch", () => ({ apiFetch: vi.fn() }))
@@ -12,9 +12,9 @@ let handle
 function buildController() {
   const element = document.createElement("button")
   document.body.append(element)
-  const controller = buildControllerFixture(ConnectionUsageController, {
+  const controller = buildControllerFixture(RelationshipPopoverController, {
     element,
-    values: { url: "connections/2/usage?kind=embedders", title: "Embedders using Ollama" }
+    values: { url: "relationship_items/connection/2/embedders", title: "Embedders using Ollama" }
   })
   controller.connect()
   return controller
@@ -23,16 +23,16 @@ function buildController() {
 function respond(ok = true) {
   apiFetch.mockResolvedValue({
     ok,
-    text: async () => '<div data-connection-usage-list><a href="embedders/1/edit">MiniLM</a></div>'
+    text: async () => '<div data-relationship-list><a href="embedders/1/edit">MiniLM</a></div>'
   })
 }
 
-describe("ConnectionUsageController", () => {
+describe("RelationshipPopoverController", () => {
   beforeEach(() => {
     vi.clearAllMocks()
     document.body.innerHTML = `
-      <template id="connectionUsageLoading"><p>Loading…</p></template>
-      <template id="connectionUsageError"><p>Unable to load usage. Close and try again.</p></template>
+      <template id="relationshipPopoverLoading"><p>Loading…</p></template>
+      <template id="relationshipPopoverError"><p>Unable to load this list. Close and try again.</p></template>
     `
     handle = {
       instance: { show: vi.fn(), hide: vi.fn() },
@@ -74,7 +74,7 @@ describe("ConnectionUsageController", () => {
     const controller = buildController()
     await controller.toggle()
 
-    expect(handle.setBody.mock.lastCall[0].textContent).toContain("Unable to load usage")
+    expect(handle.setBody.mock.lastCall[0].textContent).toContain("Unable to load this list")
     controller.close()
     respond()
     await controller.toggle()
@@ -91,7 +91,7 @@ describe("ConnectionUsageController", () => {
     const { signal } = apiFetch.mock.lastCall[1]
 
     controller.close()
-    resolve({ ok: true, text: async () => "<div data-connection-usage-list>Late</div>" })
+    resolve({ ok: true, text: async () => "<div data-relationship-list>Late</div>" })
     await pending
 
     expect(signal.aborted).toBe(true)

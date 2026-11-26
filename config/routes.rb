@@ -130,7 +130,6 @@ Rails.application.routes.draw do
     resource :check, only: :create, module: :connections
     # Whether the saved connection answers right now, for the list's status column.
     resource :status, only: :show, module: :connections
-    resource :usage, only: :show, module: :connections
   end
 
   resources :teams, only: [] do

@@ -77,20 +77,8 @@
                   <% end %>
                 </td>
                 <td>
-                  <% used_by = { 'embedder' => @embedder_counts.fetch(connection.id, 0), 'AI judge' => @ai_judge_counts.fetch(connection.id, 0) } %>
-                  <% used_by.each do |kind, count| %>
-                    <% if count.positive? %>
-                      <%= button_tag pluralize(count, kind), type: 'button',
-                                     class: 'badge rounded-pill bg-secondary border-0',
-                                     aria: { haspopup: 'dialog', expanded: false },
-                                     data: {
-                                       controller: 'connection-usage',
-                                       connection_usage_url_value: connection_usage_path(connection, kind: kind == 'embedder' ? 'embedders' : 'ai_judges'),
-                                       connection_usage_title_value: "#{kind == 'embedder' ? 'Embedders' : 'AI Judges'} using #{connection.name}",
-                                       action: 'click->connection-usage#toggle click@document->connection-usage#dismissOutside keydown.esc@document->connection-usage#escape shown.bs.popover->connection-usage#shown turbo:before-cache@document->connection-usage#close',
-                                     } %>
-                    <% end %>
-                  <% end %>
+                  <%= relationship_count @embedder_counts.fetch(connection.id, 0), 'embedder', record: connection, kind: :embedders %>
+                  <%= relationship_count @ai_judge_counts.fetch(connection.id, 0), 'AI judge', record: connection, kind: :ai_judges %>
                 </td>
                 <td class="text-end">
                   <% if connection.manageable_by?(current_user) %>

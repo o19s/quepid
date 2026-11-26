@@ -9,7 +9,7 @@ test("index sharing pills load names on click and link to teams", async ({ page 
     }
     page.on("request", track)
     await page.goto(path)
-    const pill = page.locator('button[data-connection-usage-url-value$="/teams"]').first()
+    const pill = page.locator('button[data-relationship-popover-url-value$="/teams"]').first()
     await expect(pill).toBeVisible()
     expect(requests).toHaveLength(0)
     await pill.click()
@@ -36,7 +36,7 @@ test("team-table relationship pills and endpoint try pills show linked records",
   test.setTimeout(90_000)
   await page.goto("teams")
   await page.locator('tbody a[href*="/teams/"]').first().click()
-  const pills = page.locator('button[data-connection-usage-url-value*="/relationship_items/"]')
+  const pills = page.locator('button[data-relationship-popover-url-value*="/relationship_items/"]')
   await expect(pills.first()).toBeVisible()
   for (let index = 0; index < (await pills.count()); index++) {
     await pills.nth(index).click()
@@ -49,7 +49,7 @@ test("team-table relationship pills and endpoint try pills show linked records",
   }
 
   await page.goto("search_endpoints")
-  await page.locator('button[data-connection-usage-url-value$="/tries"]').first().click()
+  await page.locator('button[data-relationship-popover-url-value$="/tries"]').first().click()
   const tryLink = page.locator('.popover[role="dialog"]').getByRole("link").first()
   await expect(tryLink).toHaveAttribute("href", /\/case\/\d+\/try\/\d+$/)
   await expect(tryLink).toContainText(/Try \d+/)

@@ -70,6 +70,51 @@ class RelationshipItemsControllerTest < ActionDispatch::IntegrationTest
     get relationship_items_url(record_type: 'scorer', id: @scorer.id, kind: 'teams')
 
     assert_response :success
-    assert_select '[data-connection-usage-list]', text: 'No items to show.'
+    assert_select '[data-relationship-list]', text: 'No items to show.'
+  end
+
+  test 'connection pills list accessible embedders and AI judges without credentials' do
+    connection = connections(:openai)
+    judge = AiJudge.create!(name: 'Usage judge', owner: @user, connection: connection, system_prompt: 'Judge it.')
+
+    get relationship_items_url(record_type: 'connection', id: connection.id, kind: 'embedders')
+
+    assert_response :success
+    assert_select '[data-relationship-list] a[href=?]', edit_embedder_path(embedders(:openai_small)), text: 'OpenAI small'
+    assert_select 'a[href=?]', edit_ai_judge_path(judge), count: 0
+    assert_no_match(/sk-test-openai/, response.body)
+
+    get relationship_items_url(record_type: 'connection', id: connection.id, kind: 'ai_judges')
+
+    assert_response :success
+    assert_select 'a[href=?]', edit_ai_judge_path(judge), text: 'Usage judge'
+    assert_select 'a[href=?]', edit_embedder_path(embedders(:openai_small)), count: 0
+  end
+
+  test 'an instance-wide connection does not reveal another owners private usages' do
+    connection = connections(:openai)
+    connection.update!(instance_wide: true)
+    AiJudge.create!(name: 'Private usage judge', owner: users(:joey), connection: connection, system_prompt: 'Judge it.')
+    login_user_for_integration_test users(:random)
+
+    get relationship_items_url(record_type: 'connection', id: connection.id, kind: 'ai_judges')
+
+    assert_response :success
+    assert_no_match(/Private usage judge/, response.body)
+
+    get relationship_items_url(record_type: 'connection', id: connection.id, kind: 'embedders')
+
+    assert_select 'a[href=?]', edit_embedder_path(embedders(:openai_small))
+  end
+
+  test 'connection pills reject inaccessible connections and unsupported kinds' do
+    get relationship_items_url(record_type: 'connection', id: connections(:private_ollama).id, kind: 'embedders')
+    assert_response :not_found
+
+    get relationship_items_url(record_type: 'connection', id: connections(:openai).id, kind: 'cases')
+    assert_response :bad_request
+
+    get relationship_items_url(record_type: 'book', id: @book.id, kind: 'embedders')
+    assert_response :bad_request
   end
 end
