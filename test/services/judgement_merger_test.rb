@@ -137,6 +137,32 @@ class JudgementMergerTest < ActiveSupport::TestCase
     it 'keeps the float on an implicit book' do
       assert_in_delta 1.5, merge(implicit_book, 3.0, 0.0)
     end
+
+    it 'gives the same result as rounding on a contiguous scale' do
+      [ [ 3.0, 0.0 ], [ 2.0, 1.0 ], [ 1.0, 0.0 ], [ 3.0, 2.0, 0.0 ], [ 2.0 ] ].each do |ratings|
+        expected = merge(implicit_book, *ratings).round
+
+        assert_equal expected, merge(explicit_book, *ratings), ratings.inspect
+      end
+    end
+
+    it 'snaps to the nearest value on a scale with gaps' do
+      gapped = Book.new(scale: [ 0, 1, 3 ], judgement_merge_rule: 'mean')
+
+      # 3 and 1 average to 2, halfway between 1 and 3: ties go up.
+      assert_equal 3, merge(gapped, 3.0, 1.0)
+      # 3, 1, 1 average to 1.67, nearer 1 than 3; rounding would give 2, which is off the scale.
+      assert_equal 1, merge(gapped, 3.0, 1.0, 1.0)
+    end
+
+    it 'rounds when the book has no scale' do
+      assert_equal 2, merge(Book.new, 3.0, 0.0)
+    end
+
+    it 'rounds a rating outside the scale instead of clamping it' do
+      assert_equal 2, merge(Book.new(scale: [ 0, 1 ]), 3.0, 0.0)
+      assert_equal 4, merge(explicit_book, 4.0)
+    end
   end
 
   it 'returns nil when there are no judgements' do

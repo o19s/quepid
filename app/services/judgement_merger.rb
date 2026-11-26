@@ -64,8 +64,17 @@ class JudgementMerger
     ratings.first(3).min
   end
 
-  # Explicit judgements only work with integers; implicit judgements keep the float.
+  # Explicit judgements are scale values, so a merged rating between two of them snaps to the
+  # nearest one; implicit judgements keep the float. A book without a scale, or a rating outside
+  # the scale (from judgements that were already off it), rounds as before.
   def fit_to_scale rating
-    @book.support_implicit_judgements? ? rating : rating.round
+    return rating if @book.support_implicit_judgements?
+    return rating.round if scale.empty? || !rating.between?(scale.values.min, scale.values.max)
+
+    scale.nearest(rating)
+  end
+
+  def scale
+    @scale ||= JudgeScale.for(@book)
   end
 end
