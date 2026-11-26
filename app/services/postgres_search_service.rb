@@ -26,8 +26,9 @@ class PostgresSearchService
 
   def initialize uri, credentials: nil, sslmode: nil
     @uri = uri
-    @credentials = credentials.presence || uri.userinfo
-    @sslmode = sslmode.presence || uri.query_values&.fetch('sslmode', nil) || 'prefer'
+    @credentials = credentials.presence || Addressable::URI.unencode_component(uri.userinfo)
+    # Not libpq's 'prefer': that falls back to plaintext, which an attacker can force.
+    @sslmode = sslmode.presence || uri.query_values&.fetch('sslmode', nil) || 'require'
   end
 
   # Returns a Faraday::Response so callers handle it like any search API response.
@@ -97,7 +98,7 @@ class PostgresSearchService
       host:            @uri.hostname,
       hostaddr:        address,
       port:            @uri.port || 5432,
-      dbname:          @uri.path.to_s.delete_prefix('/').presence,
+      dbname:          Addressable::URI.unencode_component(@uri.path.to_s.delete_prefix('/')).presence,
       user:            user.presence,
       password:        password,
       sslmode:         @sslmode,

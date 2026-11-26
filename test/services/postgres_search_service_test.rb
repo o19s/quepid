@@ -52,6 +52,34 @@ class PostgresSearchServiceTest < ActiveSupport::TestCase
     end
   end
 
+  describe 'connection settings' do
+    def connect_params url
+      original = PG.method(:connect)
+      params = nil
+      PG.define_singleton_method(:connect) do |**kwargs|
+        params = kwargs
+        raise PG::ConnectionBad, 'not connecting in this test'
+      end
+      search({ sql: 'SELECT 1 AS id' }, url: url)
+      params
+    ensure
+      PG.define_singleton_method(:connect, original)
+    end
+
+    it 'decodes the user, password and database name in the URL' do
+      params = connect_params('postgresql://al%20ice:p%40ss%3Aword@8.8.8.8/my%20db')
+
+      assert_equal 'al ice', params[:user]
+      assert_equal 'p@ss:word', params[:password]
+      assert_equal 'my db', params[:dbname]
+    end
+
+    it 'requires TLS unless the URL says otherwise' do
+      assert_equal 'require', connect_params('postgresql://8.8.8.8/movies')[:sslmode]
+      assert_equal 'disable', connect_params('postgresql://8.8.8.8/movies?sslmode=disable')[:sslmode]
+    end
+  end
+
   # Runs against the test database's own server, so only when the suite runs on PostgreSQL
   # (the test-postgresql CI job, or DB_ADAPTER=postgresql locally).
   describe 'against a PostgreSQL server' do
@@ -59,7 +87,7 @@ class PostgresSearchServiceTest < ActiveSupport::TestCase
       config = ActiveRecord::Base.connection_db_config.configuration_hash
       skip 'needs DB_ADAPTER=postgresql' unless 'postgresql' == config[:adapter]
 
-      @url = "postgresql://#{config[:host] || '127.0.0.1'}:#{config[:port] || 5432}/#{config[:database]}"
+      @url = "postgresql://#{config[:host] || '127.0.0.1'}:#{config[:port] || 5432}/#{config[:database]}?sslmode=disable"
       @admin_credentials = "#{config[:username]}:#{config[:password]}"
       @credentials = postgres_search_credentials || skip('needs a database user that can create roles')
     end

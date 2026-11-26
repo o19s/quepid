@@ -26,13 +26,20 @@ Search URL:
 postgresql://<host>:5432/<database>?sslmode=require
 ```
 
-`sslmode` is optional and defaults to `prefer`. Put the database user and password in the
-endpoint's **Basic Auth** credential as `user:password`. Quepid stores it encrypted, but by
-default the browser also receives it with the endpoint's settings and sends it to the proxy with
-each query, so anyone who can use the endpoint can read the password. Set
-`REQUIRE_PROXY_WITH_BASIC_AUTH_CREDENTIALS=true` to keep it on the server: Quepid then leaves it
-out of API responses and the proxy looks it up itself. The wizard is the exception: while you
-create the endpoint, the browser sends the credential you typed to validate the connection.
+`sslmode` is optional and defaults to `require`, so Quepid never falls back to an unencrypted
+connection. A local database without TLS needs `?sslmode=disable` in the URL. Put the database
+user and password in the endpoint's **Basic Auth** credential as `user:password`. Quepid stores
+it encrypted, but by default the browser also receives it with the endpoint's settings and sends
+it to the proxy with each query, so anyone who can use the endpoint can read the password. Set
+`REQUIRE_PROXY_WITH_BASIC_AUTH_CREDENTIALS=true` to leave it out of API responses: the proxy
+then looks it up itself. The wizard is the exception: while you create the endpoint, the browser
+sends the credential you typed to validate the connection.
+
+**That setting does not fully protect the password yet.** The proxy does not check that a
+request's host is the one the endpoint is configured for, so anyone who can use the endpoint can
+point a query at a database server they control and receive the stored password when Quepid logs
+in. Give the role only the read access you would give every endpoint user, and do not reuse its
+password elsewhere.
 
 **Use a read-only role.** Quepid runs every query in a read-only transaction with a 10 second
 statement timeout and accepts only a `SELECT`. It refuses to search when the endpoint logs in as
