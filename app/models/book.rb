@@ -8,6 +8,8 @@
 #  archived                    :boolean          default(FALSE), not null
 #  export_job                  :string(255)
 #  import_job                  :string(255)
+#  judgement_merge_rule        :string(255)      default("quepid_classic"), not null
+#  judgement_merge_tiers       :text(65535)
 #  name                        :string(255)
 #  populate_job                :string(255)
 #  rank_depth                  :integer
@@ -119,6 +121,18 @@ class Book < ApplicationRecord
   # Transform scale from array to a string
   serialize :scale, coder: ScaleSerializer
   serialize :scale_with_labels, coder: JSON
+  serialize :judgement_merge_tiers, coder: JSON
+
+  # How the judgements on a query/doc pair become the rating cases read (JudgementMerger).
+  enum :judgement_merge_rule, {
+    quepid_classic: 'quepid_classic',
+    mean:           'mean',
+    median:         'median',
+    min:            'min',
+    max:            'max',
+    majority:       'majority',
+    first:          'first',
+  }, prefix: true, validate: true
 
   after_destroy :delete_attachments
 
@@ -132,6 +146,11 @@ class Book < ApplicationRecord
 
   # Custom validation to prevent scale changes but allow label changes
   validate :scale_cannot_be_changed_if_judgements_exist
+  validate :judgement_merge_tiers_are_judge_kinds
+
+  # Cases read the merged rating, so a new rule has to reach them.
+  after_update_commit :sync_cases_with_judgements,
+                      if: -> { saved_changes.keys.intersect?(%w[judgement_merge_rule judgement_merge_tiers]) }
 
   after_initialize do |book|
     book.scale = [] if book.scale.nil? || (book.scale.respond_to?(:empty?) && book.scale.empty?)
@@ -153,6 +172,21 @@ class Book < ApplicationRecord
 
   def scale_list= value
     self.scale = value.split(',') if value.present?
+  end
+
+  # nil means no tiers: every judge counts.
+  def judgement_merge_tiers_valid?
+    tiers = judgement_merge_tiers
+    tiers.nil? || (tiers.is_a?(Array) && tiers == tiers.uniq && (tiers - Judgement::JUDGE_KINDS).empty?)
+  end
+
+  # The tiers as the book form edits them: judge kinds joined by commas, e.g. "human,ai".
+  def judgement_merge_tier_list= value
+    self.judgement_merge_tiers = value.to_s.split(',').compact_blank.presence
+  end
+
+  def judgement_merge_tier_list
+    judgement_merge_tiers&.join(',').to_s
   end
 
   def scale_list
@@ -375,6 +409,16 @@ class Book < ApplicationRecord
 
     # If the scale values themselves have changed, prevent it
     errors.add(:scale, "cannot be changed when judgements exist. Current judgements use scale #{old_scale.inspect}") if old_scale != new_scale
+  end
+
+  def judgement_merge_tiers_are_judge_kinds
+    return if judgement_merge_tiers_valid?
+
+    errors.add(:judgement_merge_tiers, "must list each of #{Judgement::JUDGE_KINDS.to_sentence} at most once")
+  end
+
+  def sync_cases_with_judgements
+    UpdateCaseJob.perform_later(self)
   end
 
   def delete_attachments

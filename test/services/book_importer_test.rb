@@ -542,6 +542,22 @@ class BookImporterTest < ActiveSupport::TestCase
       assert new_book.support_implicit_judgements
     end
 
+    test 'applies the judgement merge rule and tiers' do
+      new_book = Book.new
+      BookImporter.new(new_book, user, { name: 'Merged', judgement_merge_rule: 'median', judgement_merge_tiers: %w[human ai] }).import
+
+      new_book.reload
+      assert_predicate new_book, :judgement_merge_rule_median?
+      assert_equal %w[human ai], new_book.judgement_merge_tiers
+    end
+
+    test 'validate rejects an unknown judgement merge rule' do
+      new_book = Book.new
+      BookImporter.new(new_book, user, { judgement_merge_rule: 'telepathy' }).validate
+
+      assert_predicate new_book.errors, :any?
+    end
+
     test 'explicit false values override what the book already has' do
       existing = Book.create!(name: 'Keep', owner: doug, show_rank: true, support_implicit_judgements: true)
       BookImporter.new(existing, user, { show_rank: false, support_implicit_judgements: false }).import

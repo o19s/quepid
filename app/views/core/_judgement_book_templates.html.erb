@@ -13,6 +13,7 @@
         href="<%= book_path(book, script_name: '').delete_prefix('/') %>"
         target="_self" class="btn btn-outline-secondary btn-sm float-end"
         title="Open this book in a new page" data-slot="view"
-        data-action="click->judgements-core#viewBook"><i class="bi bi-eye-fill"></i> View</a></li>
+        data-action="click->judgements-core#viewBook"><i class="bi bi-eye-fill"></i> View</a>
+      <div class="small text-muted">Judgement merging: <%= judgement_merge_summary(book) %></div></li>
   <% end %>
 </ul>

@@ -58,6 +58,16 @@ class Judgement < ApplicationRecord
     unrateable || judge_later
   end
 
+  # Who made the judgement, as a book's judgement merge tiers name it (ADR 0007).
+  JUDGE_KINDS = %w[human ai anonymous].freeze
+
+  def judge_kind
+    if user.nil? then 'anonymous'
+    elsif user.ai_judge? then 'ai'
+    else 'human'
+    end
+  end
+
   scope :rateable, -> { where(unrateable: false).where(judge_later: false) }
 
   # LlmService starts an unrateable judgement's explanation with this when the call to the model

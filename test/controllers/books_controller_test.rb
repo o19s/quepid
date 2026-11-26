@@ -217,6 +217,55 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
     assert_equal [ judge_judy.id ], james_bond_movies.reload.ai_judge_ids
   end
 
+  test 'update changes how judgements are merged' do
+    login_user_for_integration_test user
+    james_bond_movies.update!(owner: user)
+    patch book_path(james_bond_movies), params: { book: { judgement_merge_rule: 'mean', judgement_merge_tier_list: 'human,ai' } }
+    assert_redirected_to book_path(james_bond_movies)
+    james_bond_movies.reload
+    assert_predicate james_bond_movies, :judgement_merge_rule_mean?
+    assert_equal %w[human ai], james_bond_movies.judgement_merge_tiers
+  end
+
+  test 'judgement_merging changes only how judgements are merged' do
+    login_user_for_integration_test user
+    james_bond_movies.update!(owner: user)
+    james_bond_movies.ai_judges = [ judge_judy ]
+    team_ids = james_bond_movies.team_ids
+
+    patch judgement_merging_book_path(james_bond_movies),
+          params: { book: { judgement_merge_rule: 'median', judgement_merge_tier_list: 'human,ai' } }
+
+    assert_redirected_to book_path(james_bond_movies)
+    james_bond_movies.reload
+    assert_predicate james_bond_movies, :judgement_merge_rule_median?
+    assert_equal %w[human ai], james_bond_movies.judgement_merge_tiers
+    assert_equal [ judge_judy.id ], james_bond_movies.ai_judge_ids
+    assert_equal team_ids, james_bond_movies.team_ids
+  end
+
+  test 'show displays the merge rule with an edit popup' do
+    login_user_for_integration_test user
+    james_bond_movies.update!(owner: user, judgement_merge_rule: 'mean')
+
+    get book_path(james_bond_movies)
+
+    assert_response :success
+    assert_select 'dd', text: /Combined by Mean/
+    assert_select 'button[data-bs-target="#judgement_merging_modal"][aria-label=?]', 'Change how judgements are merged'
+    assert_select '#judgement_merging_modal form[action=?]', judgement_merging_book_path(james_bond_movies)
+  end
+
+  test 'judgement_merging rejects an unknown rule' do
+    login_user_for_integration_test user
+    james_bond_movies.update!(owner: user)
+
+    patch judgement_merging_book_path(james_bond_movies), params: { book: { judgement_merge_rule: 'telepathy' } }
+
+    assert_redirected_to book_path(james_bond_movies)
+    assert_predicate james_bond_movies.reload, :judgement_merge_rule_quepid_classic?
+  end
+
   test 'create rejects a foreign team without creating a book' do
     login_user_for_integration_test user
     foreign = Team.create!(name: 'Foreign team')

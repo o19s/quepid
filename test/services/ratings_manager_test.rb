@@ -108,4 +108,32 @@ class RatingsImporterTest < ActiveSupport::TestCase
       end
     end
   end
+
+  describe 'the book judgement merging reaches its cases' do
+    let(:merging_book) { Book.create!(name: 'Merging', scale: [ 0, 1, 2, 3 ], owner: user) }
+    let(:kase) { Case.create!(case_name: 'Merging case', owner: user, book: merging_book, auto_populate_case_judgements: true) }
+
+    def case_rating
+      Rating.joins(:query).find_by(queries: { case_id: kase.id }, doc_id: 'doc1')&.rating
+    end
+
+    it 'rates the case by the rule and tiers, and resyncs when they change' do
+      merging_book.update!(judgement_merge_rule: 'mean', judgement_merge_tiers: %w[human ai])
+      kase.queries.create!(query_text: 'dog')
+      pair = merging_book.query_doc_pairs.create!(query_text: 'dog', doc_id: 'doc1')
+
+      perform_enqueued_jobs do
+        pair.judgements.create!(user: users(:random), rating: 3.0)
+        pair.judgements.create!(user: users(:judge_judy), rating: 0.0)
+      end
+
+      assert_in_delta 3.0, case_rating # human first: the AI 0 is ignored
+
+      perform_enqueued_jobs do
+        merging_book.update!(judgement_merge_rule: 'min', judgement_merge_tiers: nil)
+      end
+
+      assert_in_delta 0.0, case_rating # every judge counts, the lowest wins
+    end
+  end
 end

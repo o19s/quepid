@@ -3,6 +3,8 @@
 json.name        book.name
 json.show_rank   book.show_rank
 json.support_implicit_judgements book.support_implicit_judgements
+json.judgement_merge_rule book.judgement_merge_rule
+json.judgement_merge_tiers book.judgement_merge_tiers
 
 json.scale book.scale
 json.scale_with_labels book.scale_with_labels

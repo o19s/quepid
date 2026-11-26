@@ -54,6 +54,11 @@
         <div class="form-text">Regular explicit judgements are on a ordinal scale, however implicit judgements are floats.  This controls how we import the judgements into the main Quepid Case screen.</div>
       </div>
 
+      <fieldset class="mb-3">
+        <legend class="form-label fs-6">Merging Judgements into Case Ratings</legend>
+        <%= render "books/judgement_merging_fields", form: form, book: book %>
+      </fieldset>
+
       <%= render "books/scoring_guideline_fields", form: form, viewer: viewer %>
 
       <% unless book.new_record? %>

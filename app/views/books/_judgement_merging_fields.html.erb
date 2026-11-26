@@ -1,0 +1,20 @@
+<%# locals: (form:, book:) %>
+<p class="form-text mt-0">
+  How the judgements on one query/doc pair become the rating linked cases read.
+  Changing either setting re-syncs the ratings of every case that receives ratings from this book.
+</p>
+<div class="mb-3">
+  <%= form.label :judgement_merge_tier_list, '1. Which judges count', class: 'form-label' %>
+  <%= form.select :judgement_merge_tier_list, judgement_merge_tier_options(book), {}, class: 'form-select' %>
+  <div class="form-text">Judgements that don't count are kept, not deleted.</div>
+</div>
+<div>
+  <%= form.label :judgement_merge_rule, '2. How their ratings are combined', class: 'form-label' %>
+  <%= form.select :judgement_merge_rule, judgement_merge_rule_options, {}, class: 'form-select' %>
+  <ul class="form-text mb-0">
+    <% Book.judgement_merge_rules.each_key do |rule| %>
+      <% rule_name, description = JudgementMergingHelper::JUDGEMENT_MERGE_RULES[rule] %>
+      <li><strong><%= rule_name %>:</strong> <%= description %></li>
+    <% end %>
+  </ul>
+</div>

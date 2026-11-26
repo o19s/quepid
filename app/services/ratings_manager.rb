@@ -56,7 +56,7 @@ class RatingsManager
     broadcast_case_specific_notification kase, query_doc_pair, @book.query_doc_pairs.size, @counter
 
     # A merge that gives no rating (e.g. every judgement is unrateable) leaves the existing rating alone.
-    merged_rating = judgement_merger.rating_for(query_doc_pair.judgements.rateable)
+    merged_rating = judgement_merger.rating_for(query_doc_pair.judgements.rateable.includes(:user))
     return if merged_rating.nil?
 
     rating = Rating.find_or_initialize_by(query: query, doc_id: query_doc_pair.doc_id)

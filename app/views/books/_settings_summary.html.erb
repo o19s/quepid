@@ -25,6 +25,18 @@
         </dd>
       <% end %>
 
+      <dt class="col-sm-3">Judgement Merging</dt>
+      <dd class="col-sm-9">
+        <%= judgement_merge_summary(book) %>
+        <button type="button" class="btn btn-outline-secondary btn-sm ms-1 d-inline-flex align-items-center justify-content-center"
+                style="font-size:0.7rem; width:1.6rem; height:1.6rem; padding:0;"
+                title="Change how judgements are merged" aria-label="Change how judgements are merged"
+                data-bs-toggle="modal" data-bs-target="#judgement_merging_modal">
+          <i class="bi bi-pencil" aria-hidden="true"></i>
+        </button>
+        <div class="form-text"><%= JudgementMergingHelper::JUDGEMENT_MERGE_RULES.dig(book.judgement_merge_rule, 1) %></div>
+      </dd>
+
       <dt class="col-sm-3">Implicit Judgements</dt>
       <dd class="col-sm-9"><%= book.support_implicit_judgements? ? 'Enabled' : 'Disabled' %></dd>
 

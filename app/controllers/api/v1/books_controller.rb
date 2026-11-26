@@ -68,7 +68,8 @@ module Api
 
       def book_params
         params.expect(book: [ :scorer_id, :name, :support_implicit_judgements,
-                              :show_rank, :archived ])
+                              :show_rank, :archived, :judgement_merge_rule,
+                              { judgement_merge_tiers: [] } ])
       end
 
       def set_book
