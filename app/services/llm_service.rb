@@ -35,12 +35,12 @@ class LlmService
   def perform_safe_judgement judgement, scale: JudgeScale::NONE, book: nil
     perform_judgement(judgement, scale: book ? JudgeScale.for(book) : scale)
   rescue RuntimeError => e
-    judgement.explanation = "BOOM: Runtime Error: #{e.message}"
+    judgement.explanation = "#{Judgement::FAILED_CALL_PREFIX}: Runtime Error: #{e.message}"
     judgement.unrateable = true
     judgement.confidence = nil
   rescue Faraday::Error => e
     # This will catch all Faraday errors including TimeoutError, ConnectionFailed, etc.
-    judgement.explanation = "BOOM: API request failed: #{e.message}"
+    judgement.explanation = "#{Judgement::FAILED_CALL_PREFIX}: API request failed: #{e.message}"
     judgement.unrateable = true
     judgement.confidence = nil
   end

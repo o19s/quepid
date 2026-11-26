@@ -3,9 +3,9 @@
 # Helper methods for book-related views
 module BooksHelper
   NON_RATING_SEGMENTS = [
-    [ :unrateable, 'Unrateable', '#adb5bd' ],
-    [ :judge_later, 'Judge later', '#dee2e6' ],
-    [ :error, 'Error', '#212529' ]
+    [ :unrateable, 'Unrateable', 'var(--bs-gray-500)' ],
+    [ :judge_later, 'Judge later', 'var(--bs-gray-300)' ],
+    [ :error, 'Error', 'var(--bs-dark)' ]
   ].freeze
 
   # The segments of a judge's label bar: one per scale value in the book's scale colours, then
@@ -17,9 +17,9 @@ module BooksHelper
     total = labels.values.sum
     return [] unless total.positive?
 
-    scale = book.scale.presence || labels.keys.grep(Integer).sort
-    names = book.scale_with_labels || {}
-    segments = scale.map { |value| [ value, "#{names[value.to_s] || value}: #{value}", calculate_hsl_color(value, scale) ] }
+    judge_scale = JudgeScale.for(book)
+    scale = judge_scale.values.presence || labels.keys.grep(Integer).sort
+    segments = scale.map { |value| [ value, "#{judge_scale.label_for(value) || value}: #{value}", calculate_hsl_color(value, scale) ] }
     segments += NON_RATING_SEGMENTS
 
     segments.filter_map do |key, name, color|

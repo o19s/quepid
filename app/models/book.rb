@@ -312,19 +312,17 @@ class Book < ApplicationRecord
   # :judge_later and :error (an unrateable judgement whose call to the model failed).
   # Every judge maps to a hash that answers 0 for a key it has no judgements under.
   def judge_label_counts judge_ids
-    scoped = judgements.where(user_id: judge_ids)
     counts = Hash.new { |hash, uid| hash[uid] = Hash.new(0) }
+    failed_call = Judgement.arel_table[:explanation].matches("#{Judgement::FAILED_CALL_PREFIX}%")
+    grouped = judgements.where(user_id: judge_ids).group(:user_id, :rating, :unrateable, :judge_later, failed_call).count
 
-    scoped.group(:user_id, :rating, :unrateable, :judge_later).count.each do |(uid, rating, unrateable, judge_later), n|
+    grouped.each do |(uid, rating, unrateable, judge_later, failed), n|
       key = if judge_later then :judge_later
+            elsif unrateable && ActiveModel::Type::Boolean.new.cast(failed) then :error
             elsif unrateable then :unrateable
             else rating.to_i
             end
       counts[uid][key] += n
-    end
-    scoped.failed_call.group(:user_id).count.each do |uid, n|
-      counts[uid][:unrateable] -= n
-      counts[uid][:error] = n
     end
 
     counts

@@ -201,17 +201,17 @@ class BookTest < ActiveSupport::TestCase
     let(:book) { books(:james_bond_movies) }
 
     it 'counts each rating, unrateable, judge later and failed calls separately' do
-      pairs = book.query_doc_pairs.first(5)
+      pairs = book.query_doc_pairs.first(6)
       pairs[0].judgements.create!(user: users(:matt), rating: 1)
       pairs[1].judgements.create!(user: users(:matt), rating: 1)
       pairs[2].judgements.create!(user: users(:matt), rating: 0)
       pairs[3].judgements.create!(user: users(:matt), unrateable: true, explanation: 'BOOM: API request failed: 500')
       pairs[4].judgements.create!(user: users(:matt), judge_later: true)
+      pairs[5].judgements.create!(user: users(:matt), unrateable: true, explanation: 'Not enough context.')
 
       counts = book.judge_label_counts([ users(:matt).id ])[users(:matt).id]
 
-      assert_equal({ 1 => 2, 0 => 1, error: 1, judge_later: 1 }, counts.reject { |_, n| n.zero? })
-      assert_equal 0, counts[:unrateable]
+      assert_equal({ 1 => 2, 0 => 1, error: 1, judge_later: 1, unrateable: 1 }, counts)
     end
 
     it 'answers zero for a judge with no judgements' do

@@ -29,12 +29,13 @@ class BroadcastJudgeActivityJob < ApplicationJob
   private
 
   def broadcast_cells channel, book, row
-    { status: 'judge_status_cell', count: 'judge_count_cell', last: 'judge_last_cell' }.each do |cell, partial|
-      locals = { row: row }
-      locals[:book] = book unless :last == cell
-      locals[:flash_active] = true if :status == cell
+    {
+      status: [ 'judge_status_cell', { book: book, flash_active: true } ],
+      count:  [ 'judge_count_cell', { book: book } ],
+      last:   [ 'judge_last_cell', {} ],
+    }.each do |cell, (partial, locals)|
       Turbo::StreamsChannel.broadcast_replace_to(
-        *channel, target: "judge-#{cell}-#{row[:judge].id}", partial: "books/#{partial}", locals: locals
+        *channel, target: "judge-#{cell}-#{row[:judge].id}", partial: "books/#{partial}", locals: { row: row, **locals }
       )
     end
   end
