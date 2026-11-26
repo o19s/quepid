@@ -71,7 +71,7 @@
                   <% end %>
                 </td>
                 <td>
-                  <%= relationship_count embedder.teams.length, 'team' %>
+                  <%= relationship_count embedder.teams.length, 'team', record: embedder, kind: :teams %>
                 </td>
                 <td class="text-end">
                   <div class="btn-group btn-group-sm" role="group">

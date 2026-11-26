@@ -20,8 +20,8 @@
           <td><%= scorer.scale_list || '—' %></td>
           <td><%= scorer.owner&.fullname || '—' %></td>
           <td>
-            <%= relationship_count scorer_cases_counts.fetch(scorer.id, 0), 'case' %>
-            <%= relationship_count scorer.teams.length, 'team' %>
+            <%= relationship_count scorer_cases_counts.fetch(scorer.id, 0), 'case', record: scorer, kind: :cases %>
+            <%= relationship_count scorer.teams.length, 'team', record: scorer, kind: :teams %>
           </td>
           <td class="text-end">
             <div class="btn-group btn-group-sm" role="group">

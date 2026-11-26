@@ -44,7 +44,7 @@
                 </td>
                 <td><%= embedder.owner&.fullname || '—' %></td>
                 <td>
-                  <%= relationship_count embedder_case_counts.fetch(embedder.id, 0), 'case' %>
+                  <%= relationship_count embedder_case_counts.fetch(embedder.id, 0), 'case', record: embedder, kind: :cases %>
                 </td>
                 <td class="text-end">
                   <%= button_to unshare_embedder_teams_path,

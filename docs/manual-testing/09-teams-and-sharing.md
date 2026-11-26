@@ -62,7 +62,7 @@ With zero teams, confirm the solo-use explanation and **Create your first team**
 
 This same modal pattern appears in two places for each resource type: on the resource's own index page (per-row Share icon), and on the Team show page (per-row Share icon in its Cases/Books/Search Endpoints/Scorers sub-tables).
 
-Sharing and usage counts in management listings and team tables use neutral pill badges only for positive counts. A zero count shows neither a pill nor text. Counts use singular labels for one and plural labels otherwise. In cells with several relationship types, each positive count names its relationship independently. Existing team-name links on the Cases index remain links. After sharing or unsharing, verify the count changes and persists after reload; removing the last relationship removes its pill.
+Sharing and usage counts in management listings and team tables use neutral pill badges only for positive counts. A zero count shows neither a pill nor text. Counts use singular labels for one and plural labels otherwise. In cells with several relationship types, each positive count names its relationship independently. Existing team-name links on the Cases index remain links. After sharing or unsharing, verify the count changes and persists after reload; removing the last relationship removes its pill. Positive relationship pills open compact, headerless Bootstrap popovers containing linked names. Lists load on first click, are reused on the current page, and open below or flip above their pills. Related teams, cases and tries are limited to destinations the viewer can access. Blue content-count pills keep their existing behavior.
 
 - [ ] **Steps (repeat once from each entry point, for each of the 4 resource types):**
   1. Click the Share icon.
@@ -87,3 +87,15 @@ Sharing and usage counts in management listings and team tables use neutral pill
 - **Edge cases:**
   - [ ] Note **Books** use the global archive/unarchive routes rather than a team-scoped one — confirm archiving a book still works correctly from wherever it's exposed (Part 10), even though it's not part of this team-page pattern.
   - [ ] Note the **Scorers** sub-table has no archive controls at all — this is expected (scorers aren't archivable).
+
+
+### 9.7 Inspect sharing and usage pills
+
+- [ ] **Steps:**
+  1. On Books, Embedders, AI Judges and Search Endpoints, click a positive team-count pill. Verify the compact popover lists linked team names without a visible header or explanatory footer. Follow a team link and use Back to return; no popover remains open.
+  2. Confirm no relationship-list request runs until a pill is clicked. Dismiss and reopen the same pill: its list is reused. Escape returns focus to the pill; an outside click dismisses the popover. A short viewport flips it above rather than sideways.
+  3. On a team page, open the team pills for cases, books, scorers and endpoints. Open the case-usage pills for books, scorers, embedders and endpoints wherever their count is positive. Each list links to the corresponding visible cases. Opening a pill lower on a long team page keeps its links in view without jumping to the top. An endpoint used by several tries of the same case lists that case once.
+  4. On Search Endpoints, open a positive try-count pill. Each link names the case and try, includes a custom try name when present, and opens that specific try.
+  5. Check a zero count: neither a pill nor replacement text appears. Blue query/doc-pair, judgement and rating pills retain their existing behavior.
+  6. Verify private related teams/cases are absent from another viewer's response and an inaccessible source is refused. If a displayed count is stale and no related items remain visible, the popup shows a short empty state.
+- **Expected:** The same lightweight, on-demand interaction works for every sharing and usage pill on both index and team pages. Counts and record access do not change. Connections keep the behavior documented in scenario 19.6.

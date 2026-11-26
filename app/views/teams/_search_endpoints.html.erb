@@ -39,8 +39,8 @@
           </td>
           <td><%= search_endpoint.owner&.fullname || '—' %></td>
           <td>
-            <%= relationship_count search_endpoint_cases_counts.fetch(search_endpoint.id, 0), 'case' %>
-            <%= relationship_count search_endpoint.teams.length, 'team' %>
+            <%= relationship_count search_endpoint_cases_counts.fetch(search_endpoint.id, 0), 'case', record: search_endpoint, kind: :cases %>
+            <%= relationship_count search_endpoint.teams.length, 'team', record: search_endpoint, kind: :teams %>
           </td>
           <td class="text-end">
             <div class="btn-group btn-group-sm" role="group">

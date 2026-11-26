@@ -304,7 +304,7 @@ class ConnectionsControllerTest < ActionDispatch::IntegrationTest
     embedders(:openai_small).update!(connection: connections(:openai))
 
     get connections_url
-    assert_select 'td span.badge.rounded-pill.bg-secondary', text: '1 embedder'
+    assert_select 'td button.badge.rounded-pill.bg-secondary', text: '1 embedder'
 
     get connection_url(connections(:openai))
     assert_select 'a[href=?]', edit_embedder_path(embedders(:openai_small)), text: embedders(:openai_small).name
@@ -318,8 +318,8 @@ class ConnectionsControllerTest < ActionDispatch::IntegrationTest
     get connections_url
 
     assert_select 'td' do
-      assert_select 'span.badge.rounded-pill.bg-secondary', text: '1 embedder'
-      assert_select 'span.badge.rounded-pill.bg-secondary', text: '1 AI judge'
+      assert_select 'button.badge.rounded-pill.bg-secondary', text: '1 embedder'
+      assert_select 'button.badge.rounded-pill.bg-secondary', text: '1 AI judge'
     end
   end
 

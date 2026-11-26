@@ -64,10 +64,18 @@ module ApplicationHelper
   end
 
   # Highlight existing sharing and usage relationships; omit empty counts.
-  def relationship_count count, noun
+  def relationship_count count, noun, record:, kind:
     return unless count.positive?
 
-    tag.span(pluralize(count, noun), class: 'badge rounded-pill bg-secondary')
+    name = record.try(:name).presence || record.try(:case_name).presence || record.id
+    button_tag pluralize(count, noun), type: 'button', class: 'badge rounded-pill bg-secondary border-0',
+                                      aria: { haspopup: 'dialog', expanded: false },
+                                      data: {
+                                        controller:                   'connection-usage',
+                                        connection_usage_url_value:   relationship_items_path(record_type: record.class.model_name.singular, id: record.id, kind: kind),
+                                        connection_usage_title_value: "#{noun.pluralize.capitalize} for #{name}",
+                                        action:                       'click->connection-usage#toggle click@document->connection-usage#dismissOutside keydown.esc@document->connection-usage#escape shown.bs.popover->connection-usage#shown turbo:before-cache@document->connection-usage#close',
+                                      }
   end
 
   # Bordered stat card: a large colored value over an icon label and a muted

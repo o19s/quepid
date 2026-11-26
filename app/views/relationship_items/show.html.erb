@@ -1,0 +1,11 @@
+<div data-connection-usage-list>
+  <% if @items.any? %>
+    <ul class="list-unstyled mb-0">
+      <% @items.each do |name, url| %>
+        <li class="text-break"><%= link_to name, url %></li>
+      <% end %>
+    </ul>
+  <% else %>
+    <p class="text-muted mb-0">No items to show.</p>
+  <% end %>
+</div>

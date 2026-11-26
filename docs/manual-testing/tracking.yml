@@ -1283,6 +1283,21 @@ parts:
         notes: "Refresh: team case and endpoint Archive/Unarchive confirmations, filtered archived rows, restored states driven. DB confirms both active, acting owner retained, team82 association preserved. Eight selected captures inspected and registered. Ownership transfer from a different owner and unrelated-team POST were not repeated; earlier evidence retained."
         paths: ["app/controllers/teams_controller.rb", "app/views/teams/_cases.html.erb", "app/services/team_sharing.rb", "app/models/concerns/text_search.rb", "app/views/shared/_index_filters.html.erb", "app/javascript/controllers/auto_submit_controller.js", "app/javascript/application.js", "app/javascript/controllers/confirm_dialog_controller.js", "app/views/shared/_confirm_modal.html.erb", "app/views/teams/_search_endpoints.html.erb"]
 
+      "9.7":
+        title: "Inspect sharing and usage pills"
+        screenshots:
+          books-teams: "9.7/books-teams"
+          embedders-teams: "9.7/embedders-teams"
+          judges-teams: "9.7/judges-teams"
+          endpoints-teams: "9.7/endpoints-teams"
+          endpoint-tries: "9.7/endpoint-tries"
+          team-book-cases: "9.7/team-book-cases"
+          team-scorer-teams: "9.7/team-scorer-teams"
+        last_run: 2026-11-21T11:42:00Z
+        result: pass
+        notes: "Partial MCP Current :3000 refresh: opened team pills on Books, Embedders, AI Judges and Search Endpoints, plus endpoint tries and team1 book-case/scorer-team pills. Fixed focus-induced scrolling on long team pages; links now stay in view and the native in-viewport regression passes. Final screenshots inspected and recorded. All301 affected controller tests,23 JavaScript tests,5 native browser checks and tidy pass. Browser coverage includes lazy loading, cached reopening, actual team navigation, every visible team-table pill, specific-try links and existing Connections behavior. The browser fixture health checks are stubbed; records from the earlier timed-out teardown were explicitly removed, and the final run cleaned up successfully. Controller coverage verifies source/relationship visibility, unsupported inputs and case deduplication. Zero counts and blue content pills remain unchanged. Large lists, cross-session changes and second-browser permission replay deferred. Representative Rails visuals retain the known unrelated New Team sidebar baseline mismatch (7082 pixels); baselines unchanged."
+        paths: ["app/controllers/relationship_items_controller.rb", "app/helpers/application_helper.rb", "app/views/relationship_items/show.html.erb", "app/views/shared/_relationship_popover_templates.html.erb", "app/views/layouts/application.html.erb", "app/views/books/_book.html.erb", "app/views/embedders/index.html.erb", "app/views/ai_judges/index.html.erb", "app/views/search_endpoints/index.html.erb", "app/views/teams/_cases.html.erb", "app/views/teams/_books.html.erb", "app/views/teams/_embedders.html.erb", "app/views/teams/_scorers.html.erb", "app/views/teams/_search_endpoints.html.erb", "app/javascript/controllers/connection_usage_controller.js", "app/javascript/utils/bs_popover.js", "config/routes.rb"]
+
   "10":
     file: 10-books-management.md
     scenarios:
@@ -2387,3 +2402,13 @@ parts:
         result: pass
         notes: "Covered live on Current :3000, case 6: with MiniLM selected and two current vectors, Re-vectorize all queries returned to the idle state with both current. Native Playwright captured and asserted the pending state showed the spinner and ‘Vectorising…’ until status polling reported completion. Not covered in this pass: a full case-wide batch, stale vectors after changing embedder settings or a provider failure."
         paths: ["app/services/query_vectorizer.rb", "app/jobs/vectorize_case_queries_job.rb", "app/models/query_vector_status.rb", "app/models/query.rb", "app/javascript/utils/live_query_events.js", "app/javascript/utils/live_query_factory.js", "app/javascript/controllers/query_row_controller.js", "app/views/core/_query_list_templates.html.erb", "app/javascript/controllers/case_embedder_core_controller.js", "app/controllers/api/v1/case_embedders_controller.rb", "app/controllers/api/v1/queries_controller.rb"]
+      "19.6":
+        title: "Inspect connection usage"
+        screenshots:
+          embedders-below: "19.6/embedders-below"
+          embedders-above: "19.6/embedders-above"
+          ai-judges-below: "19.6/ai-judges-below"
+        last_run: 2026-11-20T12:29:10Z
+        result: pass
+        notes: "Partial MCP Current :3000 check on existing owned Ollama connection: opened both usage kinds, inspected links, followed the judge link and returned with Back; no popover or expanded state survived navigation. Verified vertical placement at normal and reduced heights. Final compact design has no visible heading or footer. All36 controller tests,23 JavaScript tests,3 native Playwright checks and tidy pass. Native regression covers lazy requests, cached reopening, both destination links, Escape/focus, outside dismissal, failure/retry and scratch cleanup; controller tests cover private usages, inaccessible connections, unsupported kinds and credentials. Loading-request cancellation is covered by unit test. Teammate session replay and large lists deferred. Representative Rails visuals retain the known unrelated New Team sidebar mismatch (7082 pixels); baselines unchanged."
+        paths: ["app/controllers/connections_controller.rb", "app/controllers/connections/usages_controller.rb", "app/views/connections/index.html.erb", "app/views/connections/usages/show.html.erb", "app/javascript/controllers/connection_usage_controller.js", "app/javascript/utils/bs_popover.js", "config/routes.rb"]

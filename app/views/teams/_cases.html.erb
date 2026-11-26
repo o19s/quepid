@@ -51,7 +51,7 @@
           <td><%= ratings_counts.fetch(kase.id, 0) %></td>
           <td><%= kase.owner&.fullname || '—' %></td>
           <td>
-            <%= relationship_count kase.teams.length, 'team' %>
+            <%= relationship_count kase.teams.length, 'team', record: kase, kind: :teams %>
           </td>
           <td class="text-end">
             <div class="btn-group btn-group-sm" role="group">

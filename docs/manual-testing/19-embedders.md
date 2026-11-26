@@ -86,3 +86,16 @@ For a local run, the Ollama container needs an embedding model: `docker exec oll
   6. As an administrator, create an instance-wide connection. Verify its owner remains shown and its availability survives reload. As the teammate, select it in a new embedder and verify its provider determines the embedder settings; the teammate cannot edit or delete the connection.
   7. Remove the disposable copies, shared embedder, connections and team. An in-use connection must refuse deletion until its embedder is removed.
 - **Expected:** Connection access is independent of team membership. Sharing a configured embedder permits use of its existing connection without granting permission to attach that private connection to a new configuration. Instance-wide availability is explicit and retains a responsible administrator owner. Existing cases continue using their assigned embedder after it is unshared.
+
+
+### 19.6 Inspect connection usage
+
+- [ ] **Steps:**
+  1. Open **Connections** with a connection used by an embedder and an AI judge. Its positive usage counts are buttons; zero counts remain absent. In the Network panel, confirm no usage-list request runs on page load or hover.
+  2. Click its embedder pill. A compact Bootstrap popover shows linked embedder names, without a visible heading or explanatory footer. Only this usage kind is fetched. Reopen it and confirm the loaded list is reused until the page is reloaded.
+  3. Follow an embedder link and return using Back. The Connections list has no leftover popover. Click an AI-judge pill and follow its link to the judge.
+  4. Use the keyboard to activate a pill. Focus moves to the first link after loading. Escape closes the popover and returns focus to the pill; clicking elsewhere also closes it.
+  5. Reduce the window height so the list cannot fit below its pill. The popover flips above rather than opening to either side.
+  6. Simulate a failed usage-list request. The popover shows a load error; restore the request and reopen it to retry. Dismiss a loading popover and confirm a late response does not reopen it.
+  7. On an instance-wide connection, confirm private embedders and AI judges belonging to unrelated users are absent from the returned list. A stale count with no visible records shows an empty-state message.
+- **Expected:** Names and links load only on demand and respect the same record visibility as their management pages. Counts remain aggregate usage counts. Cached lists are local to the current page; reloading refreshes them. No connection credentials appear in the list response.

@@ -1,0 +1,13 @@
+<div data-connection-usage-list>
+  <% if @records.any? %>
+    <ul class="list-unstyled mb-0">
+      <% @records.each do |record| %>
+        <li class="text-break">
+          <%= link_to record.name, @kind == 'embedders' ? edit_embedder_path(record) : edit_ai_judge_path(record) %>
+        </li>
+      <% end %>
+    </ul>
+  <% else %>
+    <p class="text-muted mb-0">No <%= @kind == 'embedders' ? 'embedders' : 'AI judges' %> you can access use this connection.</p>
+  <% end %>
+</div>

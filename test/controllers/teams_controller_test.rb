@@ -654,7 +654,7 @@ class TeamsControllerTest < ActionDispatch::IntegrationTest
       assert_response :success
       assert_select 'td a', text: embedder.name
       assert_select 'td a', text: embedders(:private_ollama).name, count: 0
-      assert_select 'span.badge', text: '1 case'
+      assert_select 'button.badge', text: '1 case'
     end
   end
 

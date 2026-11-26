@@ -11,7 +11,7 @@
     </span>
   </td>
   <td>
-    <%= relationship_count book.teams.length, 'team' %>
+    <%= relationship_count book.teams.length, 'team', record: book, kind: :teams %>
   </td>
   <td class="text-end">
     <%= share_modal_button 'book', book, name: book.name %>
