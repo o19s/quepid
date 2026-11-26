@@ -3,6 +3,23 @@
 require 'test_helper'
 
 class BooksHelperTest < ActionView::TestCase
+  include JudgementHelper
+
+  describe '#judge_label_segments' do
+    let(:book) { books(:james_bond_movies) }
+
+    it 'names each scale value from the book, skips empty segments and adds failed calls last' do
+      segments = judge_label_segments({ 0 => 1, 1 => 2, error: 1 }, book)
+
+      assert_equal [ 'Not Relevant: 0', 'Relevant: 1', 'Error' ], segments.pluck(:name)
+      assert_equal [ 25.0, 50.0, 25.0 ], segments.pluck(:percent)
+    end
+
+    it 'is empty for a judge with no judgements' do
+      assert_empty judge_label_segments({}, book)
+    end
+  end
+
   test 'duplicate scales use the same lowest-id representative for options and selection' do
     user = users(:doug)
     first = Scorer.create!(owner: user, name: 'First scale', scale: [ 81, 82 ], code: 'pass();')

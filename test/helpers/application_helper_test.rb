@@ -177,15 +177,13 @@ class ApplicationHelperTest < ActionView::TestCase
   def test_link_to_core_case
     try_number = 2
     expected_link_text = 'View Case'
-    expected_path = case_core_url(random_case, try_number)
+    expected_path = case_core_path(random_case, try_number)
 
-    # Call the helper method
     result = link_to_core_case(expected_link_text, random_case, try_number)
 
-    # Assertions
     assert_includes result, expected_link_text
-    assert_includes result, expected_path
     assert_includes result, "href=\"#{expected_path}\""
+    assert_includes result, 'data-turbo-prefetch="false"'
   end
 
   def test_link_to_core_case_with_options
@@ -270,9 +268,23 @@ class ApplicationHelperTest < ActionView::TestCase
       options = {}
 
       # Call the helper method
-      result = link_to_core_case('View Case', random_case, try_number, options)
+      link = Nokogiri::HTML.fragment(link_to_core_case('View Case', random_case, try_number, options)).at_css('a')
 
-      assert_includes result, 'https://'
+      # The href stays relative - broadcasts have no request host - and the browser switches protocol.
+      assert_equal case_core_path(random_case, try_number), link['href']
+      assert_equal 'core-case-link', link['data-controller']
+      assert_equal 'https', link['data-core-case-link-protocol-value']
+    end
+
+    test 'an existing data controller is kept alongside the protocol switch' do
+      random_case.tries.first.update!(search_endpoint: https_search_endpoint)
+
+      link = Nokogiri::HTML.fragment(
+        link_to_core_case('View Case', random_case, 1, data: { controller: 'tooltip', turbo: false })
+      ).at_css('a')
+
+      assert_equal 'tooltip core-case-link', link['data-controller']
+      assert_equal 'false', link['data-turbo']
     end
 
     test 'Proxied https endpoints do not change' do
@@ -287,9 +299,10 @@ class ApplicationHelperTest < ActionView::TestCase
       options = { class: 'btn btn-primary' }
 
       # Call the helper method
-      result = link_to_core_case('View Case', random_case, try_number, options)
+      link = Nokogiri::HTML.fragment(link_to_core_case('View Case', random_case, try_number, options)).at_css('a')
 
-      assert_includes result, 'http://'
+      assert_equal case_core_path(random_case, try_number), link['href']
+      assert_nil link['data-controller']
     end
   end
 

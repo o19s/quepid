@@ -272,6 +272,7 @@ class Book < ApplicationRecord
     activity = judge_activity_for(judge_ids, days: days)
     auto_run_ids = books_ai_judges.auto_run.pluck(:user_id).to_set
     wakes = AiJudge.escalation_target_names(judge_ids)
+    labels = judge_label_counts(judge_ids)
 
     rows = judge_ids.filter_map do |uid|
       judge = judges_by_id[uid]
@@ -279,9 +280,9 @@ class Book < ApplicationRecord
 
       stats = activity.fetch(uid, { sparkline: [], count: 0, last_judged_at: nil })
       { judge: judge, sparkline: stats[:sparkline], last_judged_at: stats[:last_judged_at],
-        count: stats[:count], actively_judging: actively_judging_ids.include?(judge.id),
-        auto_run: auto_run_ids.include?(judge.id), on_call: on_call_ids.include?(judge.id),
-        assigned: assigned_ids.include?(judge.id), wakes: wakes[judge.id] }
+        count: stats[:count], actively_judging: actively_judging_ids.include?(uid),
+        auto_run: auto_run_ids.include?(uid), on_call: on_call_ids.include?(uid),
+        assigned: assigned_ids.include?(uid), wakes: wakes[uid], labels: labels[uid] }
     end
 
     rows.sort_by { |row| row[:judge].fullname }
@@ -305,7 +306,28 @@ class Book < ApplicationRecord
 
     { judge: judge, sparkline: activity[:sparkline], last_judged_at: activity[:last_judged_at],
       count: activity[:count], actively_judging: actively_judging, auto_run: auto_run,
-      on_call: on_call, assigned: assigned, wakes: AiJudge.escalation_target_names([ judge.id ])[judge.id] }
+      on_call: on_call, assigned: assigned, wakes: AiJudge.escalation_target_names([ judge.id ])[judge.id],
+      labels: judge_label_counts([ judge.id ])[judge.id] }
+  end
+
+  # How each judge's judgements on this book split: a count per rating, plus :unrateable,
+  # :judge_later and :error (an unrateable judgement whose call to the model failed).
+  # Every judge maps to a hash that answers 0 for a key it has no judgements under.
+  def judge_label_counts judge_ids
+    counts = Hash.new { |hash, uid| hash[uid] = Hash.new(0) }
+    failed_call = Judgement.arel_table[:explanation].matches("#{Judgement::FAILED_CALL_PREFIX}%")
+    grouped = judgements.where(user_id: judge_ids).group(:user_id, :rating, :unrateable, :judge_later, failed_call).count
+
+    grouped.each do |(uid, rating, unrateable, judge_later, failed), n|
+      key = if judge_later then :judge_later
+            elsif unrateable && ActiveModel::Type::Boolean.new.cast(failed) then :error
+            elsif unrateable then :unrateable
+            else rating.to_i
+            end
+      counts[uid][key] += n
+    end
+
+    counts
   end
 
   # Not proud of this method, but it's the only way I can get the dependent

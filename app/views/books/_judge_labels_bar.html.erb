@@ -1,0 +1,12 @@
+<%# locals: (segments:) %>
+<% if segments.any? %>
+  <div class="progress mt-1" style="height: 8px;" role="img"
+       aria-label="<%= segments.map { |s| "#{s[:name]} #{s[:count]}" }.join(', ') %>">
+    <% segments.each do |segment| %>
+      <div class="progress-bar"
+           style="width: <%= segment[:percent].round(2) %>%; background-color: <%= segment[:color] %>;"
+           data-controller="bs-tooltip"
+           data-bs-tooltip-title-value="<%= segment[:name] %> — <%= segment[:count] %> (<%= segment[:percent].round %>%)"></div>
+    <% end %>
+  </div>
+<% end %>
