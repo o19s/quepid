@@ -67,9 +67,14 @@ module Api
       private
 
       def book_params
-        params.expect(book: [ :scorer_id, :name, :support_implicit_judgements,
-                              :show_rank, :archived, :judgement_merge_rule,
-                              { judgement_merge_tiers: [] } ])
+        # Not params.expect: it drops an explicit null, which is how a client clears the tiers,
+        # and rejects a book that sends nothing else.
+        book = params.require(:book)
+        permitted = book.permit(:scorer_id, :name, :support_implicit_judgements,
+                                :show_rank, :archived, :judgement_merge_rule,
+                                judgement_merge_tiers: [])
+        permitted[:judgement_merge_tiers] = nil if book.key?(:judgement_merge_tiers) && book[:judgement_merge_tiers].nil?
+        permitted
       end
 
       def set_book

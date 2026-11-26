@@ -160,6 +160,36 @@ module Api
           end
         end
 
+        describe 'when changing judgement merging' do
+          test 'sets the rule and tiers' do
+            patch :update, params: { id: the_book.id, book: { judgement_merge_rule: 'mean', judgement_merge_tiers: %w[human ai] } },
+                           as:     :json
+            assert_response :ok
+
+            the_book.reload
+            assert_predicate the_book, :judgement_merge_rule_mean?
+            assert_equal %w[human ai], the_book.judgement_merge_tiers
+          end
+
+          test 'clears the tiers with an explicit null' do
+            the_book.update!(judgement_merge_tiers: %w[human ai])
+
+            patch :update, params: { id: the_book.id, book: { judgement_merge_tiers: nil } }, as: :json
+            assert_response :ok
+
+            assert_nil the_book.reload.judgement_merge_tiers
+          end
+
+          test 'keeps the tiers when they are not sent' do
+            the_book.update!(judgement_merge_tiers: %w[human ai])
+
+            patch :update, params: { id: the_book.id, book: { judgement_merge_rule: 'max' } }, as: :json
+            assert_response :ok
+
+            assert_equal %w[human ai], the_book.reload.judgement_merge_tiers
+          end
+        end
+
         describe 'when changing the book name' do
           test 'updates name successfully using PATCH verb' do
             patch :update, params: { id: the_book.id, book: { name: 'New Name' } }

@@ -167,8 +167,9 @@ class Judgement < ApplicationRecord
     JudgementSync.activity(pair.book, user) if pair && user
   end
 
+  # user_id counts because the judge's kind decides which judgements a book's merge tiers use.
   def sync_case_ratings
-    return unless destroyed? || previous_changes.keys.intersect?(%w[rating unrateable judge_later query_doc_pair_id])
+    return unless destroyed? || previous_changes.keys.intersect?(%w[rating unrateable judge_later query_doc_pair_id user_id])
     return unless QueryDocPair.exists?(query_doc_pair_id)
 
     JudgementSync.changed(query_doc_pair_id)

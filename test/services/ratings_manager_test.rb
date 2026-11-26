@@ -135,5 +135,24 @@ class RatingsImporterTest < ActiveSupport::TestCase
 
       assert_in_delta 0.0, case_rating # every judge counts, the lowest wins
     end
+
+    it 'resyncs the case when a judgement moves to another kind of judge' do
+      merging_book.update!(judgement_merge_rule: 'mean', judgement_merge_tiers: %w[human ai anonymous])
+      kase.queries.create!(query_text: 'dog')
+      pair = merging_book.query_doc_pairs.create!(query_text: 'dog', doc_id: 'doc1')
+      anonymous = nil
+
+      perform_enqueued_jobs do
+        anonymous = pair.judgements.create!(user: nil, rating: 3.0)
+        pair.judgements.create!(user: users(:judge_judy), rating: 0.0)
+      end
+
+      assert_in_delta 0.0, case_rating # no human yet, so the AI tier wins
+
+      # What "Assign Anonymous Judgements to a User" on the book does.
+      perform_enqueued_jobs { anonymous.update!(user: users(:random)) }
+
+      assert_in_delta 3.0, case_rating # now a human judgement, which comes first
+    end
   end
 end
