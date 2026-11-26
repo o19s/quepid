@@ -11,7 +11,7 @@ A **Book** is Quepid's offline relevance-judgement workflow: a set of query/docu
 ### 10.1 Books list
 
 - [ ] **Steps:**
-  1. Go to `/books`. Confirm columns: ID, Name, Teams, Scale, Status (query/doc pair count + Archived badge), Share icon.
+  1. Go to `/books`. Confirm columns: ID, Name, Scale, Status (query/doc pair count + Archived badge), Teams (team-count pill when shared; blank when unshared), Share icon.
   2. Use the `q` search box (matches book or team name).
   3. Use the team dropdown filter.
   4. Toggle **View Archived Books** / **View Active Books**.

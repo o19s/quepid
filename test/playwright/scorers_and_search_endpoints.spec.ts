@@ -45,7 +45,7 @@ test.afterAll(async ({ browser }) => {
 })
 
 test.describe("scorers management", () => {
-  test("index lists existing scorers and a new one appears after creation", async ({ page }) => {
+  test("index lists scorers and successful edits return to the listing", async ({ page }) => {
     await page.goto("scorers")
     await expect(page.getByRole("heading", { name: "Scorer Options" })).toBeVisible()
 
@@ -68,10 +68,21 @@ test.describe("scorers management", () => {
     newScorerId = page.url().match(/\/scorers\/(\d+)\/edit/)?.[1]
     expect(newScorerId).toBeTruthy()
 
+    const invalidScale = Array.from({ length: 11 }, (_, index) => index).join(",")
+    await page.locator("#scorer_scale_list").fill(invalidScale)
+    await page.getByRole("button", { name: "Save", exact: true }).click()
+    await expect(page.locator("#error_explanation")).toBeVisible()
+    await expect(page.locator("#scorer_scale_list")).toHaveValue(invalidScale)
+    await page.locator("#scorer_scale_list").fill("0,1")
+    await page.locator("#scorer_name").fill(`${scorerName} updated`)
+    await page.getByRole("button", { name: "Save", exact: true }).click()
+    await expect(page).toHaveURL(/\/scorers$/)
+    await expect(page.locator("#flash-messages")).toContainText("Scorer updated.")
+
     // Pagination/ordering could push the new scorer off page 1 — filter by
     // name via the index's `q` search param to find it deterministically.
-    await page.goto(`scorers?q=${encodeURIComponent(scorerName)}`)
-    await expect(page.locator("table tbody tr", { hasText: scorerName })).toBeVisible()
+    await page.goto(`scorers?q=${encodeURIComponent(`${scorerName} updated`)}`)
+    await expect(page.locator("table tbody tr", { hasText: `${scorerName} updated` })).toBeVisible()
   })
 })
 
@@ -79,6 +90,8 @@ test.describe("search endpoints management", () => {
   test("index lists existing endpoints, creates one, then archiving hides it from the default listing", async ({
     page
   }) => {
+    // Creation, sharing, unsharing and archiving each complete a Rails navigation.
+    test.setTimeout(60_000)
     await page.goto("search_endpoints")
     await expect(page.getByRole("heading", { name: "Search Endpoints" })).toBeVisible()
 
@@ -110,7 +123,31 @@ test.describe("search endpoints management", () => {
 
     // Confirm it shows in the default (non-archived) listing before archiving.
     await page.goto(`search_endpoints?q=${encodeURIComponent(endpointName)}`)
-    await expect(page.locator("table tbody tr", { hasText: endpointName })).toBeVisible()
+    const endpointRow = page.locator("table tbody tr", { hasText: endpointName })
+    await expect(endpointRow).toBeVisible()
+    await expect(endpointRow.locator(".badge")).toHaveCount(0)
+
+    await endpointRow.getByRole("button", { name: "Share", exact: true }).click()
+    const modal = page.locator("#shareSearchEndpointModal")
+    const teamOption = modal
+      .locator('#share-search-endpoint-team option[value]:not([value=""])')
+      .first()
+    await expect(teamOption).toHaveAttribute("value", /\d+/)
+    const teamId = await teamOption.getAttribute("value")
+    await modal.locator("#share-search-endpoint-team").selectOption(teamId!)
+    await modal.getByRole("button", { name: "Share with team", exact: true }).click()
+    await expect(page.locator("#flash-messages")).toContainText("shared with")
+    await page.goto(`search_endpoints?q=${encodeURIComponent(endpointName)}`)
+    await expect(endpointRow.locator(".badge")).toHaveText(["1 team"])
+    await page.reload()
+    await expect(endpointRow).toContainText("1 team")
+
+    await endpointRow.getByRole("button", { name: "Share", exact: true }).click()
+    await modal.locator(`[data-team-id="${teamId}"]`).click()
+    await modal.getByRole("button", { name: "Unshare from team", exact: true }).click()
+    await expect(page.locator("#flash-messages")).toContainText("unshared")
+    await page.goto(`search_endpoints?q=${encodeURIComponent(endpointName)}`)
+    await expect(endpointRow.locator(".badge")).toHaveCount(0)
 
     await page.goto(`search_endpoints/${endpointId}/edit`)
     await page.getByRole("button", { name: "Archive" }).click()

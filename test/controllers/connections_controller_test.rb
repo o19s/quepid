@@ -30,14 +30,12 @@ class ConnectionsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select 'td', text: connections(:instance_elasticsearch).name
     assert_select 'td a', text: own_ollama.name, count: 0
-    assert_select 'a.nav-link.active', text: 'Search backends'
     assert_select '.alert', text: /Coming soon/
 
     get connections_url(kind: 'ai')
 
     assert_select 'td', text: connections(:instance_elasticsearch).name, count: 0
     assert_select 'td a', text: own_ollama.name
-    assert_select 'a.nav-link.active', text: 'AI & ML backends'
     assert_select '.alert', text: /Coming soon/, count: 0
   end
 
@@ -45,6 +43,7 @@ class ConnectionsControllerTest < ActionDispatch::IntegrationTest
     get connections_url
 
     assert_response :success
+    assert_select '.card .nav-pills', count: 0
     assert_select 'td', text: connection.name, count: 0
     assert_select 'td', text: connections(:instance_elasticsearch).name
     assert_select 'td', text: connections(:private_ollama).name, count: 0
@@ -213,9 +212,23 @@ class ConnectionsControllerTest < ActionDispatch::IntegrationTest
 
     patch connection_url(connection), params: { connection: { name: 'Renamed', secret: '' } }
 
-    assert_redirected_to edit_connection_url(connection)
+    assert_redirected_to connections_url
+    assert_response :see_other
+    assert_equal 'Connection was successfully updated.', flash[:notice]
     assert_equal 'Renamed', connection.reload.name
     assert_equal 'sk-test-openai', connection.secret
+  end
+
+  test 'an invalid update renders edit and leaves the saved connection unchanged' do
+    login_user_for_integration_test users(:doug)
+    original_name = connection.name
+
+    patch connection_url(connection), params: { connection: { name: 'Unsaved name', timeout: 0 } }
+
+    assert_response :unprocessable_content
+    assert_select 'form[action=?]', connection_path(connection)
+    assert_select 'input[name=?][value=?]', 'connection[name]', 'Unsaved name'
+    assert_equal original_name, connection.reload.name
   end
 
   test 'a typed secret replaces the saved one' do
@@ -291,10 +304,23 @@ class ConnectionsControllerTest < ActionDispatch::IntegrationTest
     embedders(:openai_small).update!(connection: connections(:openai))
 
     get connections_url
-    assert_select 'td', text: '1 embedder'
+    assert_select 'td button.badge.rounded-pill.bg-secondary', text: '1 embedder'
 
     get connection_url(connections(:openai))
     assert_select 'a[href=?]', edit_embedder_path(embedders(:openai_small)), text: embedders(:openai_small).name
+  end
+
+  test 'index shows one lozenge per kind of use' do
+    login_user_for_integration_test users(:doug)
+    embedders(:openai_small).update!(connection: connections(:openai))
+    AiJudge.create!(name: 'Doug judge', system_prompt: 'Judge it.', owner: users(:doug), connection: connections(:openai))
+
+    get connections_url
+
+    assert_select 'td' do
+      assert_select 'button.badge.rounded-pill.bg-secondary', text: '1 embedder'
+      assert_select 'button.badge.rounded-pill.bg-secondary', text: '1 AI judge'
+    end
   end
 
   test 'a connection in use cannot be deleted' do

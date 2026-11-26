@@ -86,10 +86,10 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
     assert_select 'input[name="user[team_ids][]"][checked][value=?]', team.id.to_s
   end
 
-  test 'update announces success and retains the team-context redirect' do
+  test 'update announces success and returns to the judges index from team context' do
     patch team_ai_judge_url(team, ai_judge), params: { user: { name: 'Updated judge' } }
     assert_response :see_other
-    assert_redirected_to team_url(team)
+    assert_redirected_to ai_judges_url
     assert_equal 'AI Judge was successfully updated.', flash[:notice]
   end
 
@@ -168,7 +168,8 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
             name: 'Renamed Judge', system_prompt: ai_judge.system_prompt
           } }
 
-    assert_redirected_to ai_judge_url(ai_judge)
+    assert_response :see_other
+    assert_redirected_to ai_judges_url
     assert_equal 'AI Judge was successfully updated.', flash[:notice]
     assert_equal 'Renamed Judge', ai_judge.reload.name
   end
@@ -495,7 +496,7 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
     it 'saves the judge to wake, and shows that judge as on call' do
       patch ai_judge_url(ai_judge), params: { user: { escalates_to_id: sleeper.id, team_ids: [ team.id ] } }
 
-      assert_redirected_to ai_judge_url(ai_judge)
+      assert_redirected_to ai_judges_url
       assert_equal sleeper, ai_judge.reload.escalates_to
 
       get edit_ai_judge_url(sleeper)
@@ -540,7 +541,7 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
 
       patch ai_judge_url(ai_judge), params: { user: { name: 'Renamed', escalates_to_id: private_judge.id } }
 
-      assert_redirected_to ai_judge_url(ai_judge)
+      assert_redirected_to ai_judges_url
       assert_equal private_judge, ai_judge.reload.escalates_to
     end
 

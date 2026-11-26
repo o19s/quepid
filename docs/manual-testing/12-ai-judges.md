@@ -29,7 +29,7 @@ AI Judges let an LLM stand in for a human judge. `AiJudge` is a `User` subclass 
 
 ### 12.2 Edit / delete an AI Judge
 
-Successful edits display **AI Judge was successfully updated.**, retaining the existing standalone/team redirect.
+Successful edits return to the AI Judges index and display **AI Judge was successfully updated.**, including updates submitted with team context. Validation failures keep the edit form and its entered values.
 
 - [ ] **Steps:**
   1. From AI Judges or a team member list, edit an owned or team-shared judge.

@@ -126,7 +126,7 @@ class ScorersController < ApplicationController
     end
 
     if @scorer.update(scorer_params)
-      redirect_to edit_scorer_path(@scorer), notice: 'Scorer updated.', status: :see_other
+      redirect_to scorers_path, notice: 'Scorer updated.', status: :see_other
     else
       render :edit, status: :unprocessable_content
     end
