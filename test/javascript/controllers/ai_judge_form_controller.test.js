@@ -192,12 +192,19 @@ describe("AiJudgeFormController provider switching", () => {
     expect(notice.style.display).toBe("none")
   })
 
-  it("lets a provider that needs a scale run once there is one", () => {
-    const controller = buildController({ hasScaleValue: true })
+  it("lets a provider that needs a scale run once there is one, and drops the notice", () => {
+    const notice = document.createElement("div")
+    const controller = buildController({
+      hasScaleValue: true,
+      hasNeedsScaleNoticeTarget: true,
+      needsScaleNoticeTarget: notice
+    })
     controller.hasRunPromptButtonTarget = true
 
     AiJudgeFormController.prototype.updateRunAvailability.call(controller, { needs_scale: true })
     expect(controller.runPromptButtonTarget.disabled).toBe(false)
+    // The scale picker lives outside the notice, so it stays without it.
+    expect(notice.style.display).toBe("none")
   })
 })
 

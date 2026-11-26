@@ -404,14 +404,13 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
 
       assert_response :success
       assert_select '[data-ai-judge-wizard-target=runPromptButton][disabled]'
-      assert_select '[data-ai-judge-form-target=needsScaleNotice]:not([style*="display:none"]) select'
+      assert_select '[data-ai-judge-form-target=needsScaleNotice]:not([style*="display:none"])'
       # a plain select navigated via each option's own data-url, not a <form> -
       # this whole partial already renders inside the page's outer judge-save
       # form_with, and a nested <form> here would silently submit THAT one
       # instead (see the view's comment).
-      assert_select '[data-ai-judge-form-target=needsScaleNotice] form', count: 0
-      assert_select '[data-ai-judge-form-target=needsScaleNotice] select option[data-url*="scorer_id="]',
-                    minimum: 1
+      assert_select '#test-and-refine form', count: 0
+      assert_select '[data-ai-judge-wizard-target=scalePicker] option[data-url*="scorer_id="]', minimum: 1
       # Each scale the frame loads carries the URL Run Prompt then tests against.
       assert_select '[data-ai-judge-wizard-target=scaleState][data-test-url*="test_prompt"]'
     end
@@ -424,7 +423,7 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
 
       get edit_ai_judge_url(ai_judge)
 
-      options = css_select('[data-ai-judge-form-target=needsScaleNotice] select option').map(&:text)
+      options = css_select('[data-ai-judge-wizard-target=scalePicker] option').map(&:text)
       assert_equal(1, options.count { |text| text.include?('1,2,3,4') })
     end
 
@@ -446,10 +445,27 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
 
       assert_response :success
       assert_select '[data-ai-judge-wizard-target=runPromptButton][disabled]', count: 0
-      # Unlike the book case, the picker stays visible even once a scale is
-      # set, so the user can switch to a different scorer.
-      assert_select '[data-ai-judge-form-target=needsScaleNotice]:not([style*="display:none"]) select'
+      assert_select '[data-ai-judge-form-target=needsScaleNotice][style*="display:none"]'
+      # Unlike the book case, the picker stays, so the user can switch to a different scorer.
+      assert_select '[data-ai-judge-wizard-target=scalePicker]'
       assert_select '[data-ai-judge-form-target=criteriaTable]', text: /#{Regexp.escape(scorer.name)}/
+    end
+
+    test 'offers a chat judge without a book a scale to test with, without requiring one' do
+      get edit_ai_judge_url(ai_judge)
+
+      assert_response :success
+      assert_select 'label[for=ai-judge-scale-picker]', text: 'Rating scale to test with'
+      assert_select '[data-ai-judge-wizard-target=scalePicker] option[data-url*="scorer_id="]', minimum: 1
+      assert_select '[data-ai-judge-form-target=needsScaleNotice][style*="display:none"]'
+      assert_select '[data-ai-judge-wizard-target=runPromptButton][disabled]', count: 0
+    end
+
+    test 'offers no scale picker when the scale comes from a book' do
+      get edit_ai_judge_url(ai_judge, book_id: book.id)
+
+      assert_response :success
+      assert_select '[data-ai-judge-wizard-target=scalePicker]', count: 0
     end
 
     test 'shows no criteria when there is no book to take them from' do

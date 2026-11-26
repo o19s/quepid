@@ -33,8 +33,7 @@ export default class extends Controller {
     presets: Object,
     stockPrompts: Array,
     hasScale: Boolean,
-    optionDefaults: Object,
-    book: Boolean
+    optionDefaults: Object
   }
 
   connect() {
@@ -156,21 +155,16 @@ export default class extends Controller {
 
   // A provider that needs a scale (currently: one sent the scale as its criteria,
   // like Jev) has nothing to judge against without one, so don't offer a run that
-  // can only fail. With a book, the scale always comes from the book and there's
-  // no picker in the notice to keep showing once one is set; with a manually-picked
-  // scorer, keep the notice (and its dropdown) visible so it stays available to
-  // switch to a different scale.
+  // can only fail, and say why.
   updateRunAvailability(preset) {
-    const needsScale = Boolean(preset?.needs_scale)
-    const missingScale = needsScale && !this.hasScaleValue
-    const showNotice = this.bookValue ? missingScale : needsScale
+    const missingScale = Boolean(preset?.needs_scale) && !this.hasScaleValue
 
     // ai-judge-wizard flags a scale outside the judge's typed limit; that keeps Run off too.
     if (this.hasRunPromptButtonTarget)
       this.runPromptButtonTarget.disabled =
         missingScale || this.runPromptButtonTarget.dataset.unsupportedScale === "true"
     if (this.hasNeedsScaleNoticeTarget)
-      this.needsScaleNoticeTarget.style.display = showNotice ? "" : "none"
+      this.needsScaleNoticeTarget.style.display = missingScale ? "" : "none"
   }
 
   syncImages() {
