@@ -128,7 +128,7 @@ class User < Thor
 
     api_key = user.api_keys.create! token: SecureRandom.hex
 
-    puts "Success! API key generated and saved: #{api_key.token_digest}".green
+    puts "Success! API key generated and saved: #{api_key.token}".green
   end
 
   private

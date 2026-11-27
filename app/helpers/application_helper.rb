@@ -195,7 +195,7 @@ module ApplicationHelper
 
   # Flash keys that are structural flags consumed by a dedicated partial/controller,
   # not user-facing messages, so the generic flash banner must not render them.
-  NON_DISPLAYABLE_FLASH_KEYS = %w[unfurl kraken_unleashed].freeze
+  NON_DISPLAYABLE_FLASH_KEYS = %w[unfurl kraken_unleashed api_token].freeze
 
   # rubocop:disable-next Lint/EmptyBlock
   def flash_messages _opts = {}

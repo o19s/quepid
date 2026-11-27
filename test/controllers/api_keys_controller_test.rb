@@ -21,6 +21,17 @@ class ApiKeysControllerTest < ActionDispatch::IntegrationTest
       assert_match(/\A\h{64}\z/, user.api_keys.order(:id).last.token_digest) # HMAC-SHA256, never the raw token
     end
 
+    it 'hands the raw token to the profile page once; only its digest is stored' do
+      post api_keys_path
+
+      raw = flash[:api_token]
+      digest = user.api_keys.order(:id).last.token_digest
+
+      assert_match(/\A\h{32}\z/, raw)
+      assert_equal digest, ApiKey.digest_for(raw)
+      assert_not_equal raw, digest
+    end
+
     it 'issues a different key each time and none to anyone else' do
       assert_no_difference 'other_user.api_keys.count' do
         post api_keys_path
