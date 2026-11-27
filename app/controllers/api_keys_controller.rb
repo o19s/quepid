@@ -18,8 +18,10 @@ class ApiKeysController < ApplicationController
 
   # curl -v -X POST http://localhost:3000/api-keys -u quepid+admin@o19s.com:password
   def create
-    @api_key = current_user.api_keys.create! token: SecureRandom.hex
+    @api_key = current_user.api_keys.create! token: ApiKey.generate_token
 
+    # We only store the token's digest, so this is the one chance to show the token itself.
+    flash[:api_key_token] = @api_key.token
     redirect_to profile_path, status: :see_other
 
     # authenticate_with_http_basic do |email, password|
