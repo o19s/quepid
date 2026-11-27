@@ -1,6 +1,8 @@
 <%# locals: (row:, flash_active: false, book: nil) %>
 <% is_ai_judge = row[:judge].ai_judge? %>
 <% can_refine = is_ai_judge && row[:refinable] == true %>
+<% icon_btn_style = 'font-size:0.7rem; width:1.6rem; height:1.6rem; padding:0; ' \
+                    'display:inline-flex; align-items:center; justify-content:center;' %>
 <td id="judge-status-<%= row[:judge].id %>" data-actively-judging="<%= row[:actively_judging] %>">
   <% if is_ai_judge %>
     <i class="bi bi-robot <%= row[:actively_judging] ? 'text-primary' : 'text-secondary' %> <%= 'judge-icon-flash' if flash_active %>"
@@ -18,8 +20,6 @@
     </span>
   <% end %>
   <% if is_ai_judge %>
-    <% icon_btn_style = 'font-size:0.7rem; width:1.6rem; height:1.6rem; padding:0; ' \
-                        'display:inline-flex; align-items:center; justify-content:center;' %>
     <span class="d-inline-flex align-items-center gap-1 ms-1">
       <% if row[:actively_judging] %>
         <button class="btn btn-primary btn-sm"
@@ -65,5 +65,33 @@
         <i class="bi bi-arrow-return-right" aria-hidden="true"></i> wakes <%= row[:wakes] %> when unsure
       </div>
     <% end %>
+  <% end %>
+  <% if book %>
+    <span class="d-inline-flex align-items-center gap-1 ms-1">
+      <% if row[:count].positive? %>
+        <%= button_to delete_ratings_by_assignee_book_path(book, user_id: row[:judge].id),
+              method: :delete,
+              form_class: 'd-inline',
+              class: 'btn btn-outline-danger btn-sm',
+              style: icon_btn_style,
+              title: 'Delete this judge\'s judgements from this book',
+              aria: { label: "Delete #{row[:judge].fullname}'s judgements from this book" },
+              form: { data: { turbo_confirm: "Delete all #{row[:count]} judgements by #{row[:judge].fullname} from this book?" } } do %>
+          <i class="bi bi-eraser" aria-hidden="true"></i>
+        <% end %>
+      <% end %>
+      <% if row[:assigned] && can_refine %>
+        <%= button_to remove_ai_judge_book_path(book, ai_judge_id: row[:judge].id),
+              method: :delete,
+              form_class: 'd-inline',
+              class: 'btn btn-outline-danger btn-sm',
+              style: icon_btn_style,
+              title: 'Remove this judge from the book (keeps its judgements)',
+              aria: { label: "Remove #{row[:judge].fullname} from this book" },
+              form: { data: { turbo_confirm: "Remove #{row[:judge].fullname} from this book? Any judging in progress is cancelled; #{pluralize(row[:count], 'judgement')} will be kept." } } do %>
+          <i class="bi bi-person-x" aria-hidden="true"></i>
+        <% end %>
+      <% end %>
+    </span>
   <% end %>
 </td>

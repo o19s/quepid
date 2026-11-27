@@ -269,7 +269,8 @@ class Book < ApplicationRecord
   # missing just because it didn't exist yet when a viewer's page loaded.
   def judge_activity_rows days: 30
     on_call_ids = on_call_ai_judges.map(&:id)
-    judge_ids = (judgements.where.not(user_id: nil).distinct.pluck(:user_id) + ai_judges.pluck(:id) + on_call_ids).uniq
+    assigned_ids = ai_judges.pluck(:id)
+    judge_ids = (judgements.where.not(user_id: nil).distinct.pluck(:user_id) + assigned_ids + on_call_ids).uniq
     return [] if judge_ids.empty?
 
     actively_judging_ids = RunJudgeJudyJob.actively_judging_user_ids(self).to_set
@@ -285,9 +286,9 @@ class Book < ApplicationRecord
 
       stats = activity.fetch(uid, { sparkline: [], count: 0, last_judged_at: nil })
       { judge: judge, sparkline: stats[:sparkline], last_judged_at: stats[:last_judged_at],
-        count: stats[:count], actively_judging: actively_judging_ids.include?(judge.id),
-        auto_run: auto_run_ids.include?(judge.id), on_call: on_call_ids.include?(judge.id),
-        wakes: wakes[judge.id], labels: labels[uid] }
+        count: stats[:count], actively_judging: actively_judging_ids.include?(uid),
+        auto_run: auto_run_ids.include?(uid), on_call: on_call_ids.include?(uid),
+        assigned: assigned_ids.include?(uid), wakes: wakes[uid], labels: labels[uid] }
     end
 
     rows.sort_by { |row| row[:judge].fullname }
@@ -302,7 +303,8 @@ class Book < ApplicationRecord
   # "shouldn't normally happen" case its caller already falls back on.
   def judge_activity_row_for judge, days: 30
     on_call = judge.ai_judge? && on_call_for?(judge)
-    return nil unless on_call || ai_judges.exists?(id: judge.id) || judgements.exists?(user_id: judge.id)
+    assigned = ai_judges.exists?(id: judge.id)
+    return nil unless on_call || assigned || judgements.exists?(user_id: judge.id)
 
     activity = judge_activity_for([ judge.id ], days: days).fetch(judge.id)
     auto_run = books_ai_judges.where(user_id: judge.id).pick(:auto_run) || false
@@ -310,7 +312,7 @@ class Book < ApplicationRecord
 
     { judge: judge, sparkline: activity[:sparkline], last_judged_at: activity[:last_judged_at],
       count: activity[:count], actively_judging: actively_judging, auto_run: auto_run,
-      on_call: on_call, wakes: AiJudge.escalation_target_names([ judge.id ])[judge.id],
+      on_call: on_call, assigned: assigned, wakes: AiJudge.escalation_target_names([ judge.id ])[judge.id],
       labels: judge_label_counts([ judge.id ])[judge.id] }
   end
 

@@ -8,7 +8,7 @@ class BooksController < ApplicationController
   before_action :set_book,
                 only: [ :show, :edit, :update, :destroy, :combine, :assign_anonymous, :delete_ratings_by_assignee,
                         :reset_unrateable, :reset_judge_later, :delete_query_doc_pairs_below_position,
-                        :eric_steered_us_wrong, :remap_judgement_ratings, :run_judge_judy, :cancel_judge_judy, :judge_overview, :judge_activity, :judgement_stats, :export, :archive, :unarchive ]
+                        :eric_steered_us_wrong, :remap_judgement_ratings, :run_judge_judy, :cancel_judge_judy, :remove_ai_judge, :judge_overview, :judge_activity, :judgement_stats, :export, :archive, :unarchive ]
 
   before_action :find_user, only: [ :reset_unrateable, :reset_judge_later, :delete_ratings_by_assignee ]
   after_action :carry_unassigned_judges_note, only: [ :create, :update ]
@@ -392,6 +392,19 @@ class BooksController < ApplicationController
 
     UpdateCaseJob.perform_later @book
     redirect_to book_path(@book), :notice => "Deleted #{deleted_count} judgements belonging to #{@user.fullname}.", status: :see_other
+  end
+
+  # Like the settings form, only removes judges the current user can access,
+  # so nobody drops a judge they could not assign back. Cancels any run
+  # first: once unassigned, cancel_judge_judy can no longer find the judge.
+  def remove_ai_judge
+    judge = @book.ai_judges.merge(AiJudge.for_user(current_user)).find_by(id: params[:ai_judge_id])
+    return redirect_to(book_path(@book), alert: 'AI Judge not found.', status: :see_other) unless judge
+
+    RunJudgeJudyJob.cancel(@book, judge)
+    @book.ai_judges.delete(judge)
+    kept = helpers.pluralize(@book.judgements.where(user: judge).count, 'judgement')
+    redirect_to book_path(@book), notice: "Removed #{judge.fullname} from this book; #{kept} kept.", status: :see_other
   end
 
   def reset_unrateable
