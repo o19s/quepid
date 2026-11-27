@@ -396,6 +396,49 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
       assert_not_includes james_bond_movies.reload.ai_judge_ids, esci.id
       assert_equal "Not assigned: ESCI Judge can't rate on this book's scale (0,1).", flash[:alert]
     end
+
+    test 'says so only once when the book fails to save' do
+      previous_bullet = Bullet.enable?
+      Bullet.enable = false # the update page's known rated_query_doc_pairs count, see BooksController#update
+      patch book_path(james_bond_movies), params: { book: { name: '', ai_judge_ids: [ esci.id ] } }
+
+      assert_response :unprocessable_content
+      assert_equal "Not assigned: ESCI Judge can't rate on this book's scale (0,1).", flash[:alert]
+
+      get book_path(james_bond_movies)
+      assert_nil flash[:alert]
+    ensure
+      Bullet.enable = previous_bullet
+    end
+
+    test 'checks a newly picked judge against the scale picked in the same save' do
+      previous_bullet = Bullet.enable?
+      Bullet.enable = false # the update page's known rated_query_doc_pairs count, see BooksController#update
+      four_point = Scorer.create!(name: 'Four point', owner: user, scale: [ 0, 1, 2, 3 ])
+      unjudged = Book.create!(name: 'Not judged yet', owner: user, scale: [ 0, 1 ]) # judgements would lock its scale
+
+      patch book_path(unjudged), params: { book: { scorer_id: four_point.id, ai_judge_ids: [ esci.id ] } }
+
+      assert_equal [ 0, 1, 2, 3 ], unjudged.reload.scale
+      assert_includes unjudged.ai_judge_ids, esci.id
+      assert_nil flash[:alert]
+    ensure
+      Bullet.enable = previous_bullet
+    end
+
+    test 'checks a newly picked judge against the scale a judged book keeps, not one it refuses' do
+      previous_bullet = Bullet.enable?
+      Bullet.enable = false # the update page's known rated_query_doc_pairs count, see BooksController#update
+      four_point = Scorer.create!(name: 'Four point', owner: user, scale: [ 0, 1, 2, 3 ])
+
+      patch book_path(james_bond_movies), params: { book: { scorer_id: four_point.id, ai_judge_ids: [ esci.id ] } }
+
+      assert_equal [ 0, 1 ], james_bond_movies.reload.scale # judgements lock it
+      assert_not_includes james_bond_movies.ai_judge_ids, esci.id
+      assert_equal "Not assigned: ESCI Judge can't rate on this book's scale (0,1).", flash[:alert]
+    ensure
+      Bullet.enable = previous_bullet
+    end
   end
 
   describe 'escalation to an on-call judge' do

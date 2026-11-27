@@ -134,6 +134,22 @@ module AiJudges
         end
       end
 
+      test 'refuses to test a judge on a scale outside its limit, without calling the model' do
+        scorer = Scorer.create!(name: 'binary scorer', owner: user, scale: [ 0, 1 ])
+
+        post ai_judge_test_prompt_url(ai_judge_id: 'new', scorer_id: scorer.id), params: {
+          system_prompt:  'Rate it.',
+          connection_id:  random_openai.id,
+          judge_options:  { llm_provider: 'openai', llm_model: 'gpt-4o', supported_scales: "0,1,2,3\n0,1,2" },
+          query_doc_pair: { query_text: 'cheese', doc_id: 'd1', document_fields: '{"title": "Cheddar"}' },
+        }
+
+        assert_response :unprocessable_content
+        assert_equal "This judge is limited to the scales 0,1,2,3 or 0,1,2, so it can't rate on 0,1.",
+                     response.parsed_body['error']
+        assert_not_requested(:post, 'https://api.openai.com/v1/chat/completions')
+      end
+
       test 'a rating this book would reject is shown as unrateable, not as a usable rating' do
         # The fixture book's scale is 0-1, so stubbing a judgment of 3 exercises the out-of-range path.
         stub_request(:post, 'https://api.openai.com/v1/chat/completions')

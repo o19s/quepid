@@ -151,6 +151,12 @@ class Book < ApplicationRecord
     scoring_guidelines.presence || default_scoring_guidelines
   end
 
+  # The scale a save leaves this book on: a new scale doesn't stick once judgements use the old one
+  # (scale_cannot_be_changed_if_judgements_exist), so anything checked before saving checks this.
+  def scale_after_save
+    persisted? && scale_changed? && judgements.exists? ? scale_was : scale
+  end
+
   def scale_list= value
     self.scale = value.split(',') if value.present?
   end
@@ -364,17 +370,9 @@ class Book < ApplicationRecord
   # Validates that scale values cannot be changed if judgements exist
   # but allows changing scale_with_labels for the same scale
   def scale_cannot_be_changed_if_judgements_exist
-    return unless persisted? && scale_changed?
+    return if scale_after_save == scale
 
-    # Allow scale changes if no judgements exist yet
-    return if judgements.empty?
-
-    # Check if the actual scale values have changed (not just the labels)
-    old_scale = scale_was
-    new_scale = scale
-
-    # If the scale values themselves have changed, prevent it
-    errors.add(:scale, "cannot be changed when judgements exist. Current judgements use scale #{old_scale.inspect}") if old_scale != new_scale
+    errors.add(:scale, "cannot be changed when judgements exist. Current judgements use scale #{scale_was.inspect}")
   end
 
   def delete_attachments

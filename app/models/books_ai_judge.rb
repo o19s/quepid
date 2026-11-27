@@ -35,7 +35,7 @@ class BooksAiJudge < ApplicationRecord
   private
 
   def judge_supports_book_scale
-    return if ai_judge.nil? || book.nil? || ai_judge.supports_scale?(book.scale)
+    return if ai_judge.nil? || book.nil? || ai_judge.supports_scale?(book.scale_after_save)
 
     errors.add(:base, "#{ai_judge.name} can't rate on this book's scale")
   end

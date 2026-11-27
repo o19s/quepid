@@ -11,6 +11,7 @@ class BooksController < ApplicationController
                         :eric_steered_us_wrong, :remap_judgement_ratings, :run_judge_judy, :cancel_judge_judy, :judge_overview, :judge_activity, :judgement_stats, :export, :archive, :unarchive ]
 
   before_action :find_user, only: [ :reset_unrateable, :reset_judge_later, :delete_ratings_by_assignee ]
+  after_action :carry_unassigned_judges_note, only: [ :create, :update ]
 
   respond_to :html
 
@@ -534,13 +535,23 @@ class BooksController < ApplicationController
 
   # Newly picked judges limited to other scales than the book's (BooksAiJudge would refuse them).
   # Judges already on the book stay. No scale yet (new's prefill) means nothing to check.
+  # The note is for this response: carry_unassigned_judges_note keeps it through a successful
+  # save's redirect, so a form re-rendered with errors doesn't show it again on the next page.
   def drop_judges_unsupported_by_scale judges
-    return judges if @book.scale.blank?
+    scale = @book.scale_after_save
+    return judges if scale.blank?
 
     assigned_ids = @book.ai_judge_ids
-    unsupported, supported = judges.partition { |j| assigned_ids.exclude?(j.id) && !j.supports_scale?(@book.scale) }
-    flash[:alert] = "Not assigned: #{unsupported.map(&:name).to_sentence} can't rate on this book's scale (#{@book.scale_list})." if unsupported.any?
+    unsupported, supported = judges.partition { |j| assigned_ids.exclude?(j.id) && !j.supports_scale?(scale) }
+    if unsupported.any?
+      @unassigned_judges_noted = true
+      flash.now[:alert] = "Not assigned: #{unsupported.map(&:name).to_sentence} can't rate on this book's scale (#{scale.join(',')})."
+    end
     supported
+  end
+
+  def carry_unassigned_judges_note
+    flash.keep(:alert) if @unassigned_judges_noted && response.redirect?
   end
 
   # This set_book is different because we use :id, not :book_id.
