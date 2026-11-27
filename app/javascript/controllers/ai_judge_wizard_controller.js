@@ -21,15 +21,19 @@ export default class extends withStatusMessages(Controller) {
     "runPromptButton",
     "rating",
     "explanation",
-    "unrateable"
+    "unrateable",
+    "scaleFrame",
+    "scaleState",
+    "scalePicker",
+    "noScaleFits",
+    "supportedScales",
+    "unsupportedScaleNote"
   ]
-  static values = { sampleUrl: String, testUrl: String, existing: Boolean, draftKey: String }
+  static values = { sampleUrl: String, testUrl: String, existing: Boolean }
 
   connect() {
     this.abortController = new AbortController()
-    this.restoreDraft()
     if (this.existingValue) this.revealStep2()
-    this.scrollToStep2IfRequested()
   }
 
   disconnect() {
@@ -48,92 +52,100 @@ export default class extends withStatusMessages(Controller) {
     this.sampleQueryDocPair()
   }
 
-  // The scale picker's reload lands back here with ?scorer_id= set - scroll
-  // down to Test & Refine instead of leaving the user at the top of a long
-  // page they've already filled out. Deliberately not a #fragment: the
-  // browser's own native fragment-scroll would fire against this same
-  // element and race our own (element position differs once revealStep2()
-  // reflows the page), consistently winning and overriding it.
-  scrollToStep2IfRequested() {
-    if (!new URLSearchParams(window.location.search).has("scorer_id")) return
-    if (!this.hasStep2Target) return
+  // Picking a scale reloads only the scale panel - a Turbo frame - from this
+  // same page with ?scorer_id=, so the criteria redraw server-side while
+  // everything typed elsewhere in the not-yet-saved form stays as it is.
+  pickScale(event) {
+    const url = event.target.selectedOptions[0]?.dataset.url
+    if (!url || !this.hasScaleFrameTarget) return
 
-    this.step2Target.closest("#test-and-refine")?.scrollIntoView({ block: "start" })
+    this.scaleFrameTarget.src = url
   }
 
-  // The scale picker (Test & Refine) navigates to this same page with a
-  // different ?scorer_id= - a real GET, not a fetch, since the criteria
-  // shown and the scale handed to test_prompt both come from server-rendered
-  // state keyed off that param. Snapshot everything typed into the not-yet-
-  // saved form first so that reload doesn't throw it all away.
-  navigateToScale(event) {
-    const url = event.target.options[event.target.selectedIndex]?.dataset.url
-    if (!url) return
-
-    this.saveDraft()
-    window.location.href = url
+  // Fires on page load and again each time the frame swaps in a new scale:
+  // Run Prompt tests against the picked scorer, and the provider panels
+  // (criteria shown, Run availability) re-sync to whether there is a scale.
+  scaleStateTargetConnected(state) {
+    const formController = this.formController
+    if (formController) {
+      formController.hasScaleValue = Boolean(state.dataset.scale)
+      formController.updateProviderPanels()
+    }
+    if (state.dataset.testUrl) this.testUrlValue = state.dataset.testUrl
+    this.filterScales()
   }
 
-  get draftStorageKey() {
-    return `ai_judge_wizard_draft:${this.draftKeyValue}`
+  get formController() {
+    return this.application?.getControllerForElementAndIdentifier?.(this.element, "ai-judge-form")
   }
 
-  // Every input/select/textarea's own current value, keyed by name (and by
-  // value too for checkboxes/radios, since several share a name) - deliberately
-  // not FormData, which omits an unchecked checkbox entirely and would leave
-  // restoreDraft with no way to tell "unchecked" apart from "never asked".
-  saveDraft() {
-    const form = this.element.closest("form")
-    if (!form) return
-
-    const snapshot = []
-    form.querySelectorAll("input[name], select[name], textarea[name]").forEach((field) => {
-      if ("checkbox" === field.type || "radio" === field.type) {
-        snapshot.push({
-          name: field.name,
-          value: field.value,
-          type: field.type,
-          checked: field.checked
-        })
-      } else {
-        snapshot.push({ name: field.name, value: field.value, type: field.type })
-      }
-    })
-
-    sessionStorage.setItem(this.draftStorageKey, JSON.stringify(snapshot))
+  // As the "Limit to scales" field is typed (nothing saved yet), splits the
+  // picker into "Supported scales" and "Unsupported scales" groups; with no
+  // limit it is one plain list. Both stay pickable - see syncScaleSupport.
+  filterScales() {
+    if (this.hasScalePickerTarget) this.groupScaleOptions(this.typedScaleLimits())
+    this.syncScaleSupport()
   }
 
-  restoreDraft() {
-    const raw = sessionStorage.getItem(this.draftStorageKey)
-    if (!raw) return
+  groupScaleOptions(limits) {
+    const picker = this.scalePickerTarget
+    // Moving options re-picks the selection, so restore it afterwards.
+    const selected = picker.value
+    // Scorer id order, the order the server lists them in.
+    const options = [...picker.querySelectorAll("option")]
+      .filter((option) => option.value)
+      .sort((a, b) => Number(a.value) - Number(b.value))
+    picker.querySelectorAll("optgroup").forEach((group) => group.remove())
 
-    sessionStorage.removeItem(this.draftStorageKey)
-    const form = this.element.closest("form")
-    if (!form) return
+    const supported = optionGroup("Supported scales")
+    const unsupported = optionGroup("Unsupported scales")
+    if (!limits) {
+      options.forEach((option) => picker.appendChild(option))
+    } else {
+      options.forEach((option) =>
+        (scaleFits(limits, option.dataset.scale) ? supported : unsupported).appendChild(option)
+      )
+      ;[supported, unsupported].forEach((group) => {
+        if (group.children.length) picker.appendChild(group)
+      })
+    }
+    picker.value = selected
+    if (this.hasNoScaleFitsTarget)
+      this.noScaleFitsTarget.style.display = limits && !supported.children.length ? "" : "none"
+  }
 
-    JSON.parse(raw).forEach(({ name, value, type, checked }) => {
-      if ("checkbox" === type || "radio" === type) {
-        const field = form.querySelector(
-          `[name="${CSS.escape(name)}"][value="${CSS.escape(value)}"]`
-        )
-        if (field) field.checked = checked
-      } else {
-        const field = form.querySelector(`[name="${CSS.escape(name)}"]`)
-        if (field) field.value = value
-      }
-    })
+  // Run Prompt stays off while the scale the panel shows (picked, or the
+  // book's) is outside the typed limit. The server refuses it anyway.
+  syncScaleSupport() {
+    if (!this.hasScaleStateTarget || !this.hasRunPromptButtonTarget) return
 
-    // A restored name should reveal step 2 just like typing it would've.
-    this.checkReveal()
+    const limits = this.typedScaleLimits()
+    const scale = this.scaleStateTarget.dataset.scale
+    const unsupported = Boolean(limits && scale && !scaleFits(limits, scale))
+    this.runPromptButtonTarget.dataset.unsupportedScale = String(unsupported)
+    if (this.hasUnsupportedScaleNoteTarget)
+      this.unsupportedScaleNoteTarget.style.display = unsupported ? "" : "none"
+    if (unsupported) this.runPromptButtonTarget.disabled = true
+    else this.formController?.updateRunAvailability()
+  }
 
-    // ai-judge-form already ran its own initial provider-panel sync against
-    // the pre-restore field values (it connects before this controller
-    // does, per data-controller's token order) - redo it now that a
-    // restored draft may have changed the provider or other inputs it
-    // reads, so its panels/help/criteria aren't left showing the wrong one.
-    this.application
-      ?.getControllerForElementAndIdentifier?.(this.element, "ai-judge-form")
-      ?.updateProviderPanels()
+  // The typed limits as a Set of "0,1,2,3" strings, or null when there are none:
+  // blank, or not whole numbers yet (saving reports that).
+  typedScaleLimits() {
+    if (!this.hasSupportedScalesTarget) return null
+
+    const scales = this.supportedScalesTarget.value
+      .split("\n")
+      .map((line) =>
+        line
+          .split(",")
+          .map((value) => value.trim())
+          .filter(Boolean)
+      )
+      .filter((values) => values.length)
+    if (!scales.length || scales.flat().some((value) => !/^-?\d+$/.test(value))) return null
+
+    return new Set(scales.map(normalizeScale))
   }
 
   async sampleQueryDocPair(event) {
@@ -170,10 +182,6 @@ export default class extends withStatusMessages(Controller) {
   }
 
   judgeOptions(formData) {
-    if (formData.has("user[options]")) {
-      const options = JSON.parse(formData.get("user[options]"))
-      return options.judge_options || {}
-    }
     const options = {}
     for (const [name, value] of formData) {
       const match = name.match(/^user\[judge_options\]\[([^\]]+)\]$/)
@@ -220,12 +228,9 @@ export default class extends withStatusMessages(Controller) {
       if (error.name !== "AbortError") this.showError(error)
     } finally {
       this.running = false
-      const scaleNotice = this.element.querySelector(
-        "[data-ai-judge-form-target~=needsScaleNotice]"
-      )
-      this.runPromptButtonTarget.disabled = Boolean(
-        scaleNotice && scaleNotice.style.display !== "none"
-      )
+      // ai-judge-form owns when Run is available (scale missing or outside the limit).
+      this.runPromptButtonTarget.disabled = false
+      this.formController?.updateRunAvailability()
       this.loadingSpinnerTarget.style.display = "none"
     }
   }
@@ -237,4 +242,19 @@ export default class extends withStatusMessages(Controller) {
       className: "alert alert-danger"
     })
   }
+}
+
+function optionGroup(label) {
+  const group = document.createElement("optgroup")
+  group.label = label
+  return group
+}
+
+function scaleFits(limits, scale) {
+  return limits.has(normalizeScale(scale.split(",")))
+}
+
+// Same shape AiJudge#supported_scales compares: unique, sorted, comma-joined.
+function normalizeScale(values) {
+  return [...new Set(values.map(Number))].sort((a, b) => a - b).join(",")
 }

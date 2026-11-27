@@ -48,10 +48,7 @@ module AiJudges
       # a book's own scale if there's a book context, otherwise a scorer's
       # (picked in the form's scale picker when there's no book).
       scale = @book ? JudgeScale.for(@book) : JudgeScale.for_scorer(@scorer)
-      provider = LlmProvider.find(ai_judge.judge_options[:llm_provider])
-      if provider&.needs_scale? && scale.empty?
-        error = "#{provider.label} rates against a scale, so it can only be tested from a book, " \
-                'or by picking a rating scale in the form.'
+      if (error = scale_problem(ai_judge, scale))
         render json: { error: error }, status: :unprocessable_content
         return
       end
@@ -113,6 +110,19 @@ module AiJudges
       ai_judge
     end
 
+    # Why the judge can't be tested against this scale, or nil.
+    def scale_problem ai_judge, scale
+      provider = LlmProvider.find(ai_judge.judge_options[:llm_provider])
+      if provider&.needs_scale? && scale.empty?
+        return "#{provider.label} rates against a scale, so it can only be tested from a book, " \
+               'or by picking a rating scale in the form.'
+      end
+      return if scale.empty? || ai_judge.supports_scale?(scale.values)
+
+      "This judge is limited to the scales #{ai_judge.supported_scales_label}, " \
+        "so it can't rate on #{scale.values.join(',')}."
+    end
+
     def test_setup_problem connection
       return "That connection isn't one you can use." if params[:connection_id].present? && connection.nil?
       return connection_capability_problem(connection) if connection
@@ -136,7 +146,7 @@ module AiJudges
 
     def judge_options_params
       params.fetch(:judge_options, ActionController::Parameters.new)
-        .permit(:llm_provider, :llm_service_url, :llm_model, :llm_timeout, :llm_api_version, :llm_include_images,
+        .permit(:llm_provider, :llm_service_url, :llm_model, :llm_timeout, :llm_api_version, :llm_include_images, :supported_scales,
                 *LlmProvider.option_keys)
     end
   end

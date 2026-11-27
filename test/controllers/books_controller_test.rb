@@ -341,6 +341,106 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  describe 'a judge limited to other scales than the book' do
+    # james_bond_movies is on 0,1; this judge only predicts 0..3.
+    let(:esci) { AiJudge.create!(name: 'ESCI Judge', owner: user, judge_options: { supported_scales: '0,1,2,3' }) }
+
+    setup do
+      login_user_for_integration_test user
+      james_bond_movies.update!(owner: user)
+    end
+
+    # Assigned before the judge was limited, which BooksAiJudge no longer allows.
+    def assign_before_limit
+      BooksAiJudge.new(book: james_bond_movies, ai_judge: esci).save!(validate: false)
+    end
+
+    test 'refuses to run it' do
+      assign_before_limit
+
+      assert_no_enqueued_jobs(only: RunJudgeJudyJob) do
+        patch "/books/#{james_bond_movies.id}/run_judge_judy/#{esci.id}", params: { number_of_pairs: 1 }
+      end
+
+      follow_redirect!
+      assert_equal "AI Judge ESCI Judge can't rate on this book's scale (0,1).", flash[:alert]
+    end
+
+    test 'disables its run button on the book page, saying why' do
+      assign_before_limit
+
+      get book_path(james_bond_movies)
+
+      assert_select "#judge-status-#{esci.id} span[title=?] button[disabled] .bi-play-fill",
+                    "Can't rate on this book's scale (0,1)"
+    end
+
+    test 'disables its checkbox in the book settings, unless it is already on the book' do
+      previous_bullet = Bullet.enable?
+      Bullet.enable = false # the edit page's known rated_query_doc_pairs count, see BooksController#edit
+      esci # exists before the page renders
+
+      get edit_book_path(james_bond_movies)
+      assert_select "input[type=checkbox][name='book[ai_judge_ids][]'][value='#{esci.id}'][disabled]"
+
+      assign_before_limit
+      get edit_book_path(james_bond_movies)
+      assert_select "input[type=checkbox][name='book[ai_judge_ids][]'][value='#{esci.id}']:not([disabled])"
+    ensure
+      Bullet.enable = previous_bullet
+    end
+
+    test 'does not newly assign it, and says so' do
+      patch book_path(james_bond_movies), params: { book: { ai_judge_ids: [ esci.id ] } }
+
+      assert_not_includes james_bond_movies.reload.ai_judge_ids, esci.id
+      assert_equal "Not assigned: ESCI Judge can't rate on this book's scale (0,1).", flash[:alert]
+    end
+
+    test 'says so only once when the book fails to save' do
+      previous_bullet = Bullet.enable?
+      Bullet.enable = false # the update page's known rated_query_doc_pairs count, see BooksController#update
+      patch book_path(james_bond_movies), params: { book: { name: '', ai_judge_ids: [ esci.id ] } }
+
+      assert_response :unprocessable_content
+      assert_equal "Not assigned: ESCI Judge can't rate on this book's scale (0,1).", flash[:alert]
+
+      get book_path(james_bond_movies)
+      assert_nil flash[:alert]
+    ensure
+      Bullet.enable = previous_bullet
+    end
+
+    test 'checks a newly picked judge against the scale picked in the same save' do
+      previous_bullet = Bullet.enable?
+      Bullet.enable = false # the update page's known rated_query_doc_pairs count, see BooksController#update
+      four_point = Scorer.create!(name: 'Four point', owner: user, scale: [ 0, 1, 2, 3 ])
+      unjudged = Book.create!(name: 'Not judged yet', owner: user, scale: [ 0, 1 ]) # judgements would lock its scale
+
+      patch book_path(unjudged), params: { book: { scorer_id: four_point.id, ai_judge_ids: [ esci.id ] } }
+
+      assert_equal [ 0, 1, 2, 3 ], unjudged.reload.scale
+      assert_includes unjudged.ai_judge_ids, esci.id
+      assert_nil flash[:alert]
+    ensure
+      Bullet.enable = previous_bullet
+    end
+
+    test 'checks a newly picked judge against the scale a judged book keeps, not one it refuses' do
+      previous_bullet = Bullet.enable?
+      Bullet.enable = false # the update page's known rated_query_doc_pairs count, see BooksController#update
+      four_point = Scorer.create!(name: 'Four point', owner: user, scale: [ 0, 1, 2, 3 ])
+
+      patch book_path(james_bond_movies), params: { book: { scorer_id: four_point.id, ai_judge_ids: [ esci.id ] } }
+
+      assert_equal [ 0, 1 ], james_bond_movies.reload.scale # judgements lock it
+      assert_not_includes james_bond_movies.ai_judge_ids, esci.id
+      assert_equal "Not assigned: ESCI Judge can't rate on this book's scale (0,1).", flash[:alert]
+    ensure
+      Bullet.enable = previous_bullet
+    end
+  end
+
   describe 'escalation to an on-call judge' do
     let(:on_call) { AiJudge.create!(name: 'Night Shift', owner: user) }
 
@@ -431,6 +531,21 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
       assert_response :success
       assert_select 'small', text: /wakes Night Shift when unsure/
       assert_select '.badge', text: /On call/
+      assert_select 'small.text-warning-emphasis', count: 0
+    end
+
+    test 'the book settings warn when the woken judge cannot rate the book scale' do
+      on_call.update!(judge_options: on_call.judge_options.merge(supported_scales: '0,1,2,3')) # book is 0,1
+      previous_bullet = Bullet.enable?
+      Bullet.enable = false # the pre-existing @other_books N+1, as above
+
+      get "/books/#{james_bond_movies.id}/edit"
+
+      assert_response :success
+      assert_select 'small.text-warning-emphasis',
+                    text: /but Night Shift can't rate this book's scale \(0,1\), so it won't be woken here/
+    ensure
+      Bullet.enable = previous_bullet
     end
   end
 

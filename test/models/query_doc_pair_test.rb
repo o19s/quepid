@@ -75,6 +75,16 @@ class QueryDocPairTest < ActiveSupport::TestCase
       end
     end
 
+    it 'does not queue an auto-run AI judge limited to other scales than the book' do
+      book.books_ai_judges.create!(ai_judge: ai_judge, auto_run: true)
+      ai_judge.update!(judge_options: ai_judge.judge_options.merge(supported_scales: '0,1,2,3,4'))
+
+      assert_no_enqueued_jobs(only: AutoRunJudgeJudyJob) do
+        book.query_doc_pairs.create!(query_text: 'auto run test', doc_id: 'auto_run_doc_3',
+                                     document_fields: '{"title":"Test"}')
+      end
+    end
+
     it 'does not queue an AI judge that is not set to auto-run' do
       book.books_ai_judges.create!(ai_judge: ai_judge, auto_run: false)
 

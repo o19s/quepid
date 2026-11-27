@@ -27,7 +27,7 @@ class BooksHelperTest < ActionView::TestCase
     book = Book.new(scale: second.scale)
 
     assert_equal first.id, matching_scorer_id_for_book(user, book)
-    assert_equal [ first.id ], scorer_options_for_select(user).select { |_, id| [ first.id, second.id ].include?(id) }.map(&:last)
+    assert_equal [ first.id ], scorer_options_for_select(user).select { |_, id| [ first.id, second.id ].include?(id) }.map(&:second)
   end
 
   describe '#available_ai_judges_for_book' do

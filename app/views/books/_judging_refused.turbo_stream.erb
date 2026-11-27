@@ -1,0 +1,8 @@
+<%# A judging run refused before it judged anything. locals: book, judge, reason %>
+<%= turbo_stream.replace "notification-book-#{book.id}" do %>
+  <span id="notification-book-<%= book.id %>">
+    <div class="alert alert-warning" role="alert">
+      Judging by <i class="bi bi-robot" aria-hidden="true"></i> <%= judge.name %> stopped: <%= reason %>.
+    </div>
+  </span>
+<% end %>

@@ -3,15 +3,37 @@
   <i class="bi bi-robot"></i>
   <%= form.label :teams, "AI Judges Assigned to this Book", class: 'form-label' %>
   <%= form.collection_check_boxes(:ai_judge_ids, ai_judges, :id, :name) do |b| %>
+    <%# Incompatible judges can't be newly picked. One already on the book stays enabled: a
+        disabled checkbox isn't submitted, so saving would silently drop it. %>
+    <% limited = b.object.supported_scales.any? %>
+    <% incompatible = book.scale.present? && !b.object.supports_scale?(book.scale) %>
+    <% unpickable = incompatible && book.ai_judge_ids.exclude?(b.value) %>
     <div>
-      <%= b.check_box %>
+      <%= b.check_box(disabled: unpickable) %>
       <%= b.label %>
+      <% if limited %>
+        <% limits = b.object.supported_scales_label %>
+        <% if incompatible %>
+          <span class="badge text-bg-warning ms-1" title="Only rates on scale <%= limits %>; it won't run on this book">
+            <i class="bi bi-exclamation-triangle" aria-hidden="true"></i> Incompatible with this book's scale (<%= book.scale_list %>)
+          </span>
+        <% else %>
+          <small class="text-muted ms-1">only rates on scale <%= limits %></small>
+        <% end %>
+      <% end %>
       <% if b.object.escalates_to %>
         <small class="text-muted ms-1" title="Pairs this judge can't rate are handed on, in every book it judges">
           <i class="bi bi-arrow-right" aria-hidden="true"></i>
           <%= link_to "wakes #{b.object.escalates_to.name} when unsure",
                 "#{edit_ai_judge_path(b.object, book_id: book.id)}#escalation-field" %>
         </small>
+        <%# RunJudgeJudyJob doesn't wake an on-call judge that can't rate the book's scale. %>
+        <% if book.scale.present? && !b.object.escalates_to.supports_scale?(book.scale) %>
+          <small class="text-warning-emphasis ms-1">
+            <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
+            but <%= b.object.escalates_to.name %> can't rate this book's scale (<%= book.scale_list %>), so it won't be woken here
+          </small>
+        <% end %>
       <% end %>
       <% if b.object.on_call? %>
         <span class="badge text-bg-info ms-1" title="Woken by <%= b.object.escalated_from_names %>; no need to assign it here">
@@ -21,7 +43,7 @@
       <div class="form-check form-switch ms-4">
         <%= check_box_tag 'book[auto_run_ai_judge_ids][]', b.value,
               book.books_ai_judges.any? { |assignment| assignment.user_id == b.value && assignment.auto_run? },
-              id: "auto_run_#{b.value}", class: 'form-check-input' %>
+              id: "auto_run_#{b.value}", class: 'form-check-input', disabled: unpickable %>
         <%= label_tag "auto_run_#{b.value}", 'Auto-run on new pairs', class: 'form-check-label' %>
       </div>
     </div>

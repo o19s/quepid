@@ -142,21 +142,6 @@ class AiJudgesController < ApplicationController
   end
 
   def ai_judge_params
-    params_to_return = params.expect(user: [ :name, :connection_id, :system_prompt, :options, :escalates_to_id,
-                                             { judge_options: {} } ])
-    if params_to_return[:options]
-      @submitted_options = params_to_return[:options]
-      parsed_options = JSON.parse(@submitted_options)
-      unless parsed_options.is_a?(Hash) && (parsed_options['judge_options'].nil? || parsed_options['judge_options'].is_a?(Hash))
-        @ai_judge.errors.add(:options, 'must contain a judge_options object')
-        return params_to_return.except(:options)
-      end
-      params_to_return[:options] = parsed_options
-    end
-
-    params_to_return
-  rescue JSON::ParserError
-    @ai_judge.errors.add(:options, 'must be valid JSON')
-    params_to_return.except(:options)
+    params.expect(user: [ :name, :connection_id, :system_prompt, :escalates_to_id, { judge_options: {} } ])
   end
 end

@@ -13,18 +13,16 @@ AI Judges let an LLM stand in for a human judge. `AiJudge` is a `User` subclass 
   2. Enter a Name; confirm **Test & Refine** appears. Leave teams unchecked for a private judge, or select teams to share it.
   3. Choose connections to different providers (the provider follows the connection). Confirm registry presets and help, provider-specific options and read-only fields. Switching between chat models and Jev replaces untouched stock prompts while retaining custom instructions.
   4. Choose a **Connection**; choosing one sets the provider. The **Llm Provider** field appears read-only once a connection is chosen, and stays hidden (with a "Choose a connection first" placeholder) until then. Only your own and instance-wide connections whose provider can judge are offered; create one under **Connections** first if you have none yet.
-  5. Switch between Structured Fields and JSON; confirm only the active representation submits.
-     Remove `jev_min_confidence` in JSON and switch tabs both ways; confirm the old floor is cleared.
-     Omit OpenAI's model in JSON and repeat; confirm the effective default returns. There are no URL or timeout fields: they come from the connection.
+  5. Confirm the options are edited as fields only (there is no JSON tab). Clear Jev's **Minimum confidence**, save and reopen; confirm the old floor is cleared. There are no URL or timeout fields: they come from the connection.
   6. Review the System Prompt, test it as described in 12.4, then Save.
   7. Reload and confirm name, provider, prompt and sharing persist; the index shows the owner and teams.
 - **Expected:** Top-level Save redirects to the judge form. Legacy nested team submissions return to the team. Successful mutations use Turbo-compatible redirects.
 - **Edge cases:**
-  - [ ] Blank name/prompt or malformed configuration JSON returns validation errors, retains entered values and team selections, and creates no judge.
+  - [ ] Blank name/prompt returns validation errors, retains entered values and team selections, and creates no judge.
   - [ ] Keyless judges still appear as AI judges rather than human accounts.
   - [ ] A judge still on its own URL and key no longer offers a manual **Migrate to connection** action - the route/button are gone; the form just says to choose a connection to save changes, and its **Llm Provider** field is hidden like a brand-new judge's (no more deprecation notice or read-only legacy value). The `MigrateAiJudgesToConnections` data migration ships with this change, so this state shouldn't exist in a real deployment - reach it by creating a judge with an `llm_key`/`judge_options.llm_service_url` and no `connection_id` directly (e.g. via `rails runner`).
   - [ ] Saving changes to a judge that still has its own URL and key is refused until it has a connection; it keeps judging meanwhile, but testing it from the wizard now also requires choosing a connection first (there's no more own-settings exception).
-  - [ ] Saving without a connection is refused with the reason and creates no judge. A provider edited in the JSON tab is replaced by the connection's on save.
+  - [ ] Saving without a connection is refused with the reason and creates no judge.
   - [ ] Choosing a connection on a judge saved before connections moves it onto that connection (its own key is cleared) and saves the rest of the form's changes along with it.
 
 ### 12.2 Edit / delete an AI Judge
@@ -64,9 +62,9 @@ Successful edits return to the AI Judges index and display **AI Judge was succes
   7. Save explicitly and reload to verify persistence.
 - **Expected:** Testing uses current form values and the selected book's rating scale; missing or off-scale ratings appear as Unrateable, using the same acceptance rules as a judging run. Samples respect the requesting user's book access. Legacy prompt routes remain compatible.
 - **Edge cases:**
-  - [ ] Malformed Document Fields, Options or provider JSON produces a recoverable error; correct it and retry.
+  - [ ] Malformed Document Fields or Options JSON produces a recoverable error; correct it and retry.
   - [ ] A provider failure re-enables Run Prompt and retains input for retry.
-  - [ ] Without a book scale, change `llm_provider` directly in JSON between Jev and OpenAI; confirm Run Prompt is disabled only for Jev. Malformed JSON remains runnable to show its recoverable error.
+  - [ ] Without a book, switch between a Jev connection and an OpenAI connection; confirm Run Prompt is disabled only for Jev, until a scale is picked under **Rating scale to test with**. The picker shows for every provider.
   - [ ] An empty book uses a blank sample. Leaving the page during sampling must not update a disconnected form.
 
 ### 12.5 Trigger a judging run ("Judge Judy")
@@ -90,7 +88,6 @@ Successful edits return to the AI Judges index and display **AI Judge was succes
   1. Create an OpenAI judge. Confirm **Judge with images** is checked by default.
   2. Turn it off, save and reopen; then turn it on, save and reopen. Confirm both choices persist.
   3. Select Ollama or TypeSafe Jev. Confirm the image checkbox is disabled and off, with a provider notice. Switch back to OpenAI and confirm your previous choice returns; save/reload with a text-only provider and repeat.
-  4. Switch to the JSON tab and confirm structured inputs are disabled. Set `llm_include_images` to false there, save and reopen.
 - **Expected:** The saved option controls whether absolute HTTP(S) document image or thumbnail URLs enter the judging prompt. Ollama and Jev omit image content regardless of the saved option. Text-only document fields remain available.
 - **Edge cases:**
   - [ ] With images enabled, provide only `thumb`, or a relative `image` plus absolute `thumb`; confirm the absolute thumbnail is used. If both are absolute, prefer `image`.
@@ -163,4 +160,28 @@ A judge can name a second judge to wake when it can't give a usable rating ("esc
   3. Choose a connection, clear the system prompt and Save. Confirm validation retains name, connection, options, team selection and the nested create action; correct the prompt and retry.
   4. Confirm the redirect to the team with creation notice. Reopen the new judge and verify settings, requester ownership and a distinct ID; the source is unchanged.
 - **Expected:** Only judge configuration is copied. The original's key and connection, account privileges/tokens, book assignments and judgements are not copied; saving uses the existing create contract.
-- **Edge cases:** Inaccessible teams/private judges and sources outside the specified team return 404. Malformed Options JSON retains input for retry. Uncheck the team before Save to make the clone private.
+- **Edge cases:** Inaccessible teams/private judges and sources outside the specified team return 404. Uncheck the team before Save to make the clone private.
+
+### 12.12 Limit an AI judge to the scales it can predict
+
+A judge whose model only predicts certain labels (for example a classifier trained on 0–3) can list the scales it supports in **Limit to scales**, one per line. Blank means any scale. The match is exact: a 0–3 judge can't fill a 0/1 or 0–4 book.
+
+- [ ] **Steps:**
+  1. Edit an OpenAI judge, open it without a book, and type `0,1,2,3` in **Limit to scales** (don't save yet). In **Test & Refine**, open **Rating scale to test with**.
+  2. Pick a 0/1 scale, then the 0–3 scale.
+  3. Type `abc` in **Limit to scales** and Save; then set it back to `0,1,2,3` and Save.
+  4. Open the **Settings** of a book on a 0/1 scale that doesn't have this judge yet, and of one on 0–3.
+  5. On the 0–3 book, assign the judge and turn on **Auto-run on new pairs**; save. Then change the judge's limit to `0,1` and add a query/doc pair to that book.
+  6. Make another judge wake this one when unsure (on the judge's page), and open the 0/1 book's **Settings** with that other judge assigned.
+- **Expected:**
+  - Step 1: the picker splits into **Supported scales** and **Unsupported scales** groups as you type; with nothing that fits, it says "None of your scorers uses a scale this judge is limited to."
+  - Step 2: picking 0/1 keeps the typed limit, shows "Rating scale added to the prompt — from …", disables **Run Prompt** and shows "This judge can't rate on this scale (see Limit to scales above)". Picking 0–3 re-enables it.
+  - Step 3: `abc` is refused with "Limit to scales must be whole numbers separated by commas, one scale per line (e.g. 0,1,2,3)"; the valid limit saves.
+  - Step 4: on the 0/1 book the judge's checkbox is disabled with an "Incompatible with this book's scale (0,1)" badge; on the 0–3 book it reads "only rates on scale 0,1,2,3".
+  - Step 5: the book page shows the judge's ▶ disabled with "Can't rate on this book's scale (0,1,2,3)" on hover, and adding the pair queues no judging for it.
+  - Step 6: the other judge's line reads "wakes {judge} when unsure", followed by a warning that it can't rate this book's scale, so it won't be woken here.
+- **Edge cases:**
+  - [ ] Select the incompatible judge anyway (e.g. by editing the form's HTML) and save the book: it isn't assigned, and the page says "Not assigned: {judge} can't rate on this book's scale (0,1)." If the save also fails (blank book name), that note shows once, not again on the next page.
+  - [ ] On a book that already has judgements, pick a scorer with a different scale together with a judge that only fits the new scale: the scale change is refused, and the judge isn't assigned.
+  - [ ] Request a run of the incompatible judge directly (`PATCH /books/:id/run_judge_judy/:judge_id`): it is refused with "AI Judge {name} can't rate on this book's scale (…)".
+  - [ ] Limit a judge while a run of it is queued: the run stops before judging, and the book page says "Judging by {judge} stopped: it can't rate this book's scale (…)", not "completed".

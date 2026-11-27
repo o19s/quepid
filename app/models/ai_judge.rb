@@ -92,6 +92,7 @@ class AiJudge < User
   validates :llm_key, length: { maximum: 255 }, allow_blank: true
   validates :system_prompt, length: { maximum: 4000 }, allow_nil: true, presence: true
   validate :escalation_chain_does_not_loop, if: :escalates_to_id_changed?
+  validate :supported_scales_are_well_formed
   include ConnectionConsumer
 
   before_validation :leave_own_settings_for_connection
@@ -133,6 +134,26 @@ class AiJudge < User
     self.options = (options || {}).merge('judge_options' => value.to_h.deep_stringify_keys)
   end
 
+  # The scales this judge can rate on, e.g. [[0, 1, 2, 3]] for a classifier
+  # trained on four labels; [] means any scale. Kept in judge_options as the
+  # text typed into the form, one scale per line ("0,1,2,3\n0,1").
+  def supported_scales
+    parse_supported_scales
+  rescue ArgumentError
+    []
+  end
+
+  # The limits as people read them, e.g. "0,1,2,3 or 0,1".
+  def supported_scales_label
+    supported_scales.map { |scale| scale.join(',') }.join(' or ')
+  end
+
+  # Exact match only: a model that predicts 0..3 can't fill a 0/1 or 0..4 book.
+  def supports_scale? values
+    supported = supported_scales
+    supported.empty? || supported.include?(Array(values).map(&:to_i).sort)
+  end
+
   # The judge_options a judge would end up with once connected: the provider becomes the
   # connection's. Shared by leave_own_settings_for_connection (actually saving) and the wizard's
   # draft_judge (previewing a connection switch before anyone saves).
@@ -170,6 +191,23 @@ class AiJudge < User
     self.judge_options = self.class
       .judge_options_with_connection_provider(judge_options, connection)
       .except(:llm_service_url, :llm_timeout)
+  end
+
+  # supported_scales swallows a bad line as "any scale" so a judge keeps
+  # running; saving one has to say so instead.
+  def supported_scales_are_well_formed
+    parse_supported_scales
+  rescue ArgumentError
+    errors.add(:base, 'Limit to scales must be whole numbers separated by commas, one scale per line (e.g. 0,1,2,3)')
+  end
+
+  # Raises ArgumentError on anything that isn't whole numbers; callers decide
+  # whether that means "any scale" or a validation error.
+  def parse_supported_scales
+    judge_options[:supported_scales].to_s.lines.filter_map do |line|
+      values = line.split(',').map(&:strip).compact_blank
+      values.map { |v| Integer(v, 10) }.uniq.sort if values.any?
+    end
   end
 
   # A loop would leave every judge in it on call, so nobody in it would ever

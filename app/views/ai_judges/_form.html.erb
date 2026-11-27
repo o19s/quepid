@@ -1,21 +1,18 @@
-<%# locals: (ai_judge:, form:, book:, book_id:, scorer:, scorer_id:, submitted_options:) %>
+<%# locals: (ai_judge:, form:, book:, book_id:, scorer:, scorer_id:) %>
 <%# The URL and timeout come from the judge's connection, so they aren't options to fill in. %>
 <% option_defaults = LlmService::DEFAULT_OPTIONS.except(:llm_service_url, :llm_timeout).merge(llm_provider: 'openai', llm_api_version: '') %>
 <%# A book's own scale if there's a book context, otherwise a scorer's (picked
     below, in Step 2, when there's no book) - either way, the same scale an
     actual judging run would be handed. %>
 <% scale = book ? JudgeScale.for(book) : JudgeScale.for_scorer(scorer) %>
+<% test_url = ai_judge_test_prompt_path(ai_judge.persisted? ? ai_judge.id : 'new', book_id: book_id, scorer_id: scorer_id) %>
 <div class="card" data-controller="ai-judge-form ai-judge-wizard"
      data-ai-judge-wizard-sample-url-value="<%= ai_judge_sample_query_doc_pair_path(ai_judge.persisted? ? ai_judge.id : 'new', book_id: book_id) %>"
-     data-ai-judge-wizard-test-url-value="<%= ai_judge_test_prompt_path(ai_judge.persisted? ? ai_judge.id : 'new', book_id: book_id, scorer_id: scorer_id) %>"
+     data-ai-judge-wizard-test-url-value="<%= test_url %>"
      data-ai-judge-form-presets-value="<%= LlmProvider.presets.to_json %>"
      data-ai-judge-form-stock-prompts-value="<%= LlmProvider.stock_system_prompts.to_json %>"
-     data-ai-judge-form-option-defaults-value="<%= option_defaults.to_json %>"
      data-ai-judge-form-has-scale-value="<%= scale.present? %>"
-     data-ai-judge-form-book-value="<%= book.present? %>"
-     data-ai-judge-wizard-existing-value="<%= ai_judge.persisted? %>"
-     data-ai-judge-wizard-draft-key-value="<%= ai_judge.persisted? ? ai_judge.id : 'new' %>"
-     data-action="shown.bs.tab->ai-judge-form#syncTab">
+     data-ai-judge-wizard-existing-value="<%= ai_judge.persisted? %>">
   <div class="card-header">
     <h5 class="card-title"><i class="bi bi-robot"></i> AI Judge</h5>
   </div>
@@ -59,8 +56,8 @@
       </div>
     </div>
 
-    <%= render "ai_judges/provider_options", ai_judge: ai_judge, form: form, option_defaults: option_defaults,
-               images_supported: images_supported, specs: specs, submitted_options: submitted_options %>
+    <%= render "ai_judges/provider_options", ai_judge: ai_judge, option_defaults: option_defaults,
+               images_supported: images_supported, specs: specs %>
 
     <div class="row mb-3" id="escalation-field">
       <%= form.label :escalates_to_id, 'When unsure, wake On-Call Judge', class: 'col-sm-2 col-form-label' %>
@@ -116,7 +113,7 @@
     </div>
     <hr>
 
-    <%= render "ai_judges/prompt_testing", ai_judge: ai_judge, book: book, scorer: scorer, scorer_id: scorer_id, scale: scale, provider: provider %>
+    <%= render "ai_judges/prompt_testing", ai_judge: ai_judge, book: book, scorer: scorer, scorer_id: scorer_id, scale: scale, provider: provider, test_url: test_url %>
   </div>
 
   <div class="card-footer">

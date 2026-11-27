@@ -82,12 +82,14 @@ class RunJudgeJudyJob < ApplicationJob
   # @example Judge all pairs
   #   RunJudgeJudyJob.perform_later(book, ai_judge, nil)
   def perform book, judge, number_of_pairs, escalating_from_judge: nil
+    scale = JudgeScale.for(book)
+    return refuse_unsupported_scale(book, judge, scale) unless judge.supports_scale?(scale.values)
+
     counter = 0
     cancelled = false
     total_pairs = book.query_doc_pairs_within_rank_depth.count
     cancellable = provider_job_id.present? || SolidQueue::Job.exists?(active_job_id: job_id)
     llm_service = judge.llm_service
-    scale = JudgeScale.for(book)
     loop do
       break if number_of_pairs && counter >= number_of_pairs
 
@@ -122,6 +124,12 @@ class RunJudgeJudyJob < ApplicationJob
   end
 
   private
+
+  # A judge limited to certain scales after it was put on this book (or after this run was queued).
+  def refuse_unsupported_scale book, judge, scale
+    Rails.logger.warn("RunJudgeJudyJob: #{judge.name} (#{judge.id}) can't rate on book #{book.id}'s scale #{scale.values.inspect}")
+    broadcast_refused(book, judge, "it can't rate this book's scale (#{scale.values.join(',')})")
+  end
 
   def cancellation_requested?
     arguments = SolidQueue::Job.where(active_job_id: job_id).pick(:arguments)
@@ -160,7 +168,7 @@ class RunJudgeJudyJob < ApplicationJob
   # The on-call judge's own run ends here too, so chains (A -> B -> C) follow.
   def wake_on_call_judge book, judge
     on_call = judge.try(:escalates_to)
-    return if on_call.nil?
+    return if on_call.nil? || !on_call.supports_scale?(book.scale)
     return unless Judgement.awaiting_escalation(book, from: judge, to: on_call).exists?
 
     RunJudgeJudyJob.perform_later(book, on_call, nil, escalating_from_judge: judge)
@@ -197,6 +205,24 @@ class RunJudgeJudyJob < ApplicationJob
       partial: 'books/update_kraken_mode',
       locals:  { book: book, counter: counter, qdp: query_doc_pair, judge: judge }
     )
+  end
+
+  # Says why a run stopped before judging anything, rather than announcing it complete, and
+  # refreshes the judge's activity row (which a queued run shows as busy).
+  def broadcast_refused book, judge, reason
+    ProgressBroadcaster.render(
+      book,
+      target:  'notifications',
+      partial: 'books/judging_refused',
+      locals:  { book: book, judge: judge, reason: reason }
+    )
+    Turbo::StreamsChannel.broadcast_update_to(
+      book.judgements_broadcast_channel,
+      target:  "judging-activity-#{judge.id}",
+      partial: 'books/judging_activity_refused',
+      locals:  { book: book, judge: judge, reason: reason }
+    )
+    BroadcastJudgeActivityJob.perform_later(book, judge)
   end
 
   def broadcast_complete book, judge

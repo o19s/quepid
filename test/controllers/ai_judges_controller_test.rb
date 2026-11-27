@@ -40,7 +40,7 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
 
   test 'saving a clone creates a distinct requester-owned judge without account state' do
     configuration = { name: "Clone of #{ai_judge.name}", connection_id: random_openai.id,
-                      system_prompt: ai_judge.system_prompt, options: { judge_options: ai_judge.judge_options }.to_json,
+                      system_prompt: ai_judge.system_prompt, judge_options: ai_judge.judge_options,
                       team_ids: [ team.id ], administrator: true, reset_password_token: 'source-token' }
     original = ai_judge.attributes
     assert_difference 'AiJudge.count' do
@@ -75,14 +75,13 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
   test 'clone validation failure retains input and the nested create route for retry' do
     assert_no_difference 'User.count' do
       post team_ai_judges_url(team), params: { user: {
-        name: 'Retry clone', connection_id: random_openai.id, system_prompt: '', options: '{broken', team_ids: [ team.id ]
+        name: 'Retry clone', connection_id: random_openai.id, system_prompt: '', team_ids: [ team.id ]
       } }
     end
     assert_response :unprocessable_content
     assert_select 'form[action=?]', team_ai_judges_path(team)
     assert_select 'input[name="user[name]"][value="Retry clone"]'
     assert_select 'select[name="user[connection_id]"] option[selected][value=?]', random_openai.id.to_s
-    assert_select 'textarea[name="user[options]"]', text: '{broken'
     assert_select 'input[name="user[team_ids][]"][checked][value=?]', team.id.to_s
   end
 
@@ -220,8 +219,20 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
 
     assert_not_nil stock, 'stock prompts were not rendered into the wizard'
     assert_equal LlmProvider.stock_system_prompts, JSON.parse(stock)
-    defaults = JSON.parse(css_select('[data-controller~="ai-judge-form"]').first['data-ai-judge-form-option-defaults-value'])
-    assert_equal LlmService::DEFAULT_OPTIONS.except(:llm_service_url, :llm_timeout).stringify_keys.merge('llm_provider' => 'openai', 'llm_api_version' => ''), defaults
+    assert_select 'input#judge_options_llm_model[value=?]', LlmService::DEFAULT_OPTIONS[:llm_model]
+    # The options are edited as fields only; there is no raw JSON to edit them as.
+    assert_select 'textarea[name=?]', 'user[options]', count: 0
+  end
+
+  test 'update ignores a raw options hash, taking judge options only from the fields' do
+    patch ai_judge_url(ai_judge), params: { user: {
+      name: 'Renamed', options: { judge_options: { llm_model: 'from-raw-json' }, other: 'kept out' }.to_json
+    } }
+
+    assert_response :see_other
+    assert_equal 'Renamed', ai_judge.reload.name
+    assert_not_equal 'from-raw-json', ai_judge.reload.judge_options[:llm_model]
+    assert_nil ai_judge.options['other']
   end
 
   test 'new offers a provider own option as a field, inert until that provider is chosen' do
@@ -404,14 +415,15 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
 
       assert_response :success
       assert_select '[data-ai-judge-wizard-target=runPromptButton][disabled]'
-      assert_select '[data-ai-judge-form-target=needsScaleNotice]:not([style*="display:none"]) select'
+      assert_select '[data-ai-judge-form-target=needsScaleNotice]:not([style*="display:none"])'
       # a plain select navigated via each option's own data-url, not a <form> -
       # this whole partial already renders inside the page's outer judge-save
       # form_with, and a nested <form> here would silently submit THAT one
       # instead (see the view's comment).
-      assert_select '[data-ai-judge-form-target=needsScaleNotice] form', count: 0
-      assert_select '[data-ai-judge-form-target=needsScaleNotice] select option[data-url*="scorer_id="]',
-                    minimum: 1
+      assert_select '#test-and-refine form', count: 0
+      assert_select '[data-ai-judge-wizard-target=scalePicker] option[data-url*="scorer_id="]', minimum: 1
+      # Each scale the frame loads carries the URL Run Prompt then tests against.
+      assert_select '[data-ai-judge-wizard-target=scaleState][data-test-url*="test_prompt"]'
     end
 
     test 'the scale picker is deduplicated across every scorer the user has access to' do
@@ -422,7 +434,7 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
 
       get edit_ai_judge_url(ai_judge)
 
-      options = css_select('[data-ai-judge-form-target=needsScaleNotice] select option').map(&:text)
+      options = css_select('[data-ai-judge-wizard-target=scalePicker] option').map(&:text)
       assert_equal(1, options.count { |text| text.include?('1,2,3,4') })
     end
 
@@ -444,10 +456,27 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
 
       assert_response :success
       assert_select '[data-ai-judge-wizard-target=runPromptButton][disabled]', count: 0
-      # Unlike the book case, the picker stays visible even once a scale is
-      # set, so the user can switch to a different scorer.
-      assert_select '[data-ai-judge-form-target=needsScaleNotice]:not([style*="display:none"]) select'
+      assert_select '[data-ai-judge-form-target=needsScaleNotice][style*="display:none"]'
+      # Unlike the book case, the picker stays, so the user can switch to a different scorer.
+      assert_select '[data-ai-judge-wizard-target=scalePicker]'
       assert_select '[data-ai-judge-form-target=criteriaTable]', text: /#{Regexp.escape(scorer.name)}/
+    end
+
+    test 'offers a chat judge without a book a scale to test with, without requiring one' do
+      get edit_ai_judge_url(ai_judge)
+
+      assert_response :success
+      assert_select 'label[for=ai-judge-scale-picker]', text: 'Rating scale to test with'
+      assert_select '[data-ai-judge-wizard-target=scalePicker] option[data-url*="scorer_id="]', minimum: 1
+      assert_select '[data-ai-judge-form-target=needsScaleNotice][style*="display:none"]'
+      assert_select '[data-ai-judge-wizard-target=runPromptButton][disabled]', count: 0
+    end
+
+    test 'offers no scale picker when the scale comes from a book' do
+      get edit_ai_judge_url(ai_judge, book_id: book.id)
+
+      assert_response :success
+      assert_select '[data-ai-judge-wizard-target=scalePicker]', count: 0
     end
 
     test 'shows no criteria when there is no book to take them from' do
