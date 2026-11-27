@@ -13,18 +13,16 @@ AI Judges let an LLM stand in for a human judge. `AiJudge` is a `User` subclass 
   2. Enter a Name; confirm **Test & Refine** appears. Leave teams unchecked for a private judge, or select teams to share it.
   3. Choose connections to different providers (the provider follows the connection). Confirm registry presets and help, provider-specific options and read-only fields. Switching between chat models and Jev replaces untouched stock prompts while retaining custom instructions.
   4. Choose a **Connection**; choosing one sets the provider. The **Llm Provider** field appears read-only once a connection is chosen, and stays hidden (with a "Choose a connection first" placeholder) until then. Only your own and instance-wide connections whose provider can judge are offered; create one under **Connections** first if you have none yet.
-  5. Switch between Structured Fields and JSON; confirm only the active representation submits.
-     Remove `jev_min_confidence` in JSON and switch tabs both ways; confirm the old floor is cleared.
-     Omit OpenAI's model in JSON and repeat; confirm the effective default returns. There are no URL or timeout fields: they come from the connection.
+  5. Confirm the options are edited as fields only (there is no JSON tab). Clear Jev's **Minimum confidence**, save and reopen; confirm the old floor is cleared. There are no URL or timeout fields: they come from the connection.
   6. Review the System Prompt, test it as described in 12.4, then Save.
   7. Reload and confirm name, provider, prompt and sharing persist; the index shows the owner and teams.
 - **Expected:** Top-level Save redirects to the judge form. Legacy nested team submissions return to the team. Successful mutations use Turbo-compatible redirects.
 - **Edge cases:**
-  - [ ] Blank name/prompt or malformed configuration JSON returns validation errors, retains entered values and team selections, and creates no judge.
+  - [ ] Blank name/prompt returns validation errors, retains entered values and team selections, and creates no judge.
   - [ ] Keyless judges still appear as AI judges rather than human accounts.
   - [ ] A judge still on its own URL and key no longer offers a manual **Migrate to connection** action - the route/button are gone; the form just says to choose a connection to save changes, and its **Llm Provider** field is hidden like a brand-new judge's (no more deprecation notice or read-only legacy value). The `MigrateAiJudgesToConnections` data migration ships with this change, so this state shouldn't exist in a real deployment - reach it by creating a judge with an `llm_key`/`judge_options.llm_service_url` and no `connection_id` directly (e.g. via `rails runner`).
   - [ ] Saving changes to a judge that still has its own URL and key is refused until it has a connection; it keeps judging meanwhile, but testing it from the wizard now also requires choosing a connection first (there's no more own-settings exception).
-  - [ ] Saving without a connection is refused with the reason and creates no judge. A provider edited in the JSON tab is replaced by the connection's on save.
+  - [ ] Saving without a connection is refused with the reason and creates no judge.
   - [ ] Choosing a connection on a judge saved before connections moves it onto that connection (its own key is cleared) and saves the rest of the form's changes along with it.
 
 ### 12.2 Edit / delete an AI Judge
@@ -64,9 +62,9 @@ Successful edits return to the AI Judges index and display **AI Judge was succes
   7. Save explicitly and reload to verify persistence.
 - **Expected:** Testing uses current form values and the selected book's rating scale; missing or off-scale ratings appear as Unrateable, using the same acceptance rules as a judging run. Samples respect the requesting user's book access. Legacy prompt routes remain compatible.
 - **Edge cases:**
-  - [ ] Malformed Document Fields, Options or provider JSON produces a recoverable error; correct it and retry.
+  - [ ] Malformed Document Fields or Options JSON produces a recoverable error; correct it and retry.
   - [ ] A provider failure re-enables Run Prompt and retains input for retry.
-  - [ ] Without a book scale, change `llm_provider` directly in JSON between Jev and OpenAI; confirm Run Prompt is disabled only for Jev. Malformed JSON remains runnable to show its recoverable error.
+  - [ ] Without a book, switch between a Jev connection and an OpenAI connection; confirm Run Prompt is disabled only for Jev, until a scale is picked under **Rating scale to test with**. The picker shows for every provider.
   - [ ] An empty book uses a blank sample. Leaving the page during sampling must not update a disconnected form.
 
 ### 12.5 Trigger a judging run ("Judge Judy")
@@ -90,7 +88,6 @@ Successful edits return to the AI Judges index and display **AI Judge was succes
   1. Create an OpenAI judge. Confirm **Judge with images** is checked by default.
   2. Turn it off, save and reopen; then turn it on, save and reopen. Confirm both choices persist.
   3. Select Ollama or TypeSafe Jev. Confirm the image checkbox is disabled and off, with a provider notice. Switch back to OpenAI and confirm your previous choice returns; save/reload with a text-only provider and repeat.
-  4. Switch to the JSON tab and confirm structured inputs are disabled. Set `llm_include_images` to false there, save and reopen.
 - **Expected:** The saved option controls whether absolute HTTP(S) document image or thumbnail URLs enter the judging prompt. Ollama and Jev omit image content regardless of the saved option. Text-only document fields remain available.
 - **Edge cases:**
   - [ ] With images enabled, provide only `thumb`, or a relative `image` plus absolute `thumb`; confirm the absolute thumbnail is used. If both are absolute, prefer `image`.
@@ -163,4 +160,4 @@ A judge can name a second judge to wake when it can't give a usable rating ("esc
   3. Choose a connection, clear the system prompt and Save. Confirm validation retains name, connection, options, team selection and the nested create action; correct the prompt and retry.
   4. Confirm the redirect to the team with creation notice. Reopen the new judge and verify settings, requester ownership and a distinct ID; the source is unchanged.
 - **Expected:** Only judge configuration is copied. The original's key and connection, account privileges/tokens, book assignments and judgements are not copied; saving uses the existing create contract.
-- **Edge cases:** Inaccessible teams/private judges and sources outside the specified team return 404. Malformed Options JSON retains input for retry. Uncheck the team before Save to make the clone private.
+- **Edge cases:** Inaccessible teams/private judges and sources outside the specified team return 404. Uncheck the team before Save to make the clone private.

@@ -72,13 +72,8 @@ it("reveals step 2 and samples immediately when editing an existing judge", asyn
   await vi.waitFor(() => expect(c.queryTextTarget.value).toBe("q"))
 })
 
-it("uses the active JSON configuration and current editor content with image preferences", async () => {
+it("sends the form's judge options and current editor content", async () => {
   const c = fixture()
-  const form = c.element.closest("form")
-  const json = document.createElement("textarea")
-  json.name = "user[options]"
-  json.value = '{"judge_options":{"llm_provider":"ollama","llm_include_images":false}}'
-  form.appendChild(json)
   c.documentFieldsTarget.editor = { getValue: () => '{"title":"Edited"}' }
   postJson.mockResolvedValue({ rating: 0, explanation: "<script>text</script>" })
   await c.runPrompt({ preventDefault() {} })
@@ -87,7 +82,7 @@ it("uses the active JSON configuration and current editor content with image pre
     expect.objectContaining({
       system_prompt: "draft",
       connection_id: "7",
-      judge_options: { llm_provider: "ollama", llm_include_images: false },
+      judge_options: { llm_provider: "openai", llm_include_images: "false" },
       query_doc_pair: expect.objectContaining({ document_fields: '{"title":"Edited"}' })
     }),
     expect.anything()

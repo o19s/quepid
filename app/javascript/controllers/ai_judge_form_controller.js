@@ -4,9 +4,6 @@ const normalizePrompt = (text) => (text || "").replace(/\r\n?/g, "\n").trim()
 
 export default class extends Controller {
   static targets = [
-    "structured",
-    "json",
-    "jsonTab",
     "provider",
     "connection",
     "preset",
@@ -32,70 +29,11 @@ export default class extends Controller {
   static values = {
     presets: Object,
     stockPrompts: Array,
-    hasScale: Boolean,
-    optionDefaults: Object
+    hasScale: Boolean
   }
 
   connect() {
-    this.syncTab()
     this.updateProviderPanels()
-  }
-
-  syncTab() {
-    const json = this.jsonTabTarget.classList.contains("active")
-    if (this.jsonActive !== undefined && json !== this.jsonActive) {
-      if (json) this.showFieldsAsJson()
-      else this.applyJsonToFields()
-    }
-    this.jsonActive = json
-    this.jsonTarget.disabled = !json
-    this.structuredTargets.forEach((field) => {
-      field.disabled = json
-    })
-    this.updateProviderPanels()
-  }
-
-  showFieldsAsJson() {
-    let stored
-    try {
-      stored = JSON.parse(this.jsonTarget.value || "{}")
-    } catch {
-      return
-    }
-    if (!stored || typeof stored !== "object" || Array.isArray(stored)) return
-    const options = { ...stored.judge_options }
-    this.structuredTargets.forEach((field) => {
-      if (!field.id.startsWith("judge_options_")) return
-      options[field.id.replace("judge_options_", "")] =
-        field.type === "checkbox"
-          ? field.dataset.unsupported === "true"
-            ? field.dataset.wanted
-            : String(field.checked)
-          : field.value
-    })
-    this.jsonTarget.value = JSON.stringify({ ...stored, judge_options: options }, null, 2)
-  }
-
-  applyJsonToFields() {
-    let parsed
-    try {
-      parsed = JSON.parse(this.jsonTarget.value)
-    } catch {
-      return
-    }
-    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return
-    const options = parsed.judge_options ?? {}
-    if (typeof options !== "object" || Array.isArray(options)) return
-    this.structuredTargets.forEach((field) => {
-      if (!field.id.startsWith("judge_options_")) return
-      const key = field.id.replace("judge_options_", "")
-      const value = Object.hasOwn(options, key) ? options[key] : this.optionDefaultsValue?.[key]
-      if (field.type === "checkbox") {
-        const on = value === null || value === "" || ![false, "false", "0", 0].includes(value)
-        field.dataset.wanted = String(on)
-        if (field.dataset.unsupported !== "true") field.checked = on
-      } else field.value = value ?? ""
-    })
   }
 
   currentPreset() {
@@ -136,27 +74,13 @@ export default class extends Controller {
     this.showProviderOptionFields(this.hasProviderTarget ? this.providerTarget.value : "")
     this.showCriteria(preset)
     this.syncImages()
-    this.jsonChanged()
-  }
-
-  jsonChanged() {
-    let preset = this.currentPreset()
-    if (this.jsonTabTarget.classList.contains("active")) {
-      try {
-        const parsed = JSON.parse(this.jsonTarget.value)
-        preset = this.presetsValue?.[parsed?.judge_options?.llm_provider]
-      } catch {
-        // Keep malformed JSON runnable so the wizard can report its existing error.
-        preset = null
-      }
-    }
     this.updateRunAvailability(preset)
   }
 
   // A provider that needs a scale (currently: one sent the scale as its criteria,
   // like Jev) has nothing to judge against without one, so don't offer a run that
   // can only fail, and say why.
-  updateRunAvailability(preset) {
+  updateRunAvailability(preset = this.currentPreset()) {
     const missingScale = Boolean(preset?.needs_scale) && !this.hasScaleValue
 
     // ai-judge-wizard flags a scale outside the judge's typed limit; that keeps Run off too.
@@ -173,7 +97,7 @@ export default class extends Controller {
     const supported = this.currentPreset()?.supports_images !== false
     if (field.dataset.unsupported !== "true") field.dataset.wanted = String(field.checked)
     field.checked = supported && field.dataset.wanted !== "false"
-    field.disabled = !supported || this.jsonTabTarget.classList.contains("active")
+    field.disabled = !supported
     field.dataset.unsupported = String(!supported)
     if (this.hasImagesHiddenTarget)
       this.imagesHiddenTarget.value = supported ? "false" : field.dataset.wanted
@@ -214,7 +138,7 @@ export default class extends Controller {
 
       row.style.display = mine ? "" : "none"
       row.querySelectorAll("input").forEach((input) => {
-        input.disabled = !mine || this.jsonTabTarget.classList.contains("active")
+        input.disabled = !mine
       })
     })
   }

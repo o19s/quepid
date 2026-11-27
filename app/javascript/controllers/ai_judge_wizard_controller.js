@@ -126,7 +126,7 @@ export default class extends withStatusMessages(Controller) {
     if (this.hasUnsupportedScaleNoteTarget)
       this.unsupportedScaleNoteTarget.style.display = unsupported ? "" : "none"
     if (unsupported) this.runPromptButtonTarget.disabled = true
-    else this.formController?.jsonChanged()
+    else this.formController?.updateRunAvailability()
   }
 
   // The typed limits as a Set of "0,1,2,3" strings, or null when there are none:
@@ -182,10 +182,6 @@ export default class extends withStatusMessages(Controller) {
   }
 
   judgeOptions(formData) {
-    if (formData.has("user[options]")) {
-      const options = JSON.parse(formData.get("user[options]"))
-      return options.judge_options || {}
-    }
     const options = {}
     for (const [name, value] of formData) {
       const match = name.match(/^user\[judge_options\]\[([^\]]+)\]$/)
@@ -234,7 +230,7 @@ export default class extends withStatusMessages(Controller) {
       this.running = false
       // ai-judge-form owns when Run is available (scale missing or outside the limit).
       this.runPromptButtonTarget.disabled = false
-      this.formController?.jsonChanged()
+      this.formController?.updateRunAvailability()
       this.loadingSpinnerTarget.style.display = "none"
     }
   }
