@@ -46,6 +46,7 @@ class RunJudgeJudyJobTest < ActiveJob::TestCase
       assert judgement.unrateable
       assert_nil judgement.rating
       assert_match(/outside this book's scale/, judgement.explanation)
+      assert_equal "its rating wasn't one of the book's scale values", judgement.unrateable_reason
     end
 
     test 'a non-numeric judgment value is marked unrateable, not silently saved as a "0" rating' do

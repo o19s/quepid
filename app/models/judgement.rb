@@ -101,7 +101,7 @@ class Judgement < ApplicationRecord
     text = text.split("\n\n", 2).last.to_s if escalated_from_judgement_id
     if (floor = text.match(/\[confidence (\S+) is below this judge's minimum confidence of ([^,\]]+)/))
       "its confidence (#{floor[1]}) was below its minimum confidence of #{floor[2]}"
-    elsif text.include?('outside the scale')
+    elsif text.match?(JudgementFinalizer::OUT_OF_SCALE_ANNOTATION)
       "its rating wasn't one of the book's scale values"
     elsif text.start_with?(FAILED_CALL_PREFIX)
       'the call to the model failed'
