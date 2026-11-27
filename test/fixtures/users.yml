@@ -16,7 +16,6 @@
 #  invitation_sent_at          :datetime
 #  invitation_token            :string(255)
 #  invitations_count           :integer          default(0)
-#  llm_key                     :string(4000)
 #  locked                      :boolean
 #  locked_at                   :datetime
 #  name                        :string(255)
@@ -75,6 +74,12 @@ matt:
   <<: *default
   email: matt@example.com
   administrator: true
+
+# Owns Judge Judy's connection (connections.yml) and nothing else, so no test of a user's
+# connections or account deletion sees it.
+judge_judy_connection_owner:
+  <<: *default
+  email: judge_judy_connection_owner@example.com
 
 # Joe should never be assigned a case
 # Assumption is that Joe always starts off with 0 cases
@@ -264,7 +269,7 @@ admin:
 judge_judy:
   type: AiJudge
   name:           Judge Judy
-  llm_key:        1234asdf5678
+  connection:     judge_judy_openai
   system_prompt:  You are a grocery store shopper.  You like cheese.  Is this a cheese?
   options:
     judge_options: 

@@ -83,7 +83,7 @@ class RunJudgeJudyJob < ApplicationJob
   #   RunJudgeJudyJob.perform_later(book, ai_judge, nil)
   def perform book, judge, number_of_pairs, escalating_from_judge: nil
     scale = JudgeScale.for(book)
-    return refuse_unsupported_scale(book, judge, scale) unless judge.supports_scale?(scale.values)
+    return if refused?(book, judge, scale)
 
     counter = 0
     cancelled = false
@@ -125,10 +125,22 @@ class RunJudgeJudyJob < ApplicationJob
 
   private
 
-  # A judge limited to certain scales after it was put on this book (or after this run was queued).
-  def refuse_unsupported_scale book, judge, scale
-    Rails.logger.warn("RunJudgeJudyJob: #{judge.name} (#{judge.id}) can't rate on book #{book.id}'s scale #{scale.values.inspect}")
-    broadcast_refused(book, judge, "it can't rate this book's scale (#{scale.values.join(',')})")
+  # Why this judge can't judge this book at all, or nil: it lost its connection, or was limited to
+  # other scales after it was put on the book (or after this run was queued).
+  def refusal_reason judge, scale
+    return 'it has no connection' unless judge.connected?
+
+    "it can't rate this book's scale (#{scale.values.join(',')})" unless judge.supports_scale?(scale.values)
+  end
+
+  # Says why, when this judge can't judge this book at all, and returns whether it can't.
+  def refused? book, judge, scale
+    reason = refusal_reason(judge, scale)
+    return false unless reason
+
+    Rails.logger.warn("RunJudgeJudyJob: #{judge.name} (#{judge.id}) didn't judge book #{book.id}: #{reason}")
+    broadcast_refused(book, judge, reason)
+    true
   end
 
   def cancellation_requested?
@@ -168,7 +180,7 @@ class RunJudgeJudyJob < ApplicationJob
   # The on-call judge's own run ends here too, so chains (A -> B -> C) follow.
   def wake_on_call_judge book, judge
     on_call = judge.try(:escalates_to)
-    return if on_call.nil? || !on_call.supports_scale?(book.scale)
+    return if on_call.nil? || !on_call.connected? || !on_call.supports_scale?(book.scale)
     return unless Judgement.awaiting_escalation(book, from: judge, to: on_call).exists?
 
     RunJudgeJudyJob.perform_later(book, on_call, nil, escalating_from_judge: judge)

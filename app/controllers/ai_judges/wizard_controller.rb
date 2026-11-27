@@ -38,11 +38,10 @@ module AiJudges
     end
 
     def test_prompt
-      # A judge being edited lends its saved settings: a judge from before connections has its
-      # own key, which the form never shows, and its connection may be one only its owner can pick.
+      # A judge being edited lends its saved connection, which may be one only its owner can pick.
       saved = AiJudge.for_user(current_user).find_by(id: params[:ai_judge_id])
       connection = test_connection(saved)
-      ai_judge = draft_judge(saved, connection)
+      ai_judge = draft_judge(connection)
 
       # The judge is handed the scale, never the book/scorer it came from -
       # a book's own scale if there's a book context, otherwise a scorer's
@@ -103,9 +102,8 @@ module AiJudges
     end
 
     # The form's current values, unsaved, calling out the way the judge would.
-    def draft_judge saved, connection
-      ai_judge = AiJudge.new(system_prompt: params[:system_prompt], connection: connection,
-                             llm_key: connection ? nil : saved&.llm_key)
+    def draft_judge connection
+      ai_judge = AiJudge.new(system_prompt: params[:system_prompt], connection: connection)
       ai_judge.judge_options = AiJudge.judge_options_with_connection_provider(judge_options_params.to_h, connection)
       ai_judge
     end

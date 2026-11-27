@@ -4,7 +4,7 @@ require 'test_helper'
 
 class LlmServiceTest < ActiveSupport::TestCase
   let(:judge) { users(:judge_judy) }
-  let(:service) { LlmService.new '1234asdf5678', {} }
+  let(:service) { LlmService.new llm_connection, {} }
   let(:query_doc_pair) { query_doc_pairs(:starwars_qdp1) }
 
   setup { register_default_openai_stubs }
@@ -38,9 +38,9 @@ class LlmServiceTest < ActiveSupport::TestCase
     pair.document_fields['image'] = 'https://example.com/image.png'
     assert_equal 'https://example.com/image.png', service.make_user_prompt(pair).last.dig(:image_url, :url)
     [ false, 'false', '0' ].each do |value|
-      assert_equal 1, LlmService.new('key', llm_include_images: value).make_user_prompt(pair).length
+      assert_equal 1, LlmService.new(llm_connection, llm_include_images: value).make_user_prompt(pair).length
     end
-    assert_equal 1, LlmService.new('key', llm_provider: 'ollama', llm_include_images: true).make_user_prompt(pair).length
+    assert_equal 1, LlmService.new(llm_connection(nil, provider: 'ollama'), llm_provider: 'ollama', llm_include_images: true).make_user_prompt(pair).length
     pair.document_fields = { 'image' => 'data:image/png;base64,abc', 'thumb' => '/relative.png' }
     assert_equal 1, service.make_user_prompt(pair).length
   end
@@ -51,14 +51,14 @@ class LlmServiceTest < ActiveSupport::TestCase
       WebMock.reset_executed_requests!
       request = stub_request(:post, url).to_return(status: status, body: '{}')
         .then.to_return(status: 200, body: { choices: [ { message: { content: '{"judgment": 1, "explanation": "OK"}' } } ] }.to_json)
-      retry_service = LlmService.new('key')
+      retry_service = LlmService.new(llm_connection)
       assert_equal 1, retry_service.get_llm_response([], 'prompt')[:judgment]
       assert_requested request, times: 2
       remove_request_stub(request)
     end
     WebMock.reset_executed_requests!
     request = stub_request(:post, url).to_raise(Faraday::TimeoutError)
-    assert_raises(Faraday::TimeoutError) { LlmService.new('key').get_llm_response([], 'prompt') }
+    assert_raises(Faraday::TimeoutError) { LlmService.new(llm_connection).get_llm_response([], 'prompt') }
     assert_requested request, times: 1
   end
 
@@ -242,7 +242,7 @@ class LlmServiceTest < ActiveSupport::TestCase
 
   describe 'error conditions' do
     test 'using a bad API key' do
-      service = LlmService.new 'BAD_OPENAI_KEY'
+      service = LlmService.new llm_connection(OPENAI_BAD_KEY)
       user_prompt = USER_PROMPT_COMPOSED
       system_prompt = LlmProvider::CHAT_SYSTEM_PROMPT
 
@@ -254,7 +254,7 @@ class LlmServiceTest < ActiveSupport::TestCase
 
     test 'handle and back off a 429 error' do
       # the Faraday Retry may mean we don't need this
-      service = LlmService.new 'OPENAI_429_ERROR'
+      service = LlmService.new llm_connection(OPENAI_RATE_LIMIT_KEY)
       user_prompt = USER_PROMPT_COMPOSED
       system_prompt = LlmProvider::CHAT_SYSTEM_PROMPT
 
@@ -285,7 +285,7 @@ class LlmServiceTest < ActiveSupport::TestCase
           llm_model:       'qwen3:0.6b',
           llm_timeout:     90,
         }
-        service = LlmService.new 'ollama', opts
+        service = LlmService.new llm_connection(nil, provider: 'ollama', base_url: opts[:llm_service_url], timeout: 90), opts
 
         user_prompt = [ { type: 'text', text: USER_PROMPT_TEXT } ]
         system_prompt = LlmProvider::CHAT_SYSTEM_PROMPT
@@ -323,7 +323,7 @@ class LlmServiceTest < ActiveSupport::TestCase
         opts = {
           llm_service_url: test_case[:base_url],
         }
-        service = LlmService.new 'api-key', opts
+        service = LlmService.new llm_connection('api-key', base_url: test_case[:base_url]), opts
 
         user_prompt = USER_PROMPT_COMPOSED
         system_prompt = LlmProvider::CHAT_SYSTEM_PROMPT
@@ -352,7 +352,7 @@ class LlmServiceTest < ActiveSupport::TestCase
         llm_model:       'gpt-4o-mini',
         llm_api_version: '2024-10-21',
       }
-      service = LlmService.new 'my-azure-key', opts
+      service = LlmService.new llm_connection('my-azure-key', provider: 'azure_openai', base_url: opts[:llm_service_url]), opts
       result = service.get_llm_response(USER_PROMPT_COMPOSED, LlmProvider::CHAT_SYSTEM_PROMPT)
 
       assert_equal 2, result[:judgment]
@@ -374,7 +374,7 @@ class LlmServiceTest < ActiveSupport::TestCase
         llm_service_url: 'https://myresource.services.ai.azure.com',
         llm_api_version: '2025-01-01-preview',
       }
-      service = LlmService.new 'my-foundry-key', opts
+      service = LlmService.new llm_connection('my-foundry-key', provider: 'azure_ai_foundry', base_url: opts[:llm_service_url]), opts
       result = service.get_llm_response(USER_PROMPT_COMPOSED, LlmProvider::CHAT_SYSTEM_PROMPT)
 
       assert_equal 1, result[:judgment]
@@ -395,7 +395,7 @@ class LlmServiceTest < ActiveSupport::TestCase
         llm_provider:    'azure_ai_foundry_serverless',
         llm_service_url: 'https://haiku-35.eastus.models.ai.azure.com',
       }
-      service = LlmService.new 'my-serverless-key', opts
+      service = LlmService.new llm_connection('my-serverless-key', provider: 'azure_ai_foundry_serverless', base_url: opts[:llm_service_url]), opts
       result = service.get_llm_response(USER_PROMPT_COMPOSED, LlmProvider::CHAT_SYSTEM_PROMPT)
 
       assert_equal 2, result[:judgment]
@@ -416,7 +416,7 @@ class LlmServiceTest < ActiveSupport::TestCase
         llm_provider:    'azure_openai',
         llm_service_url: 'https://myresource.openai.azure.com',
       }
-      service = LlmService.new 'my-azure-key', opts
+      service = LlmService.new llm_connection('my-azure-key', provider: 'azure_openai', base_url: opts[:llm_service_url]), opts
       service.get_llm_response(USER_PROMPT_COMPOSED, LlmProvider::CHAT_SYSTEM_PROMPT)
 
       assert_requested(:post, azure_url,
@@ -449,7 +449,7 @@ class LlmServiceTest < ActiveSupport::TestCase
         llm_service_url: 'https://myresource.services.ai.azure.com/anthropic',
         llm_model:       'claude-haiku-4-5',
       }
-      service = LlmService.new 'my-anthropic-azure-key', opts
+      service = LlmService.new llm_connection('my-anthropic-azure-key', provider: 'azure_ai_foundry_anthropic', base_url: opts[:llm_service_url]), opts
       result = service.get_llm_response(USER_PROMPT_COMPOSED, LlmProvider::CHAT_SYSTEM_PROMPT)
 
       assert_equal 2, result[:judgment]
@@ -483,7 +483,7 @@ class LlmServiceTest < ActiveSupport::TestCase
         llm_service_url: 'https://api.anthropic.com',
         llm_model:       'claude-sonnet-4-20250514',
       }
-      service = LlmService.new 'my-anthropic-key', opts
+      service = LlmService.new llm_connection('my-anthropic-key', provider: 'anthropic', base_url: opts[:llm_service_url]), opts
       result = service.get_llm_response(USER_PROMPT_COMPOSED, LlmProvider::CHAT_SYSTEM_PROMPT)
 
       assert_equal 3, result[:judgment]
@@ -492,10 +492,10 @@ class LlmServiceTest < ActiveSupport::TestCase
                        headers: { 'x-api-key' => 'my-anthropic-key', 'anthropic-version' => '2023-06-01' })
     end
 
-    test 'existing judges with no llm_provider use Bearer auth and v1 path' do
+    test 'a judge with no llm_provider is OpenAI-shaped: v1 path, Bearer auth from its connection' do
       # Uses the existing webmock stub for https://api.openai.com/v1/chat/completions
       # with Authorization: Bearer 1234asdf5678
-      service = LlmService.new '1234asdf5678', { llm_service_url: 'https://api.openai.com' }
+      service = LlmService.new llm_connection, {}
       result = service.get_llm_response(USER_PROMPT_COMPOSED, LlmProvider::CHAT_SYSTEM_PROMPT)
 
       assert_kind_of Numeric, result[:judgment]
@@ -512,12 +512,17 @@ class LlmServiceTest < ActiveSupport::TestCase
         .to_return(status: 200, headers: { 'Content-Type' => 'application/json' },
                    body: { content: [ { type: 'text', text: '{"explanation": "fine", "judgment": 2}' } ] }.to_json)
 
-      service = LlmService.new('ignored-own-key', { llm_provider: 'anthropic', llm_service_url: 'https://own.example' }, connection)
+      service = LlmService.new(connection, { llm_provider: 'anthropic', llm_service_url: 'https://own.example' })
       judgement = Judgement.new(query_doc_pair: query_doc_pair, user: judge)
       service.perform_judgement(judgement)
 
       assert_requested stub
       assert_equal 2, judgement.rating
+    end
+
+    test 'needs one' do
+      error = assert_raises(ArgumentError) { LlmService.new(nil, {}) }
+      assert_equal 'an AI judge needs a connection to call its provider', error.message
     end
   end
 end

@@ -441,6 +441,12 @@ The clone form clears an inaccessible private connection and asks the new owner 
   connection by editing it, same as any pre-connection judge. The clean-up half of stage 3 -
   dropping `llm_key` and `judge_options`' URL/timeout - is not done; those columns stay for now.
 
-Not built: renaming `LlmConnection` to `HttpClient` and building it from a `Connection`; dropping
-`users.llm_key` and the `judge_options` URL/timeout, the clean-up half of judges' stage 3 (§3); the
+Not built: renaming `LlmConnection` to `HttpClient` and building it from a `Connection`; the
 rate limit (the field is stored, nothing enforces it); search endpoints.
+
+**Update (2026-11, #1919):** the clean-up half of judges' stage 3 is done. `RemoveLlmKeyFromUsers`
+drops `users.llm_key`; `LlmService` and the judge adapters no longer take a key and require a
+connection; and saving a judge on a connection clears any URL/timeout left in its `judge_options`.
+A judge without a connection (its connection was deleted, or the backfill skipped it for having
+neither a key nor a URL) doesn't run: the job, auto-run and escalation skip it, and the book page
+says it needs a connection.

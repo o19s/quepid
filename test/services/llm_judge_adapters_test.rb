@@ -6,7 +6,7 @@ class LlmJudgeAdaptersTest < ActiveSupport::TestCase
   let(:judge) { users(:judge_judy) }
   let(:query_doc_pair) { query_doc_pairs(:starwars_qdp1) }
   let(:judgement) { Judgement.new(query_doc_pair: query_doc_pair, user: judge) }
-  let(:openai) { LlmJudgeAdapters.for('a-key', { llm_model: 'gpt-4o' }) }
+  let(:openai) { LlmJudgeAdapters.for({ llm_model: 'gpt-4o' }) }
 
   def openai_body content
     { 'choices' => [ { 'message' => { 'content' => content } } ] }
@@ -14,24 +14,24 @@ class LlmJudgeAdaptersTest < ActiveSupport::TestCase
 
   describe 'choosing an adapter' do
     test 'a judge with no provider at all is OpenAI shaped, as it always was' do
-      assert_instance_of LlmJudgeAdapters::OpenAi, LlmJudgeAdapters.for('a-key', {})
+      assert_instance_of LlmJudgeAdapters::OpenAi, LlmJudgeAdapters.for({})
     end
 
     test 'the registry decides which dialect a provider speaks' do
       assert_instance_of LlmJudgeAdapters::Anthropic,
-                         LlmJudgeAdapters.for('a-key', { llm_provider: 'anthropic' })
+                         LlmJudgeAdapters.for({ llm_provider: 'anthropic' })
       assert_instance_of LlmJudgeAdapters::Anthropic,
-                         LlmJudgeAdapters.for('a-key', { llm_provider: 'azure_ai_foundry_anthropic' })
+                         LlmJudgeAdapters.for({ llm_provider: 'azure_ai_foundry_anthropic' })
       assert_instance_of LlmJudgeAdapters::OpenAi,
-                         LlmJudgeAdapters.for('a-key', { llm_provider: 'google_gemini' })
+                         LlmJudgeAdapters.for({ llm_provider: 'google_gemini' })
     end
 
     test 'an unknown provider name falls back to the OpenAI dialect rather than blowing up' do
-      assert_instance_of LlmJudgeAdapters::OpenAi, LlmJudgeAdapters.for('a-key', { llm_provider: 'made_up' })
+      assert_instance_of LlmJudgeAdapters::OpenAi, LlmJudgeAdapters.for({ llm_provider: 'made_up' })
     end
 
     test 'TypeSafe Jev speaks its own dialect' do
-      assert_instance_of LlmJudgeAdapters::Jev, LlmJudgeAdapters.for('a-key', { llm_provider: 'typesafe_jev' })
+      assert_instance_of LlmJudgeAdapters::Jev, LlmJudgeAdapters.for({ llm_provider: 'typesafe_jev' })
     end
   end
 
@@ -40,7 +40,7 @@ class LlmJudgeAdaptersTest < ActiveSupport::TestCase
       envelope = openai.request_envelope(query_doc_pair, system_prompt: 'Judge it.')
 
       assert_equal 'v1/chat/completions', envelope[:path]
-      assert_equal({ 'Authorization' => 'Bearer a-key' }, envelope[:headers])
+      assert_empty envelope[:headers] # authentication is the connection's (Connection#request_headers)
 
       body = envelope[:body]
 
@@ -68,33 +68,29 @@ class LlmJudgeAdaptersTest < ActiveSupport::TestCase
     end
 
     test 'azure deployments and foundry get their own paths and api-key auth' do
-      azure = LlmJudgeAdapters.for('k', {
+      azure = LlmJudgeAdapters.for({
         llm_provider:    'azure_openai',
         llm_model:       'gpt-4o-mini',
         llm_api_version: '2024-10-21',
       })
-      foundry = LlmJudgeAdapters.for('k', { llm_provider: 'azure_ai_foundry' })
+      foundry = LlmJudgeAdapters.for({ llm_provider: 'azure_ai_foundry' })
 
       assert_equal 'openai/deployments/gpt-4o-mini/chat/completions?api-version=2024-10-21', azure.path
       assert_equal 'models/chat/completions?api-version=2025-01-01-preview', foundry.path
-      assert_equal({ 'api-key' => 'k' }, azure.headers)
-    end
-
-    test 'a judge with no key sends no auth header' do
-      assert_empty LlmJudgeAdapters.for('', {}).headers
+      assert_empty azure.headers # the connection sends the api-key header
     end
   end
 
   describe 'the Anthropic envelope' do
     let(:anthropic) do
-      LlmJudgeAdapters.for('a-key', { llm_provider: 'anthropic', llm_model: 'claude-sonnet-5-5' })
+      LlmJudgeAdapters.for({ llm_provider: 'anthropic', llm_model: 'claude-sonnet-5-5' })
     end
 
     test 'is a Messages API request with the system prompt lifted out of the messages' do
       envelope = anthropic.request_envelope(query_doc_pair, system_prompt: 'Judge it.')
 
       assert_equal 'v1/messages', envelope[:path]
-      assert_equal 'a-key', envelope[:headers]['x-api-key']
+      assert_nil envelope[:headers]['x-api-key'] # the connection sends it
       assert_equal '2023-06-01', envelope[:headers]['anthropic-version']
       assert_equal 'Judge it.', envelope[:body][:system]
       assert_equal 'image', envelope[:body][:messages][0][:content][1][:type]
@@ -166,7 +162,7 @@ class LlmJudgeAdaptersTest < ActiveSupport::TestCase
     end
 
     test 'a judge switched to text only attaches no image' do
-      text_only = LlmJudgeAdapters.for('a-key', { llm_model: 'gpt-4o', llm_include_images: 'false' })
+      text_only = LlmJudgeAdapters.for({ llm_model: 'gpt-4o', llm_include_images: 'false' })
       prompt = text_only.user_prompt(pair_with('image' => 'https://example.com/image.png',
                                                'thumb' => 'https://example.com/thumb.jpg'))
 
@@ -175,7 +171,7 @@ class LlmJudgeAdaptersTest < ActiveSupport::TestCase
 
     test 'a judge saved before the switch existed still sends images' do
       [ nil, '', 'true', true ].each do |setting|
-        adapter = LlmJudgeAdapters.for('a-key', { llm_model: 'gpt-4o', llm_include_images: setting })
+        adapter = LlmJudgeAdapters.for({ llm_model: 'gpt-4o', llm_include_images: setting })
         prompt = adapter.user_prompt(pair_with('thumb' => 'https://example.com/thumb.jpg'))
 
         assert_equal %w[text image_url], prompt.pluck(:type), "llm_include_images: #{setting.inspect}"
@@ -184,7 +180,7 @@ class LlmJudgeAdaptersTest < ActiveSupport::TestCase
 
     test 'a provider that cannot take an image URL never gets one, whatever the judge says' do
       [ nil, 'true' ].each do |setting|
-        ollama = LlmJudgeAdapters.for('', { llm_provider: 'ollama', llm_model: 'qwen3:0.6b',
+        ollama = LlmJudgeAdapters.for({ llm_provider: 'ollama', llm_model: 'qwen3:0.6b',
                                             llm_include_images: setting })
         prompt = ollama.user_prompt(pair_with('thumb' => 'https://example.com/thumb.jpg'))
 
@@ -193,7 +189,7 @@ class LlmJudgeAdaptersTest < ActiveSupport::TestCase
     end
 
     test 'Anthropic gets a case thumb as a URL image source' do
-      anthropic = LlmJudgeAdapters.for('a-key', { llm_provider: 'anthropic', llm_model: 'claude-sonnet-5-5' })
+      anthropic = LlmJudgeAdapters.for({ llm_provider: 'anthropic', llm_model: 'claude-sonnet-5-5' })
       pair = pair_with('title' => 'Han', 'thumb' => 'https://example.com/thumb.jpg')
 
       content = anthropic.request_envelope(pair, system_prompt: 'Judge it.')[:body][:messages][0][:content]
@@ -251,7 +247,7 @@ class LlmJudgeAdaptersTest < ActiveSupport::TestCase
       assert_equal 'POST', replayed['method']
       assert_equal '/v1/chat/completions', replayed['url']
 
-      LlmJudgeAdapters.for('a-key', {})
+      LlmJudgeAdapters.for({})
         .apply_response(judgement, output.dig('response', 'body'))
 
       assert_in_delta(2.0, judgement.rating)

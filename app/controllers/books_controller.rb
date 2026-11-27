@@ -344,6 +344,11 @@ class BooksController < ApplicationController
       return
     end
 
+    unless ai_judge.connected?
+      redirect_to book_path(@book), alert: "AI Judge #{ai_judge.name} has no connection: choose one on its page to run it.", status: :see_other
+      return
+    end
+
     unless ai_judge.supports_scale?(@book.scale)
       redirect_to book_path(@book), alert: "AI Judge #{ai_judge.name} can't rate on this book's scale (#{@book.scale_list}).", status: :see_other
       return

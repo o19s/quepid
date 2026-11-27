@@ -7,10 +7,11 @@ class AutoRunJudgeJudyJob < RunJudgeJudyJob
                      duration:    30.minutes,
                      on_conflict: :block
 
-  # A judge limited to other scales after it was put on the book would only be
-  # refused, so it isn't queued at all.
+  # A judge with no connection, or limited to other scales after it was put on the
+  # book, would only be refused, so it isn't queued at all.
   def self.enqueue_for assignment
-    return unless assignment.ai_judge.supports_scale?(assignment.book.scale)
+    judge = assignment.ai_judge
+    return unless judge.connected? && judge.supports_scale?(assignment.book.scale)
 
     assignment.with_lock do
       pending = active_for(assignment.book, assignment.ai_judge).any? do |job|

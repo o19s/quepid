@@ -269,6 +269,7 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
     hidden_team = Team.create!(name: 'Hidden judge team')
     hidden_judge = judge_judy.dup
     hidden_judge.name = 'Hidden judge'
+    hidden_judge.connection = nil # judge_judy's isn't one this ownerless copy could pick
     hidden_judge.save!
     hidden_judge.teams = [ hidden_team ]
     judge_judy.teams = [ visible_team ]
@@ -433,9 +434,37 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  describe 'a judge with no connection' do
+    setup do
+      login_user_for_integration_test user
+      james_bond_movies.update!(owner: user)
+      judge_judy.update_column(:connection_id, nil) # its connection was deleted
+    end
+
+    test 'refuses to run it' do
+      assert_no_enqueued_jobs(only: RunJudgeJudyJob) do
+        patch "/books/#{james_bond_movies.id}/run_judge_judy/#{judge_judy.id}", params: { number_of_pairs: 1 }
+      end
+
+      follow_redirect!
+      assert_equal 'AI Judge Judge Judy has no connection: choose one on its page to run it.', flash[:alert]
+    end
+
+    test 'disables its run button on the book page, saying why' do
+      get book_path(james_bond_movies)
+
+      assert_select "#judge-status-#{judge_judy.id} span[title=?] button[disabled] .bi-play-fill",
+                    "Needs a connection: choose one on the judge's page"
+    end
+  end
+
   describe 'a judge limited to other scales than the book' do
     # james_bond_movies is on 0,1; this judge only predicts 0..3.
-    let(:esci) { AiJudge.create!(name: 'ESCI Judge', owner: user, judge_options: { supported_scales: '0,1,2,3' }) }
+    let(:esci) do
+      connection = llm_connection
+      connection.update!(owner: user)
+      AiJudge.create!(name: 'ESCI Judge', owner: user, connection: connection, judge_options: { supported_scales: '0,1,2,3' })
+    end
 
     setup do
       login_user_for_integration_test user

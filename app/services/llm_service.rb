@@ -7,29 +7,18 @@ require 'json'
 # the request it describes, hand the answer back to it. What the request looks
 # like and what the answer means belong to the adapter (LlmJudgeAdapters).
 class LlmService
-  DEFAULT_OPTIONS = begin
-    openai = LlmProvider.find('openai')
-    {
-      llm_service_url: openai.default_service_url,
-      llm_model:       openai.default_model,
-      llm_timeout:     30,
-    }
-  end.freeze
+  # The URL, timeout and API version come from the connection; only the model has a fallback.
+  DEFAULT_OPTIONS = { llm_model: LlmProvider.find('openai').default_model }.freeze
 
-  # @param connection [Connection, nil] where to send the calls and how to authenticate (ADR 0005).
-  #   Without one, the judge's own llm_key and llm_service_url/llm_timeout options are used, as
-  #   judges made before connections still do.
-  def initialize llm_key, opts = {}, connection = nil
+  # @param connection [Connection] where to send the calls and how to authenticate (ADR 0005).
+  def initialize connection, opts = {}
+    raise ArgumentError, 'an AI judge needs a connection to call its provider' unless connection
+
     @connection = connection
-    @options = DEFAULT_OPTIONS.merge(opts.deep_symbolize_keys)
-    if connection
-      @options.merge!(llm_service_url: connection.base_url, llm_timeout: connection.timeout)
-      @options[:llm_api_version] = connection.api_version if @options[:llm_api_version].blank? && connection.api_version.present?
-      llm_key = nil # the connection sends the key, however its provider wants it
-    end
-    @llm_key = llm_key
-    @adapter = LlmJudgeAdapters.for(@llm_key, @options)
-    @conn = LlmConnection.build(url: @options[:llm_service_url], retry_options: connection&.retry_options || {})
+    @options = DEFAULT_OPTIONS.merge(opts.deep_symbolize_keys, llm_service_url: connection.base_url, llm_timeout: connection.timeout)
+    @options[:llm_api_version] = connection.api_version if @options[:llm_api_version].blank? && connection.api_version.present?
+    @adapter = LlmJudgeAdapters.for(@options)
+    @conn = LlmConnection.build(url: @options[:llm_service_url], retry_options: connection.retry_options)
   end
 
   def perform_safe_judgement judgement, scale: JudgeScale::NONE, book: nil
@@ -71,7 +60,7 @@ class LlmService
   def post envelope
     response = @conn.post(envelope[:path]) do |req|
       req.headers.merge!(envelope[:headers])
-      req.headers.merge!(@connection.request_headers) if @connection
+      req.headers.merge!(@connection.request_headers)
       req.options.timeout = @options[:llm_timeout].to_i
       req.body = envelope[:body]
     end

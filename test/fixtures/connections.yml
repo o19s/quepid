@@ -33,6 +33,15 @@ openai:
   secret:      sk-test-openai
   owner:       doug
 
+# Judge Judy's: its secret is the key the OpenAI webmock stubs accept (test/support/openai_stubs.rb).
+judge_judy_openai:
+  name:        Judge Judy's OpenAI
+  provider:     openai
+  base_url:    https://api.openai.com
+  auth_scheme: bearer
+  secret:      1234asdf5678
+  owner:       judge_judy_connection_owner
+
 # Owned by joey, shared with nobody: invisible to doug and random.
 private_ollama:
   name:        Private Ollama

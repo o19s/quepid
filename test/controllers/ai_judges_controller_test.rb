@@ -6,7 +6,8 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
   let(:user) { users(:random) }
   # On a connection: a judge from before connections can't be saved until it is moved onto one.
   let(:ai_judge) { users(:judge_judy).tap { |judge| judge.update_column(:connection_id, connections(:openai).id) } }
-  let(:legacy_judge) { users(:judge_judy) }
+  # A judge whose connection was deleted (or that never had one): its provider is whatever it was saved with.
+  let(:unconnected_judge) { users(:judge_judy).tap { |judge| judge.update_column(:connection_id, nil) } }
   let(:team) { teams(:shared) }
   let(:random_openai) do
     Connection.create!(name: 'Random OpenAI', provider: 'openai', base_url: 'https://api.openai.com',
@@ -30,7 +31,6 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
     assert_select 'form[action=?]', team_ai_judges_path(team)
     assert_select 'input[name="user[name]"][value=?]', "Clone of #{ai_judge.name}"
     # A copy never takes the original's key or connection: the cloner picks one of theirs.
-    assert_select 'input[name="user[llm_key]"]', count: 0
     assert_select 'select[name="user[connection_id]"] option[selected]', count: 0
     assert_includes response.body, 'Connection is required: choose one of your connections for this copy'
     assert_select 'input[name="user[team_ids][]"][checked][value=?]', team.id.to_s
@@ -51,7 +51,6 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
     cloned = AiJudge.order(:id).last
     assert_equal user, cloned.owner
     assert_equal random_openai, cloned.connection
-    assert_nil cloned.llm_key
     assert_equal ai_judge.system_prompt, cloned.system_prompt
     assert_equal ai_judge.judge_options.except(:llm_service_url, :llm_timeout).merge(llm_provider: 'openai'), cloned.judge_options
     assert_equal [ team.id ], cloned.team_ids
@@ -290,9 +289,9 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'edit shows the include images switch disabled for a provider that cannot take images' do
-    legacy_judge.update!(judge_options: { llm_provider: 'ollama', llm_include_images: 'true' })
+    unconnected_judge.update!(judge_options: { llm_provider: 'ollama', llm_include_images: 'true' })
 
-    get edit_ai_judge_url(legacy_judge)
+    get edit_ai_judge_url(unconnected_judge)
 
     assert_select 'input#judge_options_llm_include_images[disabled]'
     assert_select 'input#judge_options_llm_include_images[checked]', count: 0
@@ -370,8 +369,8 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'a saved Jev judge renders a disabled preview without an accessible scale' do
-    legacy_judge.update!(judge_options: { llm_provider: 'typesafe_jev' })
-    get edit_ai_judge_url(legacy_judge)
+    unconnected_judge.update!(judge_options: { llm_provider: 'typesafe_jev' })
+    get edit_ai_judge_url(unconnected_judge)
     assert_response :success
     assert_select '[data-ai-judge-wizard-target=runPromptButton][disabled]'
     assert_select '[data-ai-judge-form-target=needsScaleNotice]:not([style*="display:none"])', text: /Judgement Stats/
@@ -388,9 +387,9 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
     # level instead (test/javascript/controllers/ai_judge_form_controller.test.js).
 
     test 'shows the book scale as the criteria a typed model will be sent' do
-      legacy_judge.update!(judge_options: { llm_provider: 'typesafe_jev' })
+      unconnected_judge.update!(judge_options: { llm_provider: 'typesafe_jev' })
 
-      get edit_ai_judge_url(legacy_judge, book_id: book.id)
+      get edit_ai_judge_url(unconnected_judge, book_id: book.id)
 
       assert_response :success
       assert_select '[data-ai-judge-form-target=criteriaTable]:not([style*="display:none"])',
@@ -409,9 +408,9 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
     end
 
     test 'a judge that needs a book cannot be run without one, and offers a scale picker instead' do
-      legacy_judge.update!(judge_options: { llm_provider: 'typesafe_jev' })
+      unconnected_judge.update!(judge_options: { llm_provider: 'typesafe_jev' })
 
-      get edit_ai_judge_url(legacy_judge)
+      get edit_ai_judge_url(unconnected_judge)
 
       assert_response :success
       assert_select '[data-ai-judge-wizard-target=runPromptButton][disabled]'
@@ -449,10 +448,10 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
     end
 
     test 'a judge that needs a book can also be run against a scorer picked without one' do
-      legacy_judge.update!(judge_options: { llm_provider: 'typesafe_jev' })
+      unconnected_judge.update!(judge_options: { llm_provider: 'typesafe_jev' })
       scorer = scorers(:random_scorer)
 
-      get edit_ai_judge_url(legacy_judge, scorer_id: scorer.id)
+      get edit_ai_judge_url(unconnected_judge, scorer_id: scorer.id)
 
       assert_response :success
       assert_select '[data-ai-judge-wizard-target=runPromptButton][disabled]', count: 0
@@ -489,7 +488,7 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
 
   describe 'index' do
     it 'lists AI judges the user owns or shares a team with' do
-      owned_judge = AiJudge.create!(name: 'My Judge', llm_key: '1234', owner: user)
+      owned_judge = AiJudge.create!(name: 'My Judge', owner: user)
 
       get ai_judges_url
 
@@ -500,7 +499,7 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
 
     it 'excludes AI judges owned by, or only shared with, someone else' do
       other_user = users(:doug)
-      private_judge = AiJudge.create!(name: 'Not Mine', llm_key: '1234', owner: other_user)
+      private_judge = AiJudge.create!(name: 'Not Mine', owner: other_user)
 
       get ai_judges_url
 
@@ -587,7 +586,7 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
   describe 'access control' do
     it 'cannot edit an AI judge owned by, and not shared with, another user' do
       other_user = users(:doug)
-      private_judge = AiJudge.create!(name: 'Not Mine', llm_key: '1234', owner: other_user)
+      private_judge = AiJudge.create!(name: 'Not Mine', owner: other_user)
 
       get edit_ai_judge_url(private_judge)
 
@@ -622,27 +621,26 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
       end
     end
 
-    test 'a legacy judge with no connection hides its provider field, and cannot be saved until it is on one' do
-      get edit_ai_judge_url(legacy_judge)
+    test 'a judge with no connection hides its provider field, and cannot be saved until it is on one' do
+      get edit_ai_judge_url(unconnected_judge)
       assert_select '.row.d-none #judge_options_llm_provider'
       assert_select '#llm_provider_help', count: 0
 
-      patch ai_judge_url(legacy_judge), params: { user: { name: 'Still own', judge_options: { llm_service_url: 'https://api.openai.com', llm_model: 'gpt-4o' } } }
+      patch ai_judge_url(unconnected_judge), params: { user: { name: 'Still own', judge_options: { llm_service_url: 'https://api.openai.com', llm_model: 'gpt-4o' } } }
       assert_response :unprocessable_content
       assert_includes response.body, 'is required: choose a connection first'
-      assert_not_equal 'Still own', legacy_judge.reload.name
-      assert_equal '1234asdf5678', legacy_judge.llm_key
+      assert_not_equal 'Still own', unconnected_judge.reload.name
     end
 
-    test 'legacy judges no longer offer manual migration to a connection' do
-      get edit_ai_judge_url(legacy_judge)
+    test 'a judge with no connection offers no manual migration to one' do
+      get edit_ai_judge_url(unconnected_judge)
 
       assert_select 'a', text: 'Migrate to connection', count: 0
     end
 
     test 'the manual connection migration route is removed' do
       assert_raises(ActionController::RoutingError) do
-        Rails.application.routes.recognize_path("/ai_judges/#{legacy_judge.id}/migrate_connection", method: :post)
+        Rails.application.routes.recognize_path("/ai_judges/#{unconnected_judge.id}/migrate_connection", method: :post)
       end
     end
 

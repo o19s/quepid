@@ -305,7 +305,7 @@ module AiJudges
 
       test 'a teammate tests a shared judge on its owner connection' do
         judge = users(:judge_judy)
-        judge.update_columns(connection_id: connections(:openai).id, llm_key: nil)
+        judge.update_columns(connection_id: connections(:openai).id)
         stub = stub_request(:post, 'https://api.openai.com/v1/chat/completions')
           .with(headers: { 'Authorization' => 'Bearer sk-test-openai' })
           .to_return(status: 200, headers: { 'Content-Type' => 'application/json' },

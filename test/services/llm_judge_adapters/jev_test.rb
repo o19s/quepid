@@ -8,7 +8,7 @@ module LlmJudgeAdapters
     let(:book) { books(:james_bond_movies) } # scale 0,1 labelled Not Relevant / Relevant
     let(:query_doc_pair) { query_doc_pairs(:starwars_qdp1) }
     let(:judgement) { Judgement.new(query_doc_pair: query_doc_pair, user: judge) }
-    let(:adapter) { Jev.new('ts-key', { llm_provider: 'typesafe_jev', llm_model: 'jev-latest' }) }
+    let(:adapter) { Jev.new({ llm_provider: 'typesafe_jev', llm_model: 'jev-latest' }) }
 
     def envelope system_prompt: 'Judge relevance.', scale: JudgeScale::NONE
       adapter.request_envelope(query_doc_pair, system_prompt: system_prompt, scale: scale)
@@ -32,7 +32,7 @@ module LlmJudgeAdapters
         result = envelope(scale: JudgeScale.for(book))
 
         assert_equal 'v1/systemone', result[:path]
-        assert_equal({ 'Authorization' => 'Bearer ts-key' }, result[:headers])
+        assert_empty result[:headers] # the connection authenticates
         assert_equal 'jev-latest', result[:body][:model]
 
         question = result[:body][:questions]['relevance']
@@ -196,7 +196,7 @@ module LlmJudgeAdapters
     end
 
     describe 'the confidence floor' do
-      let(:picky) { Jev.new('ts-key', { llm_provider: 'typesafe_jev', jev_min_confidence: 0.5 }) }
+      let(:picky) { Jev.new({ llm_provider: 'typesafe_jev', jev_min_confidence: 0.5 }) }
 
       test 'a spread out answer is treated as no answer, with the numbers kept for review' do
         answer = score_answer(score: 0.5, confidence: 0.2, probabilities: { '0' => 0.5, '1' => 0.5 })

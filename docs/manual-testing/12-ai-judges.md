@@ -19,11 +19,9 @@ AI Judges let an LLM stand in for a human judge. `AiJudge` is a `User` subclass 
 - **Expected:** Top-level Save redirects to the judge form. Legacy nested team submissions return to the team. Successful mutations use Turbo-compatible redirects.
 - **Edge cases:**
   - [ ] Blank name/prompt returns validation errors, retains entered values and team selections, and creates no judge.
-  - [ ] Keyless judges still appear as AI judges rather than human accounts.
-  - [ ] A judge still on its own URL and key no longer offers a manual **Migrate to connection** action - the route/button are gone; the form just says to choose a connection to save changes, and its **Llm Provider** field is hidden like a brand-new judge's (no more deprecation notice or read-only legacy value). The `MigrateAiJudgesToConnections` data migration ships with this change, so this state shouldn't exist in a real deployment - reach it by creating a judge with an `llm_key`/`judge_options.llm_service_url` and no `connection_id` directly (e.g. via `rails runner`).
-  - [ ] Saving changes to a judge that still has its own URL and key is refused until it has a connection; it keeps judging meanwhile, but testing it from the wizard now also requires choosing a connection first (there's no more own-settings exception).
+  - [ ] AI judges never appear as human accounts (a judge is told apart by its type, not by a key).
+  - [ ] Delete a connection that an AI judge uses. The judge's form hides its **Llm Provider** field and says to choose a connection; saving is refused until one is chosen, and choosing one saves the rest of the form's changes too. Until then it doesn't run: on a book it's assigned to, its ▶ is disabled with "Needs a connection: choose one on the judge's page", auto-run and escalation skip it, and a run already queued stops with "Judging by {judge} stopped: it has no connection."
   - [ ] Saving without a connection is refused with the reason and creates no judge.
-  - [ ] Choosing a connection on a judge saved before connections moves it onto that connection (its own key is cleared) and saves the rest of the form's changes along with it.
 
 ### 12.2 Edit / delete an AI Judge
 

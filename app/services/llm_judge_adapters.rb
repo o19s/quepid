@@ -12,9 +12,9 @@ module LlmJudgeAdapters
   # they were, and remain, OpenAI-shaped.
   DEFAULT_ADAPTER = 'LlmJudgeAdapters::OpenAi'
 
-  def self.for llm_key, options = {}
+  def self.for options = {}
     provider = LlmProvider.find(options[:llm_provider])
 
-    (provider&.adapter || DEFAULT_ADAPTER).constantize.new(llm_key, options)
+    (provider&.adapter || DEFAULT_ADAPTER).constantize.new(options)
   end
 end
