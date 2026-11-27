@@ -7,6 +7,15 @@
 # the prompt preview, and any future batch-ingest path. A rating that would
 # be rejected in a run should look rejected everywhere.
 class JudgementFinalizer
+  OUT_OF_SCALE_MARKER = "outside this book's scale"
+  # Match the suffix written by annotate_out_of_scale, including its older wording.
+  OUT_OF_SCALE_ANNOTATION = /
+    (?:\A|[ ]) \[LLM[ ]returned[ ]rating[ ]
+    (?:-?\d+(?:\.\d+)?(?:e[+-]?\d+)?|-?Infinity|NaN),[ ]
+    #{Regexp.union(OUT_OF_SCALE_MARKER, 'outside the scale')}[ ]
+    \[-?\d+(?:,[ ]-?\d+)*\]\]\z
+  /x
+
   def self.call judgement, scale: JudgeScale::NONE
     new(judgement, scale: scale).call
   end
@@ -45,6 +54,6 @@ class JudgementFinalizer
   def annotate_out_of_scale
     judgement.explanation =
       "#{judgement.explanation} [LLM returned rating #{judgement.rating.inspect}, " \
-      "outside this book's scale #{scale.values.inspect}]".strip
+      "#{OUT_OF_SCALE_MARKER} #{scale.values.inspect}]".strip
   end
 end

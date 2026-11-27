@@ -153,12 +153,36 @@ class JudgementTest < ActiveSupport::TestCase
       assert_equal 'it gave no rating', reason_for(nil)
     end
 
+    it 'recognizes an off-scale rating annotated by JudgementFinalizer' do
+      judgement = Judgement.new(query_doc_pair: pair, user: ai, rating: 3.0, explanation: 'Good.')
+      JudgementFinalizer.call(judgement, scale: JudgeScale.new([ 0, 1 ]))
+
+      assert_equal "its rating wasn't one of the book's scale values", judgement.unrateable_reason
+    end
+
+    it 'reports a missing rating when the explanation only mentions the scale' do
+      explanations = [
+        "Cannot rate a document outside this book's scale.",
+        'This document falls outside the scale.',
+        "Example: [LLM returned rating 3.0, outside this book's scale [0, 1]]. No rating given.",
+        "[LLM returned rating N/A, outside this book's scale [0, 1]]"
+      ]
+      explanations.each do |explanation|
+        judgement = Judgement.new(query_doc_pair: pair, user: ai, rating: nil, explanation: explanation)
+        JudgementFinalizer.call(judgement, scale: JudgeScale.new([ 0, 1 ]))
+
+        assert_equal 'it gave no rating', judgement.unrateable_reason, explanation
+      end
+    end
+
     it 'gives an escalated judgement its own reason, not the one it quotes from the judge before it' do
       source = pair.judgements.create!(user: ai, unrateable: true)
-      escalated = Judgement.new(query_doc_pair: pair, user: AiJudge.create!(name: 'Backup'), unrateable: true, escalated_from_judgement: source,
-                                explanation: 'Escalated from Robo, whose answer was unrateable: Jev rated 1. [confidence 0.73 is ' \
-                                             "below this judge's minimum confidence of 0.8, so it was marked unrateable]\n\n" \
-                                             'Mostly relevant. [LLM returned rating 2.0, outside the scale [0, 1]]')
+      escalated = Judgement.new(query_doc_pair: pair, user: AiJudge.create!(name: 'Backup'), rating: 2.0,
+                                escalated_from_judgement: source, explanation: 'Mostly relevant.')
+      JudgementFinalizer.call(escalated, scale: JudgeScale.new([ 0, 1 ]))
+      escalated.explanation = 'Escalated from Robo, whose answer was unrateable: Jev rated 1. [confidence 0.73 is ' \
+                              "below this judge's minimum confidence of 0.8, so it was marked unrateable]\n\n" \
+                              "#{escalated.explanation}"
 
       assert_equal "its rating wasn't one of the book's scale values", escalated.unrateable_reason
     end
