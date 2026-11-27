@@ -161,3 +161,27 @@ A judge can name a second judge to wake when it can't give a usable rating ("esc
   4. Confirm the redirect to the team with creation notice. Reopen the new judge and verify settings, requester ownership and a distinct ID; the source is unchanged.
 - **Expected:** Only judge configuration is copied. The original's key and connection, account privileges/tokens, book assignments and judgements are not copied; saving uses the existing create contract.
 - **Edge cases:** Inaccessible teams/private judges and sources outside the specified team return 404. Uncheck the team before Save to make the clone private.
+
+### 12.12 Limit an AI judge to the scales it can predict
+
+A judge whose model only predicts certain labels (for example a classifier trained on 0–3) can list the scales it supports in **Limit to scales**, one per line. Blank means any scale. The match is exact: a 0–3 judge can't fill a 0/1 or 0–4 book.
+
+- [ ] **Steps:**
+  1. Edit an OpenAI judge, open it without a book, and type `0,1,2,3` in **Limit to scales** (don't save yet). In **Test & Refine**, open **Rating scale to test with**.
+  2. Pick a 0/1 scale, then the 0–3 scale.
+  3. Type `abc` in **Limit to scales** and Save; then set it back to `0,1,2,3` and Save.
+  4. Open the **Settings** of a book on a 0/1 scale that doesn't have this judge yet, and of one on 0–3.
+  5. On the 0–3 book, assign the judge and turn on **Auto-run on new pairs**; save. Then change the judge's limit to `0,1` and add a query/doc pair to that book.
+  6. Make another judge wake this one when unsure (on the judge's page), and open the 0/1 book's **Settings** with that other judge assigned.
+- **Expected:**
+  - Step 1: the picker splits into **Supported scales** and **Unsupported scales** groups as you type; with nothing that fits, it says "None of your scorers uses a scale this judge is limited to."
+  - Step 2: picking 0/1 keeps the typed limit, shows "Rating scale added to the prompt — from …", disables **Run Prompt** and shows "This judge can't rate on this scale (see Limit to scales above)". Picking 0–3 re-enables it.
+  - Step 3: `abc` is refused with "Limit to scales must be whole numbers separated by commas, one scale per line (e.g. 0,1,2,3)"; the valid limit saves.
+  - Step 4: on the 0/1 book the judge's checkbox is disabled with an "Incompatible with this book's scale (0,1)" badge; on the 0–3 book it reads "only rates on scale 0,1,2,3".
+  - Step 5: the book page shows the judge's ▶ disabled with "Can't rate on this book's scale (0,1,2,3)" on hover, and adding the pair queues no judging for it.
+  - Step 6: the other judge's line reads "wakes {judge} when unsure", followed by a warning that it can't rate this book's scale, so it won't be woken here.
+- **Edge cases:**
+  - [ ] Select the incompatible judge anyway (e.g. by editing the form's HTML) and save the book: it isn't assigned, and the page says "Not assigned: {judge} can't rate on this book's scale (0,1)." If the save also fails (blank book name), that note shows once, not again on the next page.
+  - [ ] On a book that already has judgements, pick a scorer with a different scale together with a judge that only fits the new scale: the scale change is refused, and the judge isn't assigned.
+  - [ ] Request a run of the incompatible judge directly (`PATCH /books/:id/run_judge_judy/:judge_id`): it is refused with "AI Judge {name} can't rate on this book's scale (…)".
+  - [ ] Limit a judge while a run of it is queued: the run stops before judging, and the book page says "Judging by {judge} stopped: it can't rate this book's scale (…)", not "completed".

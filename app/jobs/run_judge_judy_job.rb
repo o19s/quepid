@@ -125,10 +125,10 @@ class RunJudgeJudyJob < ApplicationJob
 
   private
 
-  # A judge limited to certain scales after it was put on this book.
+  # A judge limited to certain scales after it was put on this book (or after this run was queued).
   def refuse_unsupported_scale book, judge, scale
     Rails.logger.warn("RunJudgeJudyJob: #{judge.name} (#{judge.id}) can't rate on book #{book.id}'s scale #{scale.values.inspect}")
-    broadcast_complete(book, judge)
+    broadcast_refused(book, judge, "it can't rate this book's scale (#{scale.values.join(',')})")
   end
 
   def cancellation_requested?
@@ -205,6 +205,24 @@ class RunJudgeJudyJob < ApplicationJob
       partial: 'books/update_kraken_mode',
       locals:  { book: book, counter: counter, qdp: query_doc_pair, judge: judge }
     )
+  end
+
+  # Says why a run stopped before judging anything, rather than announcing it complete, and
+  # refreshes the judge's activity row (which a queued run shows as busy).
+  def broadcast_refused book, judge, reason
+    ProgressBroadcaster.render(
+      book,
+      target:  'notifications',
+      partial: 'books/judging_refused',
+      locals:  { book: book, judge: judge, reason: reason }
+    )
+    Turbo::StreamsChannel.broadcast_update_to(
+      book.judgements_broadcast_channel,
+      target:  "judging-activity-#{judge.id}",
+      partial: 'books/judging_activity_refused',
+      locals:  { book: book, judge: judge, reason: reason }
+    )
+    BroadcastJudgeActivityJob.perform_later(book, judge)
   end
 
   def broadcast_complete book, judge

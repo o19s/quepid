@@ -3,6 +3,8 @@
 require 'test_helper'
 
 class RunJudgeJudyJobTest < ActiveJob::TestCase
+  include Turbo::Broadcastable::TestHelper
+
   let(:book) { books(:james_bond_movies) }
   let(:judge_judy) { users(:judge_judy) }
 
@@ -216,6 +218,23 @@ class RunJudgeJudyJobTest < ActiveJob::TestCase
   end
 
   describe 'scale limits' do
+    test 'says why it stopped, rather than announcing the run complete' do
+      judge_judy.update!(judge_options: judge_judy.judge_options.merge(supported_scales: '0,1,2,3')) # book is 0,1
+      modal = nil
+
+      notices = capture_turbo_stream_broadcasts([ book.owner, :notifications ]) do
+        modal = capture_turbo_stream_broadcasts(book.judgements_broadcast_channel) do
+          assert_enqueued_with(job: BroadcastJudgeActivityJob, args: [ book, judge_judy ]) do
+            RunJudgeJudyJob.new.perform(book, judge_judy, 1)
+          end
+        end
+      end
+
+      assert_includes notices.map(&:text).join, "Judge Judy stopped: it can't rate this book's scale (0,1)."
+      assert_not_includes notices.map(&:text).join, 'completed'
+      assert_includes modal.map(&:text).join, 'Judging Stopped'
+    end
+
     test 'a judge limited to other scales than the book does not judge it' do
       judge_judy.judge_options = judge_judy.judge_options.merge(supported_scales: '0,1,2,3') # book is 0,1
       judge_judy.save!

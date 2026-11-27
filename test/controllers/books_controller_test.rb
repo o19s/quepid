@@ -531,6 +531,21 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
       assert_response :success
       assert_select 'small', text: /wakes Night Shift when unsure/
       assert_select '.badge', text: /On call/
+      assert_select 'small.text-warning-emphasis', count: 0
+    end
+
+    test 'the book settings warn when the woken judge cannot rate the book scale' do
+      on_call.update!(judge_options: on_call.judge_options.merge(supported_scales: '0,1,2,3')) # book is 0,1
+      previous_bullet = Bullet.enable?
+      Bullet.enable = false # the pre-existing @other_books N+1, as above
+
+      get "/books/#{james_bond_movies.id}/edit"
+
+      assert_response :success
+      assert_select 'small.text-warning-emphasis',
+                    text: /but Night Shift can't rate this book's scale \(0,1\), so it won't be woken here/
+    ensure
+      Bullet.enable = previous_bullet
     end
   end
 

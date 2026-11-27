@@ -1,0 +1,8 @@
+<%# Rendered inside the live judging modal when a run is refused before judging anything. locals: book, judge, reason %>
+<div class="alert alert-warning d-flex align-items-center gap-2 mb-0" role="alert">
+  <i class="bi bi-exclamation-triangle-fill fs-4" aria-hidden="true"></i>
+  <div>
+    <h6 class="alert-heading mb-1">Judging Stopped</h6>
+    <div><%= judge.fullname %> didn't judge anything: <%= reason %>.</div>
+  </div>
+</div>
