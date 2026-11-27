@@ -450,3 +450,11 @@ connection; and saving a judge on a connection clears any URL/timeout left in it
 A judge without a connection (its connection was deleted, or the backfill skipped it for having
 neither a key nor a URL) doesn't run: the job, auto-run and escalation skip it, and the book page
 says it needs a connection.
+
+Before the drop, `users.llm_key` still held a copy of each migrated judge's key: the backfill
+copied it into the new connection's `secret` but left the original for this clean-up. On a judge
+whose connection still exists that copy was redundant. On a judge whose connection had been
+deleted, the copy was what kept the judge running (the fallback quietly used it), and it was the
+last copy of that key in Quepid. Dropping the column discards it and can't be undone (rolling the
+migration back re-adds the column empty), so such a judge needs a new connection with the key
+entered again.
