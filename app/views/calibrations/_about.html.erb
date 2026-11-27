@@ -1,0 +1,64 @@
+<%# What calibration is and how to use it (docs/todo/judge_calibration.md §1, C6). %>
+<p class="lead fs-6 mb-3">
+  Two judges can use the same scale and still mean different things by it: one may be stricter about
+  "Relevant", or avoid the middle grades. A <strong>calibration</strong> measures that. It has an AI judge
+  rate a random sample of pairs that another judge, the <strong>reference</strong>, has already rated, then
+  compares the two: how often they agree, which way they lean, and on which pairs they differ.
+</p>
+
+<div class="row g-3 mb-4">
+  <div class="col-lg-4">
+    <div class="card h-100">
+      <div class="card-body">
+        <h5 class="card-title"><i class="bi bi-question-circle text-primary" aria-hidden="true"></i> What it's for</h5>
+        <ul class="mb-0 ps-3">
+          <li class="mb-2"><strong>Trust an AI judge.</strong> Compare it with a person who rated this book, before its ratings feed your scores.</li>
+          <li class="mb-2"><strong>Check a prompt edit.</strong> Run the judge again on the <em>same</em> pairs and see whether agreement went up.</li>
+          <li class="mb-2"><strong>Set up escalation.</strong> Calibrate the on-call judge against the cheap judge it backs up, and use the
+            confidence breakdown to choose the cheap judge's <em>Minimum confidence</em>.</li>
+          <li><strong>Try a judge first.</strong> Calibrate a team AI judge here before assigning it to the book.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="card h-100">
+      <div class="card-body">
+        <h5 class="card-title"><i class="bi bi-list-ol text-primary" aria-hidden="true"></i> How to use it</h5>
+        <ol class="mb-0 ps-3">
+          <li class="mb-2">Click <strong>New calibration</strong>, or the <i class="bi bi-bullseye" aria-label="calibrate"></i> icon next to an AI judge in Judge Activity.</li>
+          <li class="mb-2">Pick the AI judge to calibrate, and the judge to compare against. A person is the best reference when the book has one.</li>
+          <li class="mb-2">Choose how many pairs to sample: at least 30. More pairs give steadier figures and cost more LLM calls.</li>
+          <li class="mb-2">Start it. The judge rates every pair in the sample.</li>
+          <li>Read the result. To tune the judge, click <strong>Tune and run again…</strong> on the result: change the prompt
+            (or, for TypeSafe Jev, the minimum confidence), run it on the same pairs, and compare. When a run does better,
+            <strong>Apply these settings</strong> to the judge.</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="card h-100">
+      <div class="card-body">
+        <h5 class="card-title"><i class="bi bi-bar-chart text-primary" aria-hidden="true"></i> What you get</h5>
+        <ul class="mb-0 ps-3">
+          <li class="mb-2"><strong>Agreement:</strong> Krippendorff's α, where 1 is perfect agreement and 0 is no better than chance,
+            plus the share of pairs graded exactly the same and within one grade.</li>
+          <li class="mb-2"><strong>Direction:</strong> whether the judge rates higher or lower than the reference, and by how much.</li>
+          <li class="mb-2"><strong>Where they differ:</strong> a grade-by-grade table; click a cell to read those pairs and the judge's explanations.</li>
+          <li><strong>By confidence</strong>, for judges that report it (TypeSafe Jev): how agreement changes as the judge is less sure.
+            <span class="badge text-bg-light border">coming</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="alert alert-light border small mb-4">
+  <i class="bi bi-info-circle" aria-hidden="true"></i>
+  <strong>Good to know.</strong> A calibration never changes a rating, a case score or the judging queue: its answers are
+  kept apart from judgements. The sample is drawn at random and then fixed, so a run on the same pairs compares like with like.
+  A result is only as good as its reference, and fewer than 30 compared pairs give no agreement figure.
+</div>
