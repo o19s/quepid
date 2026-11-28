@@ -125,17 +125,10 @@ class RunJudgeJudyJob < ApplicationJob
 
   private
 
-  # Why this judge can't judge this book at all, or nil: it lost its connection, or was limited to
-  # other scales after it was put on the book (or after this run was queued).
-  def refusal_reason judge, scale
-    return 'it has no connection' unless judge.connected?
-
-    "it can't rate this book's scale (#{scale.values.join(',')})" unless judge.supports_scale?(scale.values)
-  end
-
-  # Says why, when this judge can't judge this book at all, and returns whether it can't.
+  # Says why, when this judge can't judge this book at all (it has no connection, or was limited
+  # to other scales after it was put on the book or this run was queued), and returns whether.
   def refused? book, judge, scale
-    reason = refusal_reason(judge, scale)
+    reason = judge.judging_problem(scale.values)
     return false unless reason
 
     Rails.logger.warn("RunJudgeJudyJob: #{judge.name} (#{judge.id}) didn't judge book #{book.id}: #{reason}")
@@ -180,7 +173,7 @@ class RunJudgeJudyJob < ApplicationJob
   # The on-call judge's own run ends here too, so chains (A -> B -> C) follow.
   def wake_on_call_judge book, judge
     on_call = judge.try(:escalates_to)
-    return if on_call.nil? || !on_call.connected? || !on_call.supports_scale?(book.scale)
+    return if on_call.nil? || on_call.judging_problem(book.scale)
     return unless Judgement.awaiting_escalation(book, from: judge, to: on_call).exists?
 
     RunJudgeJudyJob.perform_later(book, on_call, nil, escalating_from_judge: judge)

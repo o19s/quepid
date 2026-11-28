@@ -62,9 +62,10 @@
 class AiJudge < User
   belongs_to :owner, class_name: 'User', optional: true
 
-  # Where to reach the provider and the key to use (ADR 0005). A judge without one doesn't run:
-  # deleting a connection leaves its judges without one (Connection nullifies them), and
-  # MigrateAiJudgesToConnections skipped judges that had neither a key nor a URL. Saving a judge
+  # Where to reach the provider and the key to use (ADR 0005). A judge without one doesn't run
+  # (judging_problem). The app won't delete a connection judges use, but one destroyed outside it
+  # nullifies its judges', and MigrateAiJudgesToConnections skipped judges that had neither a key
+  # nor a URL. Saving a judge
   # requires one (AiJudgesController), so code that builds judges directly needn't.
   belongs_to :connection, optional: true, inverse_of: :ai_judges
 
@@ -155,6 +156,14 @@ class AiJudge < User
   def supports_scale? values
     supported = supported_scales
     supported.empty? || supported.include?(Array(values).map(&:to_i).sort)
+  end
+
+  # Why this judge can't judge a book on these scale values, or nil. Every place that runs a judge,
+  # queues one, wakes one or offers its run button asks this, so they refuse for the same reasons.
+  def judging_problem scale_values
+    return 'it has no connection (choose one on its page)' unless connected?
+
+    "it can't rate this book's scale (#{Array(scale_values).join(',')})" unless supports_scale?(scale_values)
   end
 
   # The judge_options a judge would end up with once connected: the provider becomes the

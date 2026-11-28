@@ -7,17 +7,17 @@ class AutoRunJudgeJudyJob < RunJudgeJudyJob
                      duration:    30.minutes,
                      on_conflict: :block
 
-  # A judge with no connection, or limited to other scales after it was put on the
-  # book, would only be refused, so it isn't queued at all.
+  # A judge that would only be refused (AiJudge#judging_problem) isn't queued at all.
   def self.enqueue_for assignment
+    book = assignment.book
     judge = assignment.ai_judge
-    return unless judge.connected? && judge.supports_scale?(assignment.book.scale)
+    return if judge.judging_problem(book.scale)
 
     assignment.with_lock do
-      pending = active_for(assignment.book, assignment.ai_judge).any? do |job|
+      pending = active_for(book, judge).any? do |job|
         job.class_name == name && !job.arguments['quepid_cancelled'] && job.claimed_execution.nil?
       end
-      perform_later(assignment.book, assignment.ai_judge, nil) unless pending
+      perform_later(book, judge, nil) unless pending
     end
   end
 end

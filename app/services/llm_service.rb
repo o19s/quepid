@@ -7,7 +7,8 @@ require 'json'
 # the request it describes, hand the answer back to it. What the request looks
 # like and what the answer means belong to the adapter (LlmJudgeAdapters).
 class LlmService
-  # The URL, timeout and API version come from the connection; only the model has a fallback.
+  # Where to call, how long to wait and the API version come from the connection; only the model
+  # has a fallback here.
   DEFAULT_OPTIONS = { llm_model: LlmProvider.find('openai').default_model }.freeze
 
   # @param connection [Connection] where to send the calls and how to authenticate (ADR 0005).
@@ -15,10 +16,10 @@ class LlmService
     raise ArgumentError, 'an AI judge needs a connection to call its provider' unless connection
 
     @connection = connection
-    @options = DEFAULT_OPTIONS.merge(opts.deep_symbolize_keys, llm_service_url: connection.base_url, llm_timeout: connection.timeout)
+    @options = DEFAULT_OPTIONS.merge(opts.deep_symbolize_keys)
     @options[:llm_api_version] = connection.api_version if @options[:llm_api_version].blank? && connection.api_version.present?
     @adapter = LlmJudgeAdapters.for(@options)
-    @conn = LlmConnection.build(url: @options[:llm_service_url], retry_options: connection.retry_options)
+    @conn = LlmConnection.build(url: connection.base_url, retry_options: connection.retry_options)
   end
 
   def perform_safe_judgement judgement, scale: JudgeScale::NONE, book: nil
@@ -61,7 +62,7 @@ class LlmService
     response = @conn.post(envelope[:path]) do |req|
       req.headers.merge!(envelope[:headers])
       req.headers.merge!(@connection.request_headers)
-      req.options.timeout = @options[:llm_timeout].to_i
+      req.options.timeout = @connection.timeout.to_i
       req.body = envelope[:body]
     end
 

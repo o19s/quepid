@@ -27,11 +27,12 @@
           <%= link_to "wakes #{b.object.escalates_to.name} when unsure",
                 "#{edit_ai_judge_path(b.object, book_id: book.id)}#escalation-field" %>
         </small>
-        <%# RunJudgeJudyJob doesn't wake an on-call judge that can't rate the book's scale. %>
-        <% if book.scale.present? && !b.object.escalates_to.supports_scale?(book.scale) %>
+        <%# RunJudgeJudyJob doesn't wake an on-call judge that couldn't judge this book. %>
+        <% wake_problem = b.object.escalates_to.judging_problem(book.scale) if book.scale.present? %>
+        <% if wake_problem %>
           <small class="text-warning-emphasis ms-1">
             <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
-            but <%= b.object.escalates_to.name %> can't rate this book's scale (<%= book.scale_list %>), so it won't be woken here
+            but <%= b.object.escalates_to.name %> won't be woken here: <%= wake_problem %>
           </small>
         <% end %>
       <% end %>

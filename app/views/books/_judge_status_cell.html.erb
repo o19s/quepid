@@ -33,18 +33,11 @@
               css_class: 'btn btn-outline-danger btn-sm',
               style: icon_btn_style,
               icon: 'bi-x-circle', title: 'Cancel judging' %>
-      <% elsif !row[:judge].connected? %>
+      <% elsif (problem = row[:judge].judging_problem(book.scale)) %>
         <%# A disabled button shows no tooltip, so the wrapper carries it. %>
-        <span title="Needs a connection: choose one on the judge's page" tabindex="0">
+        <span title="Can't run: <%= problem %>" tabindex="0">
           <button type="button" class="btn btn-outline-danger btn-sm" style="<%= icon_btn_style %>" disabled
-                  aria-label="Judge documents (needs a connection)">
-            <i class="bi bi-play-fill"></i>
-          </button>
-        </span>
-      <% elsif !row[:judge].supports_scale?(book.scale) %>
-        <span title="Can't rate on this book's scale (<%= book.scale_list %>)" tabindex="0">
-          <button type="button" class="btn btn-outline-danger btn-sm" style="<%= icon_btn_style %>" disabled
-                  aria-label="Judge documents (can't rate on this book's scale)">
+                  aria-label="Judge documents (can't run: <%= problem %>)">
             <i class="bi bi-play-fill"></i>
           </button>
         </span>

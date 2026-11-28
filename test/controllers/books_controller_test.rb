@@ -438,7 +438,7 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
     setup do
       login_user_for_integration_test user
       james_bond_movies.update!(owner: user)
-      judge_judy.update_column(:connection_id, nil) # its connection was deleted
+      judge_judy.update_column(:connection_id, nil) # its connection was destroyed outside the app
     end
 
     test 'refuses to run it' do
@@ -447,23 +447,21 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
       end
 
       follow_redirect!
-      assert_equal 'AI Judge Judge Judy has no connection: choose one on its page to run it.', flash[:alert]
+      assert_equal "AI Judge Judge Judy can't run: it has no connection (choose one on its page).", flash[:alert]
     end
 
     test 'disables its run button on the book page, saying why' do
       get book_path(james_bond_movies)
 
       assert_select "#judge-status-#{judge_judy.id} span[title=?] button[disabled] .bi-play-fill",
-                    "Needs a connection: choose one on the judge's page"
+                    "Can't run: it has no connection (choose one on its page)"
     end
   end
 
   describe 'a judge limited to other scales than the book' do
     # james_bond_movies is on 0,1; this judge only predicts 0..3.
     let(:esci) do
-      connection = llm_connection
-      connection.update!(owner: user)
-      AiJudge.create!(name: 'ESCI Judge', owner: user, connection: connection, judge_options: { supported_scales: '0,1,2,3' })
+      AiJudge.create!(name: 'ESCI Judge', owner: user, connection: llm_connection(owner: user), judge_options: { supported_scales: '0,1,2,3' })
     end
 
     setup do
@@ -484,7 +482,7 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
       end
 
       follow_redirect!
-      assert_equal "AI Judge ESCI Judge can't rate on this book's scale (0,1).", flash[:alert]
+      assert_equal "AI Judge ESCI Judge can't run: it can't rate this book's scale (0,1).", flash[:alert]
     end
 
     test 'disables its run button on the book page, saying why' do
@@ -493,7 +491,7 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
       get book_path(james_bond_movies)
 
       assert_select "#judge-status-#{esci.id} span[title=?] button[disabled] .bi-play-fill",
-                    "Can't rate on this book's scale (0,1)"
+                    "Can't run: it can't rate this book's scale (0,1)"
     end
 
     test 'disables its checkbox in the book settings, unless it is already on the book' do
@@ -563,7 +561,7 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
   end
 
   describe 'escalation to an on-call judge' do
-    let(:on_call) { AiJudge.create!(name: 'Night Shift', owner: user) }
+    let(:on_call) { AiJudge.create!(name: 'Night Shift', owner: user, connection: llm_connection(owner: user)) }
 
     setup do
       login_user_for_integration_test user
@@ -664,7 +662,21 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
 
       assert_response :success
       assert_select 'small.text-warning-emphasis',
-                    text: /but Night Shift can't rate this book's scale \(0,1\), so it won't be woken here/
+                    text: /but Night Shift won't be woken here: it can't rate this book's scale \(0,1\)/
+    ensure
+      Bullet.enable = previous_bullet
+    end
+
+    test 'the book settings warn when the woken judge has no connection' do
+      on_call.update_column(:connection_id, nil) # its connection was destroyed outside the app
+      previous_bullet = Bullet.enable?
+      Bullet.enable = false # the pre-existing @other_books N+1, as above
+
+      get "/books/#{james_bond_movies.id}/edit"
+
+      assert_response :success
+      assert_select 'small.text-warning-emphasis',
+                    text: /but Night Shift won't be woken here: it has no connection/
     ensure
       Bullet.enable = previous_bullet
     end

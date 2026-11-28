@@ -6,7 +6,7 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
   let(:user) { users(:random) }
   # On a connection: a judge from before connections can't be saved until it is moved onto one.
   let(:ai_judge) { users(:judge_judy).tap { |judge| judge.update_column(:connection_id, connections(:openai).id) } }
-  # A judge whose connection was deleted (or that never had one): its provider is whatever it was saved with.
+  # A judge whose connection was destroyed outside the app (or that never had one): its provider is whatever it was saved with.
   let(:unconnected_judge) { users(:judge_judy).tap { |judge| judge.update_column(:connection_id, nil) } }
   let(:team) { teams(:shared) }
   let(:random_openai) do

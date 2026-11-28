@@ -274,5 +274,3 @@ judge_judy:
   options:
     judge_options: 
       llm_model: gpt-4o
-      llm_timeout: 3000
-      llm_service_url: https://api.openai.com

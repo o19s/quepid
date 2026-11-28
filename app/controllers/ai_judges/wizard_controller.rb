@@ -38,9 +38,7 @@ module AiJudges
     end
 
     def test_prompt
-      # A judge being edited lends its saved connection, which may be one only its owner can pick.
-      saved = AiJudge.for_user(current_user).find_by(id: params[:ai_judge_id])
-      connection = test_connection(saved)
+      connection = test_connection
       ai_judge = draft_judge(connection)
 
       # The judge is handed the scale, never the book/scorer it came from -
@@ -92,13 +90,14 @@ module AiJudges
     end
 
     # The connection the form has picked: one the user can select, or the one the judge being
-    # edited already has (a teammate testing a shared judge runs it on its owner's connection).
-    def test_connection saved
+    # edited already has (a teammate testing a shared judge runs it on its owner's connection,
+    # which may be one only that owner can pick).
+    def test_connection
       id = params[:connection_id].presence
       return nil if id.nil?
-      return saved.connection if saved && saved.connection_id.to_s == id.to_s
 
-      current_user.connections_involved_with.find_by(id: id)
+      current_user.connections_involved_with.find_by(id: id) ||
+        AiJudge.for_user(current_user).find_by(id: params[:ai_judge_id], connection_id: id)&.connection
     end
 
     # The form's current values, unsaved, calling out the way the judge would.

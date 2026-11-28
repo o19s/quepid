@@ -12,9 +12,7 @@ class RunJudgeJudyJobTest < ActiveJob::TestCase
 
   # An AI judge on an OpenAI connection of its own, whose key the OpenAI stubs accept or refuse.
   def openai_judge name, key, **attributes
-    connection = llm_connection(key)
-    connection.update!(owner: users(:random))
-    AiJudge.create!(name: name, owner: users(:random), connection: connection,
+    AiJudge.create!(name: name, owner: users(:random), connection: llm_connection(key, owner: users(:random)),
                     system_prompt: judge_judy.system_prompt, **attributes)
   end
 
@@ -234,14 +232,14 @@ class RunJudgeJudyJobTest < ActiveJob::TestCase
 
   describe 'scale limits' do
     test 'a judge with no connection says why it stopped, and calls no provider' do
-      judge_judy.update_column(:connection_id, nil) # its connection was deleted
+      judge_judy.update_column(:connection_id, nil) # its connection was destroyed outside the app
       notices = capture_turbo_stream_broadcasts([ book.owner, :notifications ]) do
         assert_no_difference 'book.judgements.count' do
           RunJudgeJudyJob.new.perform(book, judge_judy, 1)
         end
       end
 
-      assert_includes notices.map(&:text).join, 'Judge Judy stopped: it has no connection.'
+      assert_includes notices.map(&:text).join, 'Judge Judy stopped: it has no connection (choose one on its page).'
       assert_not_requested :post, 'https://api.openai.com/v1/chat/completions'
     end
 

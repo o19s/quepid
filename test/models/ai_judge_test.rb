@@ -183,6 +183,15 @@ class AiJudgeTest < ActiveSupport::TestCase
       assert_match(/Limit to scales/, judge.errors.full_messages.to_sentence)
     end
 
+    it 'says why it cannot judge a book: no connection first, then the scale' do
+      judge.judge_options = { supported_scales: '0,1,2,3' }
+      assert_equal 'it has no connection (choose one on its page)', judge.judging_problem([ 0, 1 ])
+
+      judge.connection = connections(:openai)
+      assert_equal "it can't rate this book's scale (0,1)", judge.judging_problem([ 0, 1 ])
+      assert_nil judge.judging_problem([ 0, 1, 2, 3 ])
+    end
+
     it 'cannot be newly assigned to a book on another scale' do
       judge.judge_options = { supported_scales: '0,1,2,3' }
       judge.save!
