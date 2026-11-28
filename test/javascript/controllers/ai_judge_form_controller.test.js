@@ -352,6 +352,8 @@ describe("images on an opt-in provider and the Advanced section (ADR 0009)", () 
     const imageType = document.createElement("select")
     const imageDimensions = document.createElement("input")
     imageDimensions.type = "number"
+    const imageTimeout = document.createElement("input")
+    imageTimeout.type = "number"
     const targets = {
       providerOptionField: [],
       provider,
@@ -365,7 +367,8 @@ describe("images on an opt-in provider and the Advanced section (ADR 0009)", () 
       imageTypeHidden: document.createElement("input"),
       imageTypeHint: document.createElement("div"),
       imageDimensions,
-      imageDimensionsHint: document.createElement("div")
+      imageDimensionsHint: document.createElement("div"),
+      imageTimeout
     }
     const controller = buildControllerFixture(AiJudgeFormController, {
       values: { presets, stockPrompts: [] },
@@ -481,5 +484,24 @@ describe("images on an opt-in provider and the Advanced section (ADR 0009)", () 
     expect(imageSettings.style.display).toBe("none")
     // The model and scale limits are still there for any provider.
     expect(advanced.style.display).toBe("")
+  })
+
+  it("enables the image timeout only for a base64 image, and clears it on a provider switch", () => {
+    const { controller, provider, images, imageType, imageTimeout } = build()
+    switchTo(controller, provider, "typesafe_jev")
+    images.checked = true
+    controller.syncImageSettings()
+    expect(imageTimeout.disabled).toBe(false)
+    imageTimeout.value = "30"
+
+    switchTo(controller, provider, "openai")
+    expect(imageTimeout.value).toBe("")
+    expect(imageTimeout.disabled).toBe(true)
+    imageType.value = "base64"
+    controller.syncImageSettings()
+    expect(imageTimeout.disabled).toBe(false)
+    images.checked = false
+    controller.syncImageSettings()
+    expect(imageTimeout.disabled).toBe(true)
   })
 })

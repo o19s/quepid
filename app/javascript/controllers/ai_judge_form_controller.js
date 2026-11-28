@@ -24,6 +24,7 @@ export default class extends Controller {
     "imageTypeHint",
     "imageDimensions",
     "imageDimensionsHint",
+    "imageTimeout",
     "providerOptionField",
     "systemPrompt",
     "systemPromptLabel",
@@ -73,6 +74,7 @@ export default class extends Controller {
     if (this.hasVersionTarget) this.versionTarget.value = preset.llm_api_version
     if (this.hasModelTarget) this.modelTarget.value = preset.llm_model
     if (this.hasImageDimensionsTarget) this.imageDimensionsTarget.value = ""
+    if (this.hasImageTimeoutTarget) this.imageTimeoutTarget.value = ""
     // No option has an empty value, so the provider's default type is picked next.
     if (this.hasImageTypeTarget) this.imageTypeTarget.value = ""
     this.offerDefaultSystemPrompt(preset)
@@ -177,6 +179,9 @@ export default class extends Controller {
       field.placeholder = bounds ? String(bounds.recommended) : ""
       field.disabled = !imagesOn || !bounds || type === "url"
     }
+    // Only a base64 image is downloaded by Quepid, so only it has a download to time out.
+    if (this.hasImageTimeoutTarget)
+      this.imageTimeoutTarget.disabled = !imagesOn || type !== "base64"
     if (this.hasImageDimensionsHintTarget)
       this.imageDimensionsHintTarget.textContent = bounds
         ? `Resize images to this size (${bounds.min}–${bounds.max} px). Blank uses the recommended ${bounds.recommended} px. Smaller images use fewer tokens, but can make judgements less accurate.`

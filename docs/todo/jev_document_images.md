@@ -176,3 +176,12 @@ or have phase 1's Jev help text say images are coming and keep the Jev switch di
 - [x] **2.22** Update `docs/todo/jev_llm_judge.md` D2 ("text only") to point at ADR 0009.
 - [ ] **2.23** Checks: `rails test`, `yarn test:unit`, lint, rubocop, Mutant incremental on the new
   loader, `bin/manual_test_status`.
+
+## Follow-ups built after phase 2
+
+- [x] Marker in the explanation when an image was sent: `[with document image, W×H]`.
+- [x] Image download timeout as an Advanced setting (ADR 0009 D12): `llm_image_timeout`, 0.1–60 s in
+  tenths, blank = 0.3, base64 only, validated on save.
+- [x] Mutant gaps closed on `DocumentImage` (large and portrait images, the 280 px boundary, JPEG,
+  GIF87a, AVIF, non-WebP RIFF, upper-case scheme and stray spaces, line-wrapped base64, a host
+  with no addresses, white flattening); an upper-case `HTTP://` URL used to raise and is fixed.

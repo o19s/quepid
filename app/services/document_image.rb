@@ -19,7 +19,10 @@ class DocumentImage
   MAX_BYTES = 16 * 1024 * 1024
   # Read from the header before any pixels are decoded, so a huge image is refused cheaply.
   MAX_PIXELS = 50_000_000
-  DOWNLOAD_TIMEOUT = 10
+  # Seconds to wait for an image download; a judge can pick its own within TIMEOUT_RANGE
+  # (judge_options[:llm_image_timeout]), in tenths. Connecting gets at most OPEN_TIMEOUT of it.
+  DOWNLOAD_TIMEOUT = 0.3
+  TIMEOUT_RANGE = (0.1..60)
   OPEN_TIMEOUT = 5
   JPEG_QUALITY = 85
   WHITE = [ 255, 255, 255 ].freeze
@@ -31,9 +34,11 @@ class DocumentImage
 
   # @param bounds [Hash] the provider's { min:, max: } pixels per side
   # @param size [Integer] pixels for the shorter side
-  def initialize bounds:, size:
+  # @param timeout [Numeric] seconds to wait for a download
+  def initialize bounds:, size:, timeout: DOWNLOAD_TIMEOUT
     @bounds = bounds
     @size = size
+    @timeout = timeout
   end
 
   # @return [Array(Image, nil)] the image, or [nil, reason], or [nil, nil] with no image to send
@@ -53,12 +58,12 @@ class DocumentImage
   def source_in document_fields
     fields = document_fields.to_h
     [ fields['image'], fields['thumb'] ]
-      .map { |value| value.to_s.strip }
-      .find { |value| value.match?(%r{\Ahttps?://}i) || value.start_with?('data:image/') }
+      .map { |value| value.to_s.strip.sub(%r{\Ahttps?(?=://)}i, &:downcase) } # HTTP:// trips URI parsing downstream
+      .find { |value| value.start_with?('http://', 'https://', 'data:image/') }
   end
 
   def bytes_from source
-    return download(source) if source.match?(%r{\Ahttps?://}i)
+    return download(source) if source.start_with?('http://', 'https://')
 
     payload = source[DATA_URI, 1] or raise Skipped, 'the data: URL is not base64'
     payload.delete(" \n\r\t").unpack1('m0')
@@ -77,8 +82,8 @@ class DocumentImage
     body = String.new(encoding: Encoding::BINARY)
     # Redirects are not followed (Faraday doesn't by default), so a public URL can't bounce inward.
     response = Faraday.get(url) do |request|
-      request.options.timeout = DOWNLOAD_TIMEOUT
-      request.options.open_timeout = OPEN_TIMEOUT
+      request.options.timeout = timeouts[:timeout]
+      request.options.open_timeout = timeouts[:open_timeout]
       request.options.on_data = proc do |chunk, received|
         raise Skipped, 'the image is larger than 16 MiB' if received > MAX_BYTES
 
@@ -90,6 +95,10 @@ class DocumentImage
     body
   rescue Faraday::Error, SocketError, URI::InvalidURIError, IPAddr::InvalidAddressError
     raise Skipped, 'the image could not be downloaded'
+  end
+
+  def timeouts
+    { timeout: @timeout, open_timeout: [ OPEN_TIMEOUT, @timeout ].min }
   end
 
   # Always re-encoded as JPEG at the size asked for (up or down): that also converts WebP, GIF and

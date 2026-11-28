@@ -89,6 +89,14 @@ class LlmServiceTest < ActiveSupport::TestCase
       assert_not_requested :get, image_url
     end
 
+    test 'the image download waits the judge timeout, or the default when it is out of range' do
+      timeout_for = ->(value) { LlmJudgeAdapters::OpenAi.new('key', { llm_provider: 'openai', llm_image_timeout: value }).send(:image_timeout) }
+
+      assert_in_delta 0.5, timeout_for.call('0.5')
+      assert_in_delta 30, timeout_for.call('30')
+      [ nil, '', '0', '61', 'slow' ].each { |value| assert_in_delta 0.3, timeout_for.call(value), 0.001, value.inspect }
+    end
+
     test 'a stored type the provider does not allow falls back to its default' do
       adapter = LlmJudgeAdapters::Anthropic.new('key', { llm_provider: 'anthropic', llm_include_images: 'true', llm_image_type: 'base64' })
       content = adapter.request_envelope(pair, system_prompt: 'Judge.')[:body][:messages].last[:content]

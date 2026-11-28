@@ -260,6 +260,30 @@ class AiJudgeTest < ActiveSupport::TestCase
       end
     end
 
+    it 'accepts an image timeout of 0.1 to 60 seconds, decimals included, and blank' do
+      [ '0.1', '0.3', '2.5', '60', '', nil ].each do |value|
+        assert_predicate judge_on('typesafe_jev', llm_image_timeout: value), :valid?, value.inspect
+      end
+      %w[0 0.05 61 slow].each do |value|
+        judge = judge_on('typesafe_jev', llm_image_timeout: value)
+
+        assert_not judge.valid?, value
+        assert_includes judge.errors[:image_timeout], 'must be a number of seconds between 0.1 and 60'
+      end
+    end
+
+    it 'refuses an image timeout where nothing is downloaded' do
+      judge = judge_on('openai', llm_image_timeout: '20')
+      assert_not judge.valid?
+      assert_includes judge.errors[:image_timeout], 'only applies to base64 images, not URLs'
+
+      assert_predicate judge_on('openai', llm_image_type: 'base64', llm_image_timeout: '20'), :valid?
+
+      judge = judge_on('anthropic', llm_image_timeout: '20')
+      assert_not judge.valid?
+      assert_includes judge.errors[:image_timeout], "can't be set for Anthropic"
+    end
+
     it 'rechecks the settings against the provider of a newly picked connection' do
       judge = AiJudge.create!(name: 'Mover', system_prompt: 'Judge it.', owner: users(:doug), connection: connections(:openai),
                               judge_options: { llm_image_type: 'base64', llm_image_dimensions: '1024' })

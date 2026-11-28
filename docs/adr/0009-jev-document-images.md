@@ -226,6 +226,15 @@ What each provider allows is declared in code, in its `LlmProvider` registry ent
   for Jev, URL for OpenAI and everyone else. Existing chat judges keep sending URLs. Jev's value is
   locked anyway.
 
+**D12 — Image download timeout, a per-judge advanced setting.** How long Quepid waits for each
+image it downloads is `llm_image_timeout`, in the Advanced settings image rows: seconds, in
+tenths, 0.1–60, blank meaning the default of 0.3. Connecting gets at most 5 seconds of it. The
+default is short on purpose: a run judges many pairs, and an image host that can't answer in a
+third of a second costs a skip note, not a stalled run; a judge with slow hosts raises it. It applies only
+when the image type is base64, the only time Quepid downloads; `AiJudge` refuses it with image
+type URL, or for a provider that can't take base64, and refuses a value out of range. A download
+that takes longer is skipped like any other (D5), and the pair is judged on its text.
+
 ## 3. Consequences
 
 - **Building a request can now download an image.** With image type base64, `request_envelope`
@@ -233,7 +242,7 @@ What each provider allows is declared in code, in its `LlmProvider` registry ent
   are unchanged: `LlmService#perform_judgement` already runs it inside the call that is about to
   hit the network anyway, and a failed download is handled inside the adapter (D5), never raised.
 - **A judging run gets slower and depends on image hosts.** Each pair now waits for a download. The
-  download has its own short timeout, separate from `llm_timeout`, so a slow image host costs a few
+  download has its own timeout (D12), separate from `llm_timeout`, so a slow image host costs a few
   seconds and a skip note, not the whole call.
 - **Server-side request forgery.** Quepid now fetches URLs taken from document fields. These come
   from search results, which the team controls but which can name any host. The `ProxyAllowlist`

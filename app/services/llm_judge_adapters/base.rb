@@ -131,6 +131,12 @@ module LlmJudgeAdapters
 
     # The shorter side to resize to: the judge's size if it is within the provider's bounds,
     # else the provider's recommended size (ADR 0009 D10).
+    # Seconds to wait for the image download: the judge's own if it is in range, else the default.
+    def image_timeout
+      seconds = Float(options[:llm_image_timeout].to_s, exception: false)
+      DocumentImage::TIMEOUT_RANGE.cover?(seconds) ? seconds : DocumentImage::DOWNLOAD_TIMEOUT
+    end
+
     def image_size bounds
       size = Integer(options[:llm_image_dimensions].to_s, 10, exception: false)
       size&.between?(bounds[:min], bounds[:max]) ? size : bounds[:recommended]
@@ -146,7 +152,8 @@ module LlmJudgeAdapters
       return unless include_images? && 'base64' == image_type
 
       bounds = LlmProvider.find(options[:llm_provider]).image_dimensions
-      image, @image_note = DocumentImage.new(bounds: bounds, size: image_size(bounds)).load(query_doc_pair.document_fields)
+      loader = DocumentImage.new(bounds: bounds, size: image_size(bounds), timeout: image_timeout)
+      image, @image_note = loader.load(query_doc_pair.document_fields)
       @image_sent = "#{image.width}×#{image.height}" if image
       image
     end

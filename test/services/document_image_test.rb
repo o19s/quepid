@@ -88,6 +88,52 @@ class DocumentImageTest < ActiveSupport::TestCase
       image, = load({ 'image' => URL })
 
       assert_equal 3, decoded(image).bands
+      assert_operator decoded(image).getpoint(10, 10).min, :>, 250, 'transparent pixels become white, not black'
+    end
+
+    test 'shrinks a large photo without capping it' do
+      serve encoded(2000, 1000)
+
+      image, = load({ 'image' => URL })
+
+      assert_equal [ 600, 300 ], [ image.width, image.height ]
+    end
+
+    test 'measures the shorter side of a portrait image too' do
+      serve encoded(400, 600)
+
+      image, = load({ 'image' => URL })
+
+      assert_equal [ 300, 450 ], [ image.width, image.height ]
+    end
+
+    test 'accepts an image that lands exactly on the provider minimum' do
+      serve encoded(560, 400)
+
+      image, skipped = load({ 'image' => URL }, size: 280)
+
+      assert_nil skipped
+      assert_equal [ 392, 280 ], [ image.width, image.height ]
+    end
+
+    test 'accepts JPEG and the older GIF87a header' do
+      gif87 = encoded(400, 400, '.gif').sub('GIF89a', 'GIF87a')
+      [ encoded(400, 400, '.jpg'), gif87 ].each do |body|
+        serve body
+
+        image, skipped = load({ 'image' => URL })
+
+        assert_nil skipped, body.byteslice(0, 6).inspect
+        assert_equal [ 300, 300 ], [ image.width, image.height ]
+      end
+    end
+
+    test 'lets AVIF through to libvips, by its ftyp brand' do
+      # libvips here can't write AVIF, so a bare AVIF header stands in: it passes the format
+      # check and then fails to decode, which is a different reason from an unknown format.
+      serve "#{[ 0, 0, 0, 28 ].pack('C*')}ftypavif#{([ 0 ] * 32).pack('C*')}"
+
+      assert_equal [ nil, 'the image could not be read' ], load({ 'image' => URL })
     end
 
     test 'skips an image too large to decode, from its header alone' do
@@ -123,6 +169,30 @@ class DocumentImageTest < ActiveSupport::TestCase
       assert_equal [ 300, 300 ], [ image.width, image.height ]
     end
 
+    test 'takes a data: URL whose base64 is split over lines' do
+      payload = [ encoded(300, 300) ].pack('m0').scan(/.{1,76}/).join("\n")
+
+      image, skipped = load({ 'image' => "data:image/png;base64,#{payload}" })
+
+      assert_nil skipped
+      assert image
+    end
+
+    test 'skips a data: URL that is not base64 at all' do
+      assert_equal [ nil, 'the data: URL is not base64' ], load({ 'image' => 'data:image/png,rawbytes' })
+    end
+
+    test 'takes a URL with an upper-case scheme or stray spaces around it' do
+      serve encoded(300, 300)
+
+      [ ' http://198.51.100.10/product.png ', 'HTTP://198.51.100.10/product.png' ].each do |value|
+        image, skipped = load({ 'image' => value })
+
+        assert_nil skipped, value.inspect
+        assert_instance_of DocumentImage::Image, image
+      end
+    end
+
     test 'skips a data: URL that is not valid base64' do
       assert_equal [ nil, 'the data: URL is not valid base64' ], load({ 'image' => 'data:image/png;base64,***' })
     end
@@ -135,6 +205,12 @@ class DocumentImageTest < ActiveSupport::TestCase
       assert_equal [ nil, 'it is not a PNG, JPEG, WebP, GIF or AVIF image' ],
                    load({ 'image' => "data:image/png;base64,#{[ svg ].pack('m0')}" })
     end
+
+    test 'a RIFF file that is not WebP is refused' do
+      serve "RIFF#{[ 36 ].pack('V')}WAVEfmt #{([ 0 ] * 32).pack('C*')}"
+
+      assert_equal [ nil, 'it is not a PNG, JPEG, WebP, GIF or AVIF image' ], load({ 'image' => URL })
+    end
   end
 
   describe 'downloading' do
@@ -144,6 +220,12 @@ class DocumentImageTest < ActiveSupport::TestCase
 
         assert_equal [ nil, "the image download returned HTTP #{status}" ], load({ 'image' => URL })
       end
+    end
+
+    test 'waits the timeout it is given, and connects within at most 5 seconds of it' do
+      assert_equal({ timeout: 30, open_timeout: 5 }, DocumentImage.new(bounds: JEV, size: 300, timeout: 30).send(:timeouts))
+      assert_equal({ timeout: 2, open_timeout: 2 }, DocumentImage.new(bounds: JEV, size: 300, timeout: 2).send(:timeouts))
+      assert_equal({ timeout: 0.3, open_timeout: 0.3 }, DocumentImage.new(bounds: JEV, size: 300).send(:timeouts))
     end
 
     test 'skips a download that fails to connect' do
@@ -157,6 +239,16 @@ class DocumentImageTest < ActiveSupport::TestCase
         assert_equal [ nil, 'the image host is not allowed' ], load({ 'image' => url }), url
       end
       assert_not_requested :get, /.*/
+    end
+
+    test 'refuses a host that resolves to no address at all' do
+      original = Addrinfo.method(:getaddrinfo)
+      Addrinfo.define_singleton_method(:getaddrinfo) { |*| [] }
+
+      assert_equal [ nil, 'the image host is not allowed' ], load({ 'image' => URL })
+      assert_not_requested :get, URL
+    ensure
+      Addrinfo.define_singleton_method(:getaddrinfo, &original)
     end
 
     test 'stops reading at 16 MiB' do

@@ -210,6 +210,7 @@ class AiJudge < User
     provider = LlmProvider.find(llm_provider_key)
     image_type = judge_options[:llm_image_type].presence
     errors.add(:image_type, "#{image_type} isn't available for #{provider.label}") if image_type && provider.allowed_image_types.exclude?(image_type)
+    image_timeout_fits(provider, image_type || provider.default_image_type)
 
     dimensions = judge_options[:llm_image_dimensions]
     return if dimensions.blank?
@@ -222,6 +223,18 @@ class AiJudge < User
     return if pixels&.between?(bounds[:min], bounds[:max])
 
     errors.add(:image_dimensions, "must be a whole number between #{bounds[:min]} and #{bounds[:max]} px for #{provider.label}")
+  end
+
+  # Only a base64 image is downloaded by Quepid, so only then is there a download to time out.
+  def image_timeout_fits provider, image_type
+    timeout = judge_options[:llm_image_timeout]
+    return if timeout.blank?
+    return errors.add(:image_timeout, "can't be set for #{provider.label}") unless provider.allowed_image_types.include?('base64')
+    return errors.add(:image_timeout, 'only applies to base64 images, not URLs') unless 'base64' == image_type
+
+    range = DocumentImage::TIMEOUT_RANGE
+    seconds = Float(timeout.to_s, exception: false)
+    errors.add(:image_timeout, "must be a number of seconds between #{range.min} and #{range.max}") unless range.cover?(seconds)
   end
 
   # Raises ArgumentError on anything that isn't whole numbers; callers decide

@@ -316,6 +316,7 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
       assert_select 'input[type=hidden][name=?][value=?]', 'user[judge_options][llm_image_type]', 'base64'
       assert_select 'input#judge_options_llm_image_dimensions[type=number][min=?][max=?][step=?][placeholder=?]', '280', '1568', '1', '300'
       assert_includes response.body, 'Blank uses the recommended 300 px.'
+      assert_select 'input#judge_options_llm_image_timeout[type=number][min=?][max=?][step=?][placeholder=?][disabled]', '0.1', '60', '0.1', '0.3'
     end
 
     test 'an OpenAI judge can pick URL or base64' do
@@ -334,6 +335,16 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
         assert_select '#judge_options_supported_scales'
       end
       assert_select '#judge_options_llm_model', count: 1
+    end
+
+    test 'an image timeout out of range is refused, with Advanced settings open' do
+      patch ai_judge_url(jev_judge), params: { user: { judge_options: {
+        llm_provider: 'typesafe_jev', llm_include_images: 'true', llm_image_type: 'base64', llm_image_timeout: '90'
+      } } }
+
+      assert_response :unprocessable_content
+      assert_includes response.body, 'Image timeout must be a number of seconds between 0.1 and 60'
+      assert_select '#ai-judge-advanced.collapse.show'
     end
 
     test 'a bad scale limit reopens Advanced settings with the error' do
