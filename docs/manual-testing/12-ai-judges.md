@@ -87,8 +87,10 @@ Successful edits return to the AI Judges index and display **AI Judge was succes
 - [ ] **Steps:**
   1. Create an OpenAI judge. Confirm **Judge with images** is checked by default.
   2. Turn it off, save and reopen; then turn it on, save and reopen. Confirm both choices persist.
-  3. Select Ollama or TypeSafe Jev. Confirm the image checkbox is disabled and off, with a provider notice. Switch back to OpenAI and confirm your previous choice returns; save/reload with a text-only provider and repeat.
-- **Expected:** The saved option controls whether absolute HTTP(S) document image or thumbnail URLs enter the judging prompt. Ollama and Jev omit image content regardless of the saved option. Text-only document fields remain available.
+  3. Select Ollama. Confirm the image checkbox is disabled and off, with a provider notice. Switch back to OpenAI and confirm your previous choice returns; save/reload with a text-only provider and repeat.
+  4. Select TypeSafe Jev. Confirm the image checkbox is enabled and starts off even when OpenAI had it on. Tick it, switch back to OpenAI and confirm OpenAI's own earlier choice returns.
+  5. On an OpenAI or Jev judge, open the collapsed **Advanced settings** section below Images. Confirm Image type offers URL and Base64 for OpenAI and is fixed to Base64 for Jev; Image dimensions takes the provider's range (Jev 280–1568, OpenAI 32–2048) and, when left blank, shows the recommended size as its placeholder and hint (Jev 300, OpenAI 768). The Advanced settings toggle shows a chevron that turns down when open. Confirm both fields are disabled while Judge with images is off, and dimensions is disabled while the type is URL. Save a value out of range (e.g. 279 on Jev) and confirm the save is refused with the Advanced section open; save a valid value and confirm it persists after reload. Confirm a provider with nothing to pick (e.g. Anthropic) shows no Advanced section.
+- **Expected:** The saved option controls whether document images reach the judge. Ollama omits image content regardless of the saved option. Images are opt-in on Jev; Jev judges saved before this had the switch turned off by a migration. The Advanced settings are stored with the judge and refused when outside what the provider accepts. Text-only document fields remain available.
 - **Edge cases:**
   - [ ] With images enabled, provide only `thumb`, or a relative `image` plus absolute `thumb`; confirm the absolute thumbnail is used. If both are absolute, prefer `image`.
   - [ ] With images disabled, confirm neither URL is sent as image content.
@@ -144,7 +146,7 @@ A judge can name a second judge to wake when it can't give a usable rating ("esc
 ### 12.10 TypeSafe Jev and provider acceptance rules
 
 - [ ] **Steps:**
-  1. Select TypeSafe Jev in Create/Edit AI Judge. Confirm Judging instructions, the Minimum confidence number field (0–1), fixed URL/model/version and disabled images.
+  1. Select TypeSafe Jev in Create/Edit AI Judge. Confirm Judging instructions, the Minimum confidence number field (0–1), fixed URL/model/version, and the Judge with images switch enabled and off (see 12.6).
   2. Without a book scale, confirm Run Prompt is disabled with guidance to open Refine Prompt from a book. A direct preview request without an accessible scale returns 422 without contacting the provider.
   3. Open Refine Prompt from a book with a nonstandard scale such as `[1, 3, 5]`. Confirm the displayed criteria and labels match the book. Run a judgement; confirm the fractional provider score maps to a scale value and the explanation records score, confidence and distribution.
   4. Set a confidence floor above the provider's confidence. Confirm Unrateable with the numeric explanation retained. Save/reload and confirm the confidence setting persists.

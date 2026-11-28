@@ -132,8 +132,9 @@ tokens of a 300 px one, makes the request bigger, and gives Jev detail it rarely
 resizes the image before base64-encoding it.
 
 - **The setting is not Jev's.** It is a common judge option, `llm_image_dimensions`, stored in
-  `judge_options` next to `llm_include_images`. It is a whole number of pixels; blank means "send
-  the image as downloaded", with D5's checks applying unchanged.
+  `judge_options` next to `llm_include_images`. It is a whole number of pixels; blank means "use
+  the provider's recommended size". A base64 image is therefore always resized; there is no
+  "original size" setting.
 - **It goes in a new, collapsed "Advanced" section of the AI judge form.** The section holds two
   settings: image type (D11) and this one. Nothing else moves. The section is a Bootstrap collapse
   below the Images row, closed by default. It opens on its own when the page is re-rendered with a
@@ -142,8 +143,8 @@ resizes the image before base64-encoding it.
   URL, because Quepid never holds the bytes then. A provider that declares neither an image type
   choice nor image limits shows no Advanced section at all.
 - **The provider sets the bounds, in code.** Each `LlmProvider` registry entry can declare
-  `image_dimensions: { min:, max:, default: }`. For Jev: min 280, max 1568, default **300**, just
-  above the minimum. These are constants in the registry, not configuration or data, because they
+  `image_dimensions: { min:, max:, recommended: }`. For Jev: min 280, max 1568, recommended
+  **300**, just above the minimum. For OpenAI: min 32, max 2048, recommended 768. These are constants in the registry, not configuration or data, because they
   come from the vendor's API limits.
 - **Out-of-range values are refused, not clamped.** The form's number field gets the provider's
   `min` and `max`, and the form JavaScript swaps them when the provider changes. The browser check
@@ -154,11 +155,13 @@ resizes the image before base64-encoding it.
   from the connection, switching a judge to a connection whose provider has different bounds
   revalidates the stored value, and the save fails until it is fixed or cleared. The adapter
   rechecks the bounds when it reads the option, and treats an out-of-range stored value (for
-  example, one saved before a vendor narrowed its limits) as blank rather than sending a request
+  example, one saved before a vendor narrowed its limits) as blank (so the recommended size) rather than sending a request
   the API would reject.
-- **New judges start at the provider's default.** A new Jev judge's form is filled with 300.
-  Existing Jev judges have no stored value, which means no resizing, until someone sets one. The
-  D9 migration does not add one.
+- **Blank is the recommended size, shown, not stored.** The form leaves the field empty and shows
+  the provider's recommended size as its placeholder and in its hint ("Blank uses the recommended
+  300 px"). Existing judges have no stored value and so get the recommended size; the D9 migration
+  adds none. Storing nothing means a later change to a provider's recommended size reaches every
+  judge that didn't pick its own.
 - **What the size means: the shorter side.** The image is scaled so its *shorter* side equals the
   setting, keeping the aspect ratio. Scaling the longer side instead would break the minimum: a
   2:1 image scaled to 300 px wide is 150 px tall, and Jev rejects it. If the longer side would then
@@ -255,7 +258,10 @@ What each provider allows is declared in code, in its `LlmProvider` registry ent
 - **Never resizing.** Without D10, ordinary thumbnails under 280 px and WebP images are skipped,
   and large images cost more tokens than a relevance judgement needs.
 - **A fixed size for every judge.** Some judgements depend on detail, such as text inside an image.
-  A per-judge setting lets those judges send larger images, or the image as downloaded.
+  A per-judge setting lets those judges send larger images, up to the provider's maximum.
+- **Sending the original size when the field is blank.** Blank would then quietly mean the most
+  expensive option. Blank means the recommended size instead, and a judge that needs more detail
+  sets a bigger number.
 - **Scaling by the longer side.** It makes the shorter side drop below Jev's 280 px minimum for any
   non-square image (D10).
 - **Default on, like the chat providers.** Because of the stored values in D9, it would quietly
@@ -283,7 +289,7 @@ What each provider allows is declared in code, in its `LlmProvider` registry ent
 - Resize tests (D10) on small fixture images: the shorter side scaled to the setting, upscaling
   of a small thumbnail, the longer side capped at 1568, a banner that cannot fit skipped, WebP and
   GIF converted to JPEG, SVG skipped, an image over the pixel cap skipped without being decoded, and
-  a blank setting sending the image unchanged.
+  a blank setting resizing to the provider's recommended size.
 - `AiJudge` validation tests: 279 and 1569 refused for Jev, 280 and 1568 accepted, blank accepted,
   a fraction refused, any value refused on a provider with no image limits, and a connection switch
   revalidating a stored value. Form JavaScript test: the field's `min`/`max` follow the provider.

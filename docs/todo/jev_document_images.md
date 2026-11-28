@@ -3,7 +3,9 @@
 > **Decision record:** [ADR 0009](../adr/0009-jev-document-images.md). This file is the task
 > breakdown; the ADR holds the reasoning. D-numbers below refer to the ADR.
 >
-> **Status:** not started.
+> **Status:** phase 1 built on `feature/jev-product-images` (2026-11-28); phase 2 not started.
+> Jev's switch is enabled in phase 1 (decided 2026-11-28): ticking it is saved but sends no image until
+> phase 2, so the two phases should ship together.
 
 Two phases. Phase 1 builds the settings and their storage: everything a person sees and saves.
 Phase 2 makes the adapters act on them. Each phase is one reviewable PR.
@@ -17,89 +19,89 @@ or have phase 1's Jev help text say images are coming and keep the Jev switch di
 
 ### Registry (`app/models/llm_provider.rb`)
 
-- [ ] **1.1** Add `images_by_default` (boolean, default true) — D1. Jev: false.
-- [ ] **1.2** Add `image_types` (array; first entry is the default) — D11. Jev: `%w[base64]`;
+- [x] **1.1** Add `images_by_default` (boolean, default true) — D1. Jev: false.
+- [x] **1.2** Add `image_types` (array; first entry is the default) — D11. Jev: `%w[base64]`;
   OpenAI: `%w[url base64]`; every other provider that supports images: `%w[url]`; providers
   without image support: `[]`.
-- [ ] **1.3** Add `image_dimensions` (`{ min:, max:, default: }` or nil) — D10. Jev:
-  `{ min: 280, max: 1568, default: 300 }`. OpenAI: values from OpenAI's vision documentation,
+- [x] **1.3** Add `image_dimensions` (`{ min:, max:, recommended: }` or nil) — D10. Jev:
+  `{ min: 280, max: 1568, recommended: 300 }`. OpenAI: values from OpenAI's vision documentation,
   looked up when this task is done and cited in a code comment. Everyone else: nil.
-- [ ] **1.4** Jev: `supports_images: true`, and a Jev-specific images help line in place of the
+- [x] **1.4** Jev: `supports_images: true`, and a Jev-specific images help line in place of the
   generic "Attached as an image URL" one (see the note under "Between the phases").
-- [ ] **1.5** Expose `images_by_default`, `image_types` and `image_dimensions` in `to_preset` for the
+- [x] **1.5** Expose `images_by_default`, `image_types` and `image_dimensions` in `to_preset` for the
   form JavaScript.
 
 ### Existing judges (D9)
 
-- [ ] **1.6** Data migration: set `judge_options.llm_include_images` to `"false"` on every AI judge
+- [x] **1.6** Data migration: set `judge_options.llm_include_images` to `"false"` on every AI judge
   whose `judge_options.llm_provider` is `typesafe_jev`. `down` is a no-op. Iterate in Ruby, not a
   JSON query, because the app runs on both MySQL and PostgreSQL.
-- [ ] **1.7** `Base#include_images?`: a blank stored value takes the provider's `images_by_default`.
+- [x] **1.7** `Base#include_images?`: a blank stored value takes the provider's `images_by_default`.
 
 ### Validation (`app/models/ai_judge.rb`)
 
-- [ ] **1.8** `llm_image_type` must be one of the provider's `image_types`; blank is allowed and
+- [x] **1.8** `llm_image_type` must be one of the provider's `image_types`; blank is allowed and
   means the provider's default.
-- [ ] **1.9** `llm_image_dimensions` must be a whole number within the provider's
+- [x] **1.9** `llm_image_dimensions` must be a whole number within the provider's
   `image_dimensions` bounds; blank is allowed. It is refused on a provider with no bounds, and when
   the effective image type is `url`.
-- [ ] **1.10** Both are rechecked when the judge moves to another connection: the provider comes
+- [x] **1.10** Both are rechecked when the judge moves to another connection: the provider comes
   from the connection (`leave_own_settings_for_connection`), so validate after it is applied.
-- [ ] **1.11** Permit `llm_image_type` and `llm_image_dimensions` in `AiJudgesController` and
+- [x] **1.11** Permit `llm_image_type` and `llm_image_dimensions` in `AiJudgesController` and
   `AiJudges::WizardController` (which has its own `permit` list).
 
 ### Form (`app/views/ai_judges/`)
 
-- [ ] **1.12** Images row: a blank stored `llm_include_images` starts the switch at the provider's
+- [x] **1.12** Images row: a blank stored `llm_include_images` starts the switch at the provider's
   `images_by_default`, not always on. Pass `provider` into `_provider_options`.
-- [ ] **1.13** New collapsed **Advanced** section below the Images row (a Bootstrap 5 collapse,
+- [x] **1.13** New collapsed **Advanced** section below the Images row (a Bootstrap 5 collapse,
   closed by default), holding only:
   - **Image type** select (`llm_image_type`): options from the provider's `image_types`. With one
     value (Jev), the select is shown disabled with a hint that Jev can't fetch URLs, and a hidden
     field submits the value.
   - **Image dimensions** number field (`llm_image_dimensions`): `min`/`max` from the provider, the
-    provider's `default` filled in for a new judge, a hint saying it is the shorter side in pixels
-    and that blank means no resizing.
-- [ ] **1.14** The section opens on render when either field has a validation error. Both fields
+    provider's `recommended` size as the placeholder and in the hint ("Blank uses the
+    recommended 300 px"); nothing is filled in or stored.
+- [x] **1.14** The section opens on render when either field has a validation error. Both fields
   are disabled while **Judge with images** is off; dimensions is also disabled while the image type
   is `url`. The section is hidden for a provider with one image type and no bounds.
-- [ ] **1.15** Leave `llm_image_type` and `llm_image_dimensions` out of the generic judge-options
+- [x] **1.15** Leave `llm_image_type` and `llm_image_dimensions` out of the generic judge-options
   loop in `_provider_options.html.erb` (its `except` list), so they don't also render as plain text
   fields.
 
 ### Form JavaScript (`ai_judge_form_controller.js`)
 
-- [ ] **1.16** `syncImages`: switching to an opt-in provider (Jev) starts the switch off. That
+- [x] **1.16** `syncImages`: switching to an opt-in provider (Jev) starts the switch off. That
   provider's choice neither sets nor takes the preference shared by the other providers, and
   switching back restores the earlier choice (keep the existing "keeps the wanted image choice"
   test passing).
-- [ ] **1.17** On provider change: rebuild the image type options, lock or unlock the select, set
+- [x] **1.17** On provider change: rebuild the image type options, lock or unlock the select, set
   the dimensions field's `min`/`max`, show or hide the Advanced section; on image type or switch
   change: enable or disable the dimensions field.
 
 ### Tests and docs for phase 1
 
-- [ ] **1.18** `test/models/llm_provider_test.rb`: the new attributes and preset keys; Jev supports
+- [x] **1.18** `test/models/llm_provider_test.rb`: the new attributes and preset keys; Jev supports
   images and is opt-in.
-- [ ] **1.19** `AiJudge` validation tests: 279 and 1569 refused for Jev, 280 / 1568 / blank
+- [x] **1.19** `AiJudge` validation tests: 279 and 1569 refused for Jev, 280 / 1568 / blank
   accepted, a fraction refused, any value refused on a provider without bounds, dimensions refused
   with `url`, `url` refused for Jev, `base64` refused for a URL-only provider, and a connection
   switch revalidating stored values.
-- [ ] **1.20** Migration test: Jev judges flipped to `"false"`, other providers untouched.
-- [ ] **1.21** `test/services/llm_judge_adapters/` (or `llm_service_test.rb`): a blank switch means
+- [x] **1.20** Migration test: Jev judges flipped to `"false"`, other providers untouched.
+- [x] **1.21** `test/services/llm_judge_adapters/` (or `llm_service_test.rb`): a blank switch means
   off for Jev and on for OpenAI.
-- [ ] **1.22** Vitest (`test/javascript/controllers/ai_judge_form_controller.test.js`): opt-in
+- [x] **1.22** Vitest (`test/javascript/controllers/ai_judge_form_controller.test.js`): opt-in
   switch behaviour, image type options and lock per provider, `min`/`max` swap, dimensions
   disabled with `url`.
-- [ ] **1.23** Playwright (`test/playwright/llm_providers.spec.ts`): update the Jev expectations
+- [x] **1.23** (the spec is still `fixme` for the connection rework, so its new expectations don't run yet) Playwright (`test/playwright/llm_providers.spec.ts`): update the Jev expectations
   (switch enabled and unticked) in the existing `fixme` spec, and add an Advanced section check:
   closed by default, Jev's type locked to base64, an out-of-range value refused on save with the
   section open.
-- [ ] **1.24** Manual testing: revise scenario 12.6 (Jev's switch is now enabled and opt-in) and
+- [x] **1.24** Manual testing: revise scenario 12.6 (Jev's switch is now enabled and opt-in) and
   12.10; add the Advanced section steps; extend `tracking.yml` paths.
 - [ ] **1.25** Screenshots via Playwright MCP of the form for OpenAI and Jev, Advanced section
   closed and open, using the `branch-ui-diff` skill for before/after.
-- [ ] **1.26** Checks: `rails test`, `yarn test:unit`, `yarn lint:js`, `yarn format:js:check`,
+- [x] **1.26** Checks: `rails test`, `yarn test:unit`, `yarn lint:js`, `yarn format:js:check`,
   rubocop, `bin/manual_test_status`.
 
 ## Phase 2 — Use the images
@@ -114,12 +116,13 @@ or have phase 1's Jev help text say images are coming and keep the Jev switch di
 - [ ] **2.3** Decode a `data:` value strictly; an invalid one is a skip.
 - [ ] **2.4** Inspect the bytes: format from magic bytes (PNG, JPEG), APNG (`acTL` before `IDAT`),
   dimensions from PNG `IHDR` / JPEG `SOFn`, and the pixel cap before any decoding.
-- [ ] **2.5** Resize (D10) when `llm_image_dimensions` is set: shorter side to the setting, up or
+- [ ] **2.5** Resize (D10) every base64 image: shorter side to `llm_image_dimensions`, or to the
+  provider's `recommended` size when blank, up or
   down; longer side capped at the provider's max; re-encode as JPEG (about 85); flatten
   transparency onto white; first frame of an animation; never render SVG. Skip when the result
   still falls outside the provider's bounds.
-- [ ] **2.6** Without a size set, apply the provider's accepted formats and bounds to the image as
-  downloaded and skip what fails (D5).
+- [ ] **2.6** After resizing, apply the provider's accepted formats and bounds and skip what still
+  fails (D5).
 - [ ] **2.7** Return the bytes and format, or a short reason for the skip note. Never raise for an
   unusable image.
 - [ ] **2.8** Add `ruby-vips` to the Gemfile and `libvips` to `Dockerfile.dev` (it is already in
@@ -158,8 +161,8 @@ or have phase 1's Jev help text say images are coming and keep the Jev switch di
   blocked addresses using IP-literal URLs (`127.0.0.1`, `169.254.169.254`, `10.0.0.1`), so the
   tests need no DNS.
 - [ ] **2.18** Resize tests: shorter side scaled, upscaling a thumbnail, the longer side capped, a
-  banner that can't fit skipped, WebP and GIF converted, SVG skipped, a blank setting leaving the
-  image as is.
+  banner that can't fit skipped, WebP and GIF converted, SVG skipped, a blank setting resizing to
+  the provider's recommended size.
 - [ ] **2.19** Jev adapter tests (webmock): the asset shape, the reference present in `state`
   exactly once, the header only with an asset; no `assets` and no header when the switch is off, with
   no image, and for each skip case; the skip note; the note reset between two pairs on one adapter.

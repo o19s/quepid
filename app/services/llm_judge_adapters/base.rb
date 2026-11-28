@@ -102,16 +102,16 @@ module LlmJudgeAdapters
     private
 
     # Per-judge switch (judge_options[:llm_include_images]) for models that take
-    # text only. Judges saved before the switch existed have no value, and keep
-    # sending images as they always did -- unless their provider cannot take an
-    # image URL at all, which no setting overrides. A judge with no provider is
-    # OpenAI shaped (see LlmJudgeAdapters::DEFAULT_ADAPTER), so it can.
+    # text only. A judge with no value gets its provider's default: on, as images
+    # always were, except where they are opt-in (Jev, ADR 0009) -- unless the
+    # provider cannot take an image at all, which no setting overrides. A judge
+    # with no provider is OpenAI shaped (see LlmJudgeAdapters::DEFAULT_ADAPTER).
     def include_images?
       provider = LlmProvider.find(options[:llm_provider])
       return false if provider && !provider.supports_images?
 
       value = options[:llm_include_images]
-      return true if value.nil? || '' == value
+      return provider.nil? || provider.images_by_default? if value.nil? || '' == value
 
       ActiveModel::Type::Boolean.new.cast(value)
     end

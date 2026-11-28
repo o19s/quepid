@@ -1,5 +1,5 @@
-<%# locals: (ai_judge:, option_defaults:, images_supported:, specs:) %>
-<% sorted_judge_options = option_defaults.merge(ai_judge.judge_options).except(:llm_include_images, :llm_service_url, :llm_timeout, :supported_scales).reverse_merge(specs.transform_values { nil }.transform_keys(&:to_sym)).sort_by { |k, _| k.to_s == 'llm_provider' ? 0 : 1 } %>
+<%# locals: (ai_judge:, option_defaults:, images_supported:, provider:, specs:) %>
+<% sorted_judge_options = option_defaults.merge(ai_judge.judge_options).except(:llm_include_images, :llm_image_type, :llm_image_dimensions, :llm_service_url, :llm_timeout, :supported_scales).reverse_merge(specs.transform_values { nil }.transform_keys(&:to_sym)).sort_by { |k, _| k.to_s == 'llm_provider' ? 0 : 1 } %>
 <% sorted_judge_options.each do |key, value| %>
   <% spec = specs[key.to_s] %>
   <% provider_unset = key.to_s == 'llm_provider' && ai_judge.connection.nil? %>
@@ -47,18 +47,66 @@
   <div class="col-sm-2">Images</div>
   <div class="col-sm-4">
     <% image_setting = ai_judge.judge_options[:llm_include_images] %>
-    <% include_images = image_setting.nil? || image_setting == '' || ActiveModel::Type::Boolean.new.cast(image_setting) %>
+    <%# A judge that never saved the switch gets its provider's default: opt-in for Jev (ADR 0009). %>
+    <% include_images = image_setting.nil? || image_setting == '' ? (provider.nil? || provider.images_by_default?) : ActiveModel::Type::Boolean.new.cast(image_setting) %>
     <%= hidden_field_tag 'user[judge_options][llm_include_images]', images_supported ? 'false' : include_images.to_s, data: { ai_judge_form_target: 'imagesHidden' } %>
     <div class="form-check form-switch">
       <%= check_box_tag 'user[judge_options][llm_include_images]', 'true', include_images && images_supported,
             id: 'judge_options_llm_include_images', class: 'form-check-input',
             role: 'switch', disabled: !images_supported,
-            data: { ai_judge_form_target: 'images', wanted: include_images.to_s, unsupported: (!images_supported).to_s } %>
+            data: { ai_judge_form_target: 'images', wanted: include_images.to_s, unsupported: (!images_supported).to_s,
+                    action: 'change->ai-judge-form#syncImageSettings' } %>
       <%= label_tag 'judge_options_llm_include_images', 'Judge with images', class: 'form-check-label' %>
     </div>
     <div class="form-text">Use the document image or thumbnail URL. Turn off for text-only models.</div>
     <div class="form-text text-warning-emphasis" data-ai-judge-form-target="imagesNotice" style="display:none">
       <span data-ai-judge-form-target="imagesNoticeProvider"></span> doesn't support images, so none are sent.
+    </div>
+  </div>
+</div>
+<%# How the image reaches the model and the size it is resized to, from what the provider accepts
+    (LlmProvider#image_types / #image_dimensions; ADR 0009 D10, D11). ai-judge-form keeps it in step
+    with the provider, the switch and the image type. %>
+<% image_types = provider&.allowed_image_types || [] %>
+<% image_type = ai_judge.judge_options[:llm_image_type].presence || provider&.default_image_type %>
+<% bounds = provider&.supports_images? ? provider.image_dimensions : nil %>
+<% images_on = include_images && images_supported %>
+<% advanced_open = ai_judge.errors.include?(:image_type) || ai_judge.errors.include?(:image_dimensions) %>
+<%# Like the provider row, nothing to show until a connection says which provider this is. %>
+<div class="mb-3" data-ai-judge-form-target="advanced" style="<%= 'display:none' unless ai_judge.connection && provider&.advanced_image_settings? %>">
+  <a class="collapse-toggle text-decoration-none" data-bs-toggle="collapse" href="#ai-judge-advanced" role="button"
+     aria-expanded="<%= advanced_open %>" aria-controls="ai-judge-advanced">
+    <i class="bi bi-chevron-right" aria-hidden="true"></i> Advanced settings
+  </a>
+  <div class="collapse <%= 'show' if advanced_open %>" id="ai-judge-advanced">
+    <div class="row mb-3 mt-2">
+      <%= label_tag 'judge_options_llm_image_type', 'Image type', class: 'col-sm-2 col-form-label' %>
+      <div class="col-sm-4">
+        <%# A disabled select doesn't submit, so a locked (single) type travels in this field. %>
+        <%= hidden_field_tag 'user[judge_options][llm_image_type]', image_type, id: nil,
+              disabled: !images_on, data: { ai_judge_form_target: 'imageTypeHidden' } %>
+        <%= select_tag 'user[judge_options][llm_image_type]',
+              options_for_select(image_types.map { |type| [ { 'url' => 'URL', 'base64' => 'Base64' }[type] || type, type ] }, image_type),
+              id: 'judge_options_llm_image_type', class: 'form-select form-select-sm',
+              disabled: !images_on || image_types.size < 2,
+              data: { ai_judge_form_target: 'imageType', action: 'change->ai-judge-form#syncImageSettings' } %>
+        <div class="form-text" data-ai-judge-form-target="imageTypeHint">
+          <%= "Fixed for #{provider.label}." if image_types.size == 1 %>
+        </div>
+      </div>
+    </div>
+    <div class="row mb-3">
+      <%= label_tag 'judge_options_llm_image_dimensions', 'Image dimensions', class: 'col-sm-2 col-form-label' %>
+      <div class="col-sm-4">
+        <%= number_field_tag 'user[judge_options][llm_image_dimensions]', ai_judge.judge_options[:llm_image_dimensions],
+              id: 'judge_options_llm_image_dimensions', class: 'form-control form-control-sm',
+              min: bounds&.dig(:min), max: bounds&.dig(:max), step: 1, placeholder: bounds&.dig(:recommended),
+              disabled: !images_on || bounds.nil? || image_type == 'url',
+              data: { ai_judge_form_target: 'imageDimensions' } %>
+        <div class="form-text" data-ai-judge-form-target="imageDimensionsHint">
+          <% if bounds %>Resize images to this size (<%= bounds[:min] %>&ndash;<%= bounds[:max] %> px). Blank uses the recommended <%= bounds[:recommended] %> px. Smaller images use fewer tokens, but can make judgements less accurate.<% end %>
+        </div>
+      </div>
     </div>
   </div>
 </div>

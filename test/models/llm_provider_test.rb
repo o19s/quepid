@@ -73,21 +73,44 @@ class LlmProviderTest < ActiveSupport::TestCase
 
     assert_equal [ :llm_service_url, :llm_api_version, :llm_model, :help, :read_only,
                    :system_prompt, :prompt_label, :prompt_hint, :scale_as_criteria, :needs_scale,
-                   :label, :supports_images ],
+                   :label, :supports_images, :images_by_default, :image_types, :image_dimensions ],
                  preset.keys
     assert_equal 'https://api.openai.com', preset[:llm_service_url]
   end
 
-  test 'only providers whose API takes an image URL support images' do
-    assert_equal %w[ollama typesafe_jev], LlmProvider.all.reject(&:supports_images?).map(&:key).sort
+  test 'only providers whose API takes an image support images' do
+    assert_equal %w[ollama], LlmProvider.all.reject(&:supports_images?).map(&:key).sort
     assert LlmProvider.presets.dig('openai', :supports_images)
+    assert LlmProvider.presets.dig('typesafe_jev', :supports_images)
     assert_not LlmProvider.presets.dig('ollama', :supports_images)
+  end
+
+  test 'images are opt-in on Jev and on by default everywhere else' do
+    assert_equal %w[typesafe_jev], LlmProvider.all.reject(&:images_by_default?).map(&:key)
+  end
+
+  test 'each provider declares how images may reach it' do
+    assert_equal %w[base64], LlmProvider.find('typesafe_jev').allowed_image_types
+    assert_equal %w[url base64], LlmProvider.find('openai').allowed_image_types
+    assert_equal %w[url], LlmProvider.find('anthropic').allowed_image_types
+    assert_empty LlmProvider.find('ollama').allowed_image_types
+    assert_nil LlmProvider.find('ollama').default_image_type
+  end
+
+  test 'resizing bounds come from the vendor limits' do
+    assert_equal({ min: 280, max: 1568, recommended: 300 }, LlmProvider.find('typesafe_jev').image_dimensions)
+    assert_equal 2048, LlmProvider.find('openai').image_dimensions[:max]
+    assert_nil LlmProvider.find('anthropic').image_dimensions
+  end
+
+  test 'only providers with something to pick get the advanced image settings' do
+    assert_equal %w[openai typesafe_jev], LlmProvider.all.select(&:advanced_image_settings?).map(&:key).sort
   end
 
   test 'Model Configuration explains image support either way' do
     assert_includes LlmProvider.find('openai').to_preset[:help], 'Attached as an image URL'
     assert_includes LlmProvider.find('ollama').to_preset[:help], "doesn't support images"
-    assert_includes LlmProvider.find('typesafe_jev').to_preset[:help], "doesn't support images"
+    assert_includes LlmProvider.find('typesafe_jev').to_preset[:help], 'Off unless <b>Judge with images</b> is ticked'
   end
 
   test 'presets serialize to JSON the form can inline' do

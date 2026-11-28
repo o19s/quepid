@@ -45,6 +45,14 @@ class LlmServiceTest < ActiveSupport::TestCase
     assert_equal 1, service.make_user_prompt(pair).length
   end
 
+  test 'a judge that never saved the image switch gets its provider default' do
+    assert LlmJudgeAdapters::Base.new('key', llm_provider: 'openai').send(:include_images?)
+    assert LlmJudgeAdapters::Base.new('key', {}).send(:include_images?)
+    assert_not LlmJudgeAdapters::Jev.new('key', llm_provider: 'typesafe_jev').send(:include_images?)
+    assert_not LlmJudgeAdapters::Jev.new('key', llm_provider: 'typesafe_jev', llm_include_images: '').send(:include_images?)
+    assert LlmJudgeAdapters::Jev.new('key', llm_provider: 'typesafe_jev', llm_include_images: 'true').send(:include_images?)
+  end
+
   test 'POST retries refusal responses but does not retry ambiguous timeout failures' do
     url = 'https://api.openai.com/v1/chat/completions'
     [ 429, 529 ].each do |status|
