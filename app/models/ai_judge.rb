@@ -199,7 +199,7 @@ class AiJudge < User
   def supported_scales_are_well_formed
     parse_supported_scales
   rescue ArgumentError
-    errors.add(:base, 'Limit to scales must be whole numbers separated by commas, one scale per line (e.g. 0,1,2,3)')
+    errors.add(:supported_scales, 'must be whole numbers separated by commas, one scale per line (e.g. 0,1,2,3)')
   end
 
   # The image type and resize size come from what the provider accepts, declared in LlmProvider

@@ -325,6 +325,25 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
       assert_select 'select#judge_options_llm_image_type option[selected][value=?]', 'url'
     end
 
+    test 'Advanced settings holds the model, API version and scale limits, for any provider' do
+      get edit_ai_judge_url(openai_judge)
+
+      assert_select '#ai-judge-advanced.collapse:not(.show)' do
+        assert_select '#judge_options_llm_model'
+        assert_select '#judge_options_llm_api_version'
+        assert_select '#judge_options_supported_scales'
+      end
+      assert_select '#judge_options_llm_model', count: 1
+    end
+
+    test 'a bad scale limit reopens Advanced settings with the error' do
+      patch ai_judge_url(openai_judge), params: { user: { judge_options: { llm_provider: 'openai', supported_scales: '0,x' } } }
+
+      assert_response :unprocessable_content
+      assert_includes response.body, 'Limit to scales must be whole numbers'
+      assert_select '#ai-judge-advanced.collapse.show'
+    end
+
     test 'a new judge with no connection yet shows no Advanced section' do
       get new_ai_judge_url
 

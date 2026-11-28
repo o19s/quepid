@@ -3,7 +3,8 @@
 > **Decision record:** [ADR 0009](../adr/0009-jev-document-images.md). This file is the task
 > breakdown; the ADR holds the reasoning. D-numbers below refer to the ADR.
 >
-> **Status:** phase 1 built on `feature/jev-product-images` (2026-11-28); phase 2 not started.
+> **Status:** phases 1 and 2 built on `feature/jev-product-images` (2026-11-28); a live Jev call
+> with a real key (2.21) is still to do.
 > Jev's switch is enabled in phase 1 (decided 2026-11-28): ticking it is saved but sends no image until
 > phase 2, so the two phases should ship together.
 
@@ -54,8 +55,10 @@ or have phase 1's Jev help text say images are coming and keep the Jev switch di
 
 - [x] **1.12** Images row: a blank stored `llm_include_images` starts the switch at the provider's
   `images_by_default`, not always on. Pass `provider` into `_provider_options`.
-- [x] **1.13** New collapsed **Advanced** section below the Images row (a Bootstrap 5 collapse,
-  closed by default), holding only:
+- [x] **1.13** New collapsed **Advanced settings** section below the Images row (a Bootstrap 5
+  collapse, closed by default). Later (2026-11-28) LLM Model, LLM API Version and Limit to scales
+  moved into it too, for every provider; the image rows below show only where there is something
+  to pick:
   - **Image type** select (`llm_image_type`): options from the provider's `image_types`. With one
     value (Jev), the select is shown disabled with a hint that Jev can't fetch URLs, and a hidden
     field submits the value.
@@ -108,67 +111,68 @@ or have phase 1's Jev help text say images are coming and keep the Jev switch di
 
 ### Image loader (new, beside the adapters)
 
-- [ ] **2.1** Pick the source (D4): `image` before `thumb`; an absolute http(s) URL or a
+- [x] **2.1** Pick the source (D4): `image` before `thumb`; an absolute http(s) URL or a
   `data:image/...;base64,` value; anything else means no image and no note.
-- [ ] **2.2** Download (D5): resolve the host and refuse any address `ProxyAllowlist#blocked?`
+- [x] **2.2** Download (D5): resolve the host and refuse any address `ProxyAllowlist#blocked?`
   rejects; don't follow redirects; its own short timeout, separate from `llm_timeout`; stop reading
   at 16 MiB. Mark the DNS-rebinding gap with a `shortcut:` comment.
-- [ ] **2.3** Decode a `data:` value strictly; an invalid one is a skip.
-- [ ] **2.4** Inspect the bytes: format from magic bytes (PNG, JPEG), APNG (`acTL` before `IDAT`),
+- [x] **2.3** Decode a `data:` value strictly; an invalid one is a skip.
+- [x] **2.4** (built with libvips reading the header instead of hand parsing; APNG and animations use
+  their first frame rather than being skipped) Inspect the bytes: format from magic bytes (PNG, JPEG), APNG (`acTL` before `IDAT`),
   dimensions from PNG `IHDR` / JPEG `SOFn`, and the pixel cap before any decoding.
-- [ ] **2.5** Resize (D10) every base64 image: shorter side to `llm_image_dimensions`, or to the
+- [x] **2.5** Resize (D10) every base64 image: shorter side to `llm_image_dimensions`, or to the
   provider's `recommended` size when blank, up or
   down; longer side capped at the provider's max; re-encode as JPEG (about 85); flatten
   transparency onto white; first frame of an animation; never render SVG. Skip when the result
   still falls outside the provider's bounds.
-- [ ] **2.6** After resizing, apply the provider's accepted formats and bounds and skip what still
+- [x] **2.6** After resizing, apply the provider's accepted formats and bounds and skip what still
   fails (D5).
-- [ ] **2.7** Return the bytes and format, or a short reason for the skip note. Never raise for an
+- [x] **2.7** Return the bytes and format, or a short reason for the skip note. Never raise for an
   unusable image.
-- [ ] **2.8** Add `ruby-vips` to the Gemfile and `libvips` to `Dockerfile.dev` (it is already in
+- [x] **2.8** Add `ruby-vips` to the Gemfile and `libvips` to `Dockerfile.dev` (it is already in
   `Dockerfile.prod`).
 
 ### Jev adapter (`app/services/llm_judge_adapters/jev.rb`)
 
-- [ ] **2.9** In `request_envelope`, when images are on: load the image; on success add
+- [x] **2.9** In `request_envelope`, when images are on: load the image; on success add
   `assets: { ref => { type: 'image', format:, data_base64: } }`, put `ref` in a top-level
   `state.image` key (D7: `quepid-image-<sha256 prefix>`), and add the
   `TypeSafe-Danger-Zone-Images: true` header (D3). On a skip, send the request exactly as today.
-- [ ] **2.10** Build the question before loading the image, so a missing scale still fails first.
-- [ ] **2.11** Keep the skip reason on the adapter, reset at the start of every `request_envelope`
+- [x] **2.10** Build the question before loading the image, so a missing scale still fails first.
+- [x] **2.11** Keep the skip reason on the adapter, reset at the start of every `request_envelope`
   (D6), and append `[document image not sent: <reason>; judged on text only]` to the explanation in
   `apply_response`.
-- [ ] **2.12** Update the class comments that say Jev is text only.
+- [x] **2.12** Update the class comments that say Jev is text only.
 
 ### OpenAI adapter (`app/services/llm_judge_adapters/open_ai.rb` / `base.rb`)
 
-- [ ] **2.13** With image type `base64`, load the image through the same loader and send
+- [x] **2.13** With image type `base64`, load the image through the same loader and send
   `image_url: { url: "data:image/jpeg;base64,..." }` (or `image/png` when the image was not
   re-encoded). With `url` or a blank value, behave exactly as today.
-- [ ] **2.14** The skip note reaches the OpenAI explanation the same way as Jev's (D6).
-- [ ] **2.15** Keep the adapters' existing request and preview paths working: `user_prompt` stays
+- [x] **2.14** The skip note reaches the OpenAI explanation the same way as Jev's (D6).
+- [x] **2.15** Keep the adapters' existing request and preview paths working: `user_prompt` stays
   free of downloads, so the prompt preview doesn't fetch images.
 
 ### Adapter fallbacks
 
-- [ ] **2.16** A stored image type the provider no longer allows falls back to the provider's
+- [x] **2.16** A stored image type the provider no longer allows falls back to the provider's
   default; out-of-range stored dimensions count as blank (D10, D11).
 
 ### Tests and docs for phase 2
 
-- [ ] **2.17** Loader tests on hand-built PNG/JPEG header bytes and small real fixtures:
+- [x] **2.17** Loader tests on hand-built PNG/JPEG header bytes and small real fixtures:
   dimensions, the bounds, APNG, wrong magic bytes, the size cap, the pixel cap, `data:` values, and
   blocked addresses using IP-literal URLs (`127.0.0.1`, `169.254.169.254`, `10.0.0.1`), so the
   tests need no DNS.
-- [ ] **2.18** Resize tests: shorter side scaled, upscaling a thumbnail, the longer side capped, a
+- [x] **2.18** Resize tests: shorter side scaled, upscaling a thumbnail, the longer side capped, a
   banner that can't fit skipped, WebP and GIF converted, SVG skipped, a blank setting resizing to
   the provider's recommended size.
-- [ ] **2.19** Jev adapter tests (webmock): the asset shape, the reference present in `state`
+- [x] **2.19** Jev adapter tests (webmock): the asset shape, the reference present in `state`
   exactly once, the header only with an asset; no `assets` and no header when the switch is off, with
   no image, and for each skip case; the skip note; the note reset between two pairs on one adapter.
-- [ ] **2.20** OpenAI adapter tests: `base64` sends a `data:` URL; `url` and blank send the link.
+- [x] **2.20** OpenAI adapter tests: `base64` sends a `data:` URL; `url` and blank send the link.
 - [ ] **2.21** Manual testing: one live Jev call with a real TypeSafe key and an image, before
   12.10 is recorded as a pass; an OpenAI judge on base64; update `tracking.yml`.
-- [ ] **2.22** Update `docs/todo/jev_llm_judge.md` D2 ("text only") to point at ADR 0009.
+- [x] **2.22** Update `docs/todo/jev_llm_judge.md` D2 ("text only") to point at ADR 0009.
 - [ ] **2.23** Checks: `rails test`, `yarn test:unit`, lint, rubocop, Mutant incremental on the new
   loader, `bin/manual_test_status`.

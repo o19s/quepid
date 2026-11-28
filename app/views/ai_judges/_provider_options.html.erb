@@ -1,48 +1,10 @@
 <%# locals: (ai_judge:, option_defaults:, images_supported:, provider:, specs:) %>
 <% sorted_judge_options = option_defaults.merge(ai_judge.judge_options).except(:llm_include_images, :llm_image_type, :llm_image_dimensions, :llm_service_url, :llm_timeout, :supported_scales).reverse_merge(specs.transform_values { nil }.transform_keys(&:to_sym)).sort_by { |k, _| k.to_s == 'llm_provider' ? 0 : 1 } %>
-<% sorted_judge_options.each do |key, value| %>
-  <% spec = specs[key.to_s] %>
-  <% provider_unset = key.to_s == 'llm_provider' && ai_judge.connection.nil? %>
-  <%# The provider comes from the connection: shown read-only once there is one (a connection's name needn't say it), hidden until then. %>
-  <div class="row mb-3 <%= 'provider-option-field' if spec %> <%= 'd-none' if provider_unset %>" data-provider="<%= spec&.dig(:provider) %>" <% if spec %>data-ai-judge-form-target="providerOptionField"<% end %>>
-    <%= label_tag "judge_options[#{key}]", spec&.dig(:label) || key.to_s.humanize.titleize, class: 'col-sm-2 col-form-label' %>
-    <div class="col-sm-4">
-      <% if key.to_s == 'llm_provider' %>
-        <%# Read-only, not disabled: the field still submits, and the server takes the provider from the connection. %>
-        <%= select_tag "user[judge_options][llm_provider]",
-              options_for_select(LlmProvider.select_options, provider_unset ? '' : value.to_s),
-              include_blank: provider_unset ? 'Choose a connection first' : false,
-              id: 'judge_options_llm_provider', tabindex: -1,
-              class: 'form-select form-select-sm bg-body-secondary pe-none',
-              aria: { readonly: true },
-              data: { ai_judge_form_target: 'provider' } %>
-      <% elsif spec&.dig(:type) == :number %>
-        <%= number_field_tag "user[judge_options][#{key}]", value,
-              id: "judge_options_#{key}", class: 'form-control form-control-sm',
-              min: spec[:min], max: spec[:max], step: spec[:step] %>
-        <div class="form-text"><%= spec[:hint] %></div>
-      <% else %>
-        <%= text_field_tag "user[judge_options][#{key}]", value,
-          id: "judge_options_#{key}",
-          class: 'form-control form-control-sm', data: { ai_judge_form_target: { 'llm_service_url' => 'url', 'llm_api_version' => 'version', 'llm_model' => 'model' }[key.to_s] } %>
-      <% end %>
-    </div>
-  </div>
+<%# Rarely changed settings live in Advanced settings below. %>
+<% advanced_keys = %i[llm_model llm_api_version] %>
+<% sorted_judge_options.reject { |key, _| advanced_keys.include?(key) }.each do |key, value| %>
+  <%= render 'ai_judges/option_row', ai_judge: ai_judge, key: key, value: value, spec: specs[key.to_s] %>
 <% end %>
-<div class="row mb-3">
-  <%= label_tag 'judge_options_supported_scales', 'Limit to scales', class: 'col-sm-2 col-form-label' %>
-  <div class="col-sm-4">
-    <%= text_area_tag 'user[judge_options][supported_scales]', ai_judge.judge_options[:supported_scales],
-          id: 'judge_options_supported_scales', rows: 2,
-          class: 'form-control form-control-sm',
-          data: { ai_judge_wizard_target: 'supportedScales', action: 'input->ai-judge-wizard#filterScales' } %>
-    <div class="form-text">
-      Leave blank if this judge can rate on any scale. If its model only predicts certain labels (for example, a
-      classifier trained on 0&ndash;3), enter each scale it supports on its own line, such as <code>0,1,2,3</code>.
-      The judge can then only be tested with, and assigned to, books that use one of those scales.
-    </div>
-  </div>
-</div>
 <div class="row mb-3">
   <div class="col-sm-2">Images</div>
   <div class="col-sm-4">
@@ -71,15 +33,35 @@
 <% image_type = ai_judge.judge_options[:llm_image_type].presence || provider&.default_image_type %>
 <% bounds = provider&.supports_images? ? provider.image_dimensions : nil %>
 <% images_on = include_images && images_supported %>
-<% advanced_open = ai_judge.errors.include?(:image_type) || ai_judge.errors.include?(:image_dimensions) %>
+<% advanced_open = %i[image_type image_dimensions supported_scales].any? { |attribute| ai_judge.errors.include?(attribute) } %>
 <%# Like the provider row, nothing to show until a connection says which provider this is. %>
-<div class="mb-3" data-ai-judge-form-target="advanced" style="<%= 'display:none' unless ai_judge.connection && provider&.advanced_image_settings? %>">
+<div class="mb-3" data-ai-judge-form-target="advanced" style="<%= 'display:none' unless ai_judge.connection %>">
   <a class="collapse-toggle text-decoration-none" data-bs-toggle="collapse" href="#ai-judge-advanced" role="button"
      aria-expanded="<%= advanced_open %>" aria-controls="ai-judge-advanced">
     <i class="bi bi-chevron-right" aria-hidden="true"></i> Advanced settings
   </a>
   <div class="collapse <%= 'show' if advanced_open %>" id="ai-judge-advanced">
-    <div class="row mb-3 mt-2">
+    <div class="pt-2">
+    <% sorted_judge_options.select { |key, _| advanced_keys.include?(key) }.each do |key, value| %>
+      <%= render 'ai_judges/option_row', ai_judge: ai_judge, key: key, value: value, spec: specs[key.to_s] %>
+    <% end %>
+    <div class="row mb-3">
+      <%= label_tag 'judge_options_supported_scales', 'Limit to scales', class: 'col-sm-2 col-form-label' %>
+      <div class="col-sm-4">
+        <%= text_area_tag 'user[judge_options][supported_scales]', ai_judge.judge_options[:supported_scales],
+              id: 'judge_options_supported_scales', rows: 2,
+              class: 'form-control form-control-sm',
+              data: { ai_judge_wizard_target: 'supportedScales', action: 'input->ai-judge-wizard#filterScales' } %>
+        <div class="form-text">
+          Leave blank if this judge can rate on any scale. If its model only predicts certain labels (for example, a
+          classifier trained on 0&ndash;3), enter each scale it supports on its own line, such as <code>0,1,2,3</code>.
+          The judge can then only be tested with, and assigned to, books that use one of those scales.
+        </div>
+      </div>
+    </div>
+    <%# The image settings, for a provider that has any to pick. %>
+    <div data-ai-judge-form-target="imageSettings" style="<%= 'display:none' unless provider&.advanced_image_settings? %>">
+    <div class="row mb-3">
       <%= label_tag 'judge_options_llm_image_type', 'Image type', class: 'col-sm-2 col-form-label' %>
       <div class="col-sm-4">
         <%# A disabled select doesn't submit, so a locked (single) type travels in this field. %>
@@ -107,6 +89,8 @@
           <% if bounds %>Resize images to this size (<%= bounds[:min] %>&ndash;<%= bounds[:max] %> px). Blank uses the recommended <%= bounds[:recommended] %> px. Smaller images use fewer tokens, but can make judgements less accurate.<% end %>
         </div>
       </div>
+    </div>
+    </div>
     </div>
   </div>
 </div>

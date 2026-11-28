@@ -360,6 +360,7 @@ describe("images on an opt-in provider and the Advanced section (ADR 0009)", () 
       images,
       imagesHidden: document.createElement("input"),
       advanced: document.createElement("div"),
+      imageSettings: document.createElement("div"),
       imageType,
       imageTypeHidden: document.createElement("input"),
       imageTypeHint: document.createElement("div"),
@@ -457,18 +458,28 @@ describe("images on an opt-in provider and the Advanced section (ADR 0009)", () 
     expect(imageDimensions.disabled).toBe(false)
   })
 
-  it("sends nothing from the section while images are off, and hides it when there is nothing to pick", () => {
-    const { controller, provider, images, advanced, imageType, imageTypeHidden, imageDimensions } =
-      build()
+  it("sends nothing from the image settings while images are off, and hides them when there is nothing to pick", () => {
+    const {
+      controller,
+      provider,
+      images,
+      advanced,
+      imageSettings,
+      imageType,
+      imageTypeHidden,
+      imageDimensions
+    } = build()
     switchTo(controller, provider, "openai")
     images.checked = false
     controller.syncImageSettings()
     expect(imageType.disabled).toBe(true)
     expect(imageTypeHidden.disabled).toBe(true)
     expect(imageDimensions.disabled).toBe(true)
-    expect(advanced.style.display).toBe("")
+    expect(imageSettings.style.display).toBe("")
 
     switchTo(controller, provider, "anthropic")
-    expect(advanced.style.display).toBe("none")
+    expect(imageSettings.style.display).toBe("none")
+    // The model and scale limits are still there for any provider.
+    expect(advanced.style.display).toBe("")
   })
 })

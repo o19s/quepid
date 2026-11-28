@@ -87,16 +87,15 @@ would turn a judging run into a pile of unrateable pairs. Quepid skips an image 
 | --- | --- |
 | Download fails: DNS, timeout, non-2xx (including a redirect), connection error | The download |
 | Host resolves to a loopback, link-local or private address | `ProxyAllowlist#blocked?`, as `ProxyController#validate_proxy_url!` does |
-| Not PNG or JPEG (WebP, GIF, AVIF, SVG, HTML error page) | Magic bytes, not `Content-Type` or the data URI's declared type |
-| Animated PNG | An `acTL` chunk before the first `IDAT` |
-| Either side under 280 px or over 1568 px | PNG `IHDR` / JPEG `SOFn` header bytes |
+| Not PNG, JPEG, WebP, GIF or AVIF (SVG, an HTML error page) | Magic bytes, not `Content-Type` or the data URI's declared type; SVG never reaches libvips |
+| Over 50 megapixels | libvips reads the size from the header, before decoding any pixels |
+| Can't be resized to fit the provider's bounds (a very wide banner) | After scaling (D10) |
 | Over 16 MiB | Size cap while reading the response, not after buffering it all |
 | A `data:` value that is not valid base64 | Strict decode |
 
-Format and dimensions are read from header bytes. When a judge has an image size set (D10), the
-image is resized and re-encoded first, which removes most of these skip cases. The checks above
-then apply to the image as received only where resizing cannot help: download failures, blocked
-hosts, undecodable bytes, and the byte cap.
+Every base64 image is resized and re-encoded as JPEG (D10), so WebP, GIF, AVIF, animated images
+(first frame) and transparency are converted rather than skipped, and Jev's own format and
+dimension limits are met by construction.
 
 **D6 — The note travels from the request to the explanation on the adapter.** The skip reason is
 known while building the request (`request_envelope`), but the explanation is written in
@@ -135,13 +134,15 @@ resizes the image before base64-encoding it.
   `judge_options` next to `llm_include_images`. It is a whole number of pixels; blank means "use
   the provider's recommended size". A base64 image is therefore always resized; there is no
   "original size" setting.
-- **It goes in a new, collapsed "Advanced" section of the AI judge form.** The section holds two
-  settings: image type (D11) and this one. Nothing else moves. The section is a Bootstrap collapse
-  below the Images row, closed by default. It opens on its own when the page is re-rendered with a
-  validation error on either of its fields, so the error is never hidden. Both fields are disabled
-  while **Judge with images** is off. The dimensions field is also disabled while the image type is
-  URL, because Quepid never holds the bytes then. A provider that declares neither an image type
-  choice nor image limits shows no Advanced section at all.
+- **It goes in a new, collapsed "Advanced settings" section of the AI judge form**, a Bootstrap
+  collapse below the Images row, closed by default, with a chevron that turns when it opens. The
+  section also takes the settings most judges never change: LLM Model, LLM API Version and Limit to
+  scales move into it from the main form; it shows for any provider once a connection is chosen.
+  The image rows (image type, D11, and this one) show only for a provider with image settings to
+  pick. The section opens on its own when the page is re-rendered with a validation error on any
+  of its fields, so the error is never hidden. Both image fields are disabled while **Judge with
+  images** is off; the dimensions field is also disabled while the image type is URL, because
+  Quepid never holds the bytes then.
 - **The provider sets the bounds, in code.** Each `LlmProvider` registry entry can declare
   `image_dimensions: { min:, max:, recommended: }`. For Jev: min 280, max 1568, recommended
   **300**, just above the minimum. For OpenAI: min 32, max 2048, recommended 768. These are constants in the registry, not configuration or data, because they
@@ -244,9 +245,10 @@ What each provider allows is declared in code, in its `LlmProvider` registry ent
   for a large book should try a small run first and read `usage.input_tokens`.
 - **A pinned model older than 1.13** gets a 400 on image requests. That becomes an unrateable
   judgement carrying the API's message. Quepid does not check the model version.
-- **Reviewability.** The explanation says when an image was skipped and why. When an image was
-  sent it adds nothing, so judgements from runs with and without images look the same unless the
-  judge's settings are checked.
+- **Reviewability.** The explanation says whether the judge saw the image: `[with document image,
+  450×300]` when one was sent as base64, or `[document image not sent: <reason>; judged on text
+  only]` when it was skipped. With images off, with no image on the document, or with image type
+  URL, nothing is added.
 
 ## 4. Rejected
 

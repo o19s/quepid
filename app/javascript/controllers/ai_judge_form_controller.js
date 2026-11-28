@@ -18,6 +18,7 @@ export default class extends Controller {
     "imagesNotice",
     "imagesNoticeProvider",
     "advanced",
+    "imageSettings",
     "imageType",
     "imageTypeHidden",
     "imageTypeHint",
@@ -56,6 +57,7 @@ export default class extends Controller {
     if (!provider || !this.hasProviderTarget) {
       // Hidden again once there is no connection to take it from.
       row?.classList.add("d-none")
+      if (this.hasAdvancedTarget) this.advancedTarget.style.display = "none"
       return
     }
     row?.classList.remove("d-none")
@@ -139,7 +141,10 @@ export default class extends Controller {
     const offered = types.length > 1 || Boolean(bounds)
     const imagesOn =
       this.hasImagesTarget && this.imagesTarget.checked && !this.imagesTarget.disabled
-    this.advancedTarget.style.display = offered ? "" : "none"
+    // Advanced settings has the model and scale limits for any provider; the image rows only
+    // for one with image settings to pick.
+    this.advancedTarget.style.display = preset ? "" : "none"
+    if (this.hasImageSettingsTarget) this.imageSettingsTarget.style.display = offered ? "" : "none"
 
     let type = types[0] || ""
     if (this.hasImageTypeTarget) {
