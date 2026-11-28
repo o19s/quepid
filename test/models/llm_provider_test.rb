@@ -92,6 +92,8 @@ class LlmProviderTest < ActiveSupport::TestCase
   test 'each provider declares how images may reach it' do
     assert_equal %w[base64], LlmProvider.find('typesafe_jev').allowed_image_types
     assert_equal %w[url base64], LlmProvider.find('openai').allowed_image_types
+    assert_equal %w[url base64], LlmProvider.find('azure_openai').allowed_image_types
+    assert_equal %w[url base64], LlmProvider.find('google_gemini').allowed_image_types
     assert_equal %w[url], LlmProvider.find('anthropic').allowed_image_types
     assert_empty LlmProvider.find('ollama').allowed_image_types
     assert_nil LlmProvider.find('ollama').default_image_type
@@ -100,11 +102,13 @@ class LlmProviderTest < ActiveSupport::TestCase
   test 'resizing bounds come from the vendor limits' do
     assert_equal({ min: 280, max: 1568, recommended: 300 }, LlmProvider.find('typesafe_jev').image_dimensions)
     assert_equal 2048, LlmProvider.find('openai').image_dimensions[:max]
+    assert_equal LlmProvider.find('openai').image_dimensions, LlmProvider.find('azure_openai').image_dimensions
+    assert_equal 384, LlmProvider.find('google_gemini').image_dimensions[:recommended]
     assert_nil LlmProvider.find('anthropic').image_dimensions
   end
 
   test 'only providers with something to pick get the advanced image settings' do
-    assert_equal %w[openai typesafe_jev], LlmProvider.all.select(&:advanced_image_settings?).map(&:key).sort
+    assert_equal %w[azure_openai google_gemini openai typesafe_jev], LlmProvider.all.select(&:advanced_image_settings?).map(&:key).sort
   end
 
   test 'Model Configuration explains image support either way' do

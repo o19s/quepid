@@ -97,6 +97,17 @@ class LlmServiceTest < ActiveSupport::TestCase
       [ nil, '', '0', '61', 'slow' ].each { |value| assert_in_delta 0.3, timeout_for.call(value), 0.001, value.inspect }
     end
 
+    test 'Azure OpenAI and Gemini send base64 the same way, each at its recommended size' do
+      stub_request(:get, image_url).to_return(body: Vips::Image.black(1000, 1000).write_to_buffer('.png'))
+
+      { 'azure_openai' => 768, 'google_gemini' => 384 }.each do |provider, size|
+        url = last_block(llm_provider: provider, llm_image_type: 'base64')[:image_url][:url]
+
+        assert url.start_with?('data:image/jpeg;base64,'), "#{provider} sends a data: URL"
+        assert_equal size, Vips::Image.new_from_buffer(url.delete_prefix('data:image/jpeg;base64,').unpack1('m0'), '').width, provider
+      end
+    end
+
     test 'a stored type the provider does not allow falls back to its default' do
       adapter = LlmJudgeAdapters::Anthropic.new('key', { llm_provider: 'anthropic', llm_include_images: 'true', llm_image_type: 'base64' })
       content = adapter.request_envelope(pair, system_prompt: 'Judge.')[:body][:messages].last[:content]

@@ -185,3 +185,5 @@ or have phase 1's Jev help text say images are coming and keep the Jev switch di
 - [x] Mutant gaps closed on `DocumentImage` (large and portrait images, the 280 px boundary, JPEG,
   GIF87a, AVIF, non-WebP RIFF, upper-case scheme and stray spaces, line-wrapped base64, a host
   with no addresses, white flattening); an upper-case `HTTP://` URL used to raise and is fixed.
+- [x] Base64 for Azure OpenAI (OpenAI's image limits) and Google Gemini (32–2048 px, recommended
+  384: images within 384 px cost a flat 258 tokens).

@@ -184,6 +184,9 @@ class LlmProvider
       auth_style:          :api_key,
       default_service_url: 'https://RESOURCE.openai.azure.com',
       default_model:       'gpt-4.1',
+      # The same OpenAI models, so the same image handling as the OpenAI entry.
+      image_types:         %w[url base64],
+      image_dimensions:    { min: 32, max: 2048, recommended: 768 },
       help_html:           <<~HTML.squish,
         <strong>Azure OpenAI</strong> &mdash; OpenAI models hosted on Azure.<br>
         <b>URL:</b> <code>https://YOUR-RESOURCE.openai.azure.com</code><br>
@@ -259,6 +262,11 @@ class LlmProvider
       label:               'Google Gemini',
       default_service_url: 'https://generativelanguage.googleapis.com/v1beta/openai',
       default_model:       'gemini-3.8-flash',
+      # Its OpenAI-compatible endpoint takes base64 data: URLs. No pixel limits are documented;
+      # an image within 384px costs a flat 258 tokens, larger ones are tiled at 768px:
+      # https://ai.google.dev/gemini-api/docs/openai, https://ai.google.dev/gemini-api/docs/tokens
+      image_types:         %w[url base64],
+      image_dimensions:    { min: 32, max: 2048, recommended: 384 },
       help_html:           <<~HTML.squish,
         <strong>Google Gemini</strong> &mdash; Uses the OpenAI-compatible endpoint.<br>
         <b>URL:</b> <code>https://generativelanguage.googleapis.com/v1beta/openai</code><br>

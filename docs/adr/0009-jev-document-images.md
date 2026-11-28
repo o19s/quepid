@@ -205,6 +205,7 @@ What each provider allows is declared in code, in its `LlmProvider` registry ent
 | --- | --- | --- |
 | TypeSafe Jev | `[base64]` | Shown, **locked** to base64 (a disabled select with a hint: Jev cannot fetch URLs) |
 | OpenAI | `[url, base64]` | A select, starting at URL |
+| Azure OpenAI, Google Gemini | `[url, base64]` | A select, starting at URL (added after phase 2; Gemini's recommended size is 384 px, its flat-cost limit) |
 | Other providers that support images | `[url]` | Not shown; URL as today |
 | Providers that don't support images | none | Not shown |
 
