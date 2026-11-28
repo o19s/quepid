@@ -20,7 +20,8 @@ AI Judges let an LLM stand in for a human judge. `AiJudge` is a `User` subclass 
 - **Edge cases:**
   - [ ] Blank name/prompt returns validation errors, retains entered values and team selections, and creates no judge.
   - [ ] AI judges never appear as human accounts (a judge is told apart by its type, not by a key).
-  - [ ] Delete a connection that an AI judge uses. The judge's form hides its **Llm Provider** field and says to choose a connection; saving is refused until one is chosen, and choosing one saves the rest of the form's changes too. Until then it doesn't run: on a book it's assigned to, its ▶ is disabled with "Needs a connection: choose one on the judge's page", auto-run and escalation skip it, and a run already queued stops with "Judging by {judge} stopped: it has no connection."
+  - [ ] Try to delete a connection that an AI judge uses: it's refused with "{connection} is used by 1 AI judge. Point them at another connection first."
+  - [ ] A judge with no connection (the migration skipped judges with neither a key nor a URL, or its connection was destroyed outside the app; to set one up, clear `connection_id` on a disposable judge from a Rails console). The judge's form hides its **Llm Provider** field and says to choose a connection; saving is refused until one is chosen, and choosing one saves the rest of the form's changes too. Until then it doesn't run: on a book it's assigned to, its ▶ is disabled with "Can't run: it has no connection (choose one on its page)", a direct run is refused with "AI Judge {name} can't run: it has no connection (choose one on its page).", auto-run and escalation skip it (the book settings warn "but {judge} won't be woken here: it has no connection…" on a judge that wakes it), and a run already queued stops with "Judging by {judge} stopped: it has no connection (choose one on its page)."
   - [ ] Saving without a connection is refused with the reason and creates no judge.
 
 ### 12.2 Edit / delete an AI Judge
@@ -176,10 +177,10 @@ A judge whose model only predicts certain labels (for example a classifier train
   - Step 2: picking 0/1 keeps the typed limit, shows "Rating scale added to the prompt — from …", disables **Run Prompt** and shows "This judge can't rate on this scale (see Limit to scales above)". Picking 0–3 re-enables it.
   - Step 3: `abc` is refused with "Limit to scales must be whole numbers separated by commas, one scale per line (e.g. 0,1,2,3)"; the valid limit saves.
   - Step 4: on the 0/1 book the judge's checkbox is disabled with an "Incompatible with this book's scale (0,1)" badge; on the 0–3 book it reads "only rates on scale 0,1,2,3".
-  - Step 5: the book page shows the judge's ▶ disabled with "Can't rate on this book's scale (0,1,2,3)" on hover, and adding the pair queues no judging for it.
-  - Step 6: the other judge's line reads "wakes {judge} when unsure", followed by a warning that it can't rate this book's scale, so it won't be woken here.
+  - Step 5: the book page shows the judge's ▶ disabled with "Can't run: it can't rate this book's scale (0,1,2,3)" on hover, and adding the pair queues no judging for it.
+  - Step 6: the other judge's line reads "wakes {judge} when unsure", followed by "but {judge} won't be woken here: it can't rate this book's scale (0,1)".
 - **Edge cases:**
   - [ ] Select the incompatible judge anyway (e.g. by editing the form's HTML) and save the book: it isn't assigned, and the page says "Not assigned: {judge} can't rate on this book's scale (0,1)." If the save also fails (blank book name), that note shows once, not again on the next page.
   - [ ] On a book that already has judgements, pick a scorer with a different scale together with a judge that only fits the new scale: the scale change is refused, and the judge isn't assigned.
-  - [ ] Request a run of the incompatible judge directly (`PATCH /books/:id/run_judge_judy/:judge_id`): it is refused with "AI Judge {name} can't rate on this book's scale (…)".
+  - [ ] Request a run of the incompatible judge directly (`PATCH /books/:id/run_judge_judy/:judge_id`): it is refused with "AI Judge {name} can't run: it can't rate this book's scale (…)".
   - [ ] Limit a judge while a run of it is queued: the run stops before judging, and the book page says "Judging by {judge} stopped: it can't rate this book's scale (…)", not "completed".

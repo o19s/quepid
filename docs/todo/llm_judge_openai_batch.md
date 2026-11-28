@@ -27,8 +27,8 @@ database rather than a long-lived job.
 
 | Piece | Location | Reuse |
 | --- | --- | --- |
-| AI judge = a `User` with `llm_key` + `system_prompt` + `judge_options` | `app/models/user.rb:224`, `:290` | as-is |
-| Provider config (`llm_provider`, `llm_service_url`, `llm_model`, `llm_api_version`, `llm_timeout`) | `app/controllers/ai_judges_controller.rb:70` | as-is |
+| AI judge = an `AiJudge` (a `User`) with a `connection` + `system_prompt` + `judge_options` | `app/models/ai_judge.rb` | as-is |
+| Provider config (`llm_provider`, `llm_model`, `llm_api_version` in `judge_options`; URL, timeout and key on the connection) | `app/models/ai_judge.rb`, `app/models/connection.rb` | as-is |
 | Prompt construction (`make_user_prompt`, text + optional `image_url` block) | `app/services/llm_service.rb:37` | **extract & share** |
 | Response shape (`{explanation:, judgment:}` JSON object) | `app/services/llm_service.rb:141` | **extract & share** |
 | Pair selection | `SelectionStrategy.random_query_doc_based_on_strategy` | extend (see §5) |
@@ -181,8 +181,8 @@ sync-judged pair get a byte-identical request body.
 ### 4.2 `app/services/llm_batch_service.rb`
 
 A thin Faraday wrapper over the four Batch endpoints. Constructed like `LlmService`
-(`LlmBatchService.new(judge.llm_key, judge.judge_options)`), reusing its
-`compute_auth_headers` / retry-on-429 connection setup — worth extracting that into an
+(`LlmBatchService.new(judge.connection, judge.judge_options)`), reusing its
+`Connection#request_headers` / retry-on-429 connection setup — worth extracting that into an
 `LlmConnection` concern or just a small module shared by both.
 
 ```ruby
@@ -447,9 +447,9 @@ That's enough to drive the whole feature from the console while the UI is built 
 
 ## 7. Operational concerns
 
-- **Secrets.** `llm_key` is `encrypts`-ed on `User`; it is read the same way `LlmService` reads
-  it. Never write it into the JSONL, the batch `metadata`, or `error_message`. The metadata we
-  do send: `{quepid_book_id:, quepid_judge_id:, quepid_run_uuid:, quepid_batch_id:}` — ids
+- **Secrets.** The key is the judge's connection's `secret` (`encrypts`-ed on `Connection`); it
+  is sent the same way `LlmService` sends it, through `Connection#request_headers`. Never write
+  it into the JSONL, the batch `metadata`, or `error_message`. The metadata we do send: `{quepid_book_id:, quepid_judge_id:, quepid_run_uuid:, quepid_batch_id:}` — ids
   only, so a batch found in the OpenAI dashboard can be traced back.
 - **Data leaving the box.** A batch file ships every selected pair's `document_fields` to
   OpenAI in one shot, and the uploaded file persists on their side until deleted. Delete the

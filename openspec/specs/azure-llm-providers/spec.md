@@ -1,23 +1,23 @@
 ## ADDED Requirements
 
 ### Requirement: Provider-aware authentication
-LlmService SHALL use provider-specific authentication headers based on the `llm_provider` option.
+The AI judge's connection SHALL send its secret in the provider-specific authentication header for its provider (`Connection#request_headers`, set up from `ConnectionProvider`); LlmService adds no authentication of its own.
 
 #### Scenario: Azure OpenAI authentication
 - **WHEN** an AI judge has `llm_provider` set to `azure_openai`
-- **THEN** the LLM request SHALL include the header `api-key: <llm_key>` and SHALL NOT include `Authorization: Bearer`
+- **THEN** the LLM request SHALL include the header `api-key: <connection secret>` and SHALL NOT include `Authorization: Bearer`
 
 #### Scenario: Azure AI Foundry authentication
 - **WHEN** an AI judge has `llm_provider` set to `azure_ai_foundry` or `azure_ai_foundry_serverless`
-- **THEN** the LLM request SHALL include the header `api-key: <llm_key>` and SHALL NOT include `Authorization: Bearer`
+- **THEN** the LLM request SHALL include the header `api-key: <connection secret>` and SHALL NOT include `Authorization: Bearer`
 
 #### Scenario: Anthropic provider authentication
 - **WHEN** an AI judge has `llm_provider` set to `anthropic` or `azure_ai_foundry_anthropic`
-- **THEN** the LLM request SHALL include the header `x-api-key: <llm_key>` and the `anthropic-version: 2023-06-01` header
+- **THEN** the LLM request SHALL include the header `x-api-key: <connection secret>` and the `anthropic-version: 2023-06-01` header
 
 #### Scenario: OpenAI-compatible provider authentication
 - **WHEN** an AI judge has `llm_provider` set to `openai`, `google_gemini`, `ollama`, or is unset
-- **THEN** the LLM request SHALL include the header `Authorization: Bearer <llm_key>` (or no auth header if key is blank)
+- **THEN** the LLM request SHALL include the header `Authorization: Bearer <connection secret>` (or no auth header for a connection that sends none, such as Ollama's)
 
 ### Requirement: Provider-aware URL routing
 LlmService SHALL construct the completions endpoint path based on the `llm_provider` value.
