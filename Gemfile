@@ -42,6 +42,7 @@ gem 'rails_pulse'
 gem 'rack-cors'
 gem 'redcarpet'
 gem 'responders'
+gem 'ruby-vips' # resizes document images sent to AI judges (ADR 0009)
 gem 'ruby_llm'
 gem 'rubyzip'
 gem 'propshaft' # Modern asset pipeline for Rails 8

@@ -2,6 +2,8 @@ import { Controller } from "@hotwired/stimulus"
 
 const normalizePrompt = (text) => (text || "").replace(/\r\n?/g, "\n").trim()
 
+const IMAGE_TYPE_LABELS = { url: "URL", base64: "Base64" }
+
 export default class extends Controller {
   static targets = [
     "provider",
@@ -15,6 +17,14 @@ export default class extends Controller {
     "imagesHidden",
     "imagesNotice",
     "imagesNoticeProvider",
+    "advanced",
+    "imageSettings",
+    "imageType",
+    "imageTypeHidden",
+    "imageTypeHint",
+    "imageDimensions",
+    "imageDimensionsHint",
+    "imageTimeout",
     "providerOptionField",
     "systemPrompt",
     "systemPromptLabel",
@@ -48,6 +58,7 @@ export default class extends Controller {
     if (!provider || !this.hasProviderTarget) {
       // Hidden again once there is no connection to take it from.
       row?.classList.add("d-none")
+      if (this.hasAdvancedTarget) this.advancedTarget.style.display = "none"
       return
     }
     row?.classList.remove("d-none")
@@ -62,6 +73,10 @@ export default class extends Controller {
     if (this.hasUrlTarget) this.urlTarget.value = preset.llm_service_url
     if (this.hasVersionTarget) this.versionTarget.value = preset.llm_api_version
     if (this.hasModelTarget) this.modelTarget.value = preset.llm_model
+    if (this.hasImageDimensionsTarget) this.imageDimensionsTarget.value = ""
+    if (this.hasImageTimeoutTarget) this.imageTimeoutTarget.value = ""
+    // No option has an empty value, so the provider's default type is picked next.
+    if (this.hasImageTypeTarget) this.imageTypeTarget.value = ""
     this.offerDefaultSystemPrompt(preset)
     this.updateProviderPanels()
   }
@@ -74,6 +89,7 @@ export default class extends Controller {
     this.showProviderOptionFields(this.hasProviderTarget ? this.providerTarget.value : "")
     this.showCriteria(preset)
     this.syncImages()
+    this.syncImageSettings()
     this.updateRunAvailability(preset)
   }
 
@@ -95,8 +111,17 @@ export default class extends Controller {
     if (!this.hasImagesTarget) return
     const field = this.imagesTarget
     const supported = this.currentPreset()?.supports_images !== false
-    if (field.dataset.unsupported !== "true") field.dataset.wanted = String(field.checked)
-    field.checked = supported && field.dataset.wanted !== "false"
+    const optIn = supported && this.currentPreset()?.images_by_default === false
+    const provider = this.hasProviderTarget ? this.providerTarget.value : ""
+    const switched = field.dataset.provider !== undefined && field.dataset.provider !== provider
+    // An opt-in provider's (Jev's) switch is its own: it starts off on arrival, and
+    // neither sets nor takes the preference the other providers share.
+    if (field.dataset.unsupported !== "true" && field.dataset.optIn !== "true")
+      field.dataset.wanted = String(field.checked)
+    if (!optIn) field.checked = supported && field.dataset.wanted !== "false"
+    else if (switched) field.checked = false
+    field.dataset.provider = provider
+    field.dataset.optIn = String(optIn)
     field.disabled = !supported
     field.dataset.unsupported = String(!supported)
     if (this.hasImagesHiddenTarget)
@@ -104,6 +129,63 @@ export default class extends Controller {
     if (this.hasImagesNoticeProviderTarget)
       this.imagesNoticeProviderTarget.textContent = this.currentPreset()?.label || ""
     if (this.hasImagesNoticeTarget) this.imagesNoticeTarget.style.display = supported ? "none" : ""
+  }
+
+  // The Advanced section: how the image reaches the model and the size it is resized to,
+  // limited to what the provider accepts (LlmProvider#image_types / #image_dimensions).
+  // Nothing in it is sent while images are off.
+  syncImageSettings() {
+    if (!this.hasAdvancedTarget) return
+    const preset = this.currentPreset()
+    const supported = preset?.supports_images !== false
+    const types = (supported && preset?.image_types) || []
+    const bounds = supported ? preset?.image_dimensions : null
+    const offered = types.length > 1 || Boolean(bounds)
+    const imagesOn =
+      this.hasImagesTarget && this.imagesTarget.checked && !this.imagesTarget.disabled
+    // Advanced settings has the model and scale limits for any provider; the image rows only
+    // for one with image settings to pick.
+    this.advancedTarget.style.display = preset ? "" : "none"
+    if (this.hasImageSettingsTarget) this.imageSettingsTarget.style.display = offered ? "" : "none"
+
+    let type = types[0] || ""
+    if (this.hasImageTypeTarget) {
+      const select = this.imageTypeTarget
+      const current = select.value
+      select.replaceChildren(
+        ...types.map((value) => {
+          const option = document.createElement("option")
+          option.value = value
+          option.textContent = IMAGE_TYPE_LABELS[value] || value
+          return option
+        })
+      )
+      select.value = types.includes(current) ? current : type
+      type = select.value
+      select.disabled = !imagesOn || types.length < 2
+      if (this.hasImageTypeHiddenTarget) {
+        this.imageTypeHiddenTarget.value = type
+        this.imageTypeHiddenTarget.disabled = !imagesOn
+      }
+      if (this.hasImageTypeHintTarget)
+        this.imageTypeHintTarget.textContent =
+          types.length === 1 ? `Fixed for ${preset?.label || ""}.` : ""
+    }
+
+    if (this.hasImageDimensionsTarget) {
+      const field = this.imageDimensionsTarget
+      field.min = bounds ? String(bounds.min) : ""
+      field.max = bounds ? String(bounds.max) : ""
+      field.placeholder = bounds ? String(bounds.recommended) : ""
+      field.disabled = !imagesOn || !bounds || type === "url"
+    }
+    // Only a base64 image is downloaded by Quepid, so only it has a download to time out.
+    if (this.hasImageTimeoutTarget)
+      this.imageTimeoutTarget.disabled = !imagesOn || type !== "base64"
+    if (this.hasImageDimensionsHintTarget)
+      this.imageDimensionsHintTarget.textContent = bounds
+        ? `Resize images to this size (${bounds.min}–${bounds.max} px). Blank uses the recommended ${bounds.recommended} px. Smaller images use fewer tokens, but can make judgements less accurate.`
+        : ""
   }
 
   showHelp() {

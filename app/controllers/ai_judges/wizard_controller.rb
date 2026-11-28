@@ -146,7 +146,8 @@ module AiJudges
 
     def judge_options_params
       params.fetch(:judge_options, ActionController::Parameters.new)
-        .permit(:llm_provider, :llm_service_url, :llm_model, :llm_timeout, :llm_api_version, :llm_include_images, :supported_scales,
+        .permit(:llm_provider, :llm_service_url, :llm_model, :llm_timeout, :llm_api_version, :llm_include_images, :llm_image_type, :llm_image_dimensions, :llm_image_timeout,
+                :supported_scales,
                 *LlmProvider.option_keys)
     end
   end

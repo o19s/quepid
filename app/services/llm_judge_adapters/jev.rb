@@ -26,6 +26,9 @@ module LlmJudgeAdapters
 
     NO_SCALE_MESSAGE = 'Jev judges against a rating scale, so it needs one -- run it from a book that has a scale.'
 
+    # Jev refuses a request carrying an image unless it is asked for (ADR 0009 D3).
+    IMAGES_HEADER = { 'TypeSafe-Danger-Zone-Images' => 'true' }.freeze
+
     # The scale is sent as the question's criteria rather than described in the prompt,
     # so there is nothing to ask without one.
     def self.scale_as_criteria?
@@ -39,15 +42,22 @@ module LlmJudgeAdapters
     # Overridden rather than filling in Base's body_for: for a chat model the
     # scale is context that colours a prompt, but here the scale *is* the
     # question, so it has to reach the request builder as an argument.
+    #
+    # An image is sent as an asset and referenced from `state` by a key that can't occur in
+    # document text by chance, kept outside `document` so cap_state never truncates it (ADR
+    # 0009 D7). The question is built first, so a missing scale fails before any download.
     def request_envelope query_doc_pair, system_prompt:, scale: JudgeScale::NONE
+      questions = { QUESTION_ID => question(system_prompt, scale) }
+      state = user_prompt(query_doc_pair)
+      image = base64_image(query_doc_pair)
+      return { path: path, headers: headers, body: body(state, questions) } unless image
+
+      reference = "quepid-image-#{Digest::SHA256.hexdigest(image.bytes)[0, 16]}"
+      asset = { type: 'image', format: image.format, data_base64: image.base64 }
       {
         path:    path,
-        headers: headers,
-        body:    {
-          model:     options[:llm_model].presence || DEFAULT_MODEL,
-          state:     user_prompt(query_doc_pair),
-          questions: { QUESTION_ID => question(system_prompt, scale) },
-        },
+        headers: headers.merge(IMAGES_HEADER),
+        body:    body(state.merge(image: reference), questions).merge(assets: { reference => asset }),
       }
     end
 
@@ -58,10 +68,9 @@ module LlmJudgeAdapters
       raise NO_SCALE_MESSAGE
     end
 
-    # Jev accepts text only -- a string, a JSON object, or an array of text
-    # values -- so a document's image field travels as the URL it is, and is
-    # not fetched. Objects beat serialized strings here: the field names stay
-    # visible to the model.
+    # The text state -- a JSON object rather than a serialized string, so the field names stay
+    # visible to the model. A document's image fields travel as the text they are; the image
+    # itself, when the judge sends images, is attached by request_envelope.
     def user_prompt query_doc_pair
       state = {
         query:            query_doc_pair.query_text,
@@ -79,7 +88,7 @@ module LlmJudgeAdapters
       answer = answer_from(response_body)
 
       judgement.rating = rating_from(answer, scale)
-      judgement.explanation = explanation_from(answer, response_body, scale)
+      judgement.explanation = with_image_note(explanation_from(answer, response_body, scale))
       judgement.confidence = confidence_from(answer)
       if judgement.confidence.nil? && !answer['confidence'].nil?
         judgement.explanation = "#{judgement.explanation} [confidence #{answer['confidence'].inspect} is not " \
@@ -101,6 +110,10 @@ module LlmJudgeAdapters
     end
 
     private
+
+    def body state, questions
+      { model: options[:llm_model].presence || DEFAULT_MODEL, state: state, questions: questions }
+    end
 
     def question system_prompt, scale
       raise NO_SCALE_MESSAGE if scale.empty?

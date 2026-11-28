@@ -240,5 +240,89 @@ module LlmJudgeAdapters
         assert_not judgement.unrateable
       end
     end
+
+    describe 'document images (ADR 0009)' do
+      let(:image_url) { 'http://198.51.100.10/product.png' }
+      let(:pair) { QueryDocPair.new(query_text: 'red shoe', document_fields: { 'title' => 'Red shoe', 'image' => image_url }) }
+      let(:imaging) { Jev.new('ts-key', { llm_provider: 'typesafe_jev', llm_include_images: 'true' }) }
+
+      def serve width, height
+        stub_request(:get, image_url).to_return(body: Vips::Image.black(width, height).write_to_buffer('.png'))
+      end
+
+      def request_for adapter = imaging, query_doc_pair = pair
+        adapter.request_envelope(query_doc_pair, system_prompt: 'Judge relevance.', scale: JudgeScale.for(book))
+      end
+
+      test 'sends no image and no header while images are off, as they are by default' do
+        result = request_for(adapter)
+        adapter.apply_response(judgement, score_answer(score: 1), scale: JudgeScale.for(book))
+
+        assert_not_includes judgement.explanation, 'document image'
+
+        assert_nil result[:body][:assets]
+        assert_nil result[:headers]['TypeSafe-Danger-Zone-Images']
+      end
+
+      test 'attaches the image as an asset referenced from the state, with the images header' do
+        serve 600, 400
+
+        result = request_for
+        reference = result[:body][:state][:image]
+        asset = result[:body][:assets].fetch(reference)
+
+        assert_match(/\Aquepid-image-\h{16}\z/, reference)
+        assert_equal 1, result[:body].except(:assets).to_json.scan(reference).size
+        assert_equal 'true', result[:headers]['TypeSafe-Danger-Zone-Images']
+        assert_equal 'Bearer ts-key', result[:headers]['Authorization']
+        assert_equal 'image', asset[:type]
+        assert_equal 'jpg', asset[:format]
+        image = Vips::Image.new_from_buffer(asset[:data_base64].unpack1('m0'), '')
+        assert_equal [ 450, 300 ], [ image.width, image.height ], 'resized to the recommended 300 px'
+        assert_equal image_url, result[:body][:state][:document]['image'], 'the URL text stays in the document'
+      end
+
+      test 'resizes to the judge size when it has one, and to the recommended size when it is out of range' do
+        serve 600, 400
+        { '400' => 400, '9999' => 300 }.each do |size, shorter|
+          adapter = Jev.new('ts-key', { llm_provider: 'typesafe_jev', llm_include_images: 'true', llm_image_dimensions: size })
+          asset = request_for(adapter)[:body][:assets].values.first
+
+          assert_equal shorter, Vips::Image.new_from_buffer(asset[:data_base64].unpack1('m0'), '').height, size
+        end
+      end
+
+      test 'an image it cannot use is left out, and the explanation says why' do
+        stub_request(:get, image_url).to_return(status: 404)
+
+        result = request_for
+
+        assert_nil result[:body][:assets]
+        assert_nil result[:body][:state][:image]
+        assert_nil result[:headers]['TypeSafe-Danger-Zone-Images']
+
+        imaging.apply_response(judgement, score_answer(score: 1), scale: JudgeScale.for(book))
+
+        assert_in_delta 1.0, judgement.rating
+        assert judgement.explanation.end_with?('[document image not sent: the image download returned HTTP 404; judged on text only]')
+      end
+
+      test 'one pair note never lands on the next' do
+        stub_request(:get, image_url).to_return(status: 404)
+        request_for
+        serve 600, 400
+        request_for
+
+        imaging.apply_response(judgement, score_answer(score: 1), scale: JudgeScale.for(book))
+
+        assert_not_includes judgement.explanation, 'document image not sent'
+        assert judgement.explanation.end_with?('[with document image, 450×300]')
+      end
+
+      test 'a missing scale fails before anything is downloaded' do
+        assert_raises(RuntimeError) { imaging.request_envelope(pair, system_prompt: 'x', scale: JudgeScale::NONE) }
+        assert_not_requested :get, image_url
+      end
+    end
   end
 end

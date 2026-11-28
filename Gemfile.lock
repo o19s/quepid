@@ -547,6 +547,9 @@ GEM
       rexml
     ruby-progressbar (1.13.0)
     ruby-statistics (4.1.1)
+    ruby-vips (2.3.0)
+      ffi (~> 1.12)
+      logger
     ruby2_keywords (0.0.5)
     ruby_llm (2.1.1)
       base64
@@ -705,6 +708,7 @@ DEPENDENCIES
   rubocop-minitest
   rubocop-rails
   ruby-graphviz
+  ruby-vips
   ruby_llm
   rubyzip
   scout_apm

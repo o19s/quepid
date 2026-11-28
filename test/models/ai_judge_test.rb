@@ -206,6 +206,95 @@ class AiJudgeTest < ActiveSupport::TestCase
     end
   end
 
+  describe 'image settings (ADR 0009)' do
+    def judge_on provider, **options
+      AiJudge.new(name: 'Imaging', judge_options: { llm_provider: provider }.merge(options))
+    end
+
+    it 'accepts dimensions within the provider bounds, and blank' do
+      [ '280', '1568', '300', '', nil ].each do |value|
+        assert_predicate judge_on('typesafe_jev', llm_image_dimensions: value), :valid?, value.inspect
+      end
+    end
+
+    it 'refuses dimensions outside the provider bounds, or not a whole number' do
+      %w[279 1569 300.5 big].each do |value|
+        judge = judge_on('typesafe_jev', llm_image_dimensions: value)
+
+        assert_not judge.valid?, value
+        assert_includes judge.errors[:image_dimensions], 'must be a whole number between 280 and 1568 px for TypeSafe Jev'
+      end
+    end
+
+    it 'takes the bounds from the provider' do
+      assert_predicate judge_on('openai', llm_image_type: 'base64', llm_image_dimensions: '2048'), :valid?
+      assert_not judge_on('openai', llm_image_type: 'base64', llm_image_dimensions: '2049').valid?
+    end
+
+    it 'refuses dimensions on a provider that offers no resizing' do
+      judge = judge_on('anthropic', llm_image_dimensions: '300')
+
+      assert_not judge.valid?
+      assert_includes judge.errors[:image_dimensions], "can't be set for Anthropic"
+    end
+
+    it 'refuses dimensions when the image goes as a URL, picked or by default' do
+      [ { llm_image_type: 'url' }, {} ].each do |type|
+        judge = judge_on('openai', llm_image_dimensions: '768', **type)
+
+        assert_not judge.valid?, type.inspect
+        assert_includes judge.errors[:image_dimensions], 'only apply to base64 images, not URLs'
+      end
+    end
+
+    it 'accepts only the image types the provider allows' do
+      assert_predicate judge_on('openai', llm_image_type: 'url'), :valid?
+      assert_predicate judge_on('openai', llm_image_type: 'base64'), :valid?
+      assert_predicate judge_on('typesafe_jev', llm_image_type: 'base64'), :valid?
+
+      { 'typesafe_jev' => 'url', 'anthropic' => 'base64', 'ollama' => 'url' }.each do |provider, type|
+        judge = judge_on(provider, llm_image_type: type)
+
+        assert_not judge.valid?, provider
+        assert_includes judge.errors[:image_type], "#{type} isn't available for #{LlmProvider.find(provider).label}"
+      end
+    end
+
+    it 'accepts an image timeout of 0.1 to 60 seconds, decimals included, and blank' do
+      [ '0.1', '0.3', '2.5', '60', '', nil ].each do |value|
+        assert_predicate judge_on('typesafe_jev', llm_image_timeout: value), :valid?, value.inspect
+      end
+      %w[0 0.05 61 slow].each do |value|
+        judge = judge_on('typesafe_jev', llm_image_timeout: value)
+
+        assert_not judge.valid?, value
+        assert_includes judge.errors[:image_timeout], 'must be a number of seconds between 0.1 and 60'
+      end
+    end
+
+    it 'refuses an image timeout where nothing is downloaded' do
+      judge = judge_on('openai', llm_image_timeout: '20')
+      assert_not judge.valid?
+      assert_includes judge.errors[:image_timeout], 'only applies to base64 images, not URLs'
+
+      assert_predicate judge_on('openai', llm_image_type: 'base64', llm_image_timeout: '20'), :valid?
+
+      judge = judge_on('anthropic', llm_image_timeout: '20')
+      assert_not judge.valid?
+      assert_includes judge.errors[:image_timeout], "can't be set for Anthropic"
+    end
+
+    it 'rechecks the settings against the provider of a newly picked connection' do
+      judge = AiJudge.create!(name: 'Mover', system_prompt: 'Judge it.', owner: users(:doug), connection: connections(:openai),
+                              judge_options: { llm_image_type: 'base64', llm_image_dimensions: '1024' })
+
+      judge.connection = connections(:anthropic)
+
+      assert_not judge.valid?
+      assert_includes judge.errors[:image_type], "base64 isn't available for Anthropic"
+    end
+  end
+
   describe 'escalation' do
     let(:cheap) { AiJudge.create!(name: 'Cheap Judge') }
     let(:expensive) { AiJudge.create!(name: 'Expensive Judge') }

@@ -21,15 +21,18 @@ module LlmJudgeAdapters
       @options = options
     end
 
-    # Everything needed to send the request, as data: no connection, no clock,
-    # no randomness. A live call posts it; a batch writer serializes it into a
-    # JSONL line and posts it hours later from another process.
+    # Everything needed to send the request. A judge whose images go as base64 downloads the
+    # document's image here (ADR 0009); otherwise it is assembled from data alone.
     #
     # @param scale [JudgeScale] the scale to rate against -- never a Book: a judge is
     #   told the scale, it does not go looking for one.
     # @return [Hash] { path:, headers:, body: }
     def request_envelope query_doc_pair, system_prompt:, scale: JudgeScale::NONE
-      envelope(user_prompt(query_doc_pair), system_prompt_for(system_prompt, scale))
+      prompt = user_prompt(query_doc_pair)
+      image = base64_image(query_doc_pair)
+      prompt += [ { type: 'image_url', image_url: { url: "data:#{image.mime_type};base64,#{image.base64}" } } ] if image
+
+      envelope(prompt, system_prompt_for(system_prompt, scale))
     end
 
     # @param response_body [Hash] an already-parsed provider response -- never a
@@ -49,7 +52,7 @@ module LlmJudgeAdapters
       # values we can actually parse as numeric; anything else becomes nil, so
       # those checks correctly treat it the same as a missing rating.
       judgement.rating = numeric_judgment(result[:judgment])
-      judgement.explanation = result[:explanation]
+      judgement.explanation = with_image_note(result[:explanation])
       # Chat models report no confidence; assign nil anyway so a judge that moved off a
       # confidence-reporting model doesn't keep that model's old value (ADR 0008).
       judgement.confidence = nil
@@ -89,7 +92,7 @@ module LlmJudgeAdapters
         { type: 'text', text: text_prompt }
       ]
 
-      image_url = image_url_for(document_fields) if include_images?
+      image_url = image_url_for(document_fields) if include_images? && 'url' == image_type
       prompt << { type: 'image_url', image_url: { url: image_url } } if image_url
 
       prompt
@@ -102,18 +105,70 @@ module LlmJudgeAdapters
     private
 
     # Per-judge switch (judge_options[:llm_include_images]) for models that take
-    # text only. Judges saved before the switch existed have no value, and keep
-    # sending images as they always did -- unless their provider cannot take an
-    # image URL at all, which no setting overrides. A judge with no provider is
-    # OpenAI shaped (see LlmJudgeAdapters::DEFAULT_ADAPTER), so it can.
+    # text only. A judge with no value gets its provider's default: on, as images
+    # always were, except where they are opt-in (Jev, ADR 0009) -- unless the
+    # provider cannot take an image at all, which no setting overrides. A judge
+    # with no provider is OpenAI shaped (see LlmJudgeAdapters::DEFAULT_ADAPTER).
     def include_images?
       provider = LlmProvider.find(options[:llm_provider])
       return false if provider && !provider.supports_images?
 
       value = options[:llm_include_images]
-      return true if value.nil? || '' == value
+      return provider.nil? || provider.images_by_default? if value.nil? || '' == value
 
       ActiveModel::Type::Boolean.new.cast(value)
+    end
+
+    # How the image reaches the model: the judge's pick if its provider allows it, else the
+    # provider's default (ADR 0009 D11). A judge with no provider is OpenAI shaped, so 'url'.
+    def image_type
+      provider = LlmProvider.find(options[:llm_provider])
+      return 'url' unless provider
+
+      chosen = options[:llm_image_type].to_s
+      provider.allowed_image_types.include?(chosen) ? chosen : provider.default_image_type
+    end
+
+    # The shorter side to resize to: the judge's size if it is within the provider's bounds,
+    # else the provider's recommended size (ADR 0009 D10).
+    # Seconds to wait for the image download: the judge's own if it is in range, else the default.
+    def image_timeout
+      seconds = Float(options[:llm_image_timeout].to_s, exception: false)
+      DocumentImage::TIMEOUT_RANGE.cover?(seconds) ? seconds : DocumentImage::DOWNLOAD_TIMEOUT
+    end
+
+    def image_size bounds
+      size = Integer(options[:llm_image_dimensions].to_s, 10, exception: false)
+      size&.between?(bounds[:min], bounds[:max]) ? size : bounds[:recommended]
+    end
+
+    # The document image as bytes for a judge whose images go as base64, or nil. Whether an
+    # image went, and why one was left out, is kept for apply_response, which writes the
+    # explanation; both are reset for every request, so one pair's note never lands on the next
+    # (ADR 0009 D6).
+    def base64_image query_doc_pair
+      @image_note = nil
+      @image_sent = nil
+      return unless include_images? && 'base64' == image_type
+
+      bounds = LlmProvider.find(options[:llm_provider]).image_dimensions
+      loader = DocumentImage.new(bounds: bounds, size: image_size(bounds), timeout: image_timeout)
+      image, @image_note = loader.load(query_doc_pair.document_fields)
+      @image_sent = "#{image.width}×#{image.height}" if image
+      image
+    end
+
+    # Says whether the judge saw the document image, so a text-only answer can't pass for one
+    # that looked at it.
+    def with_image_note explanation
+      note = if @image_note
+               "[document image not sent: #{@image_note}; judged on text only]"
+             elsif @image_sent
+               "[with document image, #{@image_sent}]"
+             end
+      return explanation unless note
+
+      "#{explanation} #{note}".strip
     end
 
     # A case's `image:` / `thumb:` field-spec mappings are stored under those fixed

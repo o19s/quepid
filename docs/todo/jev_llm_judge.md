@@ -123,7 +123,8 @@ strings:
 ```
 
 `document_fields['image']` is passed through as a plain URL field and is *not* fetched — Jev is
-text-only. This must be stated in the provider help text, because today an image-bearing judge
+text-only. *(Superseded by [ADR 0009](../adr/0009-jev-document-images.md): Jev now takes images,
+opt-in, downloaded by Quepid and sent as base64 assets.)* This must be stated in the provider help text, because today an image-bearing judge
 silently gets multimodal behaviour and on Jev would silently lose it.
 
 **D3 — Context guard.** Jev's limit is 64k tokens total, 32k for `state` + the longest question.

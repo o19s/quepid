@@ -93,6 +93,7 @@ class AiJudge < User
   validates :system_prompt, length: { maximum: 4000 }, allow_nil: true, presence: true
   validate :escalation_chain_does_not_loop, if: :escalates_to_id_changed?
   validate :supported_scales_are_well_formed
+  validate :image_settings_fit_provider
   include ConnectionConsumer
 
   before_validation :leave_own_settings_for_connection
@@ -198,7 +199,42 @@ class AiJudge < User
   def supported_scales_are_well_formed
     parse_supported_scales
   rescue ArgumentError
-    errors.add(:base, 'Limit to scales must be whole numbers separated by commas, one scale per line (e.g. 0,1,2,3)')
+    errors.add(:supported_scales, 'must be whole numbers separated by commas, one scale per line (e.g. 0,1,2,3)')
+  end
+
+  # The image type and resize size come from what the provider accepts, declared in LlmProvider
+  # (ADR 0009 D10, D11). Refused rather than clamped or swapped, so nothing is saved that the
+  # person didn't type. Runs after leave_own_settings_for_connection, so a connection switch is
+  # checked against the new provider.
+  def image_settings_fit_provider
+    provider = LlmProvider.find(llm_provider_key)
+    image_type = judge_options[:llm_image_type].presence
+    errors.add(:image_type, "#{image_type} isn't available for #{provider.label}") if image_type && provider.allowed_image_types.exclude?(image_type)
+    image_timeout_fits(provider, image_type || provider.default_image_type)
+
+    dimensions = judge_options[:llm_image_dimensions]
+    return if dimensions.blank?
+
+    bounds = provider.supports_images? && provider.image_dimensions
+    return errors.add(:image_dimensions, "can't be set for #{provider.label}") unless bounds
+    return errors.add(:image_dimensions, 'only apply to base64 images, not URLs') if 'url' == (image_type || provider.default_image_type)
+
+    pixels = Integer(dimensions.to_s, 10, exception: false)
+    return if pixels&.between?(bounds[:min], bounds[:max])
+
+    errors.add(:image_dimensions, "must be a whole number between #{bounds[:min]} and #{bounds[:max]} px for #{provider.label}")
+  end
+
+  # Only a base64 image is downloaded by Quepid, so only then is there a download to time out.
+  def image_timeout_fits provider, image_type
+    timeout = judge_options[:llm_image_timeout]
+    return if timeout.blank?
+    return errors.add(:image_timeout, "can't be set for #{provider.label}") unless provider.allowed_image_types.include?('base64')
+    return errors.add(:image_timeout, 'only applies to base64 images, not URLs') unless 'base64' == image_type
+
+    range = DocumentImage::TIMEOUT_RANGE
+    seconds = Float(timeout.to_s, exception: false)
+    errors.add(:image_timeout, "must be a number of seconds between #{range.min} and #{range.max}") unless range.cover?(seconds)
   end
 
   # Raises ArgumentError on anything that isn't whole numbers; callers decide

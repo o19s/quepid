@@ -45,6 +45,89 @@ class LlmServiceTest < ActiveSupport::TestCase
     assert_equal 1, service.make_user_prompt(pair).length
   end
 
+  test 'a judge that never saved the image switch gets its provider default' do
+    assert LlmJudgeAdapters::Base.new('key', llm_provider: 'openai').send(:include_images?)
+    assert LlmJudgeAdapters::Base.new('key', {}).send(:include_images?)
+    assert_not LlmJudgeAdapters::Jev.new('key', llm_provider: 'typesafe_jev').send(:include_images?)
+    assert_not LlmJudgeAdapters::Jev.new('key', llm_provider: 'typesafe_jev', llm_include_images: '').send(:include_images?)
+    assert LlmJudgeAdapters::Jev.new('key', llm_provider: 'typesafe_jev', llm_include_images: 'true').send(:include_images?)
+  end
+
+  describe 'OpenAI image type (ADR 0009)' do
+    let(:image_url) { 'http://198.51.100.10/product.png' }
+    let(:pair) { QueryDocPair.new(query_text: 'red shoe', document_fields: { 'image' => image_url }) }
+
+    def last_block options
+      adapter = LlmJudgeAdapters::OpenAi.new('key', { llm_provider: 'openai', llm_include_images: 'true' }.merge(options))
+      adapter.request_envelope(pair, system_prompt: 'Judge.')[:body][:messages].last[:content].last
+    end
+
+    test 'base64 sends the resized image as a data: URL' do
+      stub_request(:get, image_url).to_return(body: Vips::Image.black(1000, 1000).write_to_buffer('.png'))
+
+      url = last_block(llm_image_type: 'base64')[:image_url][:url]
+
+      assert url.start_with?('data:image/jpeg;base64,')
+      assert_equal 768, Vips::Image.new_from_buffer(url.delete_prefix('data:image/jpeg;base64,').unpack1('m0'), '').width
+    end
+
+    test 'the explanation says the image was seen, and its size' do
+      stub_request(:get, image_url).to_return(body: Vips::Image.black(1000, 500).write_to_buffer('.png'))
+      adapter = LlmJudgeAdapters::OpenAi.new('key', { llm_provider: 'openai', llm_include_images: 'true', llm_image_type: 'base64' })
+      adapter.request_envelope(pair, system_prompt: 'Judge.')
+      judgement = Judgement.new
+
+      adapter.apply_response(judgement, { 'choices' => [ { 'message' => { 'content' => '{"judgment": 2, "explanation": "Close."}' } } ] })
+
+      assert_equal 'Close. [with document image, 1536×768]', judgement.explanation
+    end
+
+    test 'url, or no choice, sends the link without downloading it' do
+      [ { llm_image_type: 'url' }, {} ].each do |options|
+        assert_equal image_url, last_block(options)[:image_url][:url], options.inspect
+      end
+      assert_not_requested :get, image_url
+    end
+
+    test 'the image download waits the judge timeout, or the default when it is out of range' do
+      timeout_for = ->(value) { LlmJudgeAdapters::OpenAi.new('key', { llm_provider: 'openai', llm_image_timeout: value }).send(:image_timeout) }
+
+      assert_in_delta 0.5, timeout_for.call('0.5')
+      assert_in_delta 30, timeout_for.call('30')
+      [ nil, '', '0', '61', 'slow' ].each { |value| assert_in_delta 0.3, timeout_for.call(value), 0.001, value.inspect }
+    end
+
+    test 'Azure OpenAI and Gemini send base64 the same way, each at its recommended size' do
+      stub_request(:get, image_url).to_return(body: Vips::Image.black(1000, 1000).write_to_buffer('.png'))
+
+      { 'azure_openai' => 768, 'google_gemini' => 384 }.each do |provider, size|
+        url = last_block(llm_provider: provider, llm_image_type: 'base64')[:image_url][:url]
+
+        assert url.start_with?('data:image/jpeg;base64,'), "#{provider} sends a data: URL"
+        assert_equal size, Vips::Image.new_from_buffer(url.delete_prefix('data:image/jpeg;base64,').unpack1('m0'), '').width, provider
+      end
+    end
+
+    test 'a stored type the provider does not allow falls back to its default' do
+      adapter = LlmJudgeAdapters::Anthropic.new('key', { llm_provider: 'anthropic', llm_include_images: 'true', llm_image_type: 'base64' })
+      content = adapter.request_envelope(pair, system_prompt: 'Judge.')[:body][:messages].last[:content]
+
+      assert_equal({ type: 'image', source: { type: 'url', url: image_url } }, content.last)
+      assert_not_requested :get, image_url
+    end
+
+    test 'a skipped base64 image leaves a note in the explanation' do
+      stub_request(:get, image_url).to_return(status: 500)
+      adapter = LlmJudgeAdapters::OpenAi.new('key', { llm_provider: 'openai', llm_include_images: 'true', llm_image_type: 'base64' })
+      body = adapter.request_envelope(pair, system_prompt: 'Judge.')[:body]
+      judgement = Judgement.new
+
+      assert_equal 'text', body[:messages].last[:content].last[:type]
+      adapter.apply_response(judgement, { 'choices' => [ { 'message' => { 'content' => '{"judgment": 2, "explanation": "Close."}' } } ] })
+      assert_equal 'Close. [document image not sent: the image download returned HTTP 500; judged on text only]', judgement.explanation
+    end
+  end
+
   test 'POST retries refusal responses but does not retry ambiguous timeout failures' do
     url = 'https://api.openai.com/v1/chat/completions'
     [ 429, 529 ].each do |status|

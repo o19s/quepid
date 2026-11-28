@@ -40,6 +40,8 @@ en:
     attributes:
       user:
         llm_key: "LLM Key"
+      ai_judge:
+        supported_scales: "Limit to scales"
       connection:
         base_url: "URL"
         secret: "Key"

@@ -209,3 +209,13 @@ h3 {
 .html-preview.expanded {
   max-height: 600px !important;
 }
+
+/* A collapse toggle's chevron turns down while its section is open (Bootstrap sets aria-expanded). */
+.collapse-toggle .bi-chevron-right {
+  display: inline-block;
+  transition: transform 0.15s ease-in-out;
+}
+
+.collapse-toggle[aria-expanded="true"] .bi-chevron-right {
+  transform: rotate(90deg);
+}

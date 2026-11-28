@@ -289,6 +289,100 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
     assert_select 'input#judge_options_llm_include_images[checked]', count: 0
   end
 
+  describe 'images on Jev and the Advanced section (ADR 0009)' do
+    let(:jev_judge) do
+      AiJudge.create!(name: 'Jev Judge', system_prompt: 'Judge it.', owner: user, connection: random_jev,
+                      judge_options: { llm_provider: 'typesafe_jev' })
+    end
+    let(:openai_judge) do
+      AiJudge.create!(name: 'OpenAI Judge', system_prompt: 'Judge it.', owner: user, connection: random_openai,
+                      judge_options: { llm_provider: 'openai' })
+    end
+
+    test 'a Jev judge that never chose gets the switch enabled and off' do
+      get edit_ai_judge_url(jev_judge)
+
+      assert_select 'input#judge_options_llm_include_images'
+      assert_select 'input#judge_options_llm_include_images[disabled]', count: 0
+      assert_select 'input#judge_options_llm_include_images[checked]', count: 0
+    end
+
+    test 'a Jev judge gets a closed Advanced section with base64 fixed and its own bounds' do
+      get edit_ai_judge_url(jev_judge)
+
+      assert_select '[data-ai-judge-form-target="advanced"]:not([style*="display:none"])'
+      assert_select '#ai-judge-advanced.collapse:not(.show)'
+      assert_select 'select#judge_options_llm_image_type[disabled] option', count: 1, text: 'Base64'
+      assert_select 'input[type=hidden][name=?][value=?]', 'user[judge_options][llm_image_type]', 'base64'
+      assert_select 'input#judge_options_llm_image_dimensions[type=number][min=?][max=?][step=?][placeholder=?]', '280', '1568', '1', '300'
+      assert_includes response.body, 'Blank uses the recommended 300 px.'
+      assert_select 'input#judge_options_llm_image_timeout[type=number][min=?][max=?][step=?][placeholder=?][disabled]', '0.1', '60', '0.1', '0.3'
+    end
+
+    test 'an OpenAI judge can pick URL or base64' do
+      get edit_ai_judge_url(openai_judge)
+
+      assert_select 'select#judge_options_llm_image_type option', count: 2
+      assert_select 'select#judge_options_llm_image_type option[selected][value=?]', 'url'
+    end
+
+    test 'Advanced settings holds the model, API version and scale limits, for any provider' do
+      get edit_ai_judge_url(openai_judge)
+
+      assert_select '#ai-judge-advanced.collapse:not(.show)' do
+        assert_select '#judge_options_llm_model'
+        assert_select '#judge_options_llm_api_version'
+        assert_select '#judge_options_supported_scales'
+      end
+      assert_select '#judge_options_llm_model', count: 1
+    end
+
+    test 'an image timeout out of range is refused, with Advanced settings open' do
+      patch ai_judge_url(jev_judge), params: { user: { judge_options: {
+        llm_provider: 'typesafe_jev', llm_include_images: 'true', llm_image_type: 'base64', llm_image_timeout: '90'
+      } } }
+
+      assert_response :unprocessable_content
+      assert_includes response.body, 'Image timeout must be a number of seconds between 0.1 and 60'
+      assert_select '#ai-judge-advanced.collapse.show'
+    end
+
+    test 'a bad scale limit reopens Advanced settings with the error' do
+      patch ai_judge_url(openai_judge), params: { user: { judge_options: { llm_provider: 'openai', supported_scales: '0,x' } } }
+
+      assert_response :unprocessable_content
+      assert_includes response.body, 'Limit to scales must be whole numbers'
+      assert_select '#ai-judge-advanced.collapse.show'
+    end
+
+    test 'a new judge with no connection yet shows no Advanced section' do
+      get new_ai_judge_url
+
+      assert_select '[data-ai-judge-form-target="advanced"][style*="display:none"]'
+    end
+
+    test 'the image settings are stored with the judge' do
+      patch ai_judge_url(jev_judge), params: { user: { judge_options: {
+        llm_provider: 'typesafe_jev', llm_include_images: 'true', llm_image_type: 'base64', llm_image_dimensions: '400'
+      } } }
+
+      assert_response :see_other
+      assert_equal({ llm_provider: 'typesafe_jev', llm_include_images: 'true', llm_image_type: 'base64', llm_image_dimensions: '400' },
+                   jev_judge.reload.judge_options)
+    end
+
+    test 'dimensions outside the provider bounds are refused, with the Advanced section open' do
+      patch ai_judge_url(jev_judge), params: { user: { judge_options: {
+        llm_provider: 'typesafe_jev', llm_include_images: 'true', llm_image_type: 'base64', llm_image_dimensions: '279'
+      } } }
+
+      assert_response :unprocessable_content
+      assert_includes response.body, 'Image dimensions must be a whole number between 280 and 1568 px for TypeSafe Jev'
+      assert_select '#ai-judge-advanced.collapse.show'
+      assert_nil jev_judge.reload.judge_options[:llm_image_dimensions]
+    end
+  end
+
   test 'edit shows the include images switch disabled for a provider that cannot take images' do
     legacy_judge.update!(judge_options: { llm_provider: 'ollama', llm_include_images: 'true' })
 
@@ -375,7 +469,8 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select '[data-ai-judge-wizard-target=runPromptButton][disabled]'
     assert_select '[data-ai-judge-form-target=needsScaleNotice]:not([style*="display:none"])', text: /Judgement Stats/
-    assert_select '#judge_options_llm_include_images[disabled]:not([checked])'
+    # Jev takes images now, opt-in (ADR 0009).
+    assert_select '#judge_options_llm_include_images:not([disabled]):not([checked])'
   end
 
   describe 'edit, as the page to refine a prompt on' do

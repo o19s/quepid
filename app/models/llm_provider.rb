@@ -100,6 +100,9 @@ class LlmProvider
     the score, confidence and distribution.
   HTML
 
+  # Images are opt-in on Jev (ADR 0009 D1).
+  JEV_IMAGES_HELP_HTML = '<b>Images:</b> Off unless <b>Judge with images</b> is ticked.'
+
   # Filled into the Ollama entry by .all -- see runtime_settings.
   OLLAMA_HELP_HTML = <<~HTML.squish
     <strong>Ollama</strong> &mdash; Local models via the Ollama container.<br>
@@ -142,6 +145,19 @@ class LlmProvider
   # the include-images switch disabled for a provider that does not, and the adapter
   # never attaches one, whatever the judge's own setting says.
   attribute :supports_images,       :boolean, default: true
+  # What a judge that never saved the include-images switch gets, and where the form starts
+  # that switch for this provider (ADR 0009 D1).
+  attribute :images_by_default,     :boolean, default: true
+  # How the image may reach the model (ADR 0009 D11): 'url' (the provider downloads it) and/or
+  # 'base64' (Quepid downloads it and sends the bytes). The first is the default.
+  attribute :image_types,           default: -> { %w[url] }
+  # { min:, max:, recommended: } pixels for the image's shorter side when Quepid resizes it before
+  # sending it as base64 (ADR 0009 D10), from the vendor's API limits. A judge that leaves the size
+  # blank gets the recommended one. nil: no resizing offered.
+  attribute :image_dimensions
+  # Replaces the generic images line in the help panel for a provider that handles images its
+  # own way.
+  attribute :images_help_html, :string
 
   DEFINITIONS = [
     {
@@ -149,6 +165,11 @@ class LlmProvider
       label:               'OpenAI',
       default_service_url: 'https://api.openai.com',
       default_model:       'gpt-4o',
+      image_types:         %w[url base64],
+      # No minimum is documented. High detail fits images within 2048px on current models, and
+      # tile-based models (gpt-4o, gpt-4.1) then scale the shorter side to 768px:
+      # https://developers.openai.com/api/docs/guides/images-vision
+      image_dimensions:    { min: 32, max: 2048, recommended: 768 },
       help_html:           <<~HTML.squish,
         <strong>OpenAI</strong> &mdash; Direct API access.<br>
         <b>URL:</b> <code>https://api.openai.com</code><br>
@@ -163,6 +184,9 @@ class LlmProvider
       auth_style:          :api_key,
       default_service_url: 'https://RESOURCE.openai.azure.com',
       default_model:       'gpt-4.1',
+      # The same OpenAI models, so the same image handling as the OpenAI entry.
+      image_types:         %w[url base64],
+      image_dimensions:    { min: 32, max: 2048, recommended: 768 },
       help_html:           <<~HTML.squish,
         <strong>Azure OpenAI</strong> &mdash; OpenAI models hosted on Azure.<br>
         <b>URL:</b> <code>https://YOUR-RESOURCE.openai.azure.com</code><br>
@@ -238,6 +262,11 @@ class LlmProvider
       label:               'Google Gemini',
       default_service_url: 'https://generativelanguage.googleapis.com/v1beta/openai',
       default_model:       'gemini-3.8-flash',
+      # Its OpenAI-compatible endpoint takes base64 data: URLs. No pixel limits are documented;
+      # an image within 384px costs a flat 258 tokens, larger ones are tiled at 768px:
+      # https://ai.google.dev/gemini-api/docs/openai, https://ai.google.dev/gemini-api/docs/tokens
+      image_types:         %w[url base64],
+      image_dimensions:    { min: 32, max: 2048, recommended: 384 },
       help_html:           <<~HTML.squish,
         <strong>Google Gemini</strong> &mdash; Uses the OpenAI-compatible endpoint.<br>
         <b>URL:</b> <code>https://generativelanguage.googleapis.com/v1beta/openai</code><br>
@@ -272,7 +301,11 @@ class LlmProvider
                              'question it is asked. Say what to weigh -- the rating scale, its labels ' \
                              'and the shape of the answer are part of the request already.',
       help_html:             JEV_HELP_HTML,
-      supports_images:       false,
+      images_by_default:     false,
+      image_types:           %w[base64],
+      # Each side must be 280-1568px: https://docs.typesafe.ai/images.md
+      image_dimensions:      { min: 280, max: 1568, recommended: 300 },
+      images_help_html:      JEV_IMAGES_HELP_HTML,
       option_fields:         {
         'jev_min_confidence' => {
           label: 'Minimum confidence',
@@ -355,6 +388,24 @@ class LlmProvider
     supports_images
   end
 
+  def images_by_default?
+    images_by_default
+  end
+
+  # The image types a judge on this provider may pick; none when it takes no images.
+  def allowed_image_types
+    supports_images? ? image_types : []
+  end
+
+  def default_image_type
+    allowed_image_types.first
+  end
+
+  # Whether the AI Judge form's Advanced section has anything to offer for this provider.
+  def advanced_image_settings?
+    allowed_image_types.size > 1 || (supports_images? && image_dimensions.present?)
+  end
+
   # A provider that is sent the scale as its criteria has nothing to judge against
   # without one, so it can only be run (or previewed) with a scale in hand.
   def needs_scale?
@@ -376,6 +427,9 @@ class LlmProvider
       needs_scale:       needs_scale?,
       label:             label,
       supports_images:   supports_images?,
+      images_by_default: images_by_default?,
+      image_types:       allowed_image_types,
+      image_dimensions:  image_dimensions,
     }
   end
 
@@ -391,6 +445,8 @@ class LlmProvider
   end
 
   def images_help_line
+    return images_help_html if images_help_html.present?
+
     if supports_images?
       '<b>Images:</b> Attached as an image URL unless <b>Judge with images</b> is turned off, for text-only models.'
     else
