@@ -63,7 +63,7 @@ class AiJudgesController < ApplicationController
   def update
     @ai_judge.connection_assignment_user = current_user
     @ai_judge.assign_attributes(ai_judge_params)
-    # A judge from before connections keeps running on its own settings, but changes to it wait until it is on one.
+    # A judge that lost its connection (or never had one) can't run, and saving it needs one.
     @ai_judge.errors.add(:connection, 'is required: choose a connection first') unless @ai_judge.connection
     if @ai_judge.errors.empty? && escalation_target_visible? && @ai_judge.save
       apply_team_ids(@ai_judge, submitted_team_ids)

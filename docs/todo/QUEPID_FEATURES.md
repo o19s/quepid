@@ -160,7 +160,7 @@ Use that section as the authoritative source for columns, associations, and migr
 | Length | 8-72 characters |
 | Reset Window | 6-hour token expiry |
 | No Auto-Login | Manual login required after password reset |
-| Encryption | ActiveRecord encryption for `llm_key` (deterministic: false) |
+| Encryption | ActiveRecord encryption for connection secrets and basic-auth credentials (deterministic: false); see `docs/ENCRYPTION_SETUP.md` |
 | Parameter Filtering | password, email, secret, token, crypt, salt, certificate, OTP, SSN, CVV filtered from logs |
 
 ### Authorization Features
@@ -655,7 +655,7 @@ Export includes CSV injection protection via `make_csv_safe()` method.
 
 | Feature | Description |
 |---------|-------------|
-| AI Judge Users | `AiJudge` is an STI subclass of `User` with `llm_key` (encrypted at rest) and `system_prompt` |
+| AI Judge Users | `AiJudge` is an STI subclass of `User` with a `system_prompt`, calling its provider through a `Connection` |
 | LLM Providers | `LlmProvider` is a code registry (not a table): OpenAI, Azure OpenAI, Azure AI Foundry (plus serverless and Anthropic variants), Anthropic, Google Gemini, Ollama and TypeSafe Jev. A judge stores only the provider key in its options; each provider sets default URL, model, prompt text and whether images are supported |
 | Adapters | `LlmJudgeAdapters` (`OpenAi`, `Anthropic`, `Jev`) build the request and parse the reply with no I/O; judges with no provider fall back to the OpenAI adapter |
 | AI Judge CRUD | Dedicated controller for creating, editing, and deleting AI judges |
@@ -1504,7 +1504,7 @@ Each judge points at an `LlmProvider` registry entry (OpenAI, Azure variants, An
 
 ### AI Judge as STI on User
 
-AI judges are `AiJudge` records (STI subclass of `User`, `users.type`). Validations differ by class: email/password are required for humans, name/llm_key/system_prompt for AI judges. `User#ai_judge?` is just `is_a?(AiJudge)`.
+AI judges are `AiJudge` records (STI subclass of `User`, `users.type`). Validations differ by class: email/password are required for humans, name/system_prompt for AI judges. `User#ai_judge?` is just `is_a?(AiJudge)`.
 
 ### `really_destroy` Pattern
 

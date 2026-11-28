@@ -385,6 +385,11 @@ upstream design history, including superseded extraction names and steps.
   does not apply.
 - Current manual scenarios are 12.10 for Jev, 12.6 for images, 12.7 for escalation
   and 12.8 for ownership.
+- A judge no longer holds a key: it calls its provider through a `Connection`
+  ([ADR 0005](0005-connections-for-external-services.md)), which supplies the URL, timeout and
+  authentication. `LlmService.new(llm_key, judge_options)` above is now
+  `LlmService.new(connection, judge_options)` (`AiJudge#llm_service` builds it), the adapters take
+  only the options, and `users.llm_key` was dropped (#1919).
 
 Remaining upstream work and verification limits are in the
 [upstream integration plan](../todo/todo.md#migration-followup-upstream-integration-plan)

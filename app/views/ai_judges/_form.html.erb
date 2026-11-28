@@ -1,6 +1,6 @@
 <%# locals: (ai_judge:, form:, book:, book_id:, scorer:, scorer_id:) %>
 <%# The URL and timeout come from the judge's connection, so they aren't options to fill in. %>
-<% option_defaults = LlmService::DEFAULT_OPTIONS.except(:llm_service_url, :llm_timeout).merge(llm_provider: 'openai', llm_api_version: '') %>
+<% option_defaults = LlmService::DEFAULT_OPTIONS.merge(llm_provider: 'openai', llm_api_version: '') %>
 <%# A book's own scale if there's a book context, otherwise a scorer's (picked
     below, in Step 2, when there's no book) - either way, the same scale an
     actual judging run would be handed. %>

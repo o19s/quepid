@@ -38,8 +38,6 @@ en:
               existence: 'Does not exist'
               
     attributes:
-      user:
-        llm_key: "LLM Key"
       connection:
         base_url: "URL"
         secret: "Key"

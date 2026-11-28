@@ -10,12 +10,16 @@ class RunJudgeJudyJobTest < ActiveJob::TestCase
 
   setup { register_default_openai_stubs }
 
+  # An AI judge on an OpenAI connection of its own, whose key the OpenAI stubs accept or refuse.
+  def openai_judge name, key, **attributes
+    AiJudge.create!(name: name, owner: users(:random), connection: llm_connection(key, owner: users(:random)),
+                    system_prompt: judge_judy.system_prompt, **attributes)
+  end
+
   describe 'failure scenarios' do
     test 'not authorized to access OpenAI' do
       # Tell webmock to return a 401 by matching the below key.
-      judge_judy.llm_key = 'BAD_OPENAI_KEY'
-      judge_judy.options = nil # no idea why
-      judge_judy.save!
+      judge_judy.connection.update!(secret: OPENAI_BAD_KEY)
 
       assert_difference 'book.judgements.count', 1 do
         assert_difference 'book.judgements.where(unrateable: true).count', 1 do
@@ -122,11 +126,11 @@ class RunJudgeJudyJobTest < ActiveJob::TestCase
     # judge_judy's key is refused (401), so every answer it gives is unrateable;
     # the on-call judges below use the valid key and rate 0.
     let(:on_call) do
-      AiJudge.create!(name: 'On Call', llm_key: OPENAI_VALID_KEY, system_prompt: judge_judy.system_prompt)
+      openai_judge('On Call', OPENAI_VALID_KEY)
     end
 
     setup do
-      judge_judy.update!(llm_key: 'BAD_OPENAI_KEY', options: nil)
+      judge_judy.connection.update!(secret: OPENAI_BAD_KEY)
     end
 
     test 'an unrateable answer wakes the on-call judge, which rates the pair and links back' do
@@ -152,7 +156,8 @@ class RunJudgeJudyJobTest < ActiveJob::TestCase
     end
 
     test 'wakes nobody when every answer was usable' do
-      judge_judy.update!(llm_key: OPENAI_VALID_KEY, escalates_to: on_call)
+      judge_judy.connection.update!(secret: OPENAI_VALID_KEY)
+      judge_judy.update!(escalates_to: on_call)
 
       RunJudgeJudyJob.new.perform(book, judge_judy, 1)
 
@@ -169,6 +174,15 @@ class RunJudgeJudyJobTest < ActiveJob::TestCase
 
     test 'does not wake an on-call judge limited to other scales than the book' do
       on_call.update!(judge_options: on_call.judge_options.merge(supported_scales: '0,1,2,3,4'))
+      judge_judy.update!(escalates_to: on_call)
+
+      RunJudgeJudyJob.new.perform(book, judge_judy, 1)
+
+      assert_no_enqueued_jobs(only: RunJudgeJudyJob)
+    end
+
+    test 'does not wake an on-call judge with no connection' do
+      on_call.update_column(:connection_id, nil)
       judge_judy.update!(escalates_to: on_call)
 
       RunJudgeJudyJob.new.perform(book, judge_judy, 1)
@@ -200,8 +214,7 @@ class RunJudgeJudyJobTest < ActiveJob::TestCase
     end
 
     test 'an on-call judge that is also unsure wakes the next one down the chain' do
-      unsure_on_call = AiJudge.create!(name: 'Unsure On Call', llm_key: 'BAD_OPENAI_KEY',
-                                       system_prompt: judge_judy.system_prompt, escalates_to: on_call)
+      unsure_on_call = openai_judge('Unsure On Call', OPENAI_BAD_KEY, escalates_to: on_call)
       judge_judy.update!(escalates_to: unsure_on_call)
 
       perform_enqueued_jobs(only: RunJudgeJudyJob) do
@@ -218,6 +231,18 @@ class RunJudgeJudyJobTest < ActiveJob::TestCase
   end
 
   describe 'scale limits' do
+    test 'a judge with no connection says why it stopped, and calls no provider' do
+      judge_judy.update_column(:connection_id, nil) # its connection was destroyed outside the app
+      notices = capture_turbo_stream_broadcasts([ book.owner, :notifications ]) do
+        assert_no_difference 'book.judgements.count' do
+          RunJudgeJudyJob.new.perform(book, judge_judy, 1)
+        end
+      end
+
+      assert_includes notices.map(&:text).join, 'Judge Judy stopped: it has no connection (choose one on its page).'
+      assert_not_requested :post, 'https://api.openai.com/v1/chat/completions'
+    end
+
     test 'says why it stopped, rather than announcing the run complete' do
       judge_judy.update!(judge_options: judge_judy.judge_options.merge(supported_scales: '0,1,2,3')) # book is 0,1
       modal = nil
@@ -300,7 +325,7 @@ class RunJudgeJudyJobTest < ActiveJob::TestCase
     end
 
     test 'cancellation with pending escalations does not wake the on-call judge' do
-      on_call = AiJudge.create!(name: 'On Call', llm_key: OPENAI_VALID_KEY, system_prompt: judge_judy.system_prompt)
+      on_call = openai_judge('On Call', OPENAI_VALID_KEY)
       judge_judy.update!(escalates_to: on_call)
       source = Judgement.create!(query_doc_pair: book.query_doc_pairs.first, user: judge_judy,
                                  unrateable: true, explanation: 'Unsure')

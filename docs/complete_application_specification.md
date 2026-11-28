@@ -342,14 +342,13 @@ Stores raw request/response for snapshot queries (debugging).
 | locked | boolean | Account locked |
 | locked_at | datetime | |
 | default_scorer_id | integer | FK to scorers |
-| llm_key | string(4000) | Encrypted - for AI judges |
 | system_prompt | string(4000) | AI judge prompt |
 | options | json | judge_options, etc. |
 | completed_case_wizard | boolean | Skip new user wizard |
 | invitation_* | various | Devise Invitable |
 | created_at, updated_at | datetime | |
 
-**Encrypted:** `llm_key` (Rails encrypts, deterministic: false)
+**Encrypted:** nothing on `users`; AI judges' keys live on their `Connection` (`secret`, encrypted)
 
 **Concerns:** `Profile` - avatar_url (Gravatar), display_name
 

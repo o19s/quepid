@@ -85,6 +85,16 @@ class QueryDocPairTest < ActiveSupport::TestCase
       end
     end
 
+    it 'does not queue an auto-run AI judge with no connection' do
+      book.books_ai_judges.create!(ai_judge: ai_judge, auto_run: true)
+      ai_judge.update_column(:connection_id, nil) # its connection was destroyed outside the app
+
+      assert_no_enqueued_jobs(only: AutoRunJudgeJudyJob) do
+        book.query_doc_pairs.create!(query_text: 'auto run test', doc_id: 'auto_run_doc_4',
+                                     document_fields: '{"title":"Test"}')
+      end
+    end
+
     it 'does not queue an AI judge that is not set to auto-run' do
       book.books_ai_judges.create!(ai_judge: ai_judge, auto_run: false)
 

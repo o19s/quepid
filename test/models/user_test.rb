@@ -20,7 +20,6 @@ require 'test_helper'
 #  invitation_sent_at          :datetime
 #  invitation_token            :string(255)
 #  invitations_count           :integer          default(0)
-#  llm_key                     :string(4000)
 #  locked                      :boolean
 #  locked_at                   :datetime
 #  name                        :string(255)
@@ -128,7 +127,7 @@ class UserTest < ActiveSupport::TestCase
 
     test 'an AI judge is never promoted, even when no real users exist yet' do
       with_no_real_users_yet do
-        judge = User.create(llm_key: '1234', name: 'Judge Judy')
+        judge = AiJudge.create(name: 'Judge Judy', system_prompt: 'Judge it.')
 
         assert_not judge.administrator
       end
@@ -461,22 +460,19 @@ class UserTest < ActiveSupport::TestCase
 
   describe 'User is AI Judge' do
     let(:joey) { users(:joey) }
-    it 'uses the existence of the key to decide ai_judge' do
-      user = User.new
-      assert_not user.ai_judge?
-      user.llm_key = ''
-      assert_not_predicate user, :ai_judge?
-      assert_not user.valid?
+    it 'is an AI judge by its type' do
+      assert_not User.new.ai_judge?
+      assert_predicate AiJudge.new, :ai_judge?
     end
 
     it 'does not require an email or password address to be valid when is a judge' do
-      user = AiJudge.new(system_prompt: 'Judge it.', llm_key: '1234', name: 'Judge Judy')
+      user = AiJudge.new(system_prompt: 'Judge it.', name: 'Judge Judy')
       assert_predicate user, :ai_judge?
       assert_predicate user, :valid?
     end
 
     it 'does require name to be valid when is a judge' do
-      user = AiJudge.new(system_prompt: 'Judge it.', llm_key: '1234')
+      user = AiJudge.new(system_prompt: 'Judge it.')
       assert_predicate user, :ai_judge?
       assert_not user.valid?
       user.name = 'Judge Judy'
@@ -485,13 +481,13 @@ class UserTest < ActiveSupport::TestCase
 
     describe 'options to configure the llm server' do
       it 'provides an empty hash' do
-        user = AiJudge.new(system_prompt: 'Judge it.', llm_key: '1234', name: 'Judge Judy')
+        user = AiJudge.new(system_prompt: 'Judge it.', name: 'Judge Judy')
         opts_hash = user.judge_options
         assert_empty(opts_hash)
       end
 
       it 'lets you update the options hash via passing in a hash with new values' do
-        user = AiJudge.new(system_prompt: 'Judge it.', llm_key: '1234', name: 'Judge Judy')
+        user = AiJudge.new(system_prompt: 'Judge it.', name: 'Judge Judy')
         opts_hash = user.judge_options
 
         opts_hash[:model] = 'gpt-3.5-turbo'

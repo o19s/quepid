@@ -420,7 +420,8 @@ The clone form clears an inaccessible private connection and asks the new owner 
   API version falls back to the connection's when the judge sets none. New judges need a connection
   (enforced in `AiJudgesController#create`, so code and tests that build judges directly needn't);
   one that has a connection can change it but not drop it. A judge from before connections keeps
-  running on its own `llm_key` and `llm_service_url`/`llm_timeout` until someone edits it, but the
+  running on its own `llm_key` and `llm_service_url`/`llm_timeout` until someone edits it (no
+  longer: see the #1919 update below), but the
   wizard's "Test & Refine" now requires a connection for every judge, no own-settings exception;
   choosing a connection clears them. A clone never takes the original's key or connection: its form
   opens with none and asks the cloner to choose one of theirs.
@@ -439,8 +440,25 @@ The clone form clears an inaccessible private connection and asks the new owner 
   `migrate_connection` and `AiJudge#migrate_to_connection!` are removed; a judge still found
   without a connection (e.g. built directly, bypassing the migration) can only be pointed at a
   connection by editing it, same as any pre-connection judge. The clean-up half of stage 3 -
-  dropping `llm_key` and `judge_options`' URL/timeout - is not done; those columns stay for now.
+  dropping `llm_key` and `judge_options`' URL/timeout - is not done; those columns stay for now
+  (done since: see the #1919 update below).
 
-Not built: renaming `LlmConnection` to `HttpClient` and building it from a `Connection`; dropping
-`users.llm_key` and the `judge_options` URL/timeout, the clean-up half of judges' stage 3 (§3); the
+Not built: renaming `LlmConnection` to `HttpClient` and building it from a `Connection`; the
 rate limit (the field is stored, nothing enforces it); search endpoints.
+
+**Update (2026-11, #1919):** the clean-up half of judges' stage 3 is done. `RemoveLlmKeyFromUsers`
+drops `users.llm_key`; `LlmService` and the judge adapters no longer take a key and require a
+connection; and saving a judge on a connection clears any URL/timeout left in its `judge_options`.
+A judge without a connection doesn't run: the job, auto-run and escalation skip it, and the book
+page and book settings say why (`AiJudge#judging_problem`). The app can't produce one (a connection
+an AI judge uses can't be deleted, nor its owner's account), but one can still exist: the backfill
+skipped judges with neither a key nor a URL, and a connection destroyed outside the app (a console,
+a script) nullifies its judges'.
+
+Before the drop, `users.llm_key` still held a copy of each migrated judge's key: the backfill
+copied it into the new connection's `secret` but left the original for this clean-up. On a judge
+whose connection still exists that copy was redundant. On a judge whose connection had been
+destroyed outside the app, the copy was what kept the judge running (the fallback quietly used it),
+and it was the last copy of that key in Quepid. Dropping the column discards it and can't be undone
+(rolling the migration back re-adds the column empty), so such a judge needs a new connection with
+the key entered again.

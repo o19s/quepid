@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_14_120100) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_27_212205) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -883,7 +883,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_14_120100) do
     t.string "invitation_token"
     t.integer "invitations_count", default: 0
     t.integer "invited_by_id"
-    t.string "llm_key", limit: 4000
     t.boolean "locked"
     t.datetime "locked_at", precision: nil
     t.string "name"

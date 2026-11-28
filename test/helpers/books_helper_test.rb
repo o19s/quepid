@@ -58,10 +58,10 @@ class BooksHelperTest < ActionView::TestCase
       assert_not_includes available_judges, judge_judy
     end
 
-    it 'only returns actual AI judges (users with llm_key)' do
+    it 'only returns actual AI judges' do
       book = books(:empty_book)
-      judge_judy = users(:judge_judy)  # Has llm_key (is AI judge)
-      doug = users(:doug)              # Regular user, no llm_key
+      judge_judy = users(:judge_judy)  # an AiJudge
+      doug = users(:doug)              # a human user
 
       # Both are members of shared team, but only judge_judy is AI judge
       available_judges = available_ai_judges_for_book(book, users(:doug))

@@ -20,7 +20,6 @@
 #  invitation_sent_at          :datetime
 #  invitation_token            :string(255)
 #  invitations_count           :integer          default(0)
-#  llm_key                     :string(4000)
 #  locked                      :boolean
 #  locked_at                   :datetime
 #  name                        :string(255)
@@ -61,13 +60,13 @@
 #  fk_rails_...  (invited_by_id => users.id)
 #
 class AiJudge < User
-  encrypts :llm_key, deterministic: false
-
   belongs_to :owner, class_name: 'User', optional: true
 
-  # Where to reach the provider and the key to use (ADR 0005). Judges made before connections have
-  # none and keep running on their own llm_key and URL until someone moves them onto one; new
-  # judges get one (AiJudgesController requires it, so code that builds judges directly needn't).
+  # Where to reach the provider and the key to use (ADR 0005). A judge without one doesn't run
+  # (judging_problem). The app won't delete a connection judges use, but one destroyed outside it
+  # nullifies its judges', and MigrateAiJudgesToConnections skipped judges that had neither a key
+  # nor a URL. Saving a judge
+  # requires one (AiJudgesController), so code that builds judges directly needn't.
   belongs_to :connection, optional: true, inverse_of: :ai_judges
 
   # The judge this one wakes when it is unsure of an answer. A judge that
@@ -89,7 +88,6 @@ class AiJudge < User
   include ForUserScope
 
   validates :name, presence: true
-  validates :llm_key, length: { maximum: 255 }, allow_blank: true
   validates :system_prompt, length: { maximum: 4000 }, allow_nil: true, presence: true
   validate :escalation_chain_does_not_loop, if: :escalates_to_id_changed?
   validate :supported_scales_are_well_formed
@@ -120,9 +118,15 @@ class AiJudge < User
     LlmProvider.find(judge_options[:llm_provider])&.key || 'openai'
   end
 
-  # Runs this judge's calls: through its connection, or on its own settings if it predates them.
+  # Runs this judge's calls through its connection; see connected? first.
   def llm_service
-    LlmService.new(llm_key, judge_options, connection)
+    LlmService.new(connection, judge_options)
+  end
+
+  # Whether this judge can call its provider at all. Reads the id, so a list of judges
+  # (Judge Activity rows) doesn't load every connection to ask.
+  def connected?
+    connection_id.present?
   end
 
   def judge_options
@@ -154,6 +158,14 @@ class AiJudge < User
     supported.empty? || supported.include?(Array(values).map(&:to_i).sort)
   end
 
+  # Why this judge can't judge a book on these scale values, or nil. Every place that runs a judge,
+  # queues one, wakes one or offers its run button asks this, so they refuse for the same reasons.
+  def judging_problem scale_values
+    return 'it has no connection (choose one on its page)' unless connected?
+
+    "it can't rate this book's scale (#{Array(scale_values).join(',')})" unless supports_scale?(scale_values)
+  end
+
   # The judge_options a judge would end up with once connected: the provider becomes the
   # connection's. Shared by leave_own_settings_for_connection (actually saving) and the wizard's
   # draft_judge (previewing a connection switch before anyone saves).
@@ -182,12 +194,11 @@ class AiJudge < User
     "isn't one you can use" unless connection_usable_by_owner?
   end
 
-  # On a connection, the judge's own key, URL and timeout are no longer used, so they aren't kept,
-  # and the provider is the connection's.
+  # On a connection, the provider is the connection's. A URL and timeout of the judge's own (left
+  # in judge_options by MigrateAiJudgesToConnections) are never read, so they're cleared on save.
   def leave_own_settings_for_connection
     return unless connection
 
-    self.llm_key = nil
     self.judge_options = self.class
       .judge_options_with_connection_provider(judge_options, connection)
       .except(:llm_service_url, :llm_timeout)

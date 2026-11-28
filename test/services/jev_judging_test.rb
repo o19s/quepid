@@ -8,8 +8,9 @@ class JevJudgingTest < ActiveSupport::TestCase
   let(:url) { 'https://api.typesafe.ai/v1/systemone' }
 
   setup do
-    judge.update!(judge_options: { llm_provider: 'typesafe_jev', llm_service_url: 'https://api.typesafe.ai',
-                                  llm_model: 'jev-latest', jev_min_confidence: '0.5' })
+    jev = llm_connection('jev-key', provider: 'typesafe_jev', base_url: 'https://api.typesafe.ai', owner: users(:random))
+    judge.update!(owner: users(:random), connection: jev,
+                  judge_options: { llm_provider: 'typesafe_jev', llm_model: 'jev-latest', jev_min_confidence: '0.5' })
   end
 
   test 'a judging run sends criteria and saves the mapped rating with its explanation' do
