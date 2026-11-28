@@ -230,3 +230,25 @@ See [Qdrant setup and request examples](../endpoints_qdrant.md).
   submits proxy true. Broader mapper generation/save checks remain in 7.7–7.10.
 - [ ] Restore the flag to false and restart: JSONP and proxy controls return.
   Remove disposable cases/endpoints and restore account onboarding state.
+
+### 7.14 PostgreSQL preset: TLS default, credentials, case search and background run
+
+Needs `POSTGRES_SEARCH_ENABLED=true` (restart the server), a PostgreSQL database with the
+`movies` table from [the PostgreSQL guide](../endpoints_postgresql.md), a read-only role, and
+an admin proxy allowlist entry for the database host.
+
+1. Start the case wizard on a disposable case. On Endpoint, choose **PostgreSQL**. Confirm the
+   `postgresql://` URL tip, and Proxy on under Advanced. Enter the URL without `sslmode` and the
+   role as Basic Auth `user:password`.
+2. Ping a database without TLS: expect a visible error, and in the proxy response
+   "SSL was required". Add `?sslmode=disable` and ping again: expect success.
+3. Confirm `id`, `title` and `overview` are prefilled. Add two queries and finish. Expand them
+   and compare titles and order with the same SQL run in `psql`. The case page's proxy calls
+   carry `search_endpoint_id`.
+4. In the Query Sandbox, change the SQL (e.g. an `ILIKE` match ending in a `--` comment) and
+   rerun: expect the new results in a new try.
+5. Settings → Evaluate Nightly → **Rerun My Searches Now in the Background**: the new snapshot
+   holds the try's results.
+6. Through the proxy, a URL with percent-encoded user and password logs in; a superuser login is
+   refused; SQL with a second statement is refused.
+7. Delete the disposable case and the endpoint created for this check.

@@ -95,7 +95,7 @@ class ProxyController < ApplicationController
   def validate_proxy_url!
     uri = Addressable::URI.parse(proxy_url_params)
 
-    unless %w[http https].include?(uri.scheme) && uri.host.present?
+    unless (%w[http https].include?(uri.scheme) || PostgresSearchService.handles?(uri)) && uri.host.present?
       render json: { proxy_error: 'Invalid proxy URL' }, status: :bad_request
       return
     end

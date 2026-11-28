@@ -44,6 +44,15 @@ class MapperBasedSearchEngineTest < ActiveSupport::TestCase
         assert_path_exists Rails.root.join(engine.mapper_file), "#{engine.id} points at a missing mapper file"
       end
     end
+
+    # The endpoint pages render image_tag("#{id}-icon.png"), which raises on a missing asset.
+    it 'gives every definition an endpoint icon' do
+      engines = MapperBasedSearchEngine.all
+
+      engines.each do |engine|
+        assert_path_exists Rails.root.join("app/assets/images/#{engine.id}-icon.png"), "#{engine.id} has no icon"
+      end
+    end
   end
 
   describe 'the Qdrant definition' do
@@ -83,6 +92,41 @@ class MapperBasedSearchEngineTest < ActiveSupport::TestCase
     it 'supports rated docs lookup, which its mapper implements' do
       assert qdrant.supports_rated_docs_lookup
       assert_includes qdrant.mapper_code, 'ratedDocsQueryParamsMapper'
+    end
+  end
+
+  describe 'the PostgreSQL definition' do
+    let(:postgresql) { MapperBasedSearchEngine.find('postgresql') }
+
+    it 'is left out when POSTGRES_SEARCH_ENABLED is off' do
+      original = Rails.application.config.postgres_search_enabled
+      Rails.application.config.postgres_search_enabled = false
+
+      assert_nil MapperBasedSearchEngine.find('postgresql')
+      assert MapperBasedSearchEngine.find('qdrant')
+    ensure
+      Rails.application.config.postgres_search_enabled = original
+    end
+
+    it 'always proxies, since only Quepid can open the database connection' do
+      assert postgresql.proxy_requests
+      assert postgresql.supports_basic_auth
+      assert_includes postgresql.url_format, 'postgresql://'
+    end
+
+    it 'binds the query text as a parameter rather than splicing it into the SQL' do
+      query_params = JSON.parse(postgresql.query_params)
+
+      assert_includes query_params['sql'], '$1'
+      assert_not_includes query_params['sql'], '#$query##'
+      assert_equal [ '#$query##' ], query_params['params']
+    end
+
+    it 'injects limit through its mapper and claims no pagination or rated-docs lookup' do
+      assert postgresql.supports_request_args_mapper
+      assert_includes postgresql.mapper_code, 'requestArgsMapper'
+      assert_not postgresql.supports_pagination
+      assert_not postgresql.supports_rated_docs_lookup
     end
   end
 end
